@@ -39,6 +39,14 @@ namespace OSistema.Views
         {
             if (pawn == null || body == null) return; // state lost to a script reload during Play
 
+            // In prison: not on the map.
+            body.enabled = !pawn.InJail;
+            if (pawn.InJail)
+            {
+                ring.enabled = false;
+                return;
+            }
+
             transform.position = new Vector3(pawn.Position.x, pawn.Position.y, 0f);
 
             // Lying down (asleep, downed, dead) reads as a smaller, flatter body until real sprites exist.

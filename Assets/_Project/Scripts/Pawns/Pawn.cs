@@ -7,15 +7,16 @@ using UnityEngine;
 
 namespace OSistema.Pawns
 {
-    public enum MoveResult { Moving, Arrived, Blocked }
-
     public enum SleepState { Awake, InBed, OnFloor }
+
+    /// <summary>The crew member's job in the clan. Hierarchy comes later; for now it's what they do all day.</summary>
+    public enum CrewRole { General, Pusher, Lookout, Collector }
 
     /// <summary>A crew member. Pure simulation data; PawnView draws it.</summary>
     public sealed class Pawn
     {
         /// <summary>Cells per tick on cost-1 terrain (~4.5 cells/s at 1x).</summary>
-        const float BaseSpeed = 0.075f;
+        public const float BaseSpeed = 0.075f;
         const float BarkSeconds = 3.5f;
         const int CheckInterval = 250;
         const int MentalBreakTicks = 15000; // ~6 in-game hours
@@ -29,13 +30,18 @@ namespace OSistema.Pawns
         public int ConstructionSkill;
         public int CookingSkill;
         public int MedicineSkill;
+        public int IntimidationSkill;
+        public int AwarenessSkill;
+
+        public CrewRole Role;
+        public int Wage = 150;          // weekly mesata, paid on Sunday
+        public float Loyalty = 60f;     // 0..100
 
         public readonly Needs Needs = new Needs();
         public readonly Health Health = new Health();
         public readonly Mood Mood = new Mood();
+        public readonly Mover Mover;
 
-        public Vector2Int Cell { get; private set; }
-        public Vector2 Position { get; private set; }
         public bool Drafted { get; private set; }
         public bool Dead { get; private set; }
         public string DeathCause { get; private set; }
@@ -46,13 +52,11 @@ namespace OSistema.Pawns
         public string Carrying;          // shown in the HUD while shopping
         public Pawn TendedBy;            // reserved by a doctor
         public long BreakUntilTick { get; private set; }
+        public long JailedUntil;         // 0 when free
+        public long LyingLowUntil;       // stays home after a close call with the police
 
         public Barks.Line Bark { get; private set; }
         float barkUntil = -1f;
-
-        List<Vector2Int> path;
-        int pathIndex;
-        float moveProgress;
 
         public Pawn(int id, string firstName, string lastName, string nickname, Color32 shirt, Vector2Int cell)
         {
@@ -61,14 +65,26 @@ namespace OSistema.Pawns
             LastName = lastName;
             Nickname = nickname;
             ShirtColor = shirt;
-            Teleport(cell);
+            Mover = new Mover(cell, BaseSpeed);
         }
 
+        public Vector2Int Cell => Mover.Cell;
+        public Vector2 Position => Mover.Position;
         public string FullName => $"{FirstName} {LastName}";
         public bool HasBark => Time.unscaledTime < barkUntil;
         public bool HasBed => Bed.HasValue;
+        public bool InJail => JailedUntil > 0;
         public bool InMentalBreak(long now) => BreakUntilTick > now;
-        public bool CanAct => !Dead && !Health.Downed;
+        public bool IsLyingLow(long now) => LyingLowUntil > now;
+
+        /// <summary>On the map, alive and able to stand.</summary>
+        public bool CanAct => !Dead && !InJail && !Health.Downed;
+
+        /// <summary>Alive and on the map (possibly downed).</summary>
+        public bool IsPresent => !Dead && !InJail;
+
+        /// <summary>Injuries slow you down.</summary>
+        public float SpeedFactor => 1f - Health.Pain * 0.5f;
 
         /// <summary>A need bad enough to drop work for.</summary>
         public bool HasUrgentNeed =>
@@ -76,11 +92,11 @@ namespace OSistema.Pawns
             Needs.Rest < Needs.ExhaustedBelow ||
             (Health.NeedsTending && Health.BleedRatePerDay > 0.3f);
 
-        public static Vector2 CellCenter(Vector2Int c) => new Vector2(c.x + 0.5f, c.y + 0.5f);
+        public static Vector2 CellCenter(Vector2Int c) => Mover.CellCenter(c);
 
         public void Tick(Game game)
         {
-            if (Dead) return;
+            if (Dead || InJail) return;
             long now = game.Ticks.TicksGame;
 
             Needs.Tick(this);
@@ -176,6 +192,21 @@ namespace OSistema.Pawns
             Sleep = SleepState.Awake;
         }
 
+        public void SendToJail(long until, Game game)
+        {
+            EndCurrentJob(game);
+            JailedUntil = until;
+            Drafted = false;
+            Sleep = SleepState.Awake;
+            TendedBy = null;
+        }
+
+        public void ReleaseFromJail(Vector2Int at)
+        {
+            JailedUntil = 0;
+            Teleport(at);
+        }
+
         /// <summary>Restores state that normally changes through gameplay. Used by save/load only.</summary>
         public void RestoreState(bool drafted, bool dead, string deathCause, long breakUntil)
         {
@@ -191,60 +222,8 @@ namespace OSistema.Pawns
             barkUntil = Time.unscaledTime + BarkSeconds;
         }
 
-        public void SetPath(List<Vector2Int> newPath)
-        {
-            path = newPath;
-            pathIndex = 0;
-            moveProgress = 0f;
-            Position = CellCenter(Cell);
-        }
-
-        public void StopMoving()
-        {
-            path = null;
-            moveProgress = 0f;
-            Position = CellCenter(Cell);
-        }
-
-        public void Teleport(Vector2Int cell)
-        {
-            Cell = cell;
-            StopMoving();
-        }
-
-        public MoveResult TickMovement(Map map)
-        {
-            if (path == null || pathIndex >= path.Count)
-            {
-                path = null;
-                return MoveResult.Arrived;
-            }
-
-            var next = path[pathIndex];
-            if (!map.IsPassable(next))
-            {
-                StopMoving();
-                return MoveResult.Blocked;
-            }
-
-            bool diagonal = next.x != Cell.x && next.y != Cell.y;
-            float cost = map.MoveCost(next.x, next.y) * (diagonal ? 1.41421356f : 1f);
-            float speed = BaseSpeed * (1f - Health.Pain * 0.5f); // injuries slow you down
-            moveProgress += speed / cost;
-
-            if (moveProgress < 1f)
-            {
-                Position = Vector2.Lerp(CellCenter(Cell), CellCenter(next), moveProgress);
-                return MoveResult.Moving;
-            }
-
-            Cell = next;
-            moveProgress = 0f;
-            Position = CellCenter(Cell);
-            pathIndex++;
-            if (pathIndex < path.Count) return MoveResult.Moving;
-            path = null;
-            return MoveResult.Arrived;
-        }
+        public void SetPath(List<Vector2Int> newPath) => Mover.SetPath(newPath);
+        public void StopMoving() => Mover.Stop();
+        public void Teleport(Vector2Int cell) => Mover.Teleport(cell);
     }
 }

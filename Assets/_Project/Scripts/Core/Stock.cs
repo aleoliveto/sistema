@@ -12,6 +12,7 @@ namespace OSistema.Core
         public int Groceries = 6;
         public int Meals = 4;
         public int Medicine = 1;
+        public int Product;   // 'a roba, stored at the basso
 
         // Only one pawn cooks and one shops at a time, so they don't all leave together.
         public Pawn Cook;

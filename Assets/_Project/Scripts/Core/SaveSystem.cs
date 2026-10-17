@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using OSistema.Crime;
 using OSistema.Pawns;
 using OSistema.World;
 using UnityEngine;
@@ -13,7 +14,7 @@ namespace OSistema.Core
     /// </summary>
     public static class SaveSystem
     {
-        public const int Version = 1;
+        public const int Version = 2;
 
         public static string DefaultPath => Path.Combine(Application.persistentDataPath, "save1.json");
 
@@ -48,7 +49,24 @@ namespace OSistema.Core
                 groceries = game.Stock.Groceries,
                 meals = game.Stock.Meals,
                 medicine = game.Stock.Medicine,
+                product = game.Stock.Product,
+                respect = game.Org.Respect,
+                pendingOrderUnits = game.Org.PendingOrderUnits,
+                pendingOrderDay = game.Org.PendingOrderDay,
+                lastPaydayWeek = game.Org.LastPaydayWeek,
             };
+
+            foreach (var z in game.Territory.Zones)
+                data.zones.Add(new ZoneData { name = z.Name, x = z.Rect.x, y = z.Rect.y, w = z.Rect.width, h = z.Rect.height, heat = z.Heat, demand = z.Demand });
+            foreach (var sq in game.Org.Squares)
+                data.squares.Add(new SquareData { x = sq.Cell.x, y = sq.Cell.y, zone = sq.ZoneId });
+            foreach (var b in game.Org.Businesses)
+                data.businesses.Add(new BusinessData
+                {
+                    x = b.Cell.x, y = b.Cell.y, name = b.Name, kind = (int)b.Kind,
+                    // Someone sent to impose pizzo is a standing order; keep it.
+                    status = (int)b.Status, pizzo = b.WeeklyPizzo, defiance = b.Defiance, lastWeek = b.LastCollectedWeek,
+                });
 
             foreach (var bp in game.Construction.All)
                 data.blueprints.Add(new BlueprintData { x = bp.Cell.x, y = bp.Cell.y, def = bp.Def.Id, deconstruct = bp.Deconstruct, work = bp.WorkLeft });
@@ -76,8 +94,25 @@ namespace OSistema.Core
                 if (buildings[i] > 0) map.SetBuilding(x, y, BuildingDefs.All[buildings[i] - 1]);
             }
 
-            var game = new Game(data.seed, map, new RectInt(data.baseX, data.baseY, data.baseW, data.baseH), data.ticks);
+            var zones = new List<Zone>();
+            foreach (var z in data.zones)
+                zones.Add(new Zone { Name = z.name, Rect = new RectInt(z.x, z.y, z.w, z.h), Heat = z.heat, Demand = z.demand });
+
+            var game = new Game(data.seed, map, new RectInt(data.baseX, data.baseY, data.baseW, data.baseH), data.ticks, zones);
             game.Stock.Cash = data.cash;
+            game.Stock.Product = data.product;
+            game.Org.Respect = data.respect;
+            game.Org.PendingOrderUnits = data.pendingOrderUnits;
+            game.Org.PendingOrderDay = data.pendingOrderDay;
+            game.Org.LastPaydayWeek = data.lastPaydayWeek;
+            foreach (var sq in data.squares)
+                game.Org.RestoreSquare(new DrugSquare { Cell = new Vector2Int(sq.x, sq.y), ZoneId = sq.zone }, map);
+            foreach (var b in data.businesses)
+                game.Org.Businesses.Add(new Business
+                {
+                    Cell = new Vector2Int(b.x, b.y), Name = b.name, Kind = (ShopKind)b.kind, Status = (BusinessStatus)b.status,
+                    WeeklyPizzo = b.pizzo, Defiance = b.defiance, LastCollectedWeek = b.lastWeek,
+                });
             game.Stock.Groceries = data.groceries;
             game.Stock.Meals = data.meals;
             game.Stock.Medicine = data.medicine;
@@ -109,6 +144,13 @@ namespace OSistema.Core
                 construction = p.ConstructionSkill,
                 cooking = p.CookingSkill,
                 medicine = p.MedicineSkill,
+                intimidation = p.IntimidationSkill,
+                awareness = p.AwarenessSkill,
+                role = (int)p.Role,
+                wage = p.Wage,
+                loyalty = p.Loyalty,
+                jailedUntil = p.JailedUntil,
+                lyingLowUntil = p.LyingLowUntil,
                 x = p.Cell.x,
                 y = p.Cell.y,
                 drafted = p.Drafted,
@@ -136,6 +178,13 @@ namespace OSistema.Core
                 ConstructionSkill = d.construction,
                 CookingSkill = d.cooking,
                 MedicineSkill = d.medicine,
+                IntimidationSkill = d.intimidation,
+                AwarenessSkill = d.awareness,
+                Role = (CrewRole)d.role,
+                Wage = d.wage,
+                Loyalty = d.loyalty,
+                JailedUntil = d.jailedUntil,
+                LyingLowUntil = d.lyingLowUntil,
                 Bed = d.hasBed ? new Vector2Int(d.bedX, d.bedY) : (Vector2Int?)null,
             };
             p.RestoreState(d.drafted, d.dead, d.deathCause, d.breakUntil);
@@ -160,9 +209,36 @@ namespace OSistema.Core
             public int width, height;
             public string terrain, buildings;
             public int baseX, baseY, baseW, baseH;
-            public int cash, groceries, meals, medicine;
+            public int cash, groceries, meals, medicine, product;
+            public float respect;
+            public int pendingOrderUnits, pendingOrderDay, lastPaydayWeek;
+            public List<ZoneData> zones = new List<ZoneData>();
+            public List<SquareData> squares = new List<SquareData>();
+            public List<BusinessData> businesses = new List<BusinessData>();
             public List<BlueprintData> blueprints = new List<BlueprintData>();
             public List<PawnData> pawns = new List<PawnData>();
+        }
+
+        [Serializable]
+        sealed class ZoneData
+        {
+            public string name;
+            public int x, y, w, h;
+            public float heat, demand;
+        }
+
+        [Serializable]
+        sealed class SquareData
+        {
+            public int x, y, zone;
+        }
+
+        [Serializable]
+        sealed class BusinessData
+        {
+            public int x, y, kind, status, pizzo, lastWeek;
+            public string name;
+            public float defiance;
         }
 
         [Serializable]
@@ -180,7 +256,10 @@ namespace OSistema.Core
             public int id;
             public string firstName, lastName, nickname;
             public byte shirtR, shirtG, shirtB;
-            public int construction, cooking, medicine;
+            public int construction, cooking, medicine, intimidation, awareness;
+            public int role, wage;
+            public float loyalty;
+            public long jailedUntil, lyingLowUntil;
             public int x, y;
             public bool drafted, dead;
             public string deathCause;

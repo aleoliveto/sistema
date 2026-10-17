@@ -10,7 +10,7 @@ using UnityEngine.InputSystem;
 
 namespace OSistema.Input
 {
-    public enum Tool { Select, Build, Deconstruct, Cancel }
+    public enum Tool { Select, Build, Deconstruct, Cancel, Square }
 
     /// <summary>Camera, selection, orders and build tools. Turns player input into simulation commands.</summary>
     public sealed class PlayerController : MonoBehaviour
@@ -22,6 +22,7 @@ namespace OSistema.Input
         static readonly Color SelectPreview = new Color(1f, 1f, 1f, 0.12f);
         static readonly Color BuildPreview = new Color(0.35f, 0.75f, 1f, 0.35f);
         static readonly Color DemolishPreview = new Color(1f, 0.3f, 0.25f, 0.35f);
+        static readonly Color SquarePreview = new Color(0.8f, 0.25f, 0.9f, 0.45f);
         static readonly Color CancelPreview = new Color(1f, 0.65f, 0.2f, 0.35f);
 
         public static PlayerController Instance { get; private set; }
@@ -78,7 +79,7 @@ namespace OSistema.Input
             var mouse = Mouse.current;
             if (kb == null || mouse == null || game == null) return;
 
-            Selected.RemoveAll(p => p.Dead);
+            Selected.RemoveAll(p => p.Dead || p.InJail);
 
             Vector2 mousePos = mouse.position.ReadValue();
             bool overUi = hud.IsPointerOver(mousePos);
@@ -207,7 +208,7 @@ namespace OSistema.Input
                     else
                     {
                         foreach (var pawn in game.Pawns.All)
-                            if (!pawn.Dead && rect.Contains(pawn.Cell) && !Selected.Contains(pawn)) Selected.Add(pawn);
+                            if (pawn.IsPresent && rect.Contains(pawn.Cell) && !Selected.Contains(pawn)) Selected.Add(pawn);
                     }
                     break;
 
@@ -224,7 +225,16 @@ namespace OSistema.Input
                     break;
 
                 case Tool.Cancel:
-                    foreach (var c in GridUtil.Cells(rect, false)) game.Construction.Cancel(c);
+                    foreach (var c in GridUtil.Cells(rect, false))
+                    {
+                        game.Construction.Cancel(c);
+                        if (game.Org.CloseSquareAt(c)) game.Log.Add("Closed the piazza.");
+                    }
+                    break;
+
+                case Tool.Square:
+                    if (!game.Org.TryOpenSquare(start, game, out var error)) game.Log.Add(error, MessageKind.Bad);
+                    else SetTool(Tool.Select);
                     break;
             }
         }
@@ -257,7 +267,7 @@ namespace OSistema.Input
             RectInt rect;
             if (dragging)
             {
-                bool single = CurrentTool == Tool.Build && CurrentDef.PlaceMode == PlaceMode.Single;
+                bool single = CurrentTool == Tool.Square || (CurrentTool == Tool.Build && CurrentDef.PlaceMode == PlaceMode.Single);
                 rect = single ? new RectInt(dragStartCell, Vector2Int.one) : GridUtil.RectFromCorners(dragStartCell, cell);
             }
             else if (CurrentTool != Tool.Select && !overUi)
@@ -278,6 +288,7 @@ namespace OSistema.Input
                 Tool.Build => BuildPreview,
                 Tool.Deconstruct => DemolishPreview,
                 Tool.Cancel => CancelPreview,
+                Tool.Square => SquarePreview,
                 _ => SelectPreview,
             };
         }
@@ -288,7 +299,7 @@ namespace OSistema.Input
             float bestDist = 0.6f * 0.6f;
             foreach (var pawn in game.Pawns.All)
             {
-                if (pawn.Dead) continue;
+                if (!pawn.IsPresent) continue;
                 float d = (pawn.Position - world).sqrMagnitude;
                 if (d < bestDist)
                 {

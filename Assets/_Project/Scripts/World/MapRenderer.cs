@@ -12,6 +12,8 @@ namespace OSistema.World
     {
         static readonly Color32 BuildBlueprint = new Color32(90, 190, 255, 140);
         static readonly Color32 DemolishBlueprint = new Color32(255, 70, 60, 150);
+        static readonly Color32 SquareColor = new Color32(200, 60, 220, 220);
+        static readonly Color32 LookoutColor = new Color32(200, 60, 220, 110);
         static readonly Color NightTint = new Color(0.32f, 0.36f, 0.55f);
 
         Game game;
@@ -21,6 +23,7 @@ namespace OSistema.World
         SpriteRenderer mapSprite, overlaySprite;
         bool dirty;
         int drawnBlueprintVersion = -1;
+        int drawnSquaresVersion = -1;
 
         public void Init(Game g)
         {
@@ -67,17 +70,23 @@ namespace OSistema.World
                 dirty = false;
             }
 
-            if (game.Construction.Version != drawnBlueprintVersion) RedrawBlueprints();
+            if (game.Construction.Version != drawnBlueprintVersion || game.Org.SquaresVersion != drawnSquaresVersion) RedrawOverlay();
 
             var tint = Color.Lerp(NightTint, Color.white, game.Clock.Daylight);
             WorldLight.Tint = tint;
             mapSprite.color = tint;
         }
 
-        void RedrawBlueprints()
+        void RedrawOverlay()
         {
             drawnBlueprintVersion = game.Construction.Version;
+            drawnSquaresVersion = game.Org.SquaresVersion;
             System.Array.Clear(overlayPixels, 0, overlayPixels.Length);
+            foreach (var sq in game.Org.Squares)
+            {
+                overlayPixels[map.Index(sq.Cell.x, sq.Cell.y)] = SquareColor;
+                foreach (var post in sq.LookoutPosts) overlayPixels[map.Index(post.x, post.y)] = LookoutColor;
+            }
             foreach (var bp in game.Construction.All)
                 overlayPixels[map.Index(bp.Cell.x, bp.Cell.y)] = bp.Deconstruct ? DemolishBlueprint : BuildBlueprint;
             overlayTexture.SetPixels32(overlayPixels);

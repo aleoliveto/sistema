@@ -18,10 +18,11 @@ namespace OSistema.World
 
         public MapGenerator(int seed) => rng = new System.Random(seed);
 
-        public Map Generate(int width, int height, out RectInt playerBase)
+        public Map Generate(int width, int height, out RectInt playerBase, out List<RectInt> blocks)
         {
             var map = new Map(width, height);
             var lots = new List<RectInt>();
+            blocks = new List<RectInt>();
 
             for (int rx = 0; rx < width; rx += BlockWidth)
                 Fill(map, new RectInt(rx, 0, RoadWidth, height), TerrainType.Road);
@@ -35,6 +36,7 @@ namespace OSistema.World
                 block.width = Mathf.Min(block.width, width - block.x);
                 block.height = Mathf.Min(block.height, height - block.y);
                 if (block.width < 8 || block.height < 8) continue;
+                blocks.Add(block);
 
                 foreach (var c in GridUtil.Cells(block, outlineOnly: true))
                     map.SetTerrain(c.x, c.y, TerrainType.Sidewalk);
@@ -52,6 +54,8 @@ namespace OSistema.World
             {
                 BuildingDefs.PizzeriaCounter, BuildingDefs.PizzeriaCounter,
                 BuildingDefs.SalumeriaCounter, BuildingDefs.FarmaciaCounter,
+                BuildingDefs.BarCounter, BuildingDefs.BarCounter, BuildingDefs.MacelleriaCounter,
+                BuildingDefs.TabaccheriaCounter,
             };
             Shuffle(lots);
             int shopIndex = 0;

@@ -60,6 +60,42 @@ namespace OSistema.Story
                 new Line("Nun me scassate 'o cazz'.", "Leave me the hell alone."),
                 new Line("Me ne vaco. Nun ce 'a faccio cchiù.", "I'm leaving. I can't take it anymore."),
             },
+            // New in Milestone 2. Drafts, please review.
+            ["police"] = new[]
+            {
+                new Line("Arrivano 'e guardie! Fuitevénne!", "Cops are coming! Run!"),
+                new Line("Madonna, 'a pula! Jamme, jamme!", "The cops! Go, go!"),
+            },
+            ["sale"] = new[]
+            {
+                new Line("Tiè, e vattenne.", "Here, now get lost."),
+                new Line("Venticinque. Nun t'aggio visto.", "Twenty-five. I never saw you."),
+            },
+            ["unpaid"] = new[]
+            {
+                new Line("Cca nun se magna cchiù, Don.", "We're not eating anymore here, Don."),
+                new Line("E 'a mesata? Tengo 'na famiglia.", "And my wages? I've got a family."),
+            },
+            ["pizzo_ok"] = new[]
+            {
+                new Line("Bravo. Accussì nun succede niente.", "Good man. That way nothing happens."),
+                new Line("'A sicurezza costa, signò.", "Safety costs money, sir."),
+            },
+            ["pizzo_refused"] = new[]
+            {
+                new Line("Va buono. Ce vedimmo.", "Fine. We'll be seeing you."),
+                new Line("Te ne pentirai.", "You'll regret it."),
+            },
+            ["freed"] = new[]
+            {
+                new Line("Finalmente fore.", "Finally out."),
+                new Line("Nun aggio parlato. Nun aggio ditto niente.", "I didn't talk. I didn't say a thing."),
+            },
+            ["recruited"] = new[]
+            {
+                new Line("Nun ve pentite, Don.", "You won't regret it, Don."),
+                new Line("Pronto pe' qualsiasi cosa.", "Ready for anything."),
+            },
             ["work_done"] = new[]
             {
                 new Line("Ecco fatto.", "There, done."),

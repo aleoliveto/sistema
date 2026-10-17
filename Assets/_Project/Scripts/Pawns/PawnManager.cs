@@ -35,6 +35,17 @@ namespace OSistema.Pawns
             }
         }
 
+        /// <summary>Alive and not in prison: the mouths to feed at the basso.</summary>
+        public int PresentCount
+        {
+            get
+            {
+                int n = 0;
+                foreach (var p in pawns) if (p.IsPresent) n++;
+                return n;
+            }
+        }
+
         public void Tick(Game game)
         {
             for (int i = 0; i < pawns.Count; i++) pawns[i].Tick(game);
@@ -49,7 +60,7 @@ namespace OSistema.Pawns
             long now = game.Ticks.TicksGame;
             foreach (var other in pawns)
             {
-                if (other.Dead) continue;
+                if (!other.IsPresent) continue;
                 other.Mood.AddMemory($"death_{pawn.Id}", $"{pawn.Nickname} died", -15f, now, GameClock.TicksPerDay * 3);
                 if (other.TendedBy == pawn) other.TendedBy = null;
             }
@@ -67,7 +78,7 @@ namespace OSistema.Pawns
         {
             foreach (var pawn in pawns)
             {
-                if (pawn.Cell != cell) continue;
+                if (pawn.Cell != cell || !pawn.IsPresent) continue;
                 foreach (var c in GridUtil.CellsAround(cell, 6))
                 {
                     if (!map.IsPassable(c)) continue;

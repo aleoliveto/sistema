@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using OSistema.Core;
+using OSistema.Crime;
+using OSistema.Npcs;
 using OSistema.Input;
 using OSistema.Pawns;
 using OSistema.World;
@@ -13,12 +15,12 @@ namespace OSistema.UI
     /// Prototype HUD drawn with IMGUI. Throwaway on purpose: it gets replaced by UI Toolkit
     /// once the screens are settled.
     /// </summary>
-    public sealed class Hud : MonoBehaviour
+    public sealed partial class Hud : MonoBehaviour
     {
         const float TopBarHeight = 34f;
         const float BottomBarHeight = 46f;
         const float PanelWidth = 340f;
-        const float PanelHeight = 300f;
+        const float PanelHeight = 350f;
         const int MessageTicksVisible = 6000;
 
         static readonly string[] SpeedLabels = { "II", ">", ">>", ">>>" };
@@ -31,7 +33,7 @@ namespace OSistema.UI
         Camera cam;
         bool showHelp = true;
 
-        GUIStyle nameStyle, barkStyle, subtitleStyle, titleStyle, textStyle, smallStyle, shopStyle;
+        GUIStyle nameStyle, barkStyle, subtitleStyle, titleStyle, textStyle, smallStyle, shopStyle, smallButtonStyle, headerStyle;
 
         public void Init(PlayerController pc, Camera c)
         {
@@ -49,20 +51,23 @@ namespace OSistema.UI
         static Rect TopBar => new Rect(0, 0, Width, TopBarHeight);
         static Rect BottomBar => new Rect(0, Height - BottomBarHeight, Width, BottomBarHeight);
         static Rect PawnPanel => new Rect(8, Height - BottomBarHeight - PanelHeight - 8, PanelWidth, PanelHeight);
-        static Rect HelpPanel => new Rect(Width - 300, TopBarHeight + 8, 292, 290);
+        static Rect HelpPanel => new Rect(Width - 300, TopBarHeight + 8, 292, 310);
 
         public bool IsPointerOver(Vector2 screenPos)
         {
             var p = new Vector2(screenPos.x / Scale, (Screen.height - screenPos.y) / Scale);
             if (TopBar.Contains(p) || BottomBar.Contains(p)) return true;
             if (controller != null && controller.Selected.Count > 0 && PawnPanel.Contains(p)) return true;
+            if (showBusiness && BusinessPanel.Contains(p)) return true;
             return showHelp && HelpPanel.Contains(p);
         }
 
         void Update()
         {
             var kb = Keyboard.current;
-            if (kb != null && kb.hKey.wasPressedThisFrame) showHelp = !showHelp;
+            if (kb == null) return;
+            if (kb.hKey.wasPressedThisFrame) showHelp = !showHelp;
+            if (kb.bKey.wasPressedThisFrame) showBusiness = !showBusiness;
         }
 
         void OnGUI()
@@ -72,12 +77,15 @@ namespace OSistema.UI
             GUI.matrix = Matrix4x4.Scale(new Vector3(Scale, Scale, 1f));
 
             DrawShopLabels();
+            DrawSquareLabels();
+            DrawNpcLabels();
             DrawPawnLabels();
             DrawTopBar();
             DrawMessages();
             DrawBottomBar();
             DrawPawnPanel();
-            if (showHelp) DrawHelp();
+            if (showBusiness) DrawBusinessPanel();
+            else if (showHelp) DrawHelp();
         }
 
         // ---------- Top bar ----------
@@ -90,8 +98,8 @@ namespace OSistema.UI
             GUI.Label(new Rect(10, 6, 420, 24), $"Day {clock.Day}  ·  {clock.Weekday}  {clock.TimeString}  ·  {clock.Phase}{payday}", titleStyle);
 
             var s = game.Stock;
-            GUI.Label(new Rect(440, 7, 520, 24),
-                $"<b>€{s.Cash}</b>    Meals {s.Meals}    Groceries {s.Groceries}    Medicine {s.Medicine}", textStyle);
+            GUI.Label(new Rect(420, 7, 640, 24),
+                $"<b>€{s.Cash}</b>    Product {s.Product}    Meals {s.Meals}    Groceries {s.Groceries}    Medicine {s.Medicine}    Respect {game.Org.Respect:0}", textStyle);
 
             float x = Width - 4 * 46 - 8;
             for (int i = 0; i < SpeedLabels.Length; i++)
@@ -136,6 +144,11 @@ namespace OSistema.UI
             x += 12f;
             ToolButton(ref x, y, w, h, "Demolish", Tool.Deconstruct, null);
             ToolButton(ref x, y, w, h, "Cancel", Tool.Cancel, null);
+            x += 12f;
+            ToolButton(ref x, y, w, h, "Piazza", Tool.Square, null);
+            GUI.color = showBusiness ? Gold : Color.white;
+            if (GUI.Button(new Rect(x, y, 110, h), "Business (B)")) showBusiness = !showBusiness;
+            GUI.color = Color.white;
         }
 
         void ToolButton(ref float x, float y, float w, float h, string label, Tool tool, BuildingDef def)
@@ -199,8 +212,12 @@ namespace OSistema.UI
                 y += 17;
             }
 
-            GUI.Label(new Rect(x, r.yMax - 58, w, 18),
-                $"Construction {p.ConstructionSkill}  ·  Cooking {p.CookingSkill}  ·  Medicine {p.MedicineSkill}", smallStyle);
+            GUI.Label(new Rect(x, r.yMax - 92, w, 18),
+                $"Loyalty {p.Loyalty:0}  ·  Wage €{p.Wage}/week", smallStyle);
+            GUI.Label(new Rect(x, r.yMax - 74, w, 18),
+                $"Build {p.ConstructionSkill} · Cook {p.CookingSkill} · Medic {p.MedicineSkill} · Intimidate {p.IntimidationSkill} · Aware {p.AwarenessSkill}", smallStyle);
+            if (GUI.Button(new Rect(x, r.yMax - 54, 200, 20), $"Role: {RoleLabel(p.Role)}  (click to change)", smallButtonStyle))
+                CycleRole(p);
             if (p.InMentalBreak(now))
                 GUI.Label(new Rect(x + 170, r.yMax - 34, w - 170, 28), "<color=#ff7a70>Won't take orders</color>", textStyle);
             DrawDraftButton(r);
@@ -250,12 +267,13 @@ namespace OSistema.UI
             float unit = GuiUnitsPerWorldUnit;
             foreach (var p in game.Pawns.All)
             {
-                if (!WorldToGui(p.Position, out var gui)) continue;
+                if (p.InJail || !WorldToGui(p.Position, out var gui)) continue;
 
                 string status = p.Dead ? " (dead)"
                     : p.Health.Downed ? " (downed)"
                     : p.InMentalBreak(now) ? " (sulking)"
                     : p.Sleep != SleepState.Awake ? " Zzz"
+                    : p.CurrentJob is OSistema.AI.FleeJob ? " (running!)"
                     : "";
                 nameStyle.normal.textColor = p.Dead ? Color.gray : p.Drafted ? BadColor : Color.white;
                 ShadowLabel(new Rect(gui.x - 90, gui.y + unit * 0.45f, 180, 18), p.Nickname + status, nameStyle);
@@ -272,15 +290,14 @@ namespace OSistema.UI
         {
             if (cam.orthographicSize > 30f) return; // too zoomed out to read
             float unit = GuiUnitsPerWorldUnit;
-            foreach (var def in BuildingDefs.All)
+            foreach (var b in game.Org.Businesses)
             {
-                if (def.Shop == ShopKind.None) continue;
-                foreach (var cell in game.Map.PositionsOf(def))
-                {
-                    if (!WorldToGui(new Vector2(cell.x + 0.5f, cell.y + 0.5f), out var gui)) continue;
-                    ShadowLabel(new Rect(gui.x - 60, gui.y - unit * 0.5f - 18, 120, 18), def.Label, shopStyle);
-                }
+                if (!WorldToGui(new Vector2(b.Cell.x + 0.5f, b.Cell.y + 0.5f), out var gui)) continue;
+                shopStyle.normal.textColor = b.Status == BusinessStatus.Paying ? GoodColor : b.Status == BusinessStatus.Refusing ? BadColor : Gold;
+                string tag = b.Status == BusinessStatus.Paying ? " (pizzo)" : b.Status == BusinessStatus.Refusing ? " (refused)" : "";
+                ShadowLabel(new Rect(gui.x - 90, gui.y - unit * 0.5f - 18, 180, 18), b.Name + tag, shopStyle);
             }
+            shopStyle.normal.textColor = Gold;
         }
 
         float GuiUnitsPerWorldUnit => Screen.height / (2f * cam.orthographicSize) / Scale;
@@ -308,6 +325,7 @@ namespace OSistema.UI
                 "Space   pause  ·  1 2 3   speed\n" +
                 "Bottom bar   build, demolish\n" +
                 "Right click / Esc   cancel tool\n" +
+                "B   business panel  ·  Piazza tool: open a square\n" +
                 "F5 save  ·  F9 load\n" +
                 "<color=#aaaaaa>Debug: F6 shoot selected · F7 +€200</color>\n\n" +
                 "The crew eats, sleeps, cooks, shops and patches each other up on their own.",
@@ -338,6 +356,9 @@ namespace OSistema.UI
             titleStyle = new GUIStyle(GUI.skin.label) { fontSize = 15, fontStyle = FontStyle.Bold, richText = true };
             textStyle = new GUIStyle(GUI.skin.label) { fontSize = 13, richText = true, wordWrap = true };
             smallStyle = new GUIStyle(GUI.skin.label) { fontSize = 11, richText = true };
+            smallButtonStyle = new GUIStyle(GUI.skin.button) { fontSize = 11 };
+            headerStyle = new GUIStyle(GUI.skin.label) { fontSize = 14, fontStyle = FontStyle.Bold, richText = true };
+            headerStyle.normal.textColor = Gold;
         }
     }
 }

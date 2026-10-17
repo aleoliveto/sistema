@@ -1,4 +1,5 @@
 using OSistema.Core;
+using OSistema.Crime;
 using OSistema.Pawns;
 using OSistema.World;
 using UnityEngine;
@@ -23,6 +24,7 @@ namespace OSistema.AI
             return TryTend(pawn, game)
                 ?? TryEat(pawn, game)
                 ?? TrySleep(pawn, game)
+                ?? TryDuty(pawn, game)
                 ?? TryCook(pawn, game)
                 ?? TryShop(pawn, game)
                 ?? TryBuild(pawn, game);
@@ -32,7 +34,7 @@ namespace OSistema.AI
         {
             foreach (var patient in game.Pawns.All)
             {
-                if (patient == pawn || patient.Dead || patient.TendedBy != null || !patient.Health.NeedsTending) continue;
+                if (patient == pawn || !patient.IsPresent || patient.TendedBy != null || !patient.Health.NeedsTending) continue;
                 return new TendJob(pawn, patient, game);
             }
 
@@ -90,11 +92,68 @@ namespace OSistema.AI
             return best;
         }
 
+        /// <summary>What the pawn's clan role asks of them right now.</summary>
+        static Job TryDuty(Pawn pawn, Game game)
+        {
+            if (pawn.Role == CrewRole.General || pawn.IsLyingLow(game.Ticks.TicksGame)) return null;
+            var org = game.Org;
+
+            if (pawn.Role == CrewRole.Collector)
+            {
+                int hour = game.Clock.Hour;
+                if (hour < 9 || hour >= 20) return null; // shops are closed
+                int week = Organization.WeekOf(game.Clock);
+                Business best = null;
+                int bestDist = int.MaxValue;
+                foreach (var b in org.Businesses)
+                {
+                    if (!org.IsDue(b, week)) continue;
+                    int d = GridUtil.Manhattan(pawn.Cell, b.Cell);
+                    if (d < bestDist)
+                    {
+                        bestDist = d;
+                        best = b;
+                    }
+                }
+                return best != null ? new CollectPizzoJob(pawn, best) : null;
+            }
+
+            if (org.Squares.Count == 0 || !DrugSquare.IsOpenAt(game.Clock.Hour)) return null;
+
+            // Go where you're needed most: the square with the fewest people in this role.
+            DrugSquare square = null;
+            int fewest = int.MaxValue;
+            foreach (var sq in org.Squares)
+            {
+                if (game.Police.IsRaiding(sq)) continue;
+                int n = CountPosted(sq, pawn.Role, game);
+                if (n < fewest)
+                {
+                    fewest = n;
+                    square = sq;
+                }
+            }
+            if (square == null) return null;
+
+            if (pawn.Role == CrewRole.Pusher) return new PostJob(pawn, square, CrewRole.Pusher, square.Cell);
+            if (square.LookoutPosts.Count == 0) return null;
+            var post = square.LookoutPosts[fewest % square.LookoutPosts.Count];
+            return new PostJob(pawn, square, CrewRole.Lookout, post);
+        }
+
+        static int CountPosted(DrugSquare square, CrewRole role, Game game)
+        {
+            int n = 0;
+            foreach (var p in game.Pawns.All)
+                if (p.CurrentJob is PostJob post && post.Square == square && post.Role == role) n++;
+            return n;
+        }
+
         static Job TryCook(Pawn pawn, Game game)
         {
             var stock = game.Stock;
             if (stock.Cook != null || stock.Groceries <= 0) return null;
-            if (stock.Meals >= 2 + 2 * game.Pawns.LivingCount) return null;
+            if (stock.Meals >= 2 + 2 * game.Pawns.PresentCount) return null;
             var map = game.Map;
             if (map.PositionsOf(BuildingDefs.Pantry).Count == 0) return null;
             if (!map.TryFindNearest(BuildingDefs.Stove, pawn.Cell, out var stove)) return null;
@@ -113,7 +172,7 @@ namespace OSistema.AI
                 return new ShopJob(pawn, farmacia, ShopKind.Farmacia, 2, pantry, game);
 
             int foodInMeals = stock.Groceries * 2 + stock.Meals;
-            if (foodInMeals < 3 * game.Pawns.LivingCount && stock.Cash >= Prices.Groceries &&
+            if (foodInMeals < 3 * game.Pawns.PresentCount && stock.Cash >= Prices.Groceries &&
                 map.TryFindNearest(BuildingDefs.SalumeriaCounter, pawn.Cell, out var salumeria))
                 return new ShopJob(pawn, salumeria, ShopKind.Salumeria, 6, pantry, game);
 

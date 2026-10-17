@@ -1,5 +1,6 @@
 using System;
 using OSistema.Input;
+using OSistema.Npcs;
 using OSistema.Pawns;
 using OSistema.UI;
 using OSistema.Views;
@@ -70,6 +71,8 @@ namespace OSistema.Core
 
             foreach (var pawn in game.Pawns.All) CreatePawnView(pawn);
             game.Pawns.Added += CreatePawnView;
+            foreach (var npc in game.Npcs.All) CreateNpcView(npc);
+            game.Npcs.Added += CreateNpcView;
 
             controller.Bind(game);
             hud.Bind(game);
@@ -80,7 +83,11 @@ namespace OSistema.Core
 
         void StopGame()
         {
-            if (Game != null) Game.Pawns.Added -= CreatePawnView;
+            if (Game != null)
+            {
+                Game.Pawns.Added -= CreatePawnView;
+                Game.Npcs.Added -= CreateNpcView;
+            }
             if (worldRoot != null) Destroy(worldRoot.gameObject);
             worldRoot = null;
             Game = null;
@@ -124,6 +131,13 @@ namespace OSistema.Core
             var go = new GameObject($"Pawn {pawn.Nickname}");
             go.transform.SetParent(worldRoot, false);
             go.AddComponent<PawnView>().Init(pawn);
+        }
+
+        void CreateNpcView(Npc npc)
+        {
+            var go = new GameObject($"{npc.Kind} {npc.Id}");
+            go.transform.SetParent(worldRoot, false);
+            go.AddComponent<NpcView>().Init(npc);
         }
 
         static Camera SetupCamera()

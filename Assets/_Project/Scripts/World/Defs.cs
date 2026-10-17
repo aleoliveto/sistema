@@ -6,7 +6,7 @@ namespace OSistema.World
 
     public enum PlaceMode { Single, Outline, Fill }
 
-    public enum ShopKind { None, Pizzeria, Salumeria, Farmacia }
+    public enum ShopKind { None, Pizzeria, Salumeria, Farmacia, Bar, Macelleria, Tabaccheria }
 
     public static class TerrainDefs
     {
@@ -112,12 +112,32 @@ namespace OSistema.World
             Color = new Color32(60, 190, 120, 255), Shop = ShopKind.Farmacia,
         };
 
+        // Businesses that only matter for pizzo (for now).
+        public static readonly BuildingDef BarCounter = new BuildingDef
+        {
+            Id = "bar_counter", Label = "Bar", Passable = false, WorkToBuild = 600,
+            Color = new Color32(170, 120, 200, 255), Shop = ShopKind.Bar,
+        };
+
+        public static readonly BuildingDef MacelleriaCounter = new BuildingDef
+        {
+            Id = "macelleria_counter", Label = "Macelleria", Passable = false, WorkToBuild = 600,
+            Color = new Color32(190, 60, 80, 255), Shop = ShopKind.Macelleria,
+        };
+
+        public static readonly BuildingDef TabaccheriaCounter = new BuildingDef
+        {
+            Id = "tabaccheria_counter", Label = "Tabaccheria", Passable = false, WorkToBuild = 600,
+            Color = new Color32(80, 140, 200, 255), Shop = ShopKind.Tabaccheria,
+        };
+
         public static readonly BuildingDef[] Buildable = { Wall, Door, Bed, Table, Stove, Pantry };
 
         /// <summary>Every def, in a fixed order used by save files. Only ever append to this list.</summary>
         public static readonly BuildingDef[] All =
         {
             Wall, Door, Bed, Table, Stove, Pantry, PizzeriaCounter, SalumeriaCounter, FarmaciaCounter,
+            BarCounter, MacelleriaCounter, TabaccheriaCounter,
         };
 
         public static BuildingDef ById(string id)
@@ -134,5 +154,9 @@ namespace OSistema.World
         public const int Pizza = 6;
         public const int Groceries = 5;  // one unit cooks two meals
         public const int Medicine = 15;
+        public const int ProductWholesale = 10; // per unit, from the supplier
+        public const int ProductStreet = 25;    // per unit, at the piazza
+        public const int RecruitBonus = 100;
+        public const int JailedFamilySupport = 100; // weekly, per crew member inside
     }
 }

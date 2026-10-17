@@ -37,18 +37,20 @@ namespace OSistema.AI
 
     public enum WalkStatus { Walking, Arrived, Failed }
 
-    /// <summary>Path-following helper shared by jobs: walks onto, or next to, a target cell, re-pathing when blocked.</summary>
+    /// <summary>Path-following helper shared by jobs and NPCs: walks onto, or next to, a target cell, re-pathing when blocked.</summary>
     public sealed class Walker
     {
         Vector2Int target;
         readonly bool adjacent;
+        readonly float speedMultiplier;
         bool started;
         int repaths;
 
-        public Walker(Vector2Int target, bool adjacent)
+        public Walker(Vector2Int target, bool adjacent, float speedMultiplier = 1f)
         {
             this.target = target;
             this.adjacent = adjacent;
+            this.speedMultiplier = speedMultiplier;
         }
 
         public Vector2Int Target => target;
@@ -59,17 +61,20 @@ namespace OSistema.AI
             started = false;
         }
 
-        public WalkStatus Tick(Pawn pawn, Game game)
+        public WalkStatus Tick(Pawn pawn, Game game) => Tick(pawn.Mover, pawn.SpeedFactor, game);
+
+        public WalkStatus Tick(Mover mover, float speedFactor, Game game)
         {
             if (!started)
             {
-                var path = game.Pathfinder.FindPath(pawn.Cell, target, adjacent);
+                var path = game.Pathfinder.FindPath(mover.Cell, target, adjacent);
                 if (path == null) return WalkStatus.Failed;
-                pawn.SetPath(path);
+                mover.SetPath(path);
                 started = true;
             }
 
-            var result = pawn.TickMovement(game.Map);
+            mover.SpeedFactor = speedFactor * speedMultiplier;
+            var result = mover.Tick(game.Map);
             if (result == MoveResult.Blocked)
             {
                 if (++repaths > 3) return WalkStatus.Failed;
