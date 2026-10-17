@@ -532,3 +532,32 @@
     padding: 5px 7px;
     margin-bottom: 4px;
 }
+
+/* ---------- Typography (Barlow, SIL OFL: Resources/Fonts/OFL.txt) ---------- */
+
+.root, .root .unity-text-element {
+    -unity-font: resource("Fonts/Barlow-Medium");
+    -unity-font-definition: resource("Fonts/Barlow-Medium");
+}
+
+.root .bold, .root .chip__value, .root .crew-card__name, .root .btn {
+    -unity-font-definition: resource("Fonts/Barlow-Bold");
+    -unity-font-style: normal;
+}
+
+/* Display face: condensed, for headings, the clock, badges and tabs */
+.root .title, .root .section, .root .clock__time, .root .badge, .root .tab__label,
+.root .card__title, .root .menu__title, .root .tiny, .root .clock__day {
+    -unity-font-definition: resource("Fonts/BarlowCondensed-SemiBold");
+    -unity-font-style: normal;
+}
+
+.root .title { font-size: 19px; letter-spacing: 0.5px; }
+.root .section { letter-spacing: 2px; }
+.root .clock__time { font-size: 21px; }
+.root .card__title { font-size: 26px; }
+.root .menu__title {
+    -unity-font-definition: resource("Fonts/BarlowCondensed-Bold");
+    font-size: 44px;
+    letter-spacing: 6px;
+}
