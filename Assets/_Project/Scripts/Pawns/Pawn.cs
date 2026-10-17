@@ -186,6 +186,32 @@ namespace OSistema.Pawns
         public float ScooterSpeed;       // forward speed along the heading, cells per second
         public bool Pillion;             // riding on the back of the boss's scooter
 
+        /// <summary>The working day, hour by hour: free time, work (their job), or sleep.</summary>
+        public enum Shift : byte { Free, Work, Sleep }
+        public readonly Shift[] Schedule = DefaultSchedule();
+
+        public static Shift[] DefaultSchedule()
+        {
+            var s = new Shift[24];
+            for (int h = 0; h < 24; h++) s[h] = h < 7 ? Shift.Sleep : h < 9 ? Shift.Free : h < 21 ? Shift.Work : Shift.Free;
+            return s;
+        }
+
+        public string ScheduleString
+        {
+            get
+            {
+                var c = new char[24];
+                for (int h = 0; h < 24; h++) c[h] = Schedule[h] == Shift.Work ? 'W' : Schedule[h] == Shift.Sleep ? 'S' : 'F';
+                return new string(c);
+            }
+            set
+            {
+                if (string.IsNullOrEmpty(value) || value.Length != 24) return;
+                for (int h = 0; h < 24; h++) Schedule[h] = value[h] == 'W' ? Shift.Work : value[h] == 'S' ? Shift.Sleep : Shift.Free;
+            }
+        }
+
         public Vector2 Forward => new Vector2(-Mathf.Sin(Heading * Mathf.Deg2Rad), Mathf.Cos(Heading * Mathf.Deg2Rad));
         public const int ManualHoldTicks = 1500;
         /// <summary>Off by default: Gennaro only moves when you move him. Z lets him get on with things alone.</summary>

@@ -303,6 +303,7 @@ namespace OSistema.Core
                 rest = p.Needs.Rest,
                 bloodLoss = p.Health.BloodLoss,
                 hasBed = p.Bed.HasValue,
+                schedule = p.ScheduleString,
                 bedX = p.Bed?.x ?? 0,
                 bedY = p.Bed?.y ?? 0,
             };
@@ -337,6 +338,7 @@ namespace OSistema.Core
                 Mission = (RivalMission)d.mission,
                 Bed = d.hasBed ? new Vector2Int(d.bedX, d.bedY) : (Vector2Int?)null,
             };
+            p.ScheduleString = d.schedule;
             p.RestoreState(d.drafted, d.dead, d.deathCause, d.breakUntil);
             if (d.xp != null) System.Array.Copy(d.xp, p.SkillXp, Mathf.Min(d.xp.Length, p.SkillXp.Length));
             p.Needs.Food = d.food;
@@ -449,6 +451,7 @@ namespace OSistema.Core
             public long breakUntil;
             public float food, rest, bloodLoss;
             public bool hasBed;
+            public string schedule;
             public int bedX, bedY;
             public List<InjuryData> injuries = new List<InjuryData>();
             public List<ThoughtData> memories = new List<ThoughtData>();

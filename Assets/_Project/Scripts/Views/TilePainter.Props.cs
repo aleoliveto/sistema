@@ -119,7 +119,7 @@ namespace OSistema.Views
             b == BuildingDefs.Fountain || b == BuildingDefs.Bed || b == BuildingDefs.Table || b == BuildingDefs.Sofa ||
             b == BuildingDefs.Armchair || b == BuildingDefs.Stove || b == BuildingDefs.Fridge || b == BuildingDefs.KitchenCounter ||
             b == BuildingDefs.Wardrobe || b == BuildingDefs.Plant || b == BuildingDefs.Rug || b == BuildingDefs.Television ||
-            b == BuildingDefs.Pantry || b == BuildingDefs.Safe;
+            b == BuildingDefs.Pantry || b == BuildingDefs.Safe || b == BuildingDefs.BaggingTable || b == BuildingDefs.RollingTable;
 
         /// <summary>Paints a prop over the ground already in buf, turned as placed.</summary>
         static void PaintPropHi(Map map, BuildingDef b, int x, int y, byte style, Color32[] buf, int stride, int ox, int oy)
@@ -495,6 +495,39 @@ namespace OSistema.Views
                 var jars = new[] { new Color32(200, 60, 40, 255), new Color32(230, 200, 80, 255), new Color32(90, 140, 60, 255), new Color32(220, 220, 210, 255) };
                 for (int k = 0; k < 12; k++)
                     p.Disc(4.5f + (k % 6) * 4.5f, 12f + (k / 6) * 9f, 1.9f, jars[(k + style) % jars.Length], 0.6f, salt + k);
+                return;
+            }
+
+            if (b == BuildingDefs.BaggingTable)
+            {
+                // A steel-topped table: the scale, a white heap, a scatter of little bags.
+                p.Shadow(2, 3, 29, 28, 3, 0.65f);
+                p.Body(2, 3, 29, 28, 1, new Color32(176, 180, 184, 255), 0.2f, salt, 0.02f);
+                p.Disc(10f, 18f, 6f, new Color32(206, 208, 210, 255), 0.4f);              // the scale's pan
+                p.Box(5, 7, 15, 10, new Color32(40, 44, 48, 255));                          // its body and display
+                p.Box(7, 8, 13, 9, new Color32(110, 200, 120, 255));
+                p.Disc(21f, 20f, 3.6f, new Color32(244, 244, 242, 255), 0.5f);             // the heap
+                for (int k = 0; k < 5; k++)
+                    p.Box(17 + (k % 3) * 4, 6 + (k / 3) * 4, 19 + (k % 3) * 4, 8 + (k / 3) * 4, new Color32(226, 232, 238, 255));
+                return;
+            }
+
+            if (b == BuildingDefs.RollingTable)
+            {
+                // A wooden table: loose tobacco, the rolling machine, a stack of red and white packs.
+                p.Shadow(2, 3, 29, 28, 3, 0.65f);
+                for (int yy = 3; yy <= 28; yy++)
+                for (int xx = 2; xx <= 29; xx++)
+                    p.Px(xx, yy, Shade(new Color32(132, 94, 60, 255), 0.92f + 0.08f * Mathf.Sin(yy * 1.6f + xx * 0.1f)));
+                p.Disc(9f, 20f, 5f, new Color32(150, 104, 58, 255), 0.5f, salt);          // the tobacco
+                for (int k = 0; k < 14; k++) p.Px(5 + (k * 5) % 9, 16 + (k * 3) % 8, new Color32(110, 74, 40, 255));
+                p.Body(15, 15, 27, 22, 1, new Color32(46, 46, 50, 255), 0.3f);           // the machine
+                p.Box(26, 18, 29, 19, new Color32(160, 160, 164, 255));                  // its handle
+                for (int k = 0; k < 3; k++)
+                {
+                    p.Box(5 + k * 7, 5, 10 + k * 7, 11, new Color32(236, 232, 222, 255));
+                    p.Box(5 + k * 7, 9, 10 + k * 7, 11, new Color32(178, 30, 32, 255));
+                }
                 return;
             }
 

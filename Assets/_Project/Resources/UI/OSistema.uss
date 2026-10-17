@@ -717,3 +717,17 @@
 .dot--home { width: 9px; height: 9px; margin-left: -4px; margin-top: -4px; background-color: #8FD18A; border-radius: 2px; border-width: 1px; border-color: #1E3A1C; }
 .pin-marker { color: #6FE0E8; font-size: 18px; }
 .map-label { position: absolute; font-size: 10px; color: #F3E9D2; text-shadow: 1px 1px 1px rgba(0,0,0,1); white-space: nowrap; }
+
+/* ---------- Shifts ---------- */
+.shift-hour { width: 18px; -unity-text-align: middle-left; }
+.shift-cell { width: 16px; height: 16px; margin: 1px; border-radius: 2px; }
+.shift-cell--now { border-width: 1px; border-color: #FFFFFF; }
+.shift--work { background-color: #B8913E; }
+.shift--sleep { background-color: #3E5C8F; }
+.shift--free { background-color: #4C4740; }
+.btn.shift--work, .btn.shift--sleep, .btn.shift--free { color: #F3E9D2; }
+
+/* ---------- Build menu ---------- */
+.tool { width: 82px; height: 86px; }
+.tool__picture { width: 40px; height: 40px; border-width: 0; border-radius: 3px; background-color: rgba(0,0,0,0.35); -unity-background-scale-mode: scale-to-fit; }
+.tool__price { font-size: 10px; color: #E8C26A; }

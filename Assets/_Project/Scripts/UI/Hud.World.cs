@@ -120,6 +120,18 @@ namespace OSistema.UI
                 tag.style.top = pos.y + unit * 0.42f;
             }
 
+            // Someone coming to have a word with you.
+            var v = game.Events.Visitor;
+            if (v != null && FogOfWar.CanSee(v.Mover.Position) && OnScreen(v.Mover.Position))
+            {
+                var tag = NextTag();
+                tag.AddToClassList("tag--work");
+                tag.text = $"{game.Events.VisitorTitle} · wants a word";
+                var pos = WorldToPanel(v.Mover.Position);
+                tag.style.left = pos.x;
+                tag.style.top = pos.y + unit * 0.42f;
+            }
+
             foreach (var npc in game.Npcs.All)
             {
                 if (npc.Kind != NpcKind.Police || !FogOfWar.CanSee(npc.Mover.Position) || !OnScreen(npc.Mover.Position)) continue;

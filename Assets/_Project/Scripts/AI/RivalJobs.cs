@@ -153,14 +153,15 @@ namespace OSistema.AI
         const float FiringDistance = 7f;
         const int ShotInterval = 25;
 
-        readonly Walker walker;
-        int shotsLeft = 5;
+        Walker walker;
+        int shotsLeft = 6;
         int cooldown;
         bool firing;
 
         public StesaJob(Pawn pawn) : base(pawn)
         {
-            walker = new Walker(pawn.MissionSquare.Cell, adjacent: true, speedMultiplier: 1.3f); // on scooters
+            walker = new Walker(pawn.MissionSquare.Cell, adjacent: true, speedMultiplier: 1.1f);
+            pawn.OnScooter = true;   // a drive-by: they come on scooters
         }
 
         public override string Label => "Stesa";
@@ -168,28 +169,36 @@ namespace OSistema.AI
         public override bool Tick(Game game)
         {
             var square = Pawn.MissionSquare;
+            Pawn.OnScooter = true;
+            if (!firing && (Pawn.Position - Mover.CellCenter(square.Cell)).magnitude <= FiringDistance)
+            {
+                // Through the piazza without stopping, emptying the magazine into the air.
+                firing = true;
+                if (!game.Rival.StesaInProgress)
+                {
+                    game.Rival.StesaInProgress = true;
+                    game.Rival.OnStesa(square, game);
+                }
+                var exit = game.Territory.Entrances[0];
+                foreach (var e in game.Territory.Entrances)
+                    if ((e - Pawn.Cell).sqrMagnitude > (exit - Pawn.Cell).sqrMagnitude && (e - Pawn.Cell).sqrMagnitude < 90 * 90) exit = e;
+                walker = new Walker(exit, adjacent: false, speedMultiplier: 1.1f);
+            }
+            var status = walker.Tick(Pawn, game);
+            Pawn.OnScooter = true;
             if (!firing)
             {
-                if ((Pawn.Position - Mover.CellCenter(square.Cell)).magnitude <= FiringDistance)
-                {
-                    firing = true;
-                    Pawn.StopMoving();
-                    if (!game.Rival.StesaInProgress)
-                    {
-                        game.Rival.StesaInProgress = true;
-                        game.Rival.OnStesa(square, game);
-                    }
-                    return false;
-                }
-                var status = walker.Tick(Pawn, game);
                 if (status != WalkStatus.Walking) firing = true;
                 return false;
             }
 
-            if (--cooldown > 0) return false;
-            cooldown = ShotInterval + game.Rng.Next(0, 15);
-            game.Combat.FireIntoAir(Pawn, game);
-            if (--shotsLeft > 0) return false;
+            if (--cooldown <= 0 && shotsLeft > 0)
+            {
+                cooldown = ShotInterval + game.Rng.Next(0, 15);
+                game.Combat.FireIntoAir(Pawn, game);
+                shotsLeft--;
+            }
+            if (shotsLeft > 0 && status == WalkStatus.Walking) return false;
 
             Pawn.Mission = RivalMission.Leave;
             Pawn.AggressiveUntil = game.Ticks.TicksGame + 600;
@@ -251,6 +260,9 @@ namespace OSistema.AI
                 return false; // hold and shoot
             }
 
+            // They come on a scooter and get off to do it.
+            Pawn.OnScooter = dist > 12f;
+            if (!Pawn.OnScooter) Pawn.Riding = false;
             if (walker == null || (walker.Target - target.Cell).sqrMagnitude > 4)
                 walker = new Walker(target.Cell, adjacent: true, speedMultiplier: 1.15f);
             if (walker.Tick(Pawn, game) == WalkStatus.Failed) walker = null;
@@ -269,12 +281,14 @@ namespace OSistema.AI
             foreach (var e in game.Territory.Entrances)
                 if ((e - pawn.Cell).sqrMagnitude < (best - pawn.Cell).sqrMagnitude) best = e;
             walker = new Walker(best, adjacent: false, speedMultiplier: 1.2f);
+            pawn.OnScooter = true;
         }
 
         public override string Label => "Leaving";
 
         public override bool Tick(Game game)
         {
+            Pawn.OnScooter = true;   // back on the scooter and away
             if (walker.Tick(Pawn, game) == WalkStatus.Walking) return false;
             Pawn.Departed = true;
             return true;

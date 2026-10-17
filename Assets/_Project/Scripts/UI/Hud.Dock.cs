@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using OSistema.Input;
+using OSistema.Views;
 using OSistema.World;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -34,9 +35,7 @@ namespace OSistema.UI
         {
             toolsByTab[DockTab.Build] = new List<ToolEntry>
             {
-                Def(BuildingDefs.Wall, "Drag to draw the outline of a room."),
-                Def(BuildingDefs.Door, "A door. Crew walk through; sight doesn't."),
-                Def(BuildingDefs.Bunker, "A hidden room for the boss's latitanza. Searches rarely find it."),
+                new ToolEntry { Label = "Open piazza", Tool = Tool.Square, Swatch = new Color(0.8f, 0.25f, 0.9f), Tip = "Click a pavement in your turf to open a drug square. Give crew the pusher and lookout jobs, and keep doses in stock." },
             };
             toolsByTab[DockTab.Furnish] = new List<ToolEntry>
             {
@@ -58,9 +57,8 @@ namespace OSistema.UI
             };
             toolsByTab[DockTab.Crime] = new List<ToolEntry>
             {
-                Def(BuildingDefs.BaggingTable, "Where 'a roba is cut and bagged into half-gram doses. Press E at it, or give someone the Bagger job."),
-                Def(BuildingDefs.RollingTable, "Where ROSSE are rolled and boxed. Press E at it, or give someone the Roller job."),
-                new ToolEntry { Label = "Piazza", Tool = Tool.Square, Swatch = new Color(0.8f, 0.25f, 0.9f), Tip = "Open a drug square on a sidewalk. Then give crew the pusher and lookout jobs, and keep doses in stock." },
+                Def(BuildingDefs.BaggingTable, "Where 'a roba is cut and bagged into half-gram doses. E to work at it, or give someone the Bagger job."),
+                Def(BuildingDefs.RollingTable, "Where ROSSE are rolled and boxed. E to work at it, or give someone the Roller job."),
             };
             toolsByTab[DockTab.Orders] = new List<ToolEntry>
             {
@@ -73,9 +71,12 @@ namespace OSistema.UI
             buildHint = Ui.Text("", dock, "build-hint");
             dockTools = Ui.Box("panel", "dock__tools").Into(dock);
             buildTabs = Ui.Box("panel", "dock__tabs").Into(dock);
-            AddTab(buildTabs, DockTab.Furnish, "FURNISH", IconKind.Furnish);
-            AddTab(buildTabs, DockTab.Crime, "WORK & CRIME", IconKind.Crime);
-            AddTab(buildTabs, DockTab.Orders, "REMOVE", IconKind.Orders);
+            buildTitle = Ui.Text("", buildTabs, "small", "muted");
+            buildTitle.style.marginRight = 10;
+            AddTab(buildTabs, DockTab.Furnish, "HOME", IconKind.Furnish);
+            AddTab(buildTabs, DockTab.Crime, "WORK", IconKind.Crime);
+            AddTab(buildTabs, DockTab.Build, "PIAZZA", IconKind.Product);
+            AddTab(buildTabs, DockTab.Orders, "SELL", IconKind.Orders);
             buildTabs.style.marginBottom = 4;
 
             // The hotbar: every screen, with its key.
@@ -119,6 +120,20 @@ namespace OSistema.UI
         }
 
         VisualElement buildTabs;
+        Label buildTitle;
+        readonly Dictionary<BuildingDef, Texture2D> previews = new Dictionary<BuildingDef, Texture2D>();
+
+        Texture2D PreviewOf(BuildingDef def)
+        {
+            if (previews.TryGetValue(def, out var tex) && tex != null) return tex;
+            var px = new Color32[TilePainter.Hi * TilePainter.Hi];
+            TilePainter.PaintPreviewHi(game.Map, def, 0, 0, 0, px);
+            tex = new Texture2D(TilePainter.Hi, TilePainter.Hi, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point };
+            tex.SetPixels32(px);
+            tex.Apply();
+            previews[def] = tex;
+            return tex;
+        }
         Button buildButton, mapButton;
         bool buildMode;
 
@@ -137,6 +152,14 @@ namespace OSistema.UI
             buildButton.Toggle("btn--on", buildMode);
             mapButton.Toggle("btn--on", mapOpen);
             foreach (var kv in tabButtons) kv.Value.Toggle("btn--on", kv.Key == openTab);
+            buildTitle.text = openTab switch
+            {
+                DockTab.Furnish => "Furnish homes you own · click a free floor tile · Q / E turn · right-click to stop",
+                DockTab.Crime => "Tables where the goods are made · E to work at one, or give someone the job",
+                DockTab.Build => "Open a piazza on a pavement in your turf",
+                DockTab.Orders => "Sell furniture back for half · close a piazza",
+                _ => "",
+            };
             businessButton.Toggle("btn--on", openWindow == Window.Business);
             helpButton.Toggle("btn--on", openWindow == Window.Help);
 
@@ -174,9 +197,15 @@ namespace OSistema.UI
                 RefreshDock();
             }, dockTools, "tool");
             var swatch = Ui.Box("tool__swatch").Into(b);
-            swatch.style.backgroundColor = entry.Swatch;
             swatch.pickingMode = PickingMode.Ignore;
+            if (entry.Def != null && game != null)
+            {
+                swatch.AddToClassList("tool__picture");
+                swatch.style.backgroundImage = new StyleBackground(PreviewOf(entry.Def));
+            }
+            else swatch.style.backgroundColor = entry.Swatch;
             Ui.Text(entry.Label, b, "tool__label");
+            if (entry.Def != null) Ui.Text($"€{BuildingDef.CostOf(entry.Def)}", b, "tool__price");
             Tip(b, () => entry.Def != null
                 ? $"{entry.Tip}\nCost €{BuildingDef.CostOf(entry.Def)}{(entry.Def.Beauty > 0 ? $" · makes a home nicer (+{entry.Def.Beauty:0.#})" : "")}"
                 : entry.Tip);

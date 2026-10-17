@@ -27,6 +27,9 @@ namespace OSistema.UI
 
             if (org.CarriedDg > 0) return Go("Get the product home without meeting the police", Home(game));
 
+            var visitor = game.Events.Visitor;
+            if (visitor != null) return Go($"{game.Events.VisitorTitle}: someone wants a word with you", visitor.Mover.Position);
+
             var job = game.Contracts.ActiveFor(p);
             if (job != null) return Go(Contracts.StepGoal(job), Mover.CellCenter(Contracts.StepTarget(job)));
 

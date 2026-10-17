@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using OSistema.Core;
+using OSistema.Npcs;
+using UnityEngine;
 
 namespace OSistema.Story
 {
@@ -52,6 +54,7 @@ namespace OSistema.Story
 
         public void Tick(Game game)
         {
+            TickVisit(game);
             if (Current == null && queue.Count > 0) Show(queue.Dequeue(), game);
 
             int absoluteHour = game.Clock.Day * 24 + game.Clock.Hour;
@@ -75,7 +78,88 @@ namespace OSistema.Story
             if (candidates.Count == 0) return;
             var pick = candidates[game.Rng.Next(candidates.Count)];
             lastShownDay[pick.Id] = game.Clock.Day;
-            Raise(pick);
+            StartVisit(pick, game);
+        }
+
+        // ---------- Someone comes to find you ----------
+
+        GameEvent visit;
+        Npc visitor;
+        long visitSince;
+        int visitRepath;
+
+        /// <summary>Who's on their way to talk to the player, for the label over their head.</summary>
+        public Npc Visitor => visit != null ? visitor : null;
+        public string VisitorTitle => visit?.Title;
+
+        /// <summary>
+        /// Instead of a card out of nowhere, a person walks up to the player and the scene plays when
+        /// they reach him. If he's inside, in hospital or can't be found, it comes as a phone call.
+        /// </summary>
+        void StartVisit(GameEvent e, Game game)
+        {
+            var p = game.Player;
+            if (visit != null || p == null || !p.CanAct || game.StreetLife == null)
+            {
+                Raise(e);
+                return;
+            }
+            Vector2Int from = p.Cell;
+            for (int i = 0; i < 12; i++)
+            {
+                var c = game.StreetLife.RandomDestinationNear(p.Cell, game);
+                if ((c - p.Cell).sqrMagnitude >= 36 && game.Map.IsPassable(c)) { from = c; break; }
+            }
+            if (from == p.Cell)
+            {
+                Raise(e);
+                return;
+            }
+            var rng = game.Rng;
+            visitor = game.Npcs.Spawn(NpcKind.Civilian, from, 0.07f, (Color32)Color.HSVToRGB((float)rng.NextDouble(), 0.35f, 0.55f));
+            visitor.IsFixture = true;
+            visitor.ContactName = "visitor";
+            visitor.State = 5;
+            visit = e;
+            visitSince = game.Ticks.TicksGame;
+            visitRepath = 0;
+        }
+
+        void TickVisit(Game game)
+        {
+            if (visit == null) return;
+            var p = game.Player;
+            bool lost = visitor == null || visitor.Despawned || p == null || !p.IsPresent || p.InJail
+                        || game.Ticks.TicksGame - visitSince > GameClock.TicksPerHour * 3;
+            if (lost)
+            {
+                // Couldn't find him: they ring instead.
+                var e = visit;
+                EndVisit(game);
+                Raise(e);
+                return;
+            }
+            if ((visitor.Mover.Position - p.Position).sqrMagnitude < 1.7f * 1.7f)
+            {
+                var e = visit;
+                EndVisit(game);
+                Raise(e);
+                return;
+            }
+            if (visitor.Walker == null || ++visitRepath % 60 == 0) visitor.Walker = new AI.Walker(p.Cell, adjacent: true);
+            visitor.Walker.Tick(visitor.Mover, 1f, game);
+        }
+
+        void EndVisit(Game game)
+        {
+            visit = null;
+            if (visitor == null) return;
+            visitor.ContactName = null;
+            visitor.IsFixture = false;
+            visitor.State = 2;   // off home
+            visitor.Walker = null;
+            if (game.Territory.Entrances.Count > 0) visitor.Exit = game.Territory.RandomEntrance(game.Rng);
+            visitor = null;
         }
 
         void Show(GameEvent e, Game game)

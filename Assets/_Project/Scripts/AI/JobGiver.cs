@@ -117,9 +117,10 @@ namespace OSistema.AI
             var needs = pawn.Needs;
             int hour = game.Clock.Hour;
             bool night = hour >= 22 || hour < 6;
-            // Night-shift crew only go to bed when actually tired, not just because it's late.
-            bool bedtime = night && needs.Rest < 0.85f && !HasDutyNow(pawn, game);
-            if (!needs.Tired && !bedtime) return null;
+            // Crew sleep when their schedule says so (or when they're dead on their feet).
+            bool scheduled = !pawn.Controlled && pawn.Schedule[hour] == Pawn.Shift.Sleep && needs.Rest < 0.97f;
+            bool bedtime = pawn.Controlled && night && needs.Rest < 0.85f && !HasDutyNow(pawn, game);
+            if (!needs.Tired && !bedtime && !scheduled) return null;
 
             if (needs.Rest < 0.03f) return new SleepJob(pawn, null, null); // collapses where they stand
 
@@ -146,6 +147,7 @@ namespace OSistema.AI
         public static bool HasDutyNow(Pawn pawn, Game game)
         {
             int hour = game.Clock.Hour;
+            if (!OnShift(pawn, game)) return false;
             var org = game.Org;
             switch (pawn.Role)
             {
@@ -194,9 +196,12 @@ namespace OSistema.AI
         }
 
         /// <summary>What the pawn's clan role asks of them right now.</summary>
+        public static bool OnShift(Pawn pawn, Game game) => pawn.Controlled || pawn.Schedule[game.Clock.Hour] == Pawn.Shift.Work;
+
         static Job TryDuty(Pawn pawn, Game game)
         {
             if (pawn.Role == CrewRole.General || pawn.IsLyingLow(game.Ticks.TicksGame)) return null;
+            if (!OnShift(pawn, game)) return null;   // off the clock
             var org = game.Org;
 
             if (pawn.Role == CrewRole.Collector) return CollectorDuty(pawn, game);

@@ -89,7 +89,10 @@ namespace OSistema.UI
             foreach (var kv in bizTabButtons) kv.Value.Toggle("btn--on", kv.Key == bizTab);
 
             bizRefreshTimer += RefreshSeconds;
-            if (!bizDirty && bizRefreshTimer < 1f) return;
+            // Don't rebuild under the mouse while someone is painting shifts.
+            bool holding = UnityEngine.InputSystem.Mouse.current != null && UnityEngine.InputSystem.Mouse.current.leftButton.isPressed;
+            if (!holding) paintingShifts = false;
+            if (!bizDirty && (bizRefreshTimer < 1f || holding)) return;
             bizRefreshTimer = 0f;
             bizDirty = false;
 
@@ -123,6 +126,43 @@ namespace OSistema.UI
             var org = game.Org;
             Ui.Text($"Dirty cash <b>€{game.Stock.Cash}</b> · weekly mesata and family support <b>€{org.WeeklyWageBill(game)}</b>, paid Sunday at 12:00", bizBody, "wrap");
             long now = game.Ticks.TicksGame;
+
+            // The shifts: paint each person's day, hour by hour, like a timetable.
+            var brushes = Ui.Row(bizBody);
+            brushes.style.marginTop = 6;
+            Ui.Text("SHIFTS  ", brushes, "section");
+            foreach (var (shift, label) in new[] { (Pawn.Shift.Work, "Work"), (Pawn.Shift.Sleep, "Sleep"), (Pawn.Shift.Free, "Free time") })
+            {
+                var sh = shift;
+                var b = Ui.Btn(label, Do(() => shiftBrush = sh), brushes, "btn--small", ShiftClass(shift));
+                b.Toggle("btn--on", shiftBrush == shift);
+            }
+            Ui.Text("  pick a brush, then click or drag across the hours", brushes, "small", "muted");
+            var hours = Ui.Row(bizBody);
+            Ui.Box().Into(hours).style.width = 182;
+            for (int h = 0; h < 24; h++) Ui.Text(h % 3 == 0 ? h.ToString() : "", hours, "tiny", "shift-hour");
+            foreach (var p in game.Pawns.Crew.Where(p => !p.Dead && !p.Controlled))
+            {
+                var trow = Ui.Row(bizBody);
+                Ui.Text(p.DisplayName, trow, "small").style.width = 182;
+                var pawn = p;
+                for (int h = 0; h < 24; h++)
+                {
+                    int hour = h;
+                    var cell = Ui.Box("shift-cell", ShiftClass(p.Schedule[h])).Into(trow);
+                    if (h == game.Clock.Hour) cell.AddToClassList("shift-cell--now");
+                    void Paint()
+                    {
+                        pawn.Schedule[hour] = shiftBrush;
+                        cell.ClearClassList();
+                        cell.AddToClassList("shift-cell");
+                        cell.AddToClassList(ShiftClass(shiftBrush));
+                    }
+                    cell.RegisterCallback<PointerDownEvent>(_ => { paintingShifts = true; Paint(); });
+                    cell.RegisterCallback<PointerEnterEvent>(_ => { if (paintingShifts && UnityEngine.InputSystem.Mouse.current.leftButton.isPressed) Paint(); });
+                }
+            }
+            Ui.Text("CREW", bizBody, "section");
             foreach (var p in game.Pawns.Crew.Where(p => !p.Dead))
             {
                 var row = Ui.Box("table-row").Into(bizBody);
@@ -148,6 +188,11 @@ namespace OSistema.UI
             if (!game.Pawns.Crew.Any(p => p.IsPresent && p.Role == CrewRole.Collector))
                 Ui.Text("Nobody is collecting pizzo. Give someone the Collector role.", bizBody, "bad", "small");
         }
+
+        Pawn.Shift shiftBrush = Pawn.Shift.Work;
+        bool paintingShifts;
+
+        static string ShiftClass(Pawn.Shift s) => s == Pawn.Shift.Work ? "shift--work" : s == Pawn.Shift.Sleep ? "shift--sleep" : "shift--free";
 
         void PiazzeTab()
         {
