@@ -22,7 +22,9 @@ namespace OSistema.UI
         Color32[] mapPixels;
         float mapTexTimer;
         VisualElement miniFrame, miniImage, miniLayer;
-        Label goalLabel, goalMarker;
+        Label goalLabel, goalMarker, pinMarker;
+        readonly List<Label> bigLabels = new List<Label>();
+        int bigLabelsUsed;
         readonly List<VisualElement> miniDots = new List<VisualElement>();
         int miniDotsUsed;
 
@@ -48,6 +50,8 @@ namespace OSistema.UI
             goalLabel = Ui.Text("", hudLayer, "goal");
             goalMarker = Ui.Text("◆", worldLayer, "goal-marker");
             goalMarker.pickingMode = PickingMode.Ignore;
+            pinMarker = Ui.Text("●", worldLayer, "goal-marker", "pin-marker");
+            pinMarker.pickingMode = PickingMode.Ignore;
 
             mapDim = Ui.Box("dim").Into(modalLayer);
             var panel = Ui.Box("panel", "bigmap").Into(mapDim);
@@ -61,7 +65,7 @@ namespace OSistema.UI
             bigLayer.pickingMode = PickingMode.Ignore;
             var legend = Ui.Row(panel);
             legend.style.marginTop = 6;
-            foreach (var (cls, text) in new[] { ("dot--you", "you"), ("dot--crew", "crew"), ("dot--work", "work for you"), ("dot--goal", "objective"), ("dot--home", "your homes"), ("dot--piazza", "piazza"), ("dot--police", "police") })
+            foreach (var (cls, text) in new[] { ("dot--you", "you"), ("dot--home", "home"), ("dot--goal", "objective"), ("dot--pin", "your pin"), ("dot--work", "work for you"), ("dot--contact", "people you know"), ("dot--shop", "shops"), ("dot--crew", "crew"), ("dot--police", "police") })
             {
                 var d = Ui.Box("dot", cls).Into(legend);
                 d.style.position = Position.Relative;
@@ -137,7 +141,9 @@ namespace OSistema.UI
                 RedrawMapTexture();
             }
 
-            goal = Objectives.Current(game, waypoint);
+            goal = Objectives.Current(game, null);
+            // A pin you reach is done.
+            if (waypoint.HasValue && game.Player != null && (game.Player.Position - waypoint.Value).sqrMagnitude < 4f) waypoint = null;
             var player = game.Player;
             Vector2 centre = player != null ? player.Position : (Vector2)cam.transform.position;
 
@@ -163,6 +169,7 @@ namespace OSistema.UI
                 d.style.top = pos.y;
             }
             Markers(MiniDot);
+            if (waypoint.HasValue) MiniDot(waypoint.Value, "dot--pin", clamp: true);
             if (goal.Target.HasValue) MiniDot(goal.Target.Value, "dot--goal", clamp: true);
             if (player != null) MiniDot(player.Position, "dot--you");
             for (int i = miniDotsUsed; i < miniDots.Count; i++) miniDots[i].style.display = DisplayStyle.None;
@@ -172,39 +179,42 @@ namespace OSistema.UI
             goalLabel.text = string.IsNullOrEmpty(goal.Text) ? "" : $"<color=#E8C26A>▸</color> {goal.Text}{dist}";
             goalLabel.Show(!string.IsNullOrEmpty(goal.Text));
 
-            // The marker in the world, or an arrow at the edge of the screen pointing to it.
-            UpdateGoalMarker(player);
+            // The markers in the world, or arrows at the edge of the screen pointing to them.
+            UpdateMarker(goalMarker, goal.Target, player, "◆");
+            UpdateMarker(pinMarker, waypoint, player, "●");
 
             if (mapOpen) UpdateBigMap(player);
         }
 
         void Markers(System.Action<Vector2, string, bool> dot)
         {
+            dot(game.PlayerBase.center, "dot--home", false);
+            foreach (var pr in game.Properties.Owned) dot(pr.Rect.center, "dot--home", false);
             foreach (var p in game.Pawns.Crew)
                 if (p.IsPresent && !p.Controlled) dot(p.Position, "dot--crew", false);
             foreach (var c in game.Contacts.All)
-                if (c.Present && game.Contacts.HasWork(c, game) && FogOfWar.HasExplored(c.Spot)) dot(c.Position, "dot--work", false);
+                if (game.Contacts.Visible(c, game)) dot(c.Position, game.Contacts.HasWork(c, game) ? "dot--work" : "dot--contact", false);
             foreach (var sq in game.Org.Squares) dot(Mover.CellCenter(sq.Cell), "dot--piazza", false);
             foreach (var n in game.Npcs.All)
                 if (n.Kind == NpcKind.Police && !n.Despawned && FogOfWar.CanSee(n.Mover.Position)) dot(n.Mover.Position, "dot--police", false);
         }
 
-        void UpdateGoalMarker(Pawn player)
+        void UpdateMarker(Label goalMarker, Vector2? where, Pawn player, string glyph)
         {
-            if (!goal.Target.HasValue || player == null || root.panel == null)
+            if (!where.HasValue || player == null || root.panel == null)
             {
                 goalMarker.Show(false);
                 return;
             }
             goalMarker.Show(true);
-            var target = goal.Target.Value;
+            var target = where.Value;
             var v = cam.WorldToViewportPoint(new Vector3(target.x, target.y, 0f));
             bool onScreen = v.x > 0.03f && v.x < 0.97f && v.y > 0.08f && v.y < 0.9f;
             var size = root.layout.size;
             if (onScreen)
             {
                 var pos = WorldToPanel(target + Vector2.up * 0.9f);
-                goalMarker.text = "◆";
+                goalMarker.text = glyph;
                 goalMarker.style.left = pos.x;
                 goalMarker.style.top = pos.y;
                 goalMarker.style.rotate = new Rotate(0f);
@@ -240,10 +250,37 @@ namespace OSistema.UI
                 d.style.top = (map.Height - w.y) * bigScale;
             }
             Markers(BigDot);
-            foreach (var pr in game.Properties.Owned) BigDot(pr.Rect.center, "dot--home", false);
+            bigLabelsUsed = 0;
+            void BigLabel(Vector2 w, string text, string cls = null)
+            {
+                if (bigLabelsUsed >= bigLabels.Count)
+                {
+                    var l = Ui.Text("", bigLayer, "map-label");
+                    l.pickingMode = PickingMode.Ignore;
+                    bigLabels.Add(l);
+                }
+                var label = bigLabels[bigLabelsUsed++];
+                label.style.display = DisplayStyle.Flex;
+                label.text = text;
+                label.style.left = w.x * bigScale + 6;
+                label.style.top = (map.Height - w.y) * bigScale - 7;
+            }
+            // Everyone you know, and where they stand, so you never have to go looking.
+            foreach (var c in game.Contacts.All)
+                if (game.Contacts.Visible(c, game)) BigLabel(c.Position, $"{c.Name} · {c.Hours}");
+            BigLabel(game.PlayerBase.center, "Mamma's basso");
+            foreach (var b in game.Org.Businesses)
+            {
+                if (b.Kind != ShopKind.Tabaccheria && b.Kind != ShopKind.Salumeria) continue;
+                if (!FogOfWar.HasExplored(b.Cell)) continue;
+                BigDot(Mover.CellCenter(b.Cell), "dot--shop", false);
+                BigLabel(Mover.CellCenter(b.Cell), b.Kind == ShopKind.Tabaccheria ? "Tabaccaio" : "Salumeria");
+            }
+            if (waypoint.HasValue) BigDot(waypoint.Value, "dot--pin", false);
             if (goal.Target.HasValue) BigDot(goal.Target.Value, "dot--goal", false);
             if (player != null) BigDot(player.Position, "dot--you", false);
             for (int i = bigDotsUsed; i < bigDots.Count; i++) bigDots[i].style.display = DisplayStyle.None;
+            for (int i = bigLabelsUsed; i < bigLabels.Count; i++) bigLabels[i].style.display = DisplayStyle.None;
         }
 
         static VisualElement NextDot(List<VisualElement> pool, ref int used, VisualElement parent)

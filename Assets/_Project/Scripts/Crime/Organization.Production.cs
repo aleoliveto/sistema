@@ -49,6 +49,7 @@ namespace OSistema.Crime
         /// <summary>Product on the boss's person: home safe, or stopped and searched on the way.</summary>
         void TickCarrying(Game game)
         {
+            TickParcel(game);
             if (CarriedDg <= 0) return;
             long now = game.Ticks.TicksGame;
             if (now - lastCarryCheck < 60) return;
@@ -73,6 +74,17 @@ namespace OSistema.Crime
             if (cop == null) return;
             float chance = Mathf.Max(0.01f, 0.06f - p.AwarenessSkill * 0.004f) * (p.Riding ? 0.5f : 1f);
             if (game.Rng.NextDouble() < chance) game.Pursuit.Start(cop, "A patrol wants to search you, and you're carrying.", game);
+        }
+
+        // A parcel, a stolen scooter, cases of cigarettes: anything carried for a job can get you stopped.
+        void TickParcel(Game game)
+        {
+            var p = game.Player;
+            if (p == null || p.Carrying == null || game.Pursuit.Active || game.Ticks.TicksGame % 60 != 0) return;
+            var cop = Pursuit.WitnessCop(game, 5f);
+            if (cop == null) return;
+            float chance = Mathf.Max(0.01f, 0.05f - p.AwarenessSkill * 0.003f);
+            if (game.Rng.NextDouble() < chance) game.Pursuit.Start(cop, $"A patrol wants a look at {p.Carrying}.", game);
         }
 
         /// <summary>One bag, weighed by hand. Short bags cheat customers; heavy ones give product away.</summary>

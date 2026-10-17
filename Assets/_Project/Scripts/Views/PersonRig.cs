@@ -21,6 +21,9 @@ namespace OSistema.Views
         float moving;               // 0 standing .. 1 walking, smoothed
         bool aiming;
 
+        /// <summary>On a scooter: no walking stride, hands on the handlebar.</summary>
+        public bool Seated;
+
         static readonly Vector3 HandLRest = new Vector3(-0.3f, 0.14f, 0f);
         static readonly Vector3 HandRRest = new Vector3(0.3f, 0.14f, 0f);
 
@@ -110,10 +113,16 @@ namespace OSistema.Views
             hasPos = true;
 
             // Arms swing while walking; both hands come forward when aiming.
-            moving = Mathf.MoveTowards(moving, !lying && speed > 0.2f ? 1f : 0f, dt * 6f);
+            moving = Mathf.MoveTowards(moving, !lying && !Seated && speed > 0.2f ? 1f : 0f, dt * 6f);
             stride += speed * dt * 9f;
             float swing = Mathf.Sin(stride) * 0.12f * moving;
-            if (aiming && !lying)
+            if (Seated && !lying)
+            {
+                handL.transform.localPosition = new Vector3(-0.3f, 0.42f, 0f);
+                handR.transform.localPosition = new Vector3(0.3f, 0.42f, 0f);
+                gun.transform.localPosition = new Vector3(0.3f, 0.5f, 0f);
+            }
+            else if (aiming && !lying)
             {
                 handL.transform.localPosition = new Vector3(-0.08f, 0.36f, 0f);
                 handR.transform.localPosition = new Vector3(0.1f, 0.4f, 0f);

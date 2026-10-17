@@ -23,6 +23,19 @@ namespace OSistema.Views
         int lastBellHour = -1;
         float hornTimer = 5f;
         readonly HashSet<int> heardScooters = new HashSet<int>();
+        AudioSource engineSource;
+
+        // The player's own scooter: idles low, revs with speed.
+        void UpdateEngine()
+        {
+            var p = game?.Player;
+            bool riding = p != null && p.Riding && game.Ticks.Speed > 0;
+            if (riding && !engineSource.isPlaying) engineSource.Play();
+            float speed = riding ? p.Velocity.magnitude / 11.7f : 0f;
+            engineSource.pitch = Mathf.Lerp(engineSource.pitch, 0.75f + 1.1f * speed, Time.unscaledDeltaTime * 4f);
+            engineSource.volume = Mathf.MoveTowards(engineSource.volume, riding ? 0.16f + 0.1f * speed : 0f, Time.unscaledDeltaTime);
+            if (!riding && engineSource.volume <= 0.001f && engineSource.isPlaying) engineSource.Stop();
+        }
 
         public static void PlayAt(AudioClip clip, Vector2 position, float volume = 1f)
         {
@@ -58,6 +71,12 @@ namespace OSistema.Views
             ambience.loop = true;
             ambience.volume = 0.25f;
             ambience.Play();
+
+            engineSource = gameObject.AddComponent<AudioSource>();
+            engineSource.clip = AudioSynth.EngineLoop;
+            engineSource.loop = true;
+            engineSource.volume = 0f;
+            engineSource.playOnAwake = false;
         }
 
         void OnDestroy()
@@ -92,6 +111,7 @@ namespace OSistema.Views
         void Update()
         {
             if (game == null) return;
+            UpdateEngine();
 
             // The city is livelier by day, and louder where there are people around you.
             float day = game.Clock.Daylight;
@@ -141,7 +161,7 @@ namespace OSistema.Views
                 if (!FogOfWar.CanSee(npc.Mover.Position)) continue;
                 if ((npc.Mover.Position - (Vector2)cam.transform.position).magnitude > cam.orthographicSize * 0.9f) continue;
                 heardScooters.Add(npc.Id);
-                Play(AudioSynth.Scooter, npc.Mover.Position, 0.18f);
+                Play(AudioSynth.Scooter, npc.Mover.Position, 0.1f);
             }
             if (heardScooters.Count > 200) heardScooters.Clear();
         }

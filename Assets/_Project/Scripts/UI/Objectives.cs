@@ -18,7 +18,6 @@ namespace OSistema.UI
     {
         public static Goal Current(Game game, Vector2? waypoint)
         {
-            if (waypoint.HasValue) return new Goal { Text = "Your waypoint", Target = waypoint };
             var p = game.Player;
             if (p == null) return new Goal { Text = "" };
             if (p.InJail) return new Goal { Text = "In Poggioreale. Wait it out." };

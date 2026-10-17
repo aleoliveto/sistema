@@ -170,24 +170,55 @@ namespace OSistema.Views
         }
 
         // A two-stroke buzzing past: rising, then falling pitch.
-        static AudioClip MakeScooter()
+        // A two-stroke moped: exhaust pulses at the firing rate, rung through a resonant pipe,
+        // with a low body thump. Not a saw wave (that's what made them sound like flies).
+        static float[] Engine(int n, System.Func<float, float> firingHz, int seed, System.Func<float, float> envelope)
         {
-            int n = (int)(Rate * 2.2f);
             var d = new float[n];
-            float phase = 0f, lp = 0f;
+            var rng = new System.Random(seed);
+            float phase = 0f, sinceFire = 1f, y1 = 0f, y2 = 0f, z1 = 0f, z2 = 0f;
+            float r = 0.985f, th = 2f * Mathf.PI * 340f / Rate, a1 = 2f * r * Mathf.Cos(th), a2 = r * r;
+            float r2 = 0.99f, th2 = 2f * Mathf.PI * 120f / Rate, b1 = 2f * r2 * Mathf.Cos(th2), b2 = r2 * r2;
+            float jitter = 0f;
             for (int i = 0; i < n; i++)
             {
                 float t = i / (float)Rate;
-                float pass = t / 2.2f;
-                float freq = Mathf.Lerp(150f, 95f, pass) + 6f * Mathf.Sin(t * 40f);
-                phase += freq / Rate;
-                float saw = (phase % 1f) * 2f - 1f;
-                float env = Mathf.Sin(Mathf.PI * pass);
-                lp += (saw - lp) * 0.2f;
-                d[i] = lp * env * env;
+                float f = firingHz(t) * (1f + jitter);
+                phase += f / Rate;
+                sinceFire += 1f / Rate;
+                if (phase >= 1f)
+                {
+                    phase -= 1f;
+                    sinceFire = 0f;
+                    jitter = ((float)rng.NextDouble() - 0.5f) * 0.06f;   // a little uneven, like a real engine
+                }
+                float pulse = Mathf.Exp(-sinceFire / 0.004f) * (0.7f + 0.6f * (float)rng.NextDouble());
+                float pipe = a1 * y1 - a2 * y2 + pulse * 0.08f;
+                y2 = y1; y1 = pipe;
+                float body = b1 * z1 - b2 * z2 + pulse * 0.02f;
+                z2 = z1; z1 = body;
+                d[i] = (pipe * 0.8f + body * 1.4f) * envelope(t);
             }
+            return d;
+        }
+
+        static AudioClip MakeScooter()
+        {
+            const float len = 2.4f;
+            // Passing by: the note drops as it goes (Doppler) and it swells and fades.
+            var d = Engine((int)(Rate * len), t => Mathf.Lerp(58f, 44f, t / len), 7, t =>
+            {
+                float pass = t / len;
+                float e = Mathf.Sin(Mathf.PI * pass);
+                return e * e;
+            });
             return Clip("scooter", d);
         }
+
+        static AudioClip engine;
+
+        /// <summary>A seamless loop of an engine at a steady rate, for the player's own scooter (pitch it by speed).</summary>
+        public static AudioClip EngineLoop => engine != null ? engine : engine = Clip("engine", Engine(Rate, t => 50f, 11, t => 1f));
 
         static AudioClip MakeClick()
         {

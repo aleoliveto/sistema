@@ -84,6 +84,15 @@ namespace OSistema.Pawns
             return true;
         }
 
+        /// <summary>Puts the mover exactly somewhere (a passenger on the back of a scooter).</summary>
+        public void Place(Vector2 pos)
+        {
+            path = null;
+            progress = 0f;
+            Position = pos;
+            Cell = new Vector2Int(Mathf.FloorToInt(pos.x), Mathf.FloorToInt(pos.y));
+        }
+
         /// <summary>Back to the centre of the current cell before following a path.</summary>
         void Snap() => Position = CellCenter(Cell);
 

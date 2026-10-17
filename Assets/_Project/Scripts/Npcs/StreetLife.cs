@@ -59,8 +59,9 @@ namespace OSistema.Npcs
                 {
                     var prop = game.Properties.At(counter);
                     if (prop == null) continue;
-                    var outside = FreeNeighbour(map, prop.Door);
-                    if (outside.HasValue) fixtures.Add((outside.Value, false));
+                    // Behind the counter, inside the shop; outside the door only if there's no room.
+                    var spot = InsideNeighbour(map, counter) ?? FreeNeighbour(map, prop.Door);
+                    if (spot.HasValue) fixtures.Add((spot.Value, false));
                 }
             }
             int stall = 0;
@@ -74,6 +75,13 @@ namespace OSistema.Npcs
                         break;
                     }
             }
+        }
+
+        static Vector2Int? InsideNeighbour(Map map, Vector2Int c)
+        {
+            foreach (var n in new[] { c + Vector2Int.up, c + Vector2Int.left, c + Vector2Int.right, c + Vector2Int.down })
+                if (map.InBounds(n) && map.IsPassable(n) && map.GetTerrain(n.x, n.y) == TerrainType.Floor && map.GetBuilding(n.x, n.y) == null) return n;
+            return null;
         }
 
         static Vector2Int? FreeNeighbour(Map map, Vector2Int c)
@@ -366,6 +374,13 @@ namespace OSistema.Npcs
 
         public static void TickScooter(Npc npc, Game game)
         {
+            // Somebody in the way: brake, and lean on the horn, rather than ride through them.
+            var p = game.Player;
+            if (p != null && p.IsPresent && (p.Position - npc.Mover.Position).sqrMagnitude < 2.2f * 2.2f)
+            {
+                if (game.Rng.NextDouble() < 0.004) OSistema.Views.SoundManager.PlayAt(OSistema.Views.AudioSynth.Horn, npc.Mover.Position, 0.25f);
+                return;
+            }
             npc.Walker ??= new Walker(npc.Exit, adjacent: false, roadOnly: true); // streets and vicoli, never indoors
             if (npc.Walker.Tick(npc.Mover, 1f, game) != WalkStatus.Walking) npc.Despawned = true;
         }

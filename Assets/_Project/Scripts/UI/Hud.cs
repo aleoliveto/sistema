@@ -223,10 +223,13 @@ namespace OSistema.UI
         Vector2 WorldToPanel(Vector2 world) =>
             RuntimePanelUtils.CameraTransformWorldToPanel(root.panel, new Vector3(world.x, world.y, 0f), cam);
 
+        /// <summary>"Show": drop a pin on the map there, and look at it until you move.</summary>
         void FocusCamera(Vector2 at)
         {
             var p = cam.transform.position;
             cam.transform.position = new Vector3(at.x, at.y, p.z);
+            controller.StopFollowing();
+            waypoint = at;
         }
     }
 }

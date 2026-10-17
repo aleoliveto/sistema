@@ -16,6 +16,14 @@ namespace OSistema.Views
         Color shirt, skin, hair;
         bool pooled;
         SpriteRenderer scooter;
+        Exhaust exhaust;
+        Vector2 lastPos;
+        float lastSpeed;
+
+        static readonly Color[] FamilyScooters =
+        {
+            new Color(0.75f, 0.1f, 0.12f), new Color(0.92f, 0.92f, 0.9f), new Color(0.12f, 0.12f, 0.13f), new Color(0.45f, 0.65f, 0.85f),
+        };
 
         public Pawn Pawn => pawn;
 
@@ -31,11 +39,12 @@ namespace OSistema.Views
             var scooterGo = new GameObject("Scooter");
             scooterGo.transform.SetParent(transform, false);
             scooter = scooterGo.AddComponent<SpriteRenderer>();
-            scooter.sprite = SpriteFactory.CenteredPixel;
+            scooter.sprite = SpriteFactory.ScooterBody;
             scooter.sharedMaterial = SpriteFactory.LitMaterial;
             scooter.sortingOrder = 10;
-            scooter.color = new Color(0.12f, 0.12f, 0.13f);
+            scooter.color = FamilyScooters[Mathf.Abs(p.Id) % FamilyScooters.Length];
             scooter.enabled = false;
+            exhaust = new Exhaust(transform.parent != null ? transform.parent : transform);
 
             var ringGo = new GameObject("Selection");
             ringGo.transform.SetParent(transform, false);
@@ -48,6 +57,8 @@ namespace OSistema.Views
 
             LateUpdate();
         }
+
+        void OnDestroy() => exhaust?.Clear();
 
         void LateUpdate()
         {
@@ -72,12 +83,26 @@ namespace OSistema.Views
             if (pawn.AimTarget != null && !lying) rig.FaceTowards(pawn.AimTarget.Position);
             else if (pawn.AimPoint.HasValue && !lying) rig.FaceTowards(pawn.AimPoint.Value);
             rig.SetArmed(pawn.Armed && !pawn.Dead);
-            scooter.enabled = pawn.Riding;
-            if (pawn.Riding)
+            // On a scooter: sitting, hands on the bars, the scooter turned the way it's going, and smoke.
+            bool onScooter = pawn.Riding && !pawn.Pillion && !lying;
+            rig.Seated = (pawn.Riding || pawn.Pillion) && !lying;
+            scooter.enabled = onScooter;
+            float dt = Mathf.Max(Time.deltaTime, 0.0001f);
+            float speed = (pawn.Position - lastPos).magnitude / dt;
+            lastPos = pawn.Position;
+            if (onScooter)
             {
-                scooter.transform.localRotation = transform.Find("Pivot").localRotation;
-                scooter.transform.localScale = new Vector3(0.36f, 1.15f, 1f);
+                float heading = pawn.Controlled ? pawn.Heading : transform.Find("Pivot").localEulerAngles.z;
+                scooter.transform.localRotation = Quaternion.Euler(0f, 0f, heading);
+                scooter.transform.localScale = Vector3.one;
+                scooter.color = pawn.StolenScooter ? new Color(0.92f, 0.92f, 0.9f) : FamilyScooters[Mathf.Abs(pawn.Id) % FamilyScooters.Length];
+                var fwd = new Vector2(-Mathf.Sin(heading * Mathf.Deg2Rad), Mathf.Cos(heading * Mathf.Deg2Rad));
+                if (pawn.Controlled && !pawn.AimPoint.HasValue) rig.FaceTowards(pawn.Position + fwd);
+                exhaust.Update(pawn.Position - fwd * 0.75f, Mathf.Clamp01(speed / 10f), speed > lastSpeed + 0.5f, true, Time.deltaTime);
             }
+            else exhaust.Update(pawn.Position, 0f, false, false, Time.deltaTime);
+            lastSpeed = Mathf.Lerp(lastSpeed, speed, 0.2f);
+            if (pawn.Pillion && !lying) rig.FaceTowards(pawn.Position + pawn.Forward);
 
             var c = pawn.Dead ? DeadShirt : pawn.Health.Downed ? shirt * 0.65f : shirt;
             c.a = 1f;

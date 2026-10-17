@@ -181,8 +181,16 @@ namespace OSistema.Pawns
         public Vector2? AimPoint;        // where the player is aiming with the mouse
         public float Stamina = 1f;       // the player's breath for running
         public Vector2 Velocity;         // the player's scooter keeps its momentum
+        public bool StolenScooter;       // riding someone else's, for Nanninella
+        public float Heading;            // the player's scooter: degrees, 0 = north, positive = turning left
+        public float ScooterSpeed;       // forward speed along the heading, cells per second
+        public bool Pillion;             // riding on the back of the boss's scooter
+
+        public Vector2 Forward => new Vector2(-Mathf.Sin(Heading * Mathf.Deg2Rad), Mathf.Cos(Heading * Mathf.Deg2Rad));
         public const int ManualHoldTicks = 1500;
-        public bool Manual(long now) => Controlled && now - LastInputTick < ManualHoldTicks;              // a boss is "Don" only once the family is somebody
+        /// <summary>Off by default: Gennaro only moves when you move him. Z lets him get on with things alone.</summary>
+        public bool Autopilot;
+        public bool Manual(long now) => Controlled && (!Autopilot || now - LastInputTick < ManualHoldTicks);              // a boss is "Don" only once the family is somebody
         public string DisplayName => IsBoss ? (Titled ? $"Don {FirstName}" : FirstName) : Nickname;
         public bool InMentalBreak(long now) => BreakUntilTick > now;
         public bool IsLyingLow(long now) => LyingLowUntil > now;

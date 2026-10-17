@@ -124,6 +124,10 @@ namespace OSistema.Crime
                 days += 5;
                 found += " And a pistol.";
             }
+            var job = game.Contracts.ActiveFor(p);
+            if (job != null && p.Carrying != null) game.Contracts.Finish(job, false, $"the police took {p.Carrying}.", game);
+            p.Carrying = null;
+            p.StolenScooter = false;
             p.Riding = p.OnScooter = false;
             p.SendToJail(now + days * GameClock.TicksPerDay, game);
             org.AddEvidence(8f, game);

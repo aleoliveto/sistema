@@ -145,6 +145,11 @@ namespace OSistema.UI
                 ToggleMap();
                 return;
             }
+            if (PaperOpen)
+            {
+                ClosePaper();
+                return;
+            }
 
             if (openMenu == Menu.Settings) OpenMenu(settingsReturnTo);
             else if (openMenu == Menu.Pause) CloseMenu();

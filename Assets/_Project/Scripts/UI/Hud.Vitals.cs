@@ -13,26 +13,28 @@ namespace OSistema.UI
     {
         VisualElement vitals, statusBox, wanted, wantedFill;
         Label vitalsName, vitalsState, statusTitle, statusText;
-        VisualElement vHealthFill, vFoodFill, vRestFill, vStaminaFill;
         Button statusButton, statusButton2;
+
+        Label vHealth, vFood, vRest, vBreath;
 
         void BuildVitals()
         {
-            vitals = Ui.Box("panel", "vitals").Into(hudLayer);
-            var head = Ui.Row(vitals);
-            vitalsName = Ui.Text("", head, "bold");
-            Ui.Box("spacer").Into(head);
-            vitalsState = Ui.Text("", head, "tiny");
-            (_, vHealthFill) = VitalBar(vitals, "HEALTH", new Color(0.86f, 0.3f, 0.26f));
-            (_, vFoodFill) = VitalBar(vitals, "HUNGER", new Color(0.92f, 0.62f, 0.3f));
-            (_, vRestFill) = VitalBar(vitals, "ENERGY", new Color(0.45f, 0.62f, 0.92f));
-            (_, vStaminaFill) = VitalBar(vitals, "BREATH", new Color(0.85f, 0.85f, 0.8f));
+            // Gennaro's body, in the top bar next to the clock.
+            vitals = Ui.Box("topbar__section", "vitals-strip").Into(topBar);
+            topBar.Insert(1, vitals);
+            vitalsName = Ui.Text("", vitals, "tiny");
+            vHealth = VitalChip(vitals, "♥", "#F07A6E");
+            vFood = VitalChip(vitals, "FAME", "#F2B866");
+            vRest = VitalChip(vitals, "SONNO", "#8FB4F0");
+            vBreath = VitalChip(vitals, "FIATO", "#D8D4C8");
+            vitalsState = Ui.Text("", vitals, "tiny");
             Tip(vitals, () =>
             {
                 var p = game?.Player;
                 if (p == null) return "";
-                return "Health: wounds and blood. Hunger: eat at home (E at the pantry) or a pizza.\n" +
-                       "Energy: sleep in your bed (E). Breath: running with Shift uses it up." +
+                return "♥ health: wounds and blood loss. FAME: hunger, eat at home (E at the pantry) or a pizza.\n" +
+                       "SONNO: energy, sleep in your bed (E). FIATO: breath, running with Shift uses it up.\n" +
+                       (p.Autopilot ? "Z: Gennaro looks after himself when you leave him be." : "Z: let Gennaro look after himself when you leave him be.") +
                        (p.Health.NeedsTending ? "\nYou're bleeding: someone has to tend the wound." : "");
             });
 
@@ -55,13 +57,20 @@ namespace OSistema.UI
             wanted.Show(false);
         }
 
-        (Label, VisualElement) VitalBar(VisualElement parent, string label, Color color)
+        Label VitalChip(VisualElement parent, string label, string color)
         {
-            var row = Ui.Row(parent);
-            row.style.alignItems = Align.Center;
-            Ui.Text(label, row, "tiny").style.width = 52;
-            var col = Ui.Box("col", "grow").Into(row);
-            return Ui.Bar("", color, col, thin: true);
+            var chip = Ui.Box("chip").Into(parent);
+            Ui.Text($"<color={color}>{label}</color>", chip, "tiny");
+            var v = Ui.Text("", chip, "chip__value");
+            v.style.marginLeft = 4;
+            return v;
+        }
+
+        static string Pct(float v)
+        {
+            int pct = Mathf.RoundToInt(Mathf.Clamp01(v) * 100f);
+            string c = pct < 20 ? "#F07A6E" : pct < 40 ? "#F2B866" : "#EDE6D6";
+            return $"<color={c}>{pct}%</color>";
         }
 
         System.Action statusAction, statusAction2;
@@ -71,13 +80,14 @@ namespace OSistema.UI
             var p = game.Player;
             vitals.Show(p != null);
             if (p == null) return;
-            vitalsName.text = p.DisplayName;
-            vitalsState.text = p.Riding ? "ON THE SCOOTER" : game.Org.DealingCorner != null ? "DEALING" : game.Org.CarriedDg > 0 ? $"CARRYING {game.Org.CarriedDg / 10} G" : "";
+            vitalsName.text = "";
+            vitalsState.text = (p.Riding ? "ON THE SCOOTER" : game.Org.DealingCorner != null ? "DEALING" : game.Org.CarriedDg > 0 ? $"CARRYING {game.Org.CarriedDg / 10} G" : "")
+                + (p.Autopilot ? "  · AUTO" : "");
             float health = 1f - Mathf.Max(p.Health.BloodLoss / 0.6f, p.Health.Pain / 0.8f);
-            Ui.SetFill(vHealthFill, health);
-            Ui.SetFill(vFoodFill, p.Needs.Food);
-            Ui.SetFill(vRestFill, p.Needs.Rest);
-            Ui.SetFill(vStaminaFill, p.Stamina);
+            vHealth.text = Pct(health);
+            vFood.text = Pct(p.Needs.Food);
+            vRest.text = Pct(p.Needs.Rest);
+            vBreath.text = Pct(p.Stamina);
 
             wanted.Show(game.Pursuit.Active);
             if (game.Pursuit.Active) Ui.SetFill(wantedFill, game.Pursuit.EscapeProgress);

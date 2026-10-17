@@ -60,8 +60,9 @@ namespace OSistema.AI
                     if (!c.From.HasValue)
                     {
                         c.Stage = GoingToDrop;
-                        return false;
+                        return Pawn.Controlled;
                     }
+                    if (Pawn.Controlled && !Near(c.From.Value)) return true;   // walk there yourself
                     if (!Walk(c.From.Value, !c.AtNight && c.Kind != ContractKind.Lookout, game, 1f)) return false;
                     c.Stage = AtPickup;
                     c.Work = c.Kind == ContractKind.Lookout ? GameClock.TicksPerHour * 3 : c.Kind == ContractKind.ScooterTheft ? 240 : c.AtNight ? 700 : 90;
@@ -70,10 +71,12 @@ namespace OSistema.AI
                 case AtPickup:
                     if (c.Kind == ContractKind.Lookout && game.Ticks.TicksGame % 120 == 0) Watch(game);
                     if (--c.Work > 0) return false;
-                    return Pickup(game);
+                    // The next leg is yours to walk (or ride).
+                    return Pickup(game) || Pawn.Controlled;
 
                 case GoingToDrop:
                 {
+                    if (Pawn.Controlled && !Near(c.To)) return true;
                     if (CarriesRisk() && game.Ticks.TicksGame % 60 == 0 && StoppedByPolice(game)) return true;
                     float speed = c.Kind == ContractKind.ScooterTheft ? 2.4f : 1f;
                     if (!Walk(c.To, true, game, speed)) return false;
@@ -88,6 +91,8 @@ namespace OSistema.AI
                     return true;
             }
         }
+
+        bool Near(Vector2Int at) => (Mover.CellCenter(at) - Pawn.Position).sqrMagnitude < 2.6f * 2.6f;
 
         bool CarriesRisk() => contract.Kind == ContractKind.Delivery || contract.AtNight;
 
@@ -149,6 +154,13 @@ namespace OSistema.AI
                         game.Log.Add("A passer-by saw the scooter being taken. Heat is rising.", MessageKind.Bad, at);
                     }
                     Pawn.Carrying = "a stolen scooter";
+                    if (Pawn.Controlled)
+                    {
+                        Pawn.StolenScooter = true;
+                        Pawn.Riding = Pawn.OnScooter = true;
+                        Pawn.Velocity = Vector2.zero;
+                        game.Log.Add("It started first kick. Ride it to Nanninella's garage before anyone notices.", MessageKind.Info, c.To);
+                    }
                     break;
                 }
                 case ContractKind.Smuggling:
@@ -177,6 +189,12 @@ namespace OSistema.AI
         {
             var c = contract;
             Pawn.Carrying = null;
+            if (Pawn.StolenScooter)
+            {
+                Pawn.StolenScooter = false;
+                Pawn.Riding = Pawn.OnScooter = false;
+                Pawn.Velocity = Vector2.zero;
+            }
             if (c.Kind == ContractKind.Debt)
             {
                 float chance = Mathf.Clamp(0.35f + 0.06f * Pawn.IntimidationSkill, 0.1f, 0.95f);

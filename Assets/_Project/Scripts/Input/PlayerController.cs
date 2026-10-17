@@ -58,6 +58,9 @@ namespace OSistema.Input
         (BuildingDef def, int rot, Vector2Int cell) ghostKey;
 
         Pawn follow;   // the camera keeps this pawn in view until the player pans away
+
+        /// <summary>Let the camera rest somewhere else until the player moves again.</summary>
+        public void StopFollowing() => follow = null;
         bool dragging;
         Vector2Int dragStartCell;
         Vector2 dragStartScreen;
@@ -459,22 +462,41 @@ namespace OSistema.Input
             bool running = false;
             bool live = game.Ticks.Speed > 0 && game.Events.Current == null;
 
+            // Z: let him get on with things on his own (eat, sleep, do the lavoretto), or not.
+            if (kb.zKey.wasPressedThisFrame)
+            {
+                p.Autopilot = !p.Autopilot;
+                game.Log.Add(p.Autopilot ? "Gennaro gets on with things by himself when you leave him be (Z to stop)." : "Gennaro only moves when you move him.", MessageKind.Info);
+            }
+
             // R: get on or off your scooter.
             if (kb.rKey.wasPressedThisFrame && live) ToggleScooter(p);
 
             if (p.Riding && live)
             {
-                // A scooter has momentum: it speeds up, coasts, and bangs into walls.
+                // Riding: W throttle, S brake (and a slow reverse), A/D lean into the turn.
+                // It needs speed to turn, slides a little in corners, and bangs into walls.
                 float top = Pawn.BaseSpeed * TickManager.TicksPerSecond * 2.6f;
-                var want = dir.normalized * top;
-                p.Velocity = Vector2.MoveTowards(p.Velocity, want, (dir == Vector2.zero ? 9f : 16f) * dt);
-                if (p.Velocity.sqrMagnitude > 0.0001f)
+                bool gas = kb.wKey.isPressed, brake = kb.sKey.isPressed;
+                float steer = (kb.aKey.isPressed ? 1f : 0f) - (kb.dKey.isPressed ? 1f : 0f);
+                if (gas) p.ScooterSpeed = Mathf.MoveTowards(p.ScooterSpeed, top, 8f * dt);
+                else if (brake) p.ScooterSpeed = Mathf.MoveTowards(p.ScooterSpeed, -2.5f, (p.ScooterSpeed > 0f ? 16f : 4f) * dt);
+                else p.ScooterSpeed = Mathf.MoveTowards(p.ScooterSpeed, 0f, 3f * dt);
+                float grip = Mathf.Clamp01(Mathf.Abs(p.ScooterSpeed) / 2.5f);
+                float turnRate = 190f * grip * (1f - 0.4f * Mathf.Clamp01(p.ScooterSpeed / top));
+                p.Heading += steer * turnRate * dt * (p.ScooterSpeed < 0f ? -1f : 1f);
+                p.Velocity = Vector2.Lerp(p.Velocity, p.Forward * p.ScooterSpeed, Mathf.Clamp01(6f * dt));
+                if (p.Velocity.sqrMagnitude > 0.0001f || gas || brake || steer != 0f)
                 {
                     p.LastInputTick = now;
                     if (p.CurrentJob != null && !(p.CurrentJob is DownedJob)) p.EndCurrentJob(game);
                     var hitWall = p.Mover.Slide(p.Velocity * dt, game.Map, 0.34f, outdoorsOnly: true);
-                    if (hitWall.x) p.Velocity.x *= -0.2f;
-                    if (hitWall.y) p.Velocity.y *= -0.2f;
+                    if (hitWall.x || hitWall.y)
+                    {
+                        if (Mathf.Abs(p.ScooterSpeed) > 5f) OSistema.Views.SoundManager.PlayAt(OSistema.Views.AudioSynth.Punch, p.Position, 0.3f);
+                        p.ScooterSpeed *= 0.3f;
+                        p.Velocity *= 0.3f;
+                    }
                     follow = p;
                 }
             }
@@ -491,6 +513,7 @@ namespace OSistema.Input
                 running = kb.leftShiftKey.isPressed && p.Stamina > 0.05f;
                 if (running) step *= 1.55f;
                 p.Mover.Slide(dir.normalized * step, game.Map);
+                p.Heading = Mathf.Atan2(-dir.x, dir.y) * Mathf.Rad2Deg;   // so a scooter starts off the way you were walking
                 follow = p;
             }
             p.Stamina = Mathf.Clamp01(p.Stamina + (running ? -0.2f : 0.12f) * dt);
@@ -520,10 +543,16 @@ namespace OSistema.Input
 
         void ToggleScooter(Pawn p)
         {
+            if (p.Riding && p.StolenScooter)
+            {
+                game.Log.Add("Not here: take it to Nanninella's garage.", MessageKind.Info);
+                return;
+            }
             if (p.Riding)
             {
                 p.Riding = p.OnScooter = false;
                 p.Velocity = Vector2.zero;
+                p.ScooterSpeed = 0f;
                 return;
             }
             int inUse = 0;
@@ -541,7 +570,9 @@ namespace OSistema.Input
             }
             p.Riding = p.OnScooter = true;
             p.Velocity = Vector2.zero;
+            p.ScooterSpeed = 0f;
             p.EndCurrentJob(game);
+            game.Log.Add("W to go, S to brake, A / D to steer. R to get off.", MessageKind.Info);
         }
 
         /// <summary>Something the player can do with E right now.</summary>
@@ -569,7 +600,11 @@ namespace OSistema.Input
             {
                 var at = Contracts.StepTarget(job);
                 if ((Mover.CellCenter(at) - p.Position).sqrMagnitude < 2.4f * 2.4f)
+                {
+                    if (job.Kind == ContractKind.Debt)
+                        return new Action { Label = "Knock on the door", Do = () => game.Events.Raise(Story.StreetScenes.Knock(job, p, game)) };
                     return new Action { Label = Contracts.StepLabel(job), Do = () => { p.LastInputTick = game.Ticks.TicksGame; p.ForceJob(new ContractJob(p, job), game); } };
+                }
             }
 
             if (Near(p, BuildingDefs.BaggingTable, out _))
@@ -580,13 +615,16 @@ namespace OSistema.Input
             foreach (var b in game.Org.Businesses)
             {
                 if (b.Status == BusinessStatus.Closed) continue;
-                if ((Mover.CellCenter(b.Cell) - p.Position).sqrMagnitude > 4.5f * 4.5f) continue;
+                // Inside, at the counter.
+                if ((Mover.CellCenter(b.Cell) - p.Position).sqrMagnitude > 2.4f * 2.4f) continue;
+                var here = game.Map.GetTerrain(p.Cell.x, p.Cell.y);
+                if (here != TerrainType.Floor && here != TerrainType.Marble) continue;
                 int hour = game.Clock.Hour;
                 bool shopKind = b.Kind == ShopKind.Tabaccheria || b.Kind == ShopKind.Salumeria;
                 if (!shopKind && !Story.ShopCards.PizzoActionable(b, game)) continue;
                 if (hour < 8 || hour >= 21) return new Action { Label = $"{b.Name} is closed", Do = () => { } };
                 var shop = b;
-                if (shopKind) return new Action { Label = $"Go into {b.Name}", Do = () => game.Events.Raise(Story.ShopCards.Shop(shop, game)) };
+                if (shopKind) return new Action { Label = $"Buy at the counter", Do = () => game.Events.Raise(Story.ShopCards.Shop(shop, game)) };
                 string what = b.Status == BusinessStatus.Paying ? "Collect the pizzo at" : "Have a word with the owner of";
                 return new Action { Label = $"{what} {b.Name}", Do = () => game.Events.Raise(Story.ShopCards.Owner(shop, game)) };
             }

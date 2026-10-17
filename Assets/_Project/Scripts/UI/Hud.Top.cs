@@ -12,6 +12,7 @@ namespace OSistema.UI
     public sealed partial class Hud
     {
         Label timeLabel, dayLabel, debugSpeed;
+        VisualElement topBar;
         Icon dayIcon;
         readonly Button[] speedButtons = new Button[4];
         Label dirtyValue, cleanValue, productValue, foodChip, medicineValue, respectValue, scooterValue, cigaretteValue;
@@ -23,6 +24,7 @@ namespace OSistema.UI
         void BuildTop()
         {
             var bar = Ui.Box("topbar").Into(hudLayer);
+            topBar = bar;
             bar.style.backgroundImage = new StyleBackground(Ui.Gradient(new Color(0.14f, 0.11f, 0.08f, 0.97f), new Color(0.06f, 0.05f, 0.04f, 0.97f)));
 
             // Left: time and speed

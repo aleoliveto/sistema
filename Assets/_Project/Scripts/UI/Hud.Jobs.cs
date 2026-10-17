@@ -88,7 +88,7 @@ namespace OSistema.UI
                 Ui.Text(contact.Who, col, "small", "muted", "wrap");
                 var ct = contact;
                 Ui.Box("spacer").Into(row);
-                Ui.Btn("Show", () => FocusCamera(ct.Position), row, "btn--small");
+                Ui.Btn("Pin on map", () => FocusCamera(ct.Position), row, "btn--small");
             }
 
             // Shipments are the family's own business: anyone can be sent from here.

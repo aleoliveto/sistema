@@ -249,7 +249,7 @@ namespace OSistema.UI
                 var tore = game.Contacts.ByName(ContactBook.Supplier);
                 var row = Ui.Row(bizBody);
                 Ui.Text($"Buy by the etto, half kilo or kilo from {ContactBook.Supplier}, in person, {tore?.Hours}. Cut it into doses at a bagging table (E), or give someone the Bagger job.", row, "small", "wrap").style.flexShrink = 1;
-                if (tore != null) Ui.Btn("Show", () => FocusCamera(tore.Position), row, "btn--small");
+                if (tore != null) Ui.Btn("Pin on map", () => FocusCamera(tore.Position), row, "btn--small");
             }
 
             Ui.Text("ROSSE · CIGARETTES", bizBody, "section");

@@ -8,6 +8,8 @@ namespace OSistema.Views
         Npc npc;
         PersonRig rig;
         SpriteRenderer scooter;
+        Exhaust exhaust;
+        Vector2 exhaustLast;
 
         // Ambulance
         SpriteRenderer van, cross;
@@ -35,9 +37,11 @@ namespace OSistema.Views
                 var go = new GameObject("Scooter");
                 go.transform.SetParent(rig.Root, false);
                 scooter = go.AddComponent<SpriteRenderer>();
-                scooter.sprite = SpriteFactory.CenteredPixel;
+                scooter.sprite = SpriteFactory.ScooterBody;
                 scooter.sharedMaterial = SpriteFactory.LitMaterial;
                 scooter.sortingOrder = 8;
+                exhaust = new Exhaust(transform.parent != null ? transform.parent : transform);
+                rig.Seated = true;
                 // Every scooter its own colour: Liberty white, Vespa red, matte black, sky blue…
                 var bodies = new[] { new Color(0.92f, 0.92f, 0.9f), new Color(0.75f, 0.1f, 0.1f), new Color(0.12f, 0.12f, 0.13f),
                     new Color(0.45f, 0.65f, 0.85f), new Color(0.85f, 0.75f, 0.3f), new Color(0.3f, 0.5f, 0.3f), new Color(0.55f, 0.55f, 0.58f) };
@@ -100,6 +104,7 @@ namespace OSistema.Views
             if (npc == null) return;
             if (npc.Despawned)
             {
+                exhaust?.Clear();
                 Destroy(gameObject);
                 return;
             }
@@ -119,7 +124,12 @@ namespace OSistema.Views
                 // The scooter sits under the rider, pointing the way they're heading.
                 var pivot = rig.Root.Find("Pivot");
                 scooter.transform.localRotation = pivot.localRotation;
-                scooter.transform.localScale = new Vector3(0.35f, 1.1f, 1f);
+                scooter.transform.localScale = Vector3.one;
+                float h = pivot.localEulerAngles.z * Mathf.Deg2Rad;
+                var fwd = new Vector2(-Mathf.Sin(h), Mathf.Cos(h));
+                float speed = (npc.Mover.Position - exhaustLast).magnitude / Mathf.Max(Time.deltaTime, 0.0001f);
+                exhaustLast = npc.Mover.Position;
+                exhaust.Update(npc.Mover.Position - fwd * 0.75f, Mathf.Clamp01(speed / 8f), false, visible, Time.deltaTime);
             }
         }
     }

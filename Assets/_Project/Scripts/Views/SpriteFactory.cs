@@ -122,6 +122,45 @@ namespace OSistema.Views
             }
         }
 
+        static Sprite scooterSprite;
+
+        /// <summary>A Vespa-style scooter from above, nose up. The body is white so it can be tinted.</summary>
+        public static Sprite ScooterBody
+        {
+            get
+            {
+                if (scooterSprite != null) return scooterSprite;
+                const int w = 32, h = 72;
+                var tex = new Texture2D(w, h, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear };
+                var px = new Color32[w * h];
+                var tyre = new Color32(22, 22, 24, 255);
+                var seat = new Color32(34, 30, 30, 255);
+                var chrome = new Color32(70, 70, 74, 255);
+                void Ellipse(float cx, float cy, float rx, float ry, Color32 c, bool shade)
+                {
+                    for (int y = 0; y < h; y++)
+                    for (int x = 0; x < w; x++)
+                    {
+                        float dx = (x + 0.5f - cx) / rx, dy = (y + 0.5f - cy) / ry, d = dx * dx + dy * dy;
+                        if (d > 1f) continue;
+                        float f = shade ? 1.05f - 0.25f * d - 0.12f * dx : 1f;
+                        px[y * w + x] = new Color32((byte)Mathf.Clamp(c.r * f, 0, 255), (byte)Mathf.Clamp(c.g * f, 0, 255), (byte)Mathf.Clamp(c.b * f, 0, 255), (byte)(Mathf.Clamp01((1f - d) * 8f) * 255));
+                    }
+                }
+                Ellipse(16, 8, 3.2f, 7f, tyre, false);                 // rear wheel
+                Ellipse(16, 62, 3f, 7f, tyre, false);                  // front wheel
+                Ellipse(16, 26, 11f, 19f, new Color32(255, 255, 255, 255), true);   // the rounded rear body
+                Ellipse(16, 48, 6f, 12f, new Color32(240, 240, 240, 255), true);    // floorboard and leg shield
+                Ellipse(16, 25, 5.5f, 11f, seat, true);                // the seat
+                for (int x = 3; x < 29; x++) for (int y = 56; y < 59; y++) px[y * w + x] = chrome;   // handlebar
+                Ellipse(16, 58, 3.5f, 2.6f, new Color32(250, 246, 220, 255), false); // headlight
+                Ellipse(6, 1, 1.6f, 1.6f, chrome, false);
+                tex.SetPixels32(px);
+                tex.Apply();
+                return scooterSprite = Sprite.Create(tex, new Rect(0, 0, w, h), new Vector2(0.5f, 0.42f), 48);
+            }
+        }
+
         static Sprite softShadow;
 
         /// <summary>A blurred contact shadow: dark in the middle, fading to nothing.</summary>

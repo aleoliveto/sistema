@@ -109,7 +109,10 @@ namespace OSistema.AI
         }
     }
 
-    /// <summary>Stays close to the boss. The combat system makes him shoot when there's trouble.</summary>
+    /// <summary>
+    /// Stays close to the boss. When the boss rides, the first bodyguard hops on the back; others take
+    /// the family's other scooters and follow. The combat system makes them shoot when there's trouble.
+    /// </summary>
     public sealed class BodyguardJob : Job
     {
         Walker walker;
@@ -117,13 +120,41 @@ namespace OSistema.AI
         int wait;
 
         public BodyguardJob(Pawn pawn) : base(pawn) { }
-        public override string Label => "Watching the boss's back";
+        public override string Label => Pawn.Pillion ? "On the back of the boss's scooter" : Pawn.OnScooter ? "Riding behind the boss" : "Watching the boss's back";
         public override bool IsWork => true;
 
         public override bool Tick(Game game)
         {
             var boss = game.Player;
             if (boss == null || !boss.IsPresent || boss.InJail) return true;
+
+            if (boss.Riding && !boss.StolenScooter)
+            {
+                if (Pawn.Pillion || FreePillionSeat(game))
+                {
+                    // On the back: wherever the boss goes, a hand on his shoulder.
+                    Pawn.Pillion = true;
+                    Pawn.OnScooter = Pawn.Riding = false;
+                    Pawn.Heading = boss.Heading;
+                    Pawn.Mover.Place(boss.Position - boss.Forward * 0.38f);
+                    walker = null;
+                    return false;
+                }
+                // A scooter of his own, if the family has one spare.
+                if (!Pawn.OnScooter && SpareScooter(game)) Pawn.OnScooter = true;
+            }
+            else
+            {
+                if (Pawn.Pillion)
+                {
+                    // Hop off beside him.
+                    Pawn.Pillion = false;
+                    var beside = boss.Position + new Vector2(0.6f, -0.3f);
+                    Pawn.Mover.Place(game.Map.IsPassable(Vector2Int.FloorToInt(beside)) ? beside : boss.Position);
+                }
+                if (Pawn.OnScooter && !boss.Riding) Pawn.OnScooter = Pawn.Riding = false;
+            }
+
             float d = (boss.Position - Pawn.Position).magnitude;
             if (d < 2.2f && walker == null)
             {
@@ -134,11 +165,36 @@ namespace OSistema.AI
             if (walker == null || (boss.Cell - lastTarget).sqrMagnitude > 4)
             {
                 lastTarget = boss.Cell;
-                walker = new Walker(boss.Cell, adjacent: true, speedMultiplier: 1.2f) { Flexible = true };
+                walker = new Walker(boss.Cell, adjacent: true, speedMultiplier: Pawn.OnScooter ? 1.25f : 1.2f) { Flexible = true };
             }
+            bool keepScooter = Pawn.OnScooter;
             var status = walker.Tick(Pawn, game);
+            if (keepScooter && boss.Riding) Pawn.OnScooter = true;   // the walker parks it on arrival; we're still following
             if (status != WalkStatus.Walking) walker = null;
             return status == WalkStatus.Failed;
+        }
+
+        public override void OnEnd(Game game)
+        {
+            if (Pawn.Pillion)
+            {
+                Pawn.Pillion = false;
+                Pawn.Mover.Place(Mover.CellCenter(Pawn.Cell));
+            }
+        }
+
+        bool FreePillionSeat(Game game)
+        {
+            foreach (var p in game.Pawns.Crew)
+                if (p != Pawn && p.Pillion) return false;
+            return true;
+        }
+
+        bool SpareScooter(Game game)
+        {
+            int inUse = 0;
+            foreach (var p in game.Pawns.Crew) if (p.OnScooter || (p.Controlled && p.Riding)) inUse++;
+            return game.Stock.Scooters - inUse > 0;
         }
     }
 }

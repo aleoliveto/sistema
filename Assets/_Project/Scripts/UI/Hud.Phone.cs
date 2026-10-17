@@ -60,6 +60,15 @@ namespace OSistema.UI
 
         void OnPaper(Edition e) => ShowPaper(e, pause: true);
 
+        bool PaperOpen => paperDim != null && paperDim.style.display.value == DisplayStyle.Flex;
+
+        void ClosePaper()
+        {
+            paperDim.Show(false);
+            if (paperResumeSpeed > 0 && game != null && !game.Org.GameOver) game.Ticks.SetSpeed(paperResumeSpeed);
+            paperResumeSpeed = -1;
+        }
+
         void RefreshPhone()
         {
             long now = game.Ticks.TicksGame;
@@ -144,6 +153,7 @@ namespace OSistema.UI
             else paperResumeSpeed = -1;
 
             var paper = Ui.Box("paper").Into(paperDim);
+            var close = Ui.Btn("✕  Fold the paper  [Esc]", ClosePaper, paper, "btn--small", "paper__close");
             var mast = Ui.Box("paper__mast").Into(paper);
             Ui.Text(Newspaper.Name, mast, "paper__name");
             Ui.Text($"Quotidiano di Napoli e provincia · No. {e.Number} · Domenica, day {e.Day} · €1.50", mast, "paper__dateline");
@@ -163,12 +173,6 @@ namespace OSistema.UI
             Ui.Text(e.Sidebar, foot, "paper__text", "paper__sidebar", "wrap");
             Ui.Text(e.Brief, foot, "paper__text", "wrap");
 
-            var close = Ui.Btn("Fold the paper", () =>
-            {
-                paperDim.Show(false);
-                if (paperResumeSpeed > 0 && !game.Org.GameOver) game.Ticks.SetSpeed(paperResumeSpeed);
-            }, paper, "paper__close");
-            close.style.alignSelf = Align.Center;
             paperDim.Show(true);
             OSistema.Views.SoundManager.PlayUi(OSistema.Views.AudioSynth.Click, 0.3f);
         }
