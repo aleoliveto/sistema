@@ -142,7 +142,7 @@ namespace OSistema.Npcs
                     }
                     else if (--npc.Timer <= 0)
                     {
-                        npc.Square.LostToday++;
+                        game.Org.LoseCustomer(npc.Square, game);
                         Leave(npc);
                     }
                     return;

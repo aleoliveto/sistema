@@ -131,13 +131,20 @@ namespace OSistema.World
             Color = new Color32(80, 140, 200, 255), Shop = ShopKind.Tabaccheria,
         };
 
+        // What's left of a shop after arson. Reverts to the counter when the shop reopens.
+        public static readonly BuildingDef BurnedShop = new BuildingDef
+        {
+            Id = "burned_shop", Label = "Burned shop", Passable = false, WorkToBuild = 600,
+            Color = new Color32(38, 30, 26, 255),
+        };
+
         public static readonly BuildingDef[] Buildable = { Wall, Door, Bed, Table, Stove, Pantry };
 
         /// <summary>Every def, in a fixed order used by save files. Only ever append to this list.</summary>
         public static readonly BuildingDef[] All =
         {
             Wall, Door, Bed, Table, Stove, Pantry, PizzeriaCounter, SalumeriaCounter, FarmaciaCounter,
-            BarCounter, MacelleriaCounter, TabaccheriaCounter,
+            BarCounter, MacelleriaCounter, TabaccheriaCounter, BurnedShop,
         };
 
         public static BuildingDef ById(string id)

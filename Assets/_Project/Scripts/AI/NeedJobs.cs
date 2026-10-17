@@ -73,10 +73,13 @@ namespace OSistema.AI
         readonly Walker walker;
         bool asleep;
 
-        public SleepJob(Pawn pawn, Vector2Int? bed) : base(pawn)
+        /// <param name="bed">The pawn's bed, or null to sleep on the floor.</param>
+        /// <param name="floorSpot">Where to lie down without a bed; null sleeps on the spot.</param>
+        public SleepJob(Pawn pawn, Vector2Int? bed, Vector2Int? floorSpot) : base(pawn)
         {
             this.bed = bed;
-            if (bed.HasValue) walker = new Walker(bed.Value, adjacent: false);
+            var target = bed ?? floorSpot;
+            if (target.HasValue) walker = new Walker(target.Value, adjacent: false);
         }
 
         public override string Label => !asleep ? "Going to bed" : Pawn.Sleep == SleepState.InBed ? "Sleeping" : "Sleeping on the floor";

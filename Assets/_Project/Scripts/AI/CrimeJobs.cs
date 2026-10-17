@@ -12,6 +12,7 @@ namespace OSistema.AI
 
         public readonly DrugSquare Square;
         public readonly CrewRole Role;
+        public readonly Vector2Int Post;
         readonly Walker walker;
         int ticksAtPost;
 
@@ -21,6 +22,7 @@ namespace OSistema.AI
         {
             Square = square;
             Role = role;
+            Post = post;
             walker = new Walker(post, adjacent: false);
         }
 
@@ -32,7 +34,7 @@ namespace OSistema.AI
 
         public override bool Tick(Game game)
         {
-            if (!game.Org.Squares.Contains(Square) || !DrugSquare.IsOpenAt(game.Clock.Hour)) return true;
+            if (!game.Org.Squares.Contains(Square) || !Square.IsOpenAt(game.Clock.Hour)) return true;
 
             if (!AtPost)
             {
@@ -114,6 +116,51 @@ namespace OSistema.AI
             }
             if (--workLeft > 0f) return false;
             game.Org.ResolvePizzoVisit(business, Pawn, game);
+            return true;
+        }
+
+        public override void OnEnd(Game game)
+        {
+            if (business.ClaimedBy == Pawn) business.ClaimedBy = null;
+        }
+    }
+
+    /// <summary>Punish a business that refused pizzo: smash the window, or burn the shop at night.</summary>
+    public sealed class RetaliateJob : Job
+    {
+        readonly Business business;
+        readonly Retaliation action;
+        readonly Walker walker;
+        float workLeft;
+        bool working;
+
+        public RetaliateJob(Pawn pawn, Business business, Retaliation action) : base(pawn)
+        {
+            this.business = business;
+            this.action = action;
+            walker = new Walker(business.Cell, adjacent: true);
+            workLeft = action == Retaliation.Burn ? 400f : 200f;
+            business.ClaimedBy = pawn;
+        }
+
+        public override string Label => action == Retaliation.Burn
+            ? $"Setting fire to {business.Name}"
+            : $"Paying {business.Name} a visit";
+
+        public override bool IsWork => true;
+
+        public override bool Tick(Game game)
+        {
+            if (business.PendingAction != action || business.Status != BusinessStatus.Refusing) return true; // order cancelled
+            if (!working)
+            {
+                var status = walker.Tick(Pawn, game);
+                if (status == WalkStatus.Failed) return Fail();
+                working = status == WalkStatus.Arrived;
+                return false;
+            }
+            if (--workLeft > 0f) return false;
+            game.Org.ResolveRetaliation(business, Pawn, action, game);
             return true;
         }
 

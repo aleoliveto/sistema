@@ -51,7 +51,7 @@ namespace OSistema.UI
         static Rect TopBar => new Rect(0, 0, Width, TopBarHeight);
         static Rect BottomBar => new Rect(0, Height - BottomBarHeight, Width, BottomBarHeight);
         static Rect PawnPanel => new Rect(8, Height - BottomBarHeight - PanelHeight - 8, PanelWidth, PanelHeight);
-        static Rect HelpPanel => new Rect(Width - 300, TopBarHeight + 8, 292, 310);
+        static Rect HelpPanel => new Rect(Width - 300, TopBarHeight + 8, 292, 330);
 
         public bool IsPointerOver(Vector2 screenPos)
         {
@@ -102,6 +102,12 @@ namespace OSistema.UI
                 $"<b>€{s.Cash}</b>    Product {s.Product}    Meals {s.Meals}    Groceries {s.Groceries}    Medicine {s.Medicine}    Respect {game.Org.Respect:0}", textStyle);
 
             float x = Width - 4 * 46 - 8;
+            if (game.Ticks.Speed >= TickManager.NormalSpeedCount)
+            {
+                GUI.color = BadColor;
+                GUI.Label(new Rect(x - 110, 7, 100, 24), $"<b>DEBUG ×{TickManager.SpeedMultipliers[game.Ticks.Speed]}</b>", textStyle);
+                GUI.color = Color.white;
+            }
             for (int i = 0; i < SpeedLabels.Length; i++)
             {
                 GUI.color = game.Ticks.Speed == i ? Gold : Color.white;
@@ -294,7 +300,10 @@ namespace OSistema.UI
             {
                 if (!WorldToGui(new Vector2(b.Cell.x + 0.5f, b.Cell.y + 0.5f), out var gui)) continue;
                 shopStyle.normal.textColor = b.Status == BusinessStatus.Paying ? GoodColor : b.Status == BusinessStatus.Refusing ? BadColor : Gold;
-                string tag = b.Status == BusinessStatus.Paying ? " (pizzo)" : b.Status == BusinessStatus.Refusing ? " (refused)" : "";
+                string tag = b.Status == BusinessStatus.Paying ? " (pizzo)"
+                    : b.Status == BusinessStatus.Refusing ? " (refused)"
+                    : b.Status == BusinessStatus.Closed ? " (burned)" : "";
+                if (b.Status == BusinessStatus.Closed) shopStyle.normal.textColor = Color.gray;
                 ShadowLabel(new Rect(gui.x - 90, gui.y - unit * 0.5f - 18, 180, 18), b.Name + tag, shopStyle);
             }
             shopStyle.normal.textColor = Gold;
@@ -327,7 +336,7 @@ namespace OSistema.UI
                 "Right click / Esc   cancel tool\n" +
                 "B   business panel  ·  Piazza tool: open a square\n" +
                 "F5 save  ·  F9 load\n" +
-                "<color=#aaaaaa>Debug: F6 shoot selected · F7 +€200</color>\n\n" +
+                "<color=#aaaaaa>Debug: 4 / 5 speed ×30 ×120 · F8 skip 6h\nF6 shoot selected · F7 +€200</color>\n\n" +
                 "The crew eats, sleeps, cooks, shops and patches each other up on their own.",
                 textStyle);
         }

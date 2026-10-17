@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using OSistema.Core;
 using OSistema.Crime;
 using OSistema.Pawns;
@@ -69,8 +70,45 @@ namespace OSistema.AI
             var needs = pawn.Needs;
             int hour = game.Clock.Hour;
             bool night = hour >= 22 || hour < 6;
-            if (!needs.Tired && !(night && needs.Rest < 0.85f)) return null;
-            return new SleepJob(pawn, EnsureBed(pawn, game));
+            // Night-shift crew only go to bed when actually tired, not just because it's late.
+            bool bedtime = night && needs.Rest < 0.85f && !HasDutyNow(pawn, game);
+            if (!needs.Tired && !bedtime) return null;
+
+            if (needs.Rest < 0.03f) return new SleepJob(pawn, null, null); // collapses where they stand
+
+            var bed = EnsureBed(pawn, game);
+            if (bed.HasValue) return new SleepJob(pawn, bed, null);
+            // No bed: go home and sleep on the floor of the basso, not in the street.
+            return new SleepJob(pawn, null, FloorSpotAtHome(pawn, game));
+        }
+
+        static Vector2Int? FloorSpotAtHome(Pawn pawn, Game game)
+        {
+            var home = game.PlayerBase;
+            for (int i = 0; i < 20; i++)
+            {
+                var c = new Vector2Int(game.Rng.Next(home.xMin, home.xMax), game.Rng.Next(home.yMin, home.yMax));
+                if (game.Map.IsPassable(c) && game.Map.GetBuilding(c) == null) return c;
+            }
+            return null;
+        }
+
+        /// <summary>True while the pawn's role keeps them up: an open piazza, or a night job for the collector.</summary>
+        public static bool HasDutyNow(Pawn pawn, Game game)
+        {
+            int hour = game.Clock.Hour;
+            var org = game.Org;
+            switch (pawn.Role)
+            {
+                case CrewRole.Pusher:
+                case CrewRole.Lookout:
+                    return org.Squares.Exists(s => s.IsOpenAt(hour));
+                case CrewRole.Collector:
+                    return (hour >= 22 || hour < Organization.ArsonEndHour) &&
+                           org.Businesses.Exists(b => b.PendingAction == Retaliation.Burn);
+                default:
+                    return false;
+            }
         }
 
         static Vector2Int? EnsureBed(Pawn pawn, Game game)
@@ -98,35 +136,17 @@ namespace OSistema.AI
             if (pawn.Role == CrewRole.General || pawn.IsLyingLow(game.Ticks.TicksGame)) return null;
             var org = game.Org;
 
-            if (pawn.Role == CrewRole.Collector)
-            {
-                int hour = game.Clock.Hour;
-                if (hour < 9 || hour >= 20) return null; // shops are closed
-                int week = Organization.WeekOf(game.Clock);
-                Business best = null;
-                int bestDist = int.MaxValue;
-                foreach (var b in org.Businesses)
-                {
-                    if (!org.IsDue(b, week)) continue;
-                    int d = GridUtil.Manhattan(pawn.Cell, b.Cell);
-                    if (d < bestDist)
-                    {
-                        bestDist = d;
-                        best = b;
-                    }
-                }
-                return best != null ? new CollectPizzoJob(pawn, best) : null;
-            }
+            if (pawn.Role == CrewRole.Collector) return CollectorDuty(pawn, game);
 
-            if (org.Squares.Count == 0 || !DrugSquare.IsOpenAt(game.Clock.Hour)) return null;
+            int hour = game.Clock.Hour;
 
-            // Go where you're needed most: the square with the fewest people in this role.
+            // Go where you're needed most: the open square with the fewest people in this role.
             DrugSquare square = null;
             int fewest = int.MaxValue;
             foreach (var sq in org.Squares)
             {
-                if (game.Police.IsRaiding(sq)) continue;
-                int n = CountPosted(sq, pawn.Role, game);
+                if (!sq.IsOpenAt(hour) || game.Police.IsRaiding(sq)) continue;
+                int n = CountPosted(sq, pawn.Role, pawn, game);
                 if (n < fewest)
                 {
                     fewest = n;
@@ -135,18 +155,78 @@ namespace OSistema.AI
             }
             if (square == null) return null;
 
-            if (pawn.Role == CrewRole.Pusher) return new PostJob(pawn, square, CrewRole.Pusher, square.Cell);
-            if (square.LookoutPosts.Count == 0) return null;
-            var post = square.LookoutPosts[fewest % square.LookoutPosts.Count];
-            return new PostJob(pawn, square, CrewRole.Lookout, post);
+            var post = FreePost(square, pawn, game);
+            return post.HasValue ? new PostJob(pawn, square, pawn.Role, post.Value) : null;
         }
 
-        static int CountPosted(DrugSquare square, CrewRole role, Game game)
+        static Job CollectorDuty(Pawn pawn, Game game)
+        {
+            var org = game.Org;
+            int hour = game.Clock.Hour;
+            int week = Organization.WeekOf(game.Clock);
+
+            bool arsonHours = hour >= Organization.ArsonStartHour && hour < Organization.ArsonEndHour;
+            bool scareHours = hour >= 9 && hour < 22;
+            bool shopHours = hour >= 9 && hour < 20;
+
+            Business best = null;
+            Retaliation action = Retaliation.None;
+            int bestDist = int.MaxValue;
+            foreach (var b in org.Businesses)
+            {
+                if (b.ClaimedBy != null) continue;
+                Retaliation candidate;
+                if (b.PendingAction == Retaliation.Burn && arsonHours) candidate = Retaliation.Burn;
+                else if (b.PendingAction == Retaliation.Scare && scareHours) candidate = Retaliation.Scare;
+                else if (shopHours && b.PendingAction == Retaliation.None && org.IsDue(b, week)) candidate = Retaliation.None;
+                else continue;
+
+                int d = GridUtil.Manhattan(pawn.Cell, b.Cell);
+                // Retaliation orders come before routine collection.
+                if (candidate != Retaliation.None) d -= 10000;
+                if (d < bestDist)
+                {
+                    bestDist = d;
+                    best = b;
+                    action = candidate;
+                }
+            }
+            if (best == null) return null;
+            return action == Retaliation.None ? new CollectPizzoJob(pawn, best) : new RetaliateJob(pawn, best, action);
+        }
+
+        static int CountPosted(DrugSquare square, CrewRole role, Pawn except, Game game)
         {
             int n = 0;
             foreach (var p in game.Pawns.All)
-                if (p.CurrentJob is PostJob post && post.Square == square && post.Role == role) n++;
+                if (p != except && p.CurrentJob is PostJob post && post.Square == square && post.Role == role) n++;
             return n;
+        }
+
+        /// <summary>
+        /// A post nobody else has taken. Pushers use the spot itself, then the cells around it;
+        /// lookouts spread over the approaches.
+        /// </summary>
+        static Vector2Int? FreePost(DrugSquare square, Pawn pawn, Game game)
+        {
+            var taken = new HashSet<Vector2Int>();
+            foreach (var p in game.Pawns.All)
+                if (p != pawn && p.CurrentJob is PostJob post && post.Square == square) taken.Add(post.Post);
+
+            if (pawn.Role == CrewRole.Pusher)
+            {
+                foreach (var c in GridUtil.CellsAround(square.Cell, 1))
+                    if (!taken.Contains(c) && game.Map.IsPassable(c) && game.Map.GetBuilding(c) == null) return c;
+                return null;
+            }
+
+            foreach (var c in square.LookoutPosts)
+                if (!taken.Contains(c)) return c;
+            // More lookouts than approaches: double up near a post, but never on the same cell.
+            foreach (var basePost in square.LookoutPosts)
+            foreach (var c in GridUtil.CellsAround(basePost, 2))
+                if (!taken.Contains(c) && game.Map.IsPassable(c) && game.Map.GetBuilding(c) == null) return c;
+            return null;
         }
 
         static Job TryCook(Pawn pawn, Game game)

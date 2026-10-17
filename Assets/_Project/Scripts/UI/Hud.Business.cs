@@ -138,7 +138,16 @@ namespace OSistema.UI
                 }
                 string raid = game.Police.IsRaiding(sq) ? "  <color=#ff7a70>RAID</color>" : "";
                 GUILayout.Label($"<b>{zone.Name}</b>{raid}  ·  Heat {zone.Heat:0}  ·  Demand {zone.Demand:0.0}", textStyle);
-                GUILayout.Label($"Today: {sq.SalesToday} sold (€{sq.RevenueToday}), {sq.LostToday} customers lost  ·  open {DrugSquare.OpenHour:00}:00–{DrugSquare.CloseHour:00}:00", smallStyle);
+                GUILayout.Label($"Today: {sq.SalesToday} sold (€{sq.RevenueToday}), {sq.LostToday} customers lost", smallStyle);
+                GUILayout.BeginHorizontal();
+                GUILayout.Label($"Open {sq.HoursLabel}", smallStyle, GUILayout.Width(130));
+                GUILayout.Label("opens", smallStyle, GUILayout.Width(36));
+                if (GUILayout.Button("-", smallButtonStyle, GUILayout.Width(20))) sq.OpenHour = (sq.OpenHour + 23) % 24;
+                if (GUILayout.Button("+", smallButtonStyle, GUILayout.Width(20))) sq.OpenHour = (sq.OpenHour + 1) % 24;
+                GUILayout.Label("closes", smallStyle, GUILayout.Width(40));
+                if (GUILayout.Button("-", smallButtonStyle, GUILayout.Width(20))) sq.CloseHour = (sq.CloseHour + 23) % 24;
+                if (GUILayout.Button("+", smallButtonStyle, GUILayout.Width(20))) sq.CloseHour = (sq.CloseHour + 1) % 24;
+                GUILayout.EndHorizontal();
                 if (pushers == 0) GUILayout.Label("<color=#ff7a70>No pushers assigned.</color>", smallStyle);
                 if (lookouts == 0) GUILayout.Label("<color=#ffb070>No lookouts: the police will walk right up to the spot.</color>", smallStyle);
             }
@@ -156,13 +165,25 @@ namespace OSistema.UI
             {
                 var zone = game.Territory.ZoneAt(b.Cell);
                 GUILayout.BeginHorizontal();
-                GUILayout.Label($"<b>{b.Name}</b> <color=#aaaaaa>{zone?.Name}</color>", smallStyle, GUILayout.Width(250));
-                GUILayout.Label(b.StatusLabel, smallStyle, GUILayout.Width(130));
-                if ((b.Status == BusinessStatus.Free || b.Status == BusinessStatus.Refusing) &&
-                    GUILayout.Button(b.Status == BusinessStatus.Free ? $"Impose €{b.WeeklyPizzo}" : "Try again", smallButtonStyle, GUILayout.Width(90)))
+                GUILayout.Label($"<b>{b.Name}</b> <color=#aaaaaa>{zone?.Name}</color>", smallStyle, GUILayout.Width(210));
+                GUILayout.Label(BusinessStatusText(b), smallStyle, GUILayout.Width(120));
+                if (b.Status == BusinessStatus.Free && GUILayout.Button($"Impose €{b.WeeklyPizzo}", smallButtonStyle, GUILayout.Width(80)))
                     org.Target(b);
+                if (b.Status == BusinessStatus.Refusing)
+                {
+                    if (GUILayout.Button("Ask again", smallButtonStyle, GUILayout.Width(62))) org.Target(b);
+                    if (GUILayout.Button("Scare", smallButtonStyle, GUILayout.Width(44))) org.OrderRetaliation(b, Retaliation.Scare, game);
+                    if (GUILayout.Button("Burn", smallButtonStyle, GUILayout.Width(40))) org.OrderRetaliation(b, Retaliation.Burn, game);
+                }
                 GUILayout.EndHorizontal();
             }
+        }
+
+        string BusinessStatusText(Business b)
+        {
+            if (b.Status != BusinessStatus.Closed) return b.StatusLabel;
+            long days = (b.ClosedUntil - game.Ticks.TicksGame) / OSistema.Core.GameClock.TicksPerDay + 1;
+            return $"Burned · reopens in {days}d";
         }
 
         // ---------- World labels for the crime layer ----------

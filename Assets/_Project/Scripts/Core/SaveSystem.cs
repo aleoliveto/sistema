@@ -14,7 +14,8 @@ namespace OSistema.Core
     /// </summary>
     public static class SaveSystem
     {
-        public const int Version = 2;
+        public const int Version = 3;
+        const int OldestReadable = 2;
 
         public static string DefaultPath => Path.Combine(Application.persistentDataPath, "save1.json");
 
@@ -59,13 +60,14 @@ namespace OSistema.Core
             foreach (var z in game.Territory.Zones)
                 data.zones.Add(new ZoneData { name = z.Name, x = z.Rect.x, y = z.Rect.y, w = z.Rect.width, h = z.Rect.height, heat = z.Heat, demand = z.Demand });
             foreach (var sq in game.Org.Squares)
-                data.squares.Add(new SquareData { x = sq.Cell.x, y = sq.Cell.y, zone = sq.ZoneId });
+                data.squares.Add(new SquareData { x = sq.Cell.x, y = sq.Cell.y, zone = sq.ZoneId, open = sq.OpenHour, close = sq.CloseHour });
             foreach (var b in game.Org.Businesses)
                 data.businesses.Add(new BusinessData
                 {
                     x = b.Cell.x, y = b.Cell.y, name = b.Name, kind = (int)b.Kind,
                     // Someone sent to impose pizzo is a standing order; keep it.
                     status = (int)b.Status, pizzo = b.WeeklyPizzo, defiance = b.Defiance, lastWeek = b.LastCollectedWeek,
+                    action = (int)b.PendingAction, closedUntil = b.ClosedUntil, counterDef = b.CounterDefId,
                 });
 
             foreach (var bp in game.Construction.All)
@@ -80,7 +82,7 @@ namespace OSistema.Core
         public static Game Load(string path)
         {
             var data = JsonUtility.FromJson<SaveData>(File.ReadAllText(path));
-            if (data == null || data.version != Version)
+            if (data == null || data.version < OldestReadable || data.version > Version)
                 throw new InvalidDataException($"Unsupported save version {data?.version}");
 
             var map = new Map(data.width, data.height);
@@ -106,12 +108,23 @@ namespace OSistema.Core
             game.Org.PendingOrderDay = data.pendingOrderDay;
             game.Org.LastPaydayWeek = data.lastPaydayWeek;
             foreach (var sq in data.squares)
-                game.Org.RestoreSquare(new DrugSquare { Cell = new Vector2Int(sq.x, sq.y), ZoneId = sq.zone }, map);
+            {
+                var square = new DrugSquare { Cell = new Vector2Int(sq.x, sq.y), ZoneId = sq.zone };
+                if (data.version >= 3)
+                {
+                    square.OpenHour = sq.open;
+                    square.CloseHour = sq.close;
+                }
+                game.Org.RestoreSquare(square, map);
+            }
             foreach (var b in data.businesses)
                 game.Org.Businesses.Add(new Business
                 {
                     Cell = new Vector2Int(b.x, b.y), Name = b.name, Kind = (ShopKind)b.kind, Status = (BusinessStatus)b.status,
                     WeeklyPizzo = b.pizzo, Defiance = b.defiance, LastCollectedWeek = b.lastWeek,
+                    PendingAction = (Retaliation)b.action, ClosedUntil = b.closedUntil,
+                    // Version 2 saves didn't store the counter: derive it from the map.
+                    CounterDefId = !string.IsNullOrEmpty(b.counterDef) ? b.counterDef : map.GetBuilding(b.x, b.y)?.Id,
                 });
             game.Stock.Groceries = data.groceries;
             game.Stock.Meals = data.meals;
@@ -230,14 +243,15 @@ namespace OSistema.Core
         [Serializable]
         sealed class SquareData
         {
-            public int x, y, zone;
+            public int x, y, zone, open, close;
         }
 
         [Serializable]
         sealed class BusinessData
         {
-            public int x, y, kind, status, pizzo, lastWeek;
-            public string name;
+            public int x, y, kind, status, pizzo, lastWeek, action;
+            public long closedUntil;
+            public string name, counterDef;
             public float defiance;
         }
 

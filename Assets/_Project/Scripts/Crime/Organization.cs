@@ -17,6 +17,10 @@ namespace OSistema.Crime
     {
         public const int MaxSquares = 3;
         public const int MaxCrew = 12;
+        public const int ArsonStartHour = 2;  // arson happens in the dead of night
+        public const int ArsonEndHour = 5;
+        const float RespectPerLostCustomer = 0.25f;
+        const int LostWarningCooldown = GameClock.TicksPerHour * 3;
         const float HeatPerSale = 0.35f;
         const int MaxCustomers = 10;
 
@@ -56,6 +60,7 @@ namespace OSistema.Crime
             if (clock.Hour == 0) OnNewDay(game);
             if (clock.Hour == 8 && PendingOrderUnits > 0 && clock.Day >= PendingOrderDay) DeliverOrder(game);
             if (clock.Hour == 12 && clock.IsPayday && LastPaydayWeek != WeekOf(clock)) Payday(game);
+            ReopenBurnedShops(game);
             game.Police.HourlyCheck(game);
         }
 
@@ -285,14 +290,30 @@ namespace OSistema.Crime
             if (game.Rng.NextDouble() < 0.1) pusher.Say("sale");
         }
 
+        /// <summary>A customer walked away with nothing: word gets around that this piazza can't deliver.</summary>
+        public void LoseCustomer(DrugSquare square, Game game)
+        {
+            square.LostToday++;
+            Respect = Mathf.Max(0f, Respect - RespectPerLostCustomer);
+
+            long now = game.Ticks.TicksGame;
+            if (now - square.LastLostWarningTick < LostWarningCooldown) return;
+            square.LastLostWarningTick = now;
+            var zone = game.Territory.Zones[square.ZoneId];
+            string why = game.Stock.Product <= 0 ? "there's no product" : "nobody is selling";
+            game.Log.Add($"Customers are leaving the piazza in {zone.Name} empty-handed: {why}. Respect is dropping.", MessageKind.Bad);
+        }
+
         void SpawnCustomers(Game game)
         {
-            if (Squares.Count == 0 || !DrugSquare.IsOpenAt(game.Clock.Hour)) return;
+            if (Squares.Count == 0) return;
             if (game.Npcs.Count(NpcKind.Customer) >= MaxCustomers) return;
             if (game.Territory.Entrances.Count == 0) return;
 
+            int hour = game.Clock.Hour;
             foreach (var sq in Squares)
             {
+                if (!sq.IsOpenAt(hour)) continue;
                 var zone = game.Territory.Zones[sq.ZoneId];
                 float perHour = 1.6f * zone.Demand * (1f - zone.Heat / 150f) * (0.7f + Respect / 250f);
                 if (game.Rng.NextDouble() < perHour / GameClock.TicksPerHour)
@@ -316,6 +337,7 @@ namespace OSistema.Crime
                         Name = BusinessName(def.Shop, rng),
                         WeeklyPizzo = BasePizzo(def.Shop) + rng.Next(-2, 3) * 10,
                         Defiance = 0.1f + (float)rng.NextDouble() * 0.5f,
+                        CounterDefId = def.Id,
                     });
                 }
             }
@@ -347,7 +369,90 @@ namespace OSistema.Crime
         /// <summary>Orders a collector to go and impose pizzo.</summary>
         public void Target(Business b)
         {
-            if (b.Status == BusinessStatus.Free || b.Status == BusinessStatus.Refusing) b.Status = BusinessStatus.Targeted;
+            if (b.Status == BusinessStatus.Free || b.Status == BusinessStatus.Refusing)
+            {
+                b.Status = BusinessStatus.Targeted;
+                b.PendingAction = Retaliation.None;
+            }
+        }
+
+        // ---------- Retaliation ----------
+
+        /// <summary>Orders the collector to scare or burn a business that refused to pay.</summary>
+        public void OrderRetaliation(Business b, Retaliation action, Game game)
+        {
+            if (b.Status != BusinessStatus.Refusing) return;
+            b.PendingAction = action;
+            game.Log.Add(action == Retaliation.Burn
+                ? $"Order given: {b.Name} burns tonight, between {ArsonStartHour:00}:00 and {ArsonEndHour:00}:00."
+                : $"Order given: someone pays {b.Name} a visit.");
+        }
+
+        public void ResolveRetaliation(Business b, Pawn pawn, Retaliation action, Game game)
+        {
+            b.PendingAction = Retaliation.None;
+            var zone = game.Territory.ZoneAt(b.Cell);
+            if (action == Retaliation.Scare) Scare(b, pawn, zone, game);
+            else if (action == Retaliation.Burn) Burn(b, pawn, zone, game);
+        }
+
+        void Scare(Business b, Pawn pawn, Zone zone, Game game)
+        {
+            b.Defiance = Mathf.Max(0.02f, b.Defiance - 0.25f - 0.02f * pawn.IntimidationSkill);
+            b.Status = BusinessStatus.Targeted; // the collector goes back to ask again, nicely
+            Respect = Mathf.Min(100f, Respect + 2f);
+            game.Territory.AddHeat(b.Cell, 8f);
+            pawn.Say("scare");
+            game.Log.Add($"{pawn.Nickname} smashed the window of {b.Name}. The owner will think twice now.");
+            if (game.Rng.NextDouble() < b.Defiance * 0.5)
+            {
+                game.Territory.AddHeat(b.Cell, 10f);
+                game.Log.Add($"The owner of {b.Name} filed a report anyway. Heat is rising in {zone?.Name}.", MessageKind.Bad);
+            }
+        }
+
+        void Burn(Business b, Pawn pawn, Zone zone, Game game)
+        {
+            long now = game.Ticks.TicksGame;
+            b.Status = BusinessStatus.Closed;
+            b.ClosedUntil = now + GameClock.TicksPerDay * 7;
+            game.Map.SetBuilding(b.Cell.x, b.Cell.y, BuildingDefs.BurnedShop);
+            Respect = Mathf.Min(100f, Respect + 6f);
+            game.Territory.AddHeat(b.Cell, 25f);
+            pawn.Say("burn");
+            game.Log.Add($"{b.Name} burned in the night. The owner's family watches from the street.", MessageKind.Bad);
+
+            // Fear spreads through the zone: everyone saw what happens to those who don't pay.
+            int caved = 0;
+            foreach (var other in Businesses)
+            {
+                if (other == b || game.Territory.ZoneAt(other.Cell) != zone) continue;
+                other.Defiance = Mathf.Max(0.02f, other.Defiance - 0.15f);
+                if (other.Status == BusinessStatus.Refusing && game.Rng.NextDouble() < 0.5)
+                {
+                    other.Status = BusinessStatus.Targeted;
+                    other.PendingAction = Retaliation.None;
+                    caved++;
+                }
+            }
+            if (zone != null)
+                game.Log.Add(caved > 0
+                    ? $"Every shop in {zone.Name} got the message. {caved} that refused before are ready to talk."
+                    : $"Every shop in {zone.Name} got the message.");
+        }
+
+        void ReopenBurnedShops(Game game)
+        {
+            long now = game.Ticks.TicksGame;
+            foreach (var b in Businesses)
+            {
+                if (b.Status != BusinessStatus.Closed || now < b.ClosedUntil) continue;
+                var def = BuildingDefs.ById(b.CounterDefId);
+                if (def != null) game.Map.SetBuilding(b.Cell.x, b.Cell.y, def);
+                b.Status = BusinessStatus.Free;
+                b.Defiance = 0.05f;
+                game.Log.Add($"{b.Name} has reopened. The owner keeps their eyes down.");
+            }
         }
 
         public bool IsDue(Business b, int week) =>

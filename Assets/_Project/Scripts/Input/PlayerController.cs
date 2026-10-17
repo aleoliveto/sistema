@@ -97,6 +97,8 @@ namespace OSistema.Input
             if (kb.digit1Key.wasPressedThisFrame) game.Ticks.SetSpeed(1);
             if (kb.digit2Key.wasPressedThisFrame) game.Ticks.SetSpeed(2);
             if (kb.digit3Key.wasPressedThisFrame) game.Ticks.SetSpeed(3);
+            if (kb.digit4Key.wasPressedThisFrame) game.Ticks.SetSpeed(4); // debug ×30
+            if (kb.digit5Key.wasPressedThisFrame) game.Ticks.SetSpeed(5); // debug ×120
             if (kb.rKey.wasPressedThisFrame) ToggleDraftSelected();
 
             if (kb.escapeKey.wasPressedThisFrame)
@@ -123,6 +125,11 @@ namespace OSistema.Input
             {
                 game.Stock.Cash += 200;
                 game.Log.Add("[Debug] +€200", MessageKind.Good);
+            }
+            if (kb.f8Key.wasPressedThisFrame)
+            {
+                game.Ticks.Advance(GameClock.TicksPerHour * 6);
+                game.Log.Add("[Debug] Skipped 6 hours.");
             }
         }
 

@@ -10,10 +10,11 @@ namespace OSistema.Core
     public sealed class TickManager
     {
         public const int TicksPerSecond = 60;
-        public static readonly int[] SpeedMultipliers = { 0, 1, 3, 6 };
+        public static readonly int[] SpeedMultipliers = { 0, 1, 3, 6, 30, 120 }; // 4 and 5 are debug speeds
+        public const int NormalSpeedCount = 4;
 
         // Caps catch-up work after a frame hitch so the game never spirals.
-        const int MaxTicksPerFrame = 360;
+        const int MaxTicksPerFrame = 3000;
 
         public long TicksGame { get; private set; }
         public int Speed { get; private set; } = 1;
@@ -32,6 +33,16 @@ namespace OSistema.Core
         }
 
         public void TogglePause() => SetSpeed(Paused ? speedBeforePause : 0);
+
+        /// <summary>Debug: runs the simulation forward immediately.</summary>
+        public void Advance(int ticks)
+        {
+            for (int i = 0; i < ticks; i++)
+            {
+                TicksGame++;
+                OnTick?.Invoke();
+            }
+        }
 
         /// <summary>Sets the clock when loading a save.</summary>
         public void Restore(long ticks)

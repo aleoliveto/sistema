@@ -96,6 +96,16 @@ namespace OSistema.Story
                 new Line("Nun ve pentite, Don.", "You won't regret it, Don."),
                 new Line("Pronto pe' qualsiasi cosa.", "Ready for anything."),
             },
+            ["scare"] = new[]
+            {
+                new Line("'A prossima vota nun è 'a vetrina.", "Next time it won't be the window."),
+                new Line("Mo' capisce comme funziona.", "Now you understand how it works."),
+            },
+            ["burn"] = new[]
+            {
+                new Line("Chi nun paga, s'abbrucia.", "Whoever doesn't pay, burns."),
+                new Line("Zitto. Jamme, primma ca vene quaccheduno.", "Quiet. Let's go before someone comes."),
+            },
             ["work_done"] = new[]
             {
                 new Line("Ecco fatto.", "There, done."),
