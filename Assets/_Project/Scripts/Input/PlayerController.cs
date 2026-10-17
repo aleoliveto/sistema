@@ -53,7 +53,7 @@ namespace OSistema.Input
         SpriteRenderer preview;
         SpriteRenderer ghost;
         Texture2D ghostTex;
-        readonly Color32[] ghostPixels = new Color32[TilePainter.Size * TilePainter.Size];
+        readonly Color32[] ghostPixels = new Color32[TilePainter.Hi * TilePainter.Hi];
         (BuildingDef def, int rot, Vector2Int cell) ghostKey;
 
         Pawn follow;   // the camera keeps this pawn in view until the player pans away
@@ -74,9 +74,9 @@ namespace OSistema.Input
             preview.enabled = false;
 
             // A see-through copy of the furniture under the cursor, so you can see which way it faces.
-            ghostTex = new Texture2D(TilePainter.Size, TilePainter.Size, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
+            ghostTex = new Texture2D(TilePainter.Hi, TilePainter.Hi, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
             ghost = new GameObject("Build Ghost").AddComponent<SpriteRenderer>();
-            ghost.sprite = Sprite.Create(ghostTex, new Rect(0, 0, TilePainter.Size, TilePainter.Size), Vector2.zero, TilePainter.Size);
+            ghost.sprite = Sprite.Create(ghostTex, new Rect(0, 0, TilePainter.Hi, TilePainter.Hi), Vector2.zero, TilePainter.Hi);
             ghost.sharedMaterial = SpriteFactory.UnlitMaterial;
             ghost.sortingOrder = 21;
             ghost.color = new Color(1f, 1f, 1f, 0.8f);
@@ -93,7 +93,7 @@ namespace OSistema.Input
             var key = (CurrentDef, PlacementRotation, cell);
             if (key == ghostKey) return;
             ghostKey = key;
-            TilePainter.PaintPreview(game.Map, CurrentDef, cell.x, cell.y, PlacementRotation, ghostPixels);
+            TilePainter.PaintPreviewHi(game.Map, CurrentDef, cell.x, cell.y, PlacementRotation, ghostPixels);
             ghostTex.SetPixels32(ghostPixels);
             ghostTex.Apply();
         }

@@ -39,8 +39,13 @@ namespace OSistema.Views
             if (!indoor) CastShadows(map, x, y, buf, stride, ox, oy, Hi);
             Weather(terrain, x, y, buf, stride, ox, oy, false, Hi);
             if (building == null) return;
+            if (HasHiProp(building))
+            {
+                PaintPropHi(map, building, x, y, style, buf, stride, ox, oy);
+                return;
+            }
 
-            // Furniture and props: paint the cell at 16 px with and without them, and double what differs.
+            // Anything else: paint the cell at 16 px with and without it, and double what differs.
             PaintCell(map, x, y, Full16, Size, 0, 0);
             PaintGround16(map, x, y, Bare16);
             for (int py = 0; py < Size; py++)
