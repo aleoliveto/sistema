@@ -112,6 +112,11 @@ namespace OSistema.Views
             foreach (var c in GridUtil.Cells(new RectInt(game.PlayerBase.x - 1, game.PlayerBase.y - 1, game.PlayerBase.width + 2, game.PlayerBase.height + 2), false))
                 if (map.InBounds(c)) state[map.Index(c.x, c.y)] = Visible;
 
+            // Every building the family owns is known inside and out.
+            foreach (var p in game.Properties.Owned)
+                foreach (var c in GridUtil.Cells(p.Rect, false))
+                    if (map.InBounds(c)) state[map.Index(c.x, c.y)] = Visible;
+
             int radius = game.Clock.Daylight > 0.4f ? SightDay : SightNight;
             foreach (var pawn in game.Pawns.Crew)
             {

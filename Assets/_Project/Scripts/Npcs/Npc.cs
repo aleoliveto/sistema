@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace OSistema.Npcs
 {
-    public enum NpcKind { Customer, Police, Civilian, Child, Elder, Scooter }
+    public enum NpcKind { Customer, Police, Civilian, Child, Elder, Scooter, Ambulance }
 
     /// <summary>
     /// A lightweight non-crew character driven by a simple state machine. NPCs aren't saved:
@@ -36,6 +36,7 @@ namespace OSistema.Npcs
         public Vector2Int Target;
         public int TripsLeft;        // civilians: errands before heading home
         public bool Panicking;
+        public Pawn Patient;         // ambulances
 
         public Npc(int id, NpcKind kind, Vector2Int cell, float speed, Color32 color)
         {
@@ -95,6 +96,15 @@ namespace OSistema.Npcs
             return npc;
         }
 
+        public Npc SpawnAmbulance(Vector2Int from, Vector2Int scene, Pawn patient, Game game)
+        {
+            var npc = Spawn(NpcKind.Ambulance, from, 0.16f, new Color32(240, 240, 236, 255));
+            npc.Target = scene;
+            npc.Exit = from;
+            npc.Patient = patient;
+            return npc;
+        }
+
         public Npc Spawn(NpcKind kind, Vector2Int cell, float speed, Color32 color)
         {
             var npc = new Npc(nextId++, kind, cell, speed, color);
@@ -116,10 +126,37 @@ namespace OSistema.Npcs
                         else PoliceAI.Tick(npc, game);
                         break;
                     case NpcKind.Scooter: StreetLife.TickScooter(npc, game); break;
+                    case NpcKind.Ambulance: TickAmbulance(npc, game); break;
                     default: StreetLife.TickCivilian(npc, game); break;
                 }
             }
             npcs.RemoveAll(n => n.Despawned);
+        }
+
+        /// <summary>Siren on, to the scene by road; load the patient; back to the Ospedale.</summary>
+        static void TickAmbulance(Npc npc, Game game)
+        {
+            switch (npc.State)
+            {
+                case 0:
+                {
+                    npc.Walker ??= new Walker(npc.Target, adjacent: false, roadOnly: true);
+                    var status = npc.Walker.Tick(npc.Mover, 1f, game);
+                    if (status == WalkStatus.Walking) return;
+                    npc.State = 1;
+                    npc.Timer = Hospital.Loading;
+                    return;
+                }
+                case 1:
+                    if (--npc.Timer > 0) return;
+                    if (npc.Patient != null) game.Hospital.Admit(npc.Patient, game);
+                    npc.State = 2;
+                    npc.Walker = new Walker(npc.Exit, adjacent: false, roadOnly: true);
+                    return;
+                default:
+                    if (npc.Walker.Tick(npc.Mover, 1f, game) != WalkStatus.Walking) npc.Despawned = true;
+                    return;
+            }
         }
     }
 

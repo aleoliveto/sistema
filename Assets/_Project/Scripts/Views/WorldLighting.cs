@@ -43,9 +43,14 @@ namespace OSistema.Views
                 if (!def.LightSource) continue;
                 foreach (var cell in g.Map.PositionsOf(def)) lamps.Add(CreateLamp(cell, def == BuildingDefs.Shrine));
             }
+            // Lamps hung on the walls of the vicoli.
+            var map = g.Map;
+            for (int y = 0; y < map.Height; y++)
+            for (int x = 0; x < map.Width; x++)
+                if (map.GetDecor(x, y) == MapDecor.WallLamp) lamps.Add(CreateLamp(new Vector2Int(x, y), false, 5f));
         }
 
-        Light2D CreateLamp(Vector2Int cell, bool candle)
+        Light2D CreateLamp(Vector2Int cell, bool candle, float radius = 7f)
         {
             var go = new GameObject(candle ? "Shrine light" : "Lamp");
             go.transform.SetParent(transform, false);
@@ -55,7 +60,7 @@ namespace OSistema.Views
             light.color = candle ? new Color(1f, 0.65f, 0.35f) : new Color(1f, 0.82f, 0.55f);
             light.intensity = candle ? 0.9f : 1.1f;
             light.pointLightInnerRadius = 0.5f;
-            light.pointLightOuterRadius = candle ? 3.5f : 7f;
+            light.pointLightOuterRadius = candle ? 3.5f : radius;
             light.enabled = false;
             return light;
         }

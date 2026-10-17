@@ -130,6 +130,8 @@ namespace OSistema.AI
 
         static Vector2Int? FloorSpotAtHome(Pawn pawn, Game game)
         {
+            var owned = game.Properties.RandomHomeCell(pawn.Cell, game.Rng);
+            if (owned.HasValue) return owned;
             var home = game.PlayerBase;
             for (int i = 0; i < 20; i++)
             {
@@ -325,6 +327,9 @@ namespace OSistema.AI
 
         static Job Wander(Pawn pawn, Game game)
         {
+            // Hang around whichever of the family's homes is nearest.
+            var spot = game.Properties.RandomHomeCell(pawn.Cell, game.Rng);
+            if (spot.HasValue && spot.Value != pawn.Cell) return new WanderJob(pawn, spot.Value, game.Rng.Next(240, 900));
             var home = game.PlayerBase;
             for (int i = 0; i < 10; i++)
             {

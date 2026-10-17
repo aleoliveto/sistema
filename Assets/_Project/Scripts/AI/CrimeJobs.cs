@@ -60,6 +60,9 @@ namespace OSistema.AI
             Square = square;
             var home = game.PlayerBase;
             var target = Vector2Int.RoundToInt(home.center);
+            // Run to the nearest place the family owns.
+            var safe = game.Properties.RandomHomeCell(pawn.Cell, game.Rng);
+            if (safe.HasValue) home = new RectInt(safe.Value, Vector2Int.one);
             for (int i = 0; i < 10; i++)
             {
                 var c = new Vector2Int(game.Rng.Next(home.xMin, home.xMax), game.Rng.Next(home.yMin, home.yMax));

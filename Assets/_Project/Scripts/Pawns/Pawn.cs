@@ -71,6 +71,7 @@ namespace OSistema.Pawns
         public Pawn TendedBy;            // reserved by a doctor
         public long BreakUntilTick { get; private set; }
         public long JailedUntil;         // 0 when free
+        public long HospitalUntil;       // 0 when not in hospital
         public long LyingLowUntil;       // stays home after a close call with the police
 
         Pawn aimTarget;
@@ -110,16 +111,17 @@ namespace OSistema.Pawns
         public bool HasBark => Time.unscaledTime < barkUntil;
         public bool HasBed => Bed.HasValue;
         public bool InJail => JailedUntil > 0;
+        public bool InHospital => HospitalUntil > 0;
         public bool IsAggressive(long now) => AggressiveUntil > now;
         public string DisplayName => IsBoss ? $"Don {FirstName}" : Nickname;
         public bool InMentalBreak(long now) => BreakUntilTick > now;
         public bool IsLyingLow(long now) => LyingLowUntil > now;
 
         /// <summary>On the map, alive and able to stand.</summary>
-        public bool CanAct => !Dead && !InJail && !Departed && !Health.Downed;
+        public bool CanAct => !Dead && !InJail && !InHospital && !Departed && !Health.Downed;
 
         /// <summary>Alive and on the map (possibly downed).</summary>
-        public bool IsPresent => !Dead && !InJail && !Departed;
+        public bool IsPresent => !Dead && !InJail && !InHospital && !Departed;
 
         /// <summary>Injuries slow you down.</summary>
         public float SpeedFactor => 1f - Health.Pain * 0.5f;
@@ -136,6 +138,16 @@ namespace OSistema.Pawns
         {
             if (Dead || InJail || Departed) return;
             long now = game.Ticks.TicksGame;
+
+            if (InHospital)
+            {
+                // Fed and cared for: only the wounds tick, and they heal.
+                Needs.Food = Mathf.Max(Needs.Food, 0.7f);
+                Needs.Rest = Mathf.Min(1f, Needs.Rest + 1f / 20000f);
+                Health.Tick(this);
+                if (Health.IsDeadly) game.Pawns.Kill(this, "their wounds, in hospital", game);
+                return;
+            }
 
             if (Faction == Faction.Rival)
             {
@@ -263,6 +275,23 @@ namespace OSistema.Pawns
             Drafted = false;
             Sleep = SleepState.Awake;
             TendedBy = null;
+        }
+
+        public void SendToHospital(long until, Game game)
+        {
+            EndCurrentJob(game);
+            HospitalUntil = until;
+            Drafted = false;
+            ForcedTarget = null;
+            Sleep = SleepState.InBed; // heals faster
+            TendedBy = null;
+        }
+
+        public void LeaveHospital(Vector2Int at)
+        {
+            HospitalUntil = 0;
+            Sleep = SleepState.Awake;
+            Teleport(at);
         }
 
         public void ReleaseFromJail(Vector2Int at)

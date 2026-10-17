@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace OSistema.World
 {
+    /// <summary>Purely visual details placed by the generator.</summary>
+    public enum MapDecor : byte { None, Laundry, WallLamp }
+
     /// <summary>Grid data model: the single source of truth for terrain and buildings.</summary>
     public sealed class Map
     {
@@ -13,6 +16,7 @@ namespace OSistema.World
         readonly TerrainType[] terrain;
         readonly BuildingDef[] buildings;
         readonly byte[] styles; // facade/floor palette per cell, chosen per building by the generator
+        readonly byte[] decor;  // overhead or wall decoration: laundry lines, wall lamps (MapDecor)
 
         // Where each building type stands, so jobs can find the nearest stove or pizzeria quickly.
         readonly Dictionary<BuildingDef, HashSet<Vector2Int>> positions = new Dictionary<BuildingDef, HashSet<Vector2Int>>();
@@ -27,7 +31,12 @@ namespace OSistema.World
             terrain = new TerrainType[width * height];
             buildings = new BuildingDef[width * height];
             styles = new byte[width * height];
+            decor = new byte[width * height];
         }
+
+        public MapDecor GetDecor(int x, int y) => (MapDecor)decor[Index(x, y)];
+        public void SetDecor(int x, int y, MapDecor d) => decor[Index(x, y)] = (byte)d;
+        public byte[] RawDecor => decor;
 
         public byte GetStyle(int x, int y) => styles[Index(x, y)];
         public void SetStyle(int x, int y, byte style) => styles[Index(x, y)] = style;
@@ -89,7 +98,9 @@ namespace OSistema.World
         public bool IsPassable(int x, int y)
         {
             if (!InBounds(x, y)) return false;
-            var b = buildings[Index(x, y)];
+            int i = Index(x, y);
+            if (terrain[i] == TerrainType.Water) return false;
+            var b = buildings[i];
             return b == null || b.Passable;
         }
 

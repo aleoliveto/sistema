@@ -43,14 +43,16 @@ namespace OSistema.AI
         Vector2Int target;
         readonly bool adjacent;
         readonly float speedMultiplier;
+        readonly bool roadOnly;
         bool started;
         int repaths;
 
-        public Walker(Vector2Int target, bool adjacent, float speedMultiplier = 1f)
+        public Walker(Vector2Int target, bool adjacent, float speedMultiplier = 1f, bool roadOnly = false)
         {
             this.target = target;
             this.adjacent = adjacent;
             this.speedMultiplier = speedMultiplier;
+            this.roadOnly = roadOnly;
         }
 
         public Vector2Int Target => target;
@@ -67,7 +69,7 @@ namespace OSistema.AI
         {
             if (!started)
             {
-                var path = game.Pathfinder.FindPath(mover.Cell, target, adjacent);
+                var path = game.Pathfinder.FindPath(mover.Cell, target, adjacent, roadOnly);
                 if (path == null) return WalkStatus.Failed;
                 mover.SetPath(path);
                 started = true;

@@ -14,8 +14,8 @@ namespace OSistema.Core
     /// </summary>
     public static class SaveSystem
     {
-        public const int Version = 4;
-        const int OldestReadable = 4; // the rival clan and the boss changed too much to migrate older saves
+        public const int Version = 5;
+        const int OldestReadable = 5; // the map generator changed too much to migrate older saves
 
         public static string DefaultPath => Path.Combine(Application.persistentDataPath, "save1.json");
 
@@ -42,6 +42,8 @@ namespace OSistema.Core
                 height = map.Height,
                 terrain = Convert.ToBase64String(terrain),
                 buildings = Convert.ToBase64String(buildings),
+                styles = Convert.ToBase64String(map.RawStyles),
+                decor = Convert.ToBase64String(map.RawDecor),
                 baseX = game.PlayerBase.x,
                 baseY = game.PlayerBase.y,
                 baseW = game.PlayerBase.width,
@@ -73,6 +75,13 @@ namespace OSistema.Core
             };
             foreach (var sq in game.Rival.Squares)
                 data.rivalSquares.Add(new SquareData { x = sq.Cell.x, y = sq.Cell.y, zone = sq.ZoneId });
+
+            foreach (var p in game.Properties.All)
+                data.properties.Add(new PropertyData
+                {
+                    x = p.Rect.x, y = p.Rect.y, w = p.Rect.width, h = p.Rect.height, doorX = p.Door.x, doorY = p.Door.y,
+                    kind = (int)p.Kind, name = p.Name, owned = p.OwnedByPlayer, price = p.Price,
+                });
 
             foreach (var z in game.Territory.Zones)
                 data.zones.Add(new ZoneData { name = z.Name, x = z.Rect.x, y = z.Rect.y, w = z.Rect.width, h = z.Rect.height, heat = z.Heat, demand = z.Demand });
@@ -117,11 +126,21 @@ namespace OSistema.Core
                 if (buildings[i] > 0) map.SetBuilding(x, y, BuildingDefs.All[buildings[i] - 1]);
             }
 
+            System.Array.Copy(Convert.FromBase64String(data.styles), map.RawStyles, map.CellCount);
+            System.Array.Copy(Convert.FromBase64String(data.decor), map.RawDecor, map.CellCount);
+            var properties = new List<Property>();
+            foreach (var p in data.properties)
+                properties.Add(new Property
+                {
+                    Rect = new RectInt(p.x, p.y, p.w, p.h), Door = new Vector2Int(p.doorX, p.doorY), Kind = (PropertyKind)p.kind,
+                    Name = p.name, OwnedByPlayer = p.owned, Price = p.price,
+                });
+
             var zones = new List<Zone>();
             foreach (var z in data.zones)
                 zones.Add(new Zone { Name = z.name, Rect = new RectInt(z.x, z.y, z.w, z.h), Heat = z.heat, Demand = z.demand });
 
-            var game = new Game(data.seed, map, new RectInt(data.baseX, data.baseY, data.baseW, data.baseH), data.ticks, zones);
+            var game = new Game(data.seed, map, new RectInt(data.baseX, data.baseY, data.baseW, data.baseH), data.ticks, zones, properties);
             game.Stock.Cash = data.cash;
             game.Stock.Product = data.product;
             game.Org.Respect = data.respect;
@@ -217,6 +236,7 @@ namespace OSistema.Core
                 loyalty = p.Loyalty,
                 jailedUntil = p.JailedUntil,
                 lyingLowUntil = p.LyingLowUntil,
+                hospitalUntil = p.HospitalUntil,
                 faction = (int)p.Faction,
                 shooting = p.ShootingSkill,
                 armed = p.Armed,
@@ -259,6 +279,7 @@ namespace OSistema.Core
                 Loyalty = d.loyalty,
                 JailedUntil = d.jailedUntil,
                 LyingLowUntil = d.lyingLowUntil,
+                HospitalUntil = d.hospitalUntil,
                 Faction = (Faction)d.faction,
                 ShootingSkill = d.shooting,
                 Armed = d.armed,
@@ -288,7 +309,8 @@ namespace OSistema.Core
             public int seed;
             public long ticks;
             public int width, height;
-            public string terrain, buildings;
+            public string terrain, buildings, styles, decor;
+            public List<PropertyData> properties = new List<PropertyData>();
             public int baseX, baseY, baseW, baseH;
             public int cash, groceries, meals, medicine, product;
             public float respect;
@@ -306,6 +328,14 @@ namespace OSistema.Core
             public List<SquareData> rivalSquares = new List<SquareData>();
             public List<BlueprintData> blueprints = new List<BlueprintData>();
             public List<PawnData> pawns = new List<PawnData>();
+        }
+
+        [Serializable]
+        sealed class PropertyData
+        {
+            public int x, y, w, h, doorX, doorY, kind, price;
+            public string name;
+            public bool owned;
         }
 
         [Serializable]
@@ -349,7 +379,7 @@ namespace OSistema.Core
             public int construction, cooking, medicine, intimidation, awareness;
             public int role, wage;
             public float loyalty;
-            public long jailedUntil, lyingLowUntil;
+            public long jailedUntil, lyingLowUntil, hospitalUntil;
             public int faction, shooting, mealsDelivered, mission, missionTarget, missionSquare = -1;
             public bool armed, isBoss;
             public long aggressiveUntil;

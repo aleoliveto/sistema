@@ -10,7 +10,7 @@ namespace OSistema.Views
     {
         const int Rate = 44100;
 
-        static AudioClip gunshot, gunshotFar, punch, ambience, bell, scooter, click;
+        static AudioClip gunshot, gunshotFar, punch, ambience, bell, scooter, click, siren;
 
         public static AudioClip Gunshot => gunshot != null ? gunshot : gunshot = MakeGunshot("gunshot", 0.5f, 0f);
         public static AudioClip GunshotFar => gunshotFar != null ? gunshotFar : gunshotFar = MakeGunshot("gunshot_far", 0.7f, 0.92f);
@@ -19,6 +19,24 @@ namespace OSistema.Views
         public static AudioClip Bell => bell != null ? bell : bell = MakeBell();
         public static AudioClip Scooter => scooter != null ? scooter : scooter = MakeScooter();
         public static AudioClip Click => click != null ? click : click = MakeClick();
+        public static AudioClip Siren => siren != null ? siren : siren = MakeSiren();
+
+        // The Italian two-tone siren: "bitonale".
+        static AudioClip MakeSiren()
+        {
+            int n = (int)(Rate * 1.6f);
+            var d = new float[n];
+            float phase = 0f;
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)Rate;
+                float freq = (t % 0.8f) < 0.4f ? 660f : 880f;
+                phase += freq / Rate;
+                float square = (phase % 1f) < 0.5f ? 1f : -1f;
+                d[i] = square * 0.4f + Mathf.Sin(2f * Mathf.PI * phase) * 0.6f;
+            }
+            return Clip("siren", d);
+        }
 
         static AudioClip Clip(string name, float[] data)
         {

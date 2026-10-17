@@ -13,10 +13,11 @@ namespace OSistema.Views
         public const int Size = 16;
 
         // Facade palettes by style: tuff yellow, terracotta, pink, ochre, concrete grey, pale blue.
+        // Naples: tuff yellow, pompeian red, faded pink, ochre, grey stone, pale azure.
         static readonly Color32[] Facades =
         {
-            new Color32(206, 178, 120, 255), new Color32(192, 116, 86, 255), new Color32(214, 158, 148, 255),
-            new Color32(220, 174, 94, 255), new Color32(162, 160, 154, 255), new Color32(158, 178, 188, 255),
+            new Color32(222, 186, 112, 255), new Color32(176, 84, 62, 255), new Color32(222, 160, 146, 255),
+            new Color32(214, 150, 70, 255), new Color32(170, 166, 158, 255), new Color32(170, 196, 206, 255),
         };
 
         static readonly Color32[] FloorA =
@@ -136,6 +137,14 @@ namespace OSistema.Views
                 {
                     var c = Shade(new Color32(68, 108, 52, 255), 0.82f + 0.3f * N(gx / 3, gy / 3, 6));
                     return N(gx, gy, 7) < 0.12f ? Shade(c, 1.25f) : c;
+                }
+                case TerrainType.Water:
+                {
+                    // The gulf: deep blue with sparkles and soft swell lines.
+                    float wave = Mathf.Sin(gx * 0.18f + gy * 0.05f + N(gx / 8, gy / 8, 22) * 4f);
+                    var c = Shade(new Color32(34, 86, 128, 255), 0.9f + 0.12f * wave + 0.05f * n);
+                    if (N(gx, gy, 23) < 0.01f) c = new Color32(190, 220, 235, 255);
+                    return c;
                 }
                 default:
                 {
@@ -408,6 +417,30 @@ namespace OSistema.Views
                 return;
             }
 
+            if (b == BuildingDefs.Railing)
+            {
+                Rect(buf, stride, ox, oy, 0, 6, 15, 7, new Color32(40, 42, 46, 255));
+                for (int px = 1; px < Size; px += 4) Rect(buf, stride, ox, oy, px, 3, px, 9, new Color32(52, 54, 58, 255));
+                return;
+            }
+
+            if (b == BuildingDefs.HospitalDesk)
+            {
+                Rect(buf, stride, ox, oy, 1, 2, 14, 13, new Color32(236, 236, 232, 255));
+                Rect(buf, stride, ox, oy, 6, 4, 9, 11, new Color32(205, 40, 40, 255));
+                Rect(buf, stride, ox, oy, 4, 6, 11, 9, new Color32(205, 40, 40, 255));
+                return;
+            }
+
+            if (b == BuildingDefs.PlasticChair)
+            {
+                var white = new Color32(238, 238, 232, 255);
+                Darken(buf, stride, ox, oy, 9f, 7f, 4.5f, 0.75f);
+                Rect(buf, stride, ox, oy, 5, 4, 11, 10, white);
+                Rect(buf, stride, ox, oy, 5, 10, 11, 12, Shade(white, 0.85f));
+                return;
+            }
+
             if (b == BuildingDefs.Rubble)
             {
                 for (int i = 0; i < 6; i++)
@@ -441,14 +474,31 @@ namespace OSistema.Views
                 Set(buf, stride, ox, oy, px, py, c);
             }
 
-            // Windows and shutters on the visible face.
-            if (!wallS && N(x, y, 19) < 0.45f)
+            // Windows with green shutters on the visible face; many with a little iron balcony and plants.
+            if (!wallS && N(x, y, 19) < 0.5f)
             {
                 bool lit = N(x, y, 21) < 0.5f;
                 var glass = lit ? new Color32(230, 200, 120, 255) : new Color32(40, 50, 70, 255);
-                Rect(buf, stride, ox, oy, 5, 1, 10, 4, glass);
-                Rect(buf, stride, ox, oy, 3, 1, 4, 4, new Color32(70, 110, 80, 255)); // green shutters
-                Rect(buf, stride, ox, oy, 11, 1, 12, 4, new Color32(70, 110, 80, 255));
+                Rect(buf, stride, ox, oy, 5, 2, 10, 4, glass);
+                Rect(buf, stride, ox, oy, 3, 2, 4, 4, new Color32(64, 104, 74, 255));
+                Rect(buf, stride, ox, oy, 11, 2, 12, 4, new Color32(64, 104, 74, 255));
+                if (N(x, y, 24) < 0.55f)
+                {
+                    var iron = new Color32(36, 34, 34, 255);
+                    Rect(buf, stride, ox, oy, 3, 0, 12, 0, iron);
+                    for (int px = 3; px <= 12; px += 2) Set(buf, stride, ox, oy, px, 1, iron);
+                    if (N(x, y, 25) < 0.6f)
+                    {
+                        Set(buf, stride, ox, oy, 4, 1, new Color32(70, 140, 60, 255));
+                        Set(buf, stride, ox, oy, 11, 1, new Color32(200, 60, 70, 255)); // geraniums
+                    }
+                }
+            }
+            if (map.GetDecor(x, y) == MapDecor.WallLamp)
+            {
+                Set(buf, stride, ox, oy, 7, 5, new Color32(40, 40, 40, 255));
+                Set(buf, stride, ox, oy, 8, 5, new Color32(40, 40, 40, 255));
+                Rect(buf, stride, ox, oy, 7, 6, 8, 7, new Color32(255, 220, 150, 255));
             }
         }
     }

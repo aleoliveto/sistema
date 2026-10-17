@@ -43,6 +43,7 @@ namespace OSistema.UI
             BuildDock();
             BuildWindows();
             BuildModals();
+            BuildMenus();
 
             alert = Ui.Text("", hudLayer, "alert");
             alert.style.opacity = 0f;
@@ -55,6 +56,7 @@ namespace OSistema.UI
             game = g;
             ResetWorldLabels();
             RefreshAll();
+            ShowTitleOnce();
         }
 
         void BuildDocument()
@@ -104,6 +106,8 @@ namespace OSistema.UI
         public bool IsPointerOver(Vector2 screenPos)
         {
             if (game != null && (game.Events.Current != null || game.Org.GameOver)) return true;
+            if (openMenu != Menu.None) return true;
+            if (Time.unscaledTime - menuClosedAt < 0.3f) return true; // the click that closed a menu stays in the menu
             if (root?.panel == null) return false;
             var panelPos = RuntimePanelUtils.ScreenToPanel(root.panel, new Vector2(screenPos.x, Screen.height - screenPos.y));
             return root.panel.Pick(panelPos) != null;
@@ -140,7 +144,6 @@ namespace OSistema.UI
             {
                 if (kb.hKey.wasPressedThisFrame) ToggleWindow(Window.Help);
                 if (kb.bKey.wasPressedThisFrame) ToggleWindow(Window.Business);
-                if (kb.escapeKey.wasPressedThisFrame && openWindow != Window.None) ToggleWindow(openWindow);
             }
             if (game == null) return;
 
@@ -172,6 +175,7 @@ namespace OSistema.UI
 
         void LateUpdate()
         {
+            HandleEscape();
             if (game == null || root?.panel == null) return;
             UpdateWorldLabels();
 

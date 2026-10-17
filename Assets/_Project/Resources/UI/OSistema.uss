@@ -111,12 +111,14 @@
 
 .clock {
     position: absolute;
-    left: 10px; top: 10px;
-    width: 250px;
+    left: 8px; top: 8px;
+    flex-direction: row;
+    align-items: center;
+    padding: 4px 8px;
 }
 
-.clock__day { font-size: 12px; color: #A89F8E; }
-.clock__time { font-size: 24px; -unity-font-style: bold; color: #F3E9D2; }
+.clock__day { font-size: 11px; color: #A89F8E; margin-right: 8px; }
+.clock__time { font-size: 18px; -unity-font-style: bold; color: #F3E9D2; margin-right: 8px; }
 
 .speed-btn {
     width: 40px;
@@ -128,9 +130,9 @@
 
 .resources {
     position: absolute;
-    top: 10px;
-    left: 270px;
-    right: 330px;
+    top: 8px;
+    left: 360px;
+    right: 290px;
     flex-direction: row;
     justify-content: center;
     flex-wrap: wrap;
@@ -139,12 +141,10 @@
 .chip {
     flex-direction: row;
     align-items: center;
-    background-color: rgba(20, 17, 14, 0.85);
-    border-radius: 13px;
-    border-width: 1px;
-    border-color: rgba(255, 255, 255, 0.08);
-    padding: 3px 10px 3px 6px;
-    margin: 2px 3px;
+    background-color: rgba(20, 17, 14, 0.8);
+    border-radius: 11px;
+    padding: 2px 9px 2px 6px;
+    margin: 0 2px;
 }
 
 .chip__dot {
@@ -154,13 +154,14 @@
     margin-right: 6px;
 }
 
-.chip__value { -unity-font-style: bold; font-size: 14px; }
-.chip__label { font-size: 11px; color: #A89F8E; margin-left: 5px; }
+.chip__value { -unity-font-style: bold; font-size: 13px; }
+.chip__label { font-size: 10px; color: #A89F8E; margin-left: 4px; }
 
 .family {
     position: absolute;
-    right: 10px; top: 10px;
-    width: 310px;
+    right: 8px; top: 8px;
+    width: 270px;
+    padding: 5px 9px;
 }
 
 /* ---------- Bars ---------- */
@@ -190,19 +191,19 @@
 
 .crew-bar {
     position: absolute;
-    left: 10px; top: 124px;
-    width: 196px;
+    left: 8px; top: 52px;
+    width: 160px;
 }
 
 .crew-card {
     flex-direction: row;
     align-items: center;
-    background-color: rgba(20, 17, 14, 0.82);
+    background-color: rgba(20, 17, 14, 0.72);
     border-width: 1px;
-    border-color: rgba(255, 255, 255, 0.06);
-    border-radius: 6px;
-    padding: 4px 6px;
-    margin-bottom: 4px;
+    border-color: rgba(255, 255, 255, 0.04);
+    border-radius: 5px;
+    padding: 3px 5px;
+    margin-bottom: 3px;
     transition-property: border-color, background-color;
     transition-duration: 0.1s;
 }
@@ -212,9 +213,9 @@
 .crew-card--drafted { border-left-width: 3px; border-left-color: #F07A6E; }
 
 .avatar {
-    width: 30px;
-    height: 30px;
-    border-radius: 15px;
+    width: 24px;
+    height: 24px;
+    border-radius: 12px;
     border-width: 2px;
     border-color: rgba(0, 0, 0, 0.6);
     margin-right: 7px;
@@ -226,26 +227,26 @@
 
 .avatar--big { width: 48px; height: 48px; border-radius: 24px; font-size: 18px; }
 
-.crew-card__name { -unity-font-style: bold; font-size: 12px; }
-.crew-card__status { font-size: 10px; color: #A89F8E; }
+.crew-card__name { -unity-font-style: bold; font-size: 11px; }
+.crew-card__status { font-size: 9px; color: #A89F8E; }
 
 /* ---------- Feed ---------- */
 
 .feed {
     position: absolute;
-    right: 10px; top: 196px;
-    width: 330px;
+    right: 8px; top: 108px;
+    width: 270px;
 }
 
 .toast {
-    background-color: rgba(20, 17, 14, 0.88);
+    background-color: rgba(20, 17, 14, 0.8);
     border-left-width: 3px;
     border-left-color: #A89F8E;
     border-radius: 4px;
-    padding: 5px 8px;
-    margin-bottom: 4px;
+    padding: 3px 7px;
+    margin-bottom: 3px;
     white-space: normal;
-    font-size: 12px;
+    font-size: 11px;
     transition-property: opacity;
     transition-duration: 0.4s;
 }
@@ -273,8 +274,8 @@
 }
 
 .tool {
-    width: 92px;
-    height: 54px;
+    width: 78px;
+    height: 46px;
     padding: 4px;
     align-items: center;
     justify-content: center;
@@ -291,15 +292,15 @@
 
 .tool__label { font-size: 11px; }
 
-.tab { min-width: 100px; height: 30px; -unity-font-style: bold; }
+.tab { min-width: 84px; height: 26px; font-size: 11px; -unity-font-style: bold; }
 
 /* ---------- Inspector ---------- */
 
 .inspector {
     position: absolute;
-    left: 216px; bottom: 100px;
-    width: 330px;
-    max-height: 520px;
+    left: 8px; bottom: 8px;
+    width: 300px;
+    max-height: 480px;
 }
 
 .thought { font-size: 11px; margin: 1px 0; }
@@ -435,3 +436,20 @@
     white-space: normal;
     font-size: 11px;
 }
+
+
+/* ---------- Menus ---------- */
+
+.menu {
+    width: 380px;
+    padding: 0;
+    border-color: rgba(232, 194, 106, 0.45);
+}
+
+.menu__title { font-size: 34px; -unity-font-style: bold; color: #E8C26A; letter-spacing: 3px; }
+.menu__sub { font-size: 12px; -unity-font-style: italic; color: #A89F8E; }
+.menu__body { padding: 14px 18px 18px 18px; }
+.menu-btn { height: 34px; font-size: 14px; margin: 3px 0; }
+
+.setting { flex-direction: row; align-items: center; margin: 4px 0; }
+.setting__label { width: 130px; }

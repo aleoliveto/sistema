@@ -57,18 +57,21 @@ namespace OSistema.UI
             float zoom = cam.orthographicSize;
             float unitPx = WorldToPanel(Vector2.up).y - WorldToPanel(Vector2.zero).y; // panel pixels per world unit (negative: y is down)
             float unit = Mathf.Abs(unitPx);
-            bool close = zoom < 16f;
+            bool close = zoom < 7.5f;      // names for everyone only when zoomed right in
+            bool veryClose = zoom < 6.5f;  // shop names even closer
+            var selected = controller.Selected;
 
             foreach (var p in game.Pawns.All)
             {
-                if (p.InJail || p.Departed) continue;
+                if (p.InJail || p.InHospital || p.Departed) continue;
                 bool rival = p.Faction == Faction.Rival;
                 if (rival && !FogOfWar.CanSee(p.Position)) continue;
                 if (rival && p.Dead) continue;
                 if (!OnScreen(p.Position)) continue;
 
                 var pos = WorldToPanel(p.Position);
-                if (close || p.Drafted || rival)
+                bool important = AlwaysShowNames || selected.Contains(p) || p.Drafted || p.Health.Downed || p.Dead || rival;
+                if (close || important)
                 {
                     var tag = NextTag();
                     string status = p.Dead ? " ✝" : p.Health.Downed ? " (down)" : p.Sleep != SleepState.Awake ? " zZ" : "";
@@ -100,7 +103,7 @@ namespace OSistema.UI
                 tag.style.top = pos.y + unit * 0.42f;
             }
 
-            if (close)
+            if (veryClose)
             {
                 foreach (var b in game.Org.Businesses)
                 {

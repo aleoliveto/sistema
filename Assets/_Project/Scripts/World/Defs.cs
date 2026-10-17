@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace OSistema.World
 {
-    public enum TerrainType : byte { Ground, Road, Sidewalk, Floor, Paving, Marble, Grass }
+    public enum TerrainType : byte { Ground, Road, Sidewalk, Floor, Paving, Marble, Grass, Water }
 
     public enum PlaceMode { Single, Outline, Fill }
 
@@ -25,6 +25,7 @@ namespace OSistema.World
             TerrainType.Paving => new Color32(150, 145, 135, 255), // stone slabs of a piazza
             TerrainType.Marble => new Color32(225, 220, 210, 255), // church floor
             TerrainType.Grass => new Color32(70, 110, 55, 255),
+            TerrainType.Water => new Color32(40, 90, 130, 255),
             _ => new Color32(112, 98, 76, 255),                    // dirt
         };
 
@@ -36,6 +37,7 @@ namespace OSistema.World
             TerrainType.Paving => "Paving",
             TerrainType.Marble => "Marble",
             TerrainType.Grass => "Grass",
+            TerrainType.Water => "Sea",
             _ => "Ground",
         };
     }
@@ -168,6 +170,14 @@ namespace OSistema.World
         public static readonly BuildingDef Altar = Street("altar", "Altar", new Color32(230, 220, 190, 255), cover: true);
         public static readonly BuildingDef Pew = Street("pew", "Pew", new Color32(110, 75, 45, 255), cover: true);
         public static readonly BuildingDef Fountain = Street("fountain", "Fountain", new Color32(150, 150, 145, 255), cover: true);
+        public static readonly BuildingDef Railing = Street("railing", "Railing", new Color32(60, 60, 64, 255), cover: true);
+        public static readonly BuildingDef HospitalDesk = Street("hospital_desk", "Pronto soccorso", new Color32(235, 235, 235, 255), cover: true, light: true);
+        public static readonly BuildingDef PlasticChair = new BuildingDef
+        {
+            Id = "plastic_chair", Label = "Plastic chair", Passable = true, PathCost = 1.5f, WorkToBuild = 50,
+            Color = new Color32(235, 235, 230, 255), Generated = true,
+        };
+
         public static readonly BuildingDef Rubble = new BuildingDef
         {
             Id = "rubble", Label = "Rubble", Passable = true, PathCost = 2f, WorkToBuild = 100,
@@ -188,6 +198,7 @@ namespace OSistema.World
             Wall, Door, Bed, Table, Stove, Pantry, PizzeriaCounter, SalumeriaCounter, FarmaciaCounter,
             BarCounter, MacelleriaCounter, TabaccheriaCounter, BurnedShop, Bunker,
             Tree, ParkedCar, ParkedScooter, Bench, Bin, StreetLamp, MarketStall, Shrine, Altar, Pew, Fountain, Rubble,
+            Railing, HospitalDesk, PlasticChair,
         };
 
         public static BuildingDef ById(string id)

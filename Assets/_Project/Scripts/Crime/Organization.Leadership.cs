@@ -94,7 +94,7 @@ namespace OSistema.Crime
 
         void LeadershipDaily(Game game)
         {
-            Evidence = Mathf.Max(0f, Evidence - (Hiding ? 2f : 1f));
+            Evidence = Mathf.Max(0f, Evidence - (Hiding ? 2f : 1f) - FrontsLaundering());
             if (!Hiding) return;
 
             var boss = Boss(game);

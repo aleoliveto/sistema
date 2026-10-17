@@ -49,7 +49,7 @@ namespace OSistema.Views
             }
 
             // In prison, or a rival out of our crew's sight: not drawn.
-            bool visible = !pawn.InJail && (pawn.Faction == Faction.Crew || FogOfWar.CanSee(pawn.Position));
+            bool visible = !pawn.InJail && !pawn.InHospital && (pawn.Faction == Faction.Crew || FogOfWar.CanSee(pawn.Position));
             rig.SetVisible(visible);
             if (!visible)
             {

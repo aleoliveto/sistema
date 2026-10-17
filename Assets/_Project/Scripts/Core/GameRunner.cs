@@ -38,6 +38,8 @@ namespace OSistema.Core
             controller.Init(cam, hud);
             hud.Init(controller, cam);
             hud.NewGameRequested += () => StartGame(Game.NewGame(UnityEngine.Random.Range(0, int.MaxValue)));
+            hud.SaveRequested += SaveGame;
+            hud.LoadRequested += LoadGame;
 
             int seed = UnityEngine.Random.Range(0, int.MaxValue);
             Debug.Log($"[O Sistema] New game, seed {seed}");
@@ -69,6 +71,14 @@ namespace OSistema.Core
             var mapGo = new GameObject("Map");
             mapGo.transform.SetParent(worldRoot, false);
             mapGo.AddComponent<MapRenderer>().Init(game);
+            var roofsGo = new GameObject("Roofs");
+            roofsGo.transform.SetParent(worldRoot, false);
+            roofsGo.AddComponent<RoofView>().Init(game);
+
+            var laundryGo = new GameObject("Laundry");
+            laundryGo.transform.SetParent(worldRoot, false);
+            laundryGo.AddComponent<LaundryView>().Init(game.Map);
+
             var fogGo = new GameObject("Fog of war");
             fogGo.transform.SetParent(worldRoot, false);
             fogGo.AddComponent<FogOfWar>().Init(game);

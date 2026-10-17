@@ -117,9 +117,11 @@ namespace OSistema.Views
             foreach (var npc in game.Npcs.All)
             {
                 if (npc.Kind != NpcKind.Scooter || heardScooters.Contains(npc.Id)) continue;
-                if ((npc.Mover.Position - (Vector2)cam.transform.position).magnitude > cam.orthographicSize * 1.3f) continue;
+                // Only scooters your crew can actually see, close to where you're looking.
+                if (!FogOfWar.CanSee(npc.Mover.Position)) continue;
+                if ((npc.Mover.Position - (Vector2)cam.transform.position).magnitude > cam.orthographicSize * 0.9f) continue;
                 heardScooters.Add(npc.Id);
-                Play(AudioSynth.Scooter, npc.Mover.Position, 0.35f);
+                Play(AudioSynth.Scooter, npc.Mover.Position, 0.18f);
             }
             if (heardScooters.Count > 200) heardScooters.Clear();
         }

@@ -212,7 +212,7 @@ namespace OSistema.Npcs
 
         public static void TickScooter(Npc npc, Game game)
         {
-            npc.Walker ??= new Walker(npc.Exit, adjacent: false);
+            npc.Walker ??= new Walker(npc.Exit, adjacent: false, roadOnly: true); // scooters stay on the asphalt
             if (npc.Walker.Tick(npc.Mover, 1f, game) != WalkStatus.Walking) npc.Despawned = true;
         }
 

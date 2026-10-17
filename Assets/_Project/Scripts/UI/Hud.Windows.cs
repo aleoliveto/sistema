@@ -12,7 +12,7 @@ namespace OSistema.UI
     public sealed partial class Hud
     {
         enum Window { None, Business, Help }
-        enum BizTab { Crew, Piazze, Pizzo, Supply, Rivals }
+        enum BizTab { Crew, Piazze, Pizzo, Property, Supply, Rivals }
 
         Window openWindow;
         BizTab bizTab;
@@ -96,6 +96,7 @@ namespace OSistema.UI
                 case BizTab.Piazze: PiazzeTab(); break;
                 case BizTab.Pizzo: PizzoTab(); break;
                 case BizTab.Supply: SupplyTab(); break;
+                case BizTab.Property: PropertyTab(); break;
                 case BizTab.Rivals: RivalsTab(); break;
             }
             bizScroll.scrollOffset = scroll;

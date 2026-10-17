@@ -1,0 +1,153 @@
+using System;
+using UnityEngine;
+using UnityEngine.UIElements;
+
+namespace OSistema.UI
+{
+    /// <summary>Title screen, pause menu (Esc) and settings. Settings persist in PlayerPrefs.</summary>
+    public sealed partial class Hud
+    {
+        enum Menu { None, Title, Pause, Settings }
+
+        public event Action SaveRequested;
+        public event Action LoadRequested;
+
+        Menu openMenu;
+        Menu settingsReturnTo;
+        VisualElement menuDim;
+        int speedBeforeMenu = 1;
+        bool titleShown;
+        float menuClosedAt = -10f;
+
+        /// <summary>Shows player names over everyone, not just when zoomed in.</summary>
+        public static bool AlwaysShowNames { get; private set; }
+
+        void BuildMenus()
+        {
+            menuDim = Ui.Box("dim").Into(modalLayer);
+            menuDim.Show(false);
+            ApplySettings();
+        }
+
+        public bool MenuOpen => openMenu != Menu.None;
+
+        void OpenMenu(Menu menu)
+        {
+            if (openMenu == Menu.None && game != null)
+            {
+                speedBeforeMenu = game.Ticks.Speed == 0 ? 1 : game.Ticks.Speed;
+                game.Ticks.SetSpeed(0);
+            }
+            openMenu = menu;
+            menuDim.Clear();
+            menuDim.Show(true);
+            switch (menu)
+            {
+                case Menu.Title: BuildTitle(); break;
+                case Menu.Pause: BuildPause(); break;
+                case Menu.Settings: BuildSettings(); break;
+            }
+        }
+
+        void CloseMenu()
+        {
+            openMenu = Menu.None;
+            menuClosedAt = Time.unscaledTime;
+            menuDim.Clear();
+            menuDim.Show(false);
+            if (game != null && game.Events.Current == null && !game.Org.GameOver) game.Ticks.SetSpeed(speedBeforeMenu);
+        }
+
+        VisualElement MenuCard(string subtitle)
+        {
+            var card = Ui.Box("panel", "card", "menu").Into(menuDim);
+            var band = Ui.Box("card__band").Into(card);
+            band.style.backgroundColor = new Color(0.16f, 0.09f, 0.06f);
+            band.style.height = 110;
+            Ui.Text("'O SISTEMA", band, "menu__title");
+            Ui.Text(subtitle, band, "menu__sub");
+            return Ui.Box("menu__body").Into(card);
+        }
+
+        void BuildTitle()
+        {
+            var body = MenuCard("A life in the System. Every choice has a price.");
+            Ui.Btn("New family", CloseMenu, body, "menu-btn");
+            var load = Ui.Btn("Load game", () => { CloseMenu(); LoadRequested?.Invoke(); }, body, "menu-btn");
+            load.SetEnabled(Core.SaveSystem.HasSave(Core.SaveSystem.DefaultPath));
+            Ui.Btn("Settings", () => { settingsReturnTo = Menu.Title; OpenMenu(Menu.Settings); }, body, "menu-btn");
+            Ui.Btn("Quit", Application.Quit, body, "menu-btn");
+            Ui.Text("A work of fiction. Every clan, person and business in this game is invented.", body, "small", "muted", "wrap").style.marginTop = 10;
+        }
+
+        void BuildPause()
+        {
+            var body = MenuCard("Paused");
+            Ui.Btn("Resume", CloseMenu, body, "menu-btn");
+            Ui.Btn("Save (F5)", () => { SaveRequested?.Invoke(); CloseMenu(); }, body, "menu-btn");
+            var load = Ui.Btn("Load (F9)", () => { CloseMenu(); LoadRequested?.Invoke(); }, body, "menu-btn");
+            load.SetEnabled(Core.SaveSystem.HasSave(Core.SaveSystem.DefaultPath));
+            Ui.Btn("Settings", () => { settingsReturnTo = Menu.Pause; OpenMenu(Menu.Settings); }, body, "menu-btn");
+            Ui.Btn("Help (H)", () => { CloseMenu(); ToggleWindow(Window.Help); }, body, "menu-btn");
+            Ui.Btn("New family", () => { CloseMenu(); NewGameRequested?.Invoke(); }, body, "menu-btn", "btn--danger");
+            Ui.Btn("Quit", Application.Quit, body, "menu-btn");
+        }
+
+        void BuildSettings()
+        {
+            var body = MenuCard("Settings");
+
+            var vol = new Slider(0f, 1f) { value = PlayerPrefs.GetFloat("volume", 0.8f) };
+            vol.style.flexGrow = 1;
+            vol.RegisterValueChangedCallback(e => { PlayerPrefs.SetFloat("volume", e.newValue); ApplySettings(); });
+            Setting(body, "Volume", vol);
+
+            var scale = new Slider(0.8f, 1.4f) { value = PlayerPrefs.GetFloat("ui_scale", 1f) };
+            scale.style.flexGrow = 1;
+            scale.RegisterValueChangedCallback(e => { PlayerPrefs.SetFloat("ui_scale", e.newValue); ApplySettings(); });
+            Setting(body, "Interface size", scale);
+
+            var names = new Toggle { value = PlayerPrefs.GetInt("names_always", 0) == 1 };
+            names.RegisterValueChangedCallback(e => { PlayerPrefs.SetInt("names_always", e.newValue ? 1 : 0); ApplySettings(); });
+            Setting(body, "Always show names", names);
+
+            Ui.Btn("Back", () => OpenMenu(settingsReturnTo), body, "menu-btn").style.marginTop = 10;
+        }
+
+        static void Setting(VisualElement parent, string label, VisualElement control)
+        {
+            var row = Ui.Box("setting").Into(parent);
+            Ui.Text(label, row, "setting__label");
+            row.Add(control);
+        }
+
+        void ApplySettings()
+        {
+            AudioListener.volume = PlayerPrefs.GetFloat("volume", 0.8f);
+            if (document != null && document.panelSettings != null) document.panelSettings.scale = PlayerPrefs.GetFloat("ui_scale", 1f);
+            AlwaysShowNames = PlayerPrefs.GetInt("names_always", 0) == 1;
+        }
+
+        /// <summary>Esc closes the topmost thing; with nothing open it brings up the pause menu.</summary>
+        void HandleEscape()
+        {
+            var kb = UnityEngine.InputSystem.Keyboard.current;
+            if (kb == null || !kb.escapeKey.wasPressedThisFrame) return;
+            if (controller.EscapeConsumedFrame == Time.frameCount) return;
+            if (game != null && game.Events.Current != null) return;
+
+            if (openMenu == Menu.Settings) OpenMenu(settingsReturnTo);
+            else if (openMenu == Menu.Pause) CloseMenu();
+            else if (openMenu == Menu.Title) { }
+            else if (openWindow != Window.None) ToggleWindow(openWindow);
+            else OpenMenu(Menu.Pause);
+        }
+
+        void ShowTitleOnce()
+        {
+            if (titleShown) return;
+            titleShown = true;
+            OpenMenu(Menu.Title);
+        }
+    }
+}

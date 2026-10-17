@@ -38,7 +38,8 @@ namespace OSistema.AI
         /// Returns the cells to walk through (excluding start), an empty list if already at the goal,
         /// or null if unreachable. With <paramref name="adjacent"/>, the goal is any cell orthogonally next to target.
         /// </summary>
-        public List<Vector2Int> FindPath(Vector2Int start, Vector2Int target, bool adjacent)
+        /// <param name="roadOnly">Vehicles: only asphalt cells (start and goal excepted).</param>
+        public List<Vector2Int> FindPath(Vector2Int start, Vector2Int target, bool adjacent, bool roadOnly = false)
         {
             if (!map.InBounds(start) || !map.InBounds(target)) return null;
             if (!adjacent && !map.IsPassable(target)) return null;
@@ -67,6 +68,7 @@ namespace OSistema.AI
                 {
                     int nx = cx + DX[i], ny = cy + DY[i];
                     if (!map.IsPassable(nx, ny)) continue;
+                    if (roadOnly && map.GetTerrain(nx, ny) != TerrainType.Road && !(nx == target.x && ny == target.y)) continue;
                     bool diag = i >= 4;
                     if (diag && (!map.IsPassable(nx, cy) || !map.IsPassable(cx, ny))) continue;
 

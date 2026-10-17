@@ -3,186 +3,197 @@ using UnityEngine;
 
 namespace OSistema.World
 {
+    public enum PropertyKind { Home, Shop, Civic }
+
+    /// <summary>A building on the map that can be owned: a basso, a flat, a shop.</summary>
+    public sealed class Property
+    {
+        public int Id;
+        public string Name;
+        public RectInt Rect;      // including its walls
+        public Vector2Int Door;
+        public PropertyKind Kind;
+        public bool OwnedByPlayer;
+        public int Price;
+
+        public RectInt Interior => new RectInt(Rect.x + 1, Rect.y + 1, Rect.width - 2, Rect.height - 2);
+    }
+
     /// <summary>
-    /// Generates a fictional quarter of Naples. An irregular street grid splits the map into blocks,
-    /// and each block gets a character: dense vicoli, ordinary palazzi, a Vele-style housing block,
-    /// a church with its piazza, a scrap of park, a street market. Then the street furniture.
+    /// Generates a fictional corner of Naples by the sea. A few asphalt roads split it into quarters;
+    /// most quarters are a grid of narrow basolato vicoli lined with buildings wall to wall, bassi
+    /// opening onto the alley, laundry strung overhead. One quarter has the church piazza and the
+    /// market, one is a quarter of brutalist housing blocks on wasteland. Along the bottom: the
+    /// lungomare and the sea.
     /// </summary>
     public sealed class MapGenerator
     {
-        enum BlockKind { Palazzi, Vicoli, Vele, Church, Park, Market }
+        enum QuarterKind { Quartieri, Borgo, Vele }
 
-        const int MinLot = 5;
-
-        // Facade palettes (index = style byte): tuff yellow, terracotta, pink, ochre, grey, pale blue.
         public const int StyleCount = 6;
+        const int SeaRows = 9;
+        const int PromenadeRows = 4;
+        const int RoadWidth = 3;
+        const int VicoloWidth = 2;
 
         readonly System.Random rng;
         readonly List<RectInt> shopLots = new List<RectInt>();
         readonly List<RectInt> homeLots = new List<RectInt>();
+        readonly List<Property> properties = new List<Property>();
 
         public MapGenerator(int seed) => rng = new System.Random(seed);
 
-        public Map Generate(int width, int height, out RectInt playerBase, out List<RectInt> blocks)
+        public Map Generate(int width, int height, out RectInt playerBase, out List<RectInt> zones, out List<Property> props)
         {
             var map = new Map(width, height);
-            blocks = new List<RectInt>();
+            zones = new List<RectInt>();
 
-            var xs = RoadPositions(width, out var xWidths);
-            var ys = RoadPositions(height, out var yWidths);
-            for (int i = 0; i < xs.Count; i++) Fill(map, new RectInt(xs[i], 0, xWidths[i], height), TerrainType.Road);
-            for (int i = 0; i < ys.Count; i++) Fill(map, new RectInt(0, ys[i], width, yWidths[i]), TerrainType.Road);
-
-            for (int i = 0; i < xs.Count; i++)
-            for (int j = 0; j < ys.Count; j++)
+            // ---- The sea, the lungomare, the coast road ----
+            int coastRoadY = SeaRows + PromenadeRows;
+            Fill(map, new RectInt(0, 0, width, SeaRows), TerrainType.Water);
+            Fill(map, new RectInt(0, SeaRows, width, PromenadeRows), TerrainType.Paving);
+            for (int x = 0; x < width; x++)
             {
-                int bx = xs[i] + xWidths[i];
-                int by = ys[j] + yWidths[j];
-                int bw = (i + 1 < xs.Count ? xs[i + 1] : width) - bx;
-                int bh = (j + 1 < ys.Count ? ys[j + 1] : height) - by;
-                if (bw < 10 || bh < 10) continue;
-                var block = new RectInt(bx, by, bw, bh);
-                blocks.Add(block);
-                foreach (var c in GridUtil.Cells(block, outlineOnly: true)) map.SetTerrain(c.x, c.y, TerrainType.Sidewalk);
+                if (x % 14 != 7) map.SetBuilding(x, SeaRows, BuildingDefs.Railing);
+                if (x % 10 == 3) map.SetBuilding(x, SeaRows + PromenadeRows - 1, BuildingDefs.StreetLamp);
+                else if (x % 10 == 6) map.SetBuilding(x, SeaRows + 2, BuildingDefs.Bench);
+                else if (x % 20 == 0) map.SetBuilding(x, SeaRows + PromenadeRows - 1, BuildingDefs.Tree);
             }
+            Fill(map, new RectInt(0, coastRoadY, width, RoadWidth), TerrainType.Road);
 
-            var kinds = AssignKinds(blocks, new Vector2(width / 2f, height / 2f));
-            for (int i = 0; i < blocks.Count; i++)
+            // ---- Main roads: two north-south, one east-west ----
+            int top = coastRoadY + RoadWidth;
+            int x1 = (int)(width * 0.32f), x2 = (int)(width * 0.66f);
+            int yMid = top + (height - top) / 2 - 1;
+            Fill(map, new RectInt(x1, top, RoadWidth, height - top), TerrainType.Road);
+            Fill(map, new RectInt(x2, top, RoadWidth, height - top), TerrainType.Road);
+            Fill(map, new RectInt(0, yMid, width, RoadWidth), TerrainType.Road);
+
+            var quarters = new List<RectInt>();
+            int[] xs = { 0, x1 + RoadWidth, x2 + RoadWidth };
+            int[] xe = { x1, x2, width };
+            int[] ys = { top, yMid + RoadWidth };
+            int[] ye = { yMid, height };
+            for (int j = 0; j < 2; j++)
+            for (int i = 0; i < 3; i++)
+                quarters.Add(new RectInt(xs[i], ys[j], xe[i] - xs[i], ye[j] - ys[j]));
+
+            // The player lives in the bottom-middle quarter; the Borgo is beside it; the Vele far away.
+            var kinds = new QuarterKind[quarters.Count];
+            for (int i = 0; i < kinds.Length; i++) kinds[i] = QuarterKind.Quartieri;
+            kinds[rng.Next(2) == 0 ? 0 : 2] = QuarterKind.Borgo;
+            kinds[3 + (rng.Next(2) == 0 ? 0 : 2)] = QuarterKind.Vele;
+
+            for (int i = 0; i < quarters.Count; i++)
             {
-                var inner = new RectInt(blocks[i].x + 1, blocks[i].y + 1, blocks[i].width - 2, blocks[i].height - 2);
+                var q = quarters[i];
+                // Pavements along the roads.
+                foreach (var c in GridUtil.Cells(q, outlineOnly: true)) map.SetTerrain(c.x, c.y, TerrainType.Sidewalk);
+                var inner = new RectInt(q.x + 1, q.y + 1, q.width - 2, q.height - 2);
                 switch (kinds[i])
                 {
-                    case BlockKind.Vicoli: BuildLots(map, inner, maxDepth: 4, minLot: 4, builtChance: 0.88, alleyDecor: true); break;
-                    case BlockKind.Vele: BuildVele(map, inner); break;
-                    case BlockKind.Church: BuildChurch(map, inner); break;
-                    case BlockKind.Park: BuildPark(map, inner); break;
-                    case BlockKind.Market: BuildMarket(map, inner); break;
-                    default: BuildLots(map, inner, maxDepth: 3, minLot: MinLot, builtChance: 0.82, alleyDecor: false); break;
+                    case QuarterKind.Vele: BuildVeleQuarter(map, inner); break;
+                    case QuarterKind.Borgo: BuildBorgo(map, inner); break;
+                    default: BuildQuartieri(map, inner); break;
                 }
+                // Each quarter is four rioni for the territory game.
+                int hw = q.width / 2, hh = q.height / 2;
+                zones.Add(new RectInt(q.x, q.y, hw, hh));
+                zones.Add(new RectInt(q.x + hw, q.y, q.width - hw, hh));
+                zones.Add(new RectInt(q.x, q.y + hh, hw, q.height - hh));
+                zones.Add(new RectInt(q.x + hw, q.y + hh, q.width - hw, q.height - hh));
             }
+            // The lungomare is a rione of its own.
+            zones.Add(new RectInt(0, SeaRows, width, PromenadeRows + RoadWidth));
 
-            if (homeLots.Count == 0) homeLots.AddRange(shopLots); // fallback: any decent building
-            var baseLot = PickLot(homeLots, new Vector2(width / 2f, height / 2f), minArea: 48);
+            BuildHospital(map, quarters[kinds[2] == QuarterKind.Quartieri ? 2 : 0]);
+
+            var baseLot = PickLot(homeLots, quarters[1].center);
             homeLots.Remove(baseLot);
             shopLots.Remove(baseLot);
+            properties.RemoveAll(p => p.Rect.Equals(baseLot));
             BuildBase(map, baseLot);
 
             PlaceShops(map);
-            DecorateStreets(map, blocks);
+            DecorateStreets(map, quarters);
+            HangLaundry(map);
 
+            for (int i = 0; i < properties.Count; i++) properties[i].Id = i;
+            props = properties;
             playerBase = new RectInt(baseLot.x + 1, baseLot.y + 1, baseLot.width - 2, baseLot.height - 2);
             return map;
         }
 
-        // ---------- Streets ----------
+        // ---------- Quartieri: the vicoli grid ----------
 
-        // Irregular spacing: every third road is a wide avenue, blocks are 16-30 cells.
-        List<int> RoadPositions(int length, out List<int> widths)
+        void BuildQuartieri(Map map, RectInt area)
         {
-            var positions = new List<int>();
-            widths = new List<int>();
-            int pos = 0, index = 0;
-            while (pos < length - 8)
+            // Long north-south vicoli every 8-12 cells, east-west crossings every 13-20.
+            var cols = Cuts(area.x, area.xMax, 8, 12);
+            var rows = Cuts(area.y, area.yMax, 13, 20);
+            foreach (int x in cols) Fill(map, new RectInt(x, area.y, VicoloWidth, area.height), TerrainType.Sidewalk);
+            foreach (int y in rows) Fill(map, new RectInt(area.x, y, area.width, VicoloWidth), TerrainType.Sidewalk);
+
+            var xStarts = new List<int> { area.x };
+            foreach (int x in cols) xStarts.Add(x + VicoloWidth);
+            var xEnds = new List<int>(cols) { area.xMax };
+            var yStarts = new List<int> { area.y };
+            foreach (int y in rows) yStarts.Add(y + VicoloWidth);
+            var yEnds = new List<int>(rows) { area.yMax };
+
+            for (int i = 0; i < xStarts.Count; i++)
+            for (int j = 0; j < yStarts.Count; j++)
             {
-                int w = index % 3 == 0 ? 4 : 3;
-                positions.Add(pos);
-                widths.Add(Mathf.Min(w, length - pos));
-                pos += w + rng.Next(16, 31);
-                index++;
-            }
-            return positions;
-        }
-
-        List<BlockKind> AssignKinds(List<RectInt> blocks, Vector2 center)
-        {
-            var kinds = new List<BlockKind>();
-            foreach (var _ in blocks) kinds.Add(rng.NextDouble() < 0.5 ? BlockKind.Vicoli : BlockKind.Palazzi);
-
-            // Special blocks, never the most central one (that's where the crew lives).
-            var order = new List<int>();
-            for (int i = 0; i < blocks.Count; i++) order.Add(i);
-            order.Sort((a, b) => (blocks[a].center - center).sqrMagnitude.CompareTo((blocks[b].center - center).sqrMagnitude));
-            kinds[order[0]] = BlockKind.Palazzi;
-
-            void Assign(BlockKind kind, int count, int minW, int minH)
-            {
-                var candidates = new List<int>();
-                for (int i = 1; i < order.Count; i++)
-                {
-                    int b = order[i];
-                    if (kinds[b] != BlockKind.Vicoli && kinds[b] != BlockKind.Palazzi) continue;
-                    if (blocks[b].width >= minW && blocks[b].height >= minH) candidates.Add(b);
-                }
-                for (int k = 0; k < count && candidates.Count > 0; k++)
-                {
-                    int pick = candidates[rng.Next(candidates.Count)];
-                    candidates.Remove(pick);
-                    kinds[pick] = kind;
-                }
-            }
-
-            Assign(BlockKind.Church, 1, 16, 14);
-            Assign(BlockKind.Vele, 2, 22, 18);
-            Assign(BlockKind.Park, 2, 12, 12);
-            Assign(BlockKind.Market, 1, 16, 12);
-            return kinds;
-        }
-
-        // ---------- Ordinary blocks ----------
-
-        void BuildLots(Map map, RectInt inner, int maxDepth, int minLot, double builtChance, bool alleyDecor)
-        {
-            // Alleys between lots are bare ground.
-            foreach (var c in GridUtil.Cells(inner, false)) map.SetTerrain(c.x, c.y, TerrainType.Ground);
-
-            var lots = new List<RectInt>();
-            Split(inner, 0, maxDepth, minLot, lots);
-            foreach (var lot in lots)
-            {
-                if (rng.NextDouble() > builtChance)
-                {
-                    BuildCourtyard(map, lot);
-                    continue;
-                }
-                BuildBuilding(map, lot, partitions: true);
-                if (lot.width >= 6 && lot.height >= 6) shopLots.Add(lot);
-                // A home is a proper room, not a corridor.
-                bool homeShaped = lot.width >= 8 && lot.height >= 7 && lot.width <= 13 && lot.height <= 11;
-                if (homeShaped) homeLots.Add(lot);
-            }
-
-            if (!alleyDecor) return;
-            // Edicole votive on alley walls and bins in the vicoli.
-            foreach (var c in GridUtil.Cells(inner, false))
-            {
-                if (map.GetBuilding(c) != null || map.GetTerrain(c.x, c.y) != TerrainType.Ground) continue;
-                if (rng.NextDouble() < 0.012) map.SetBuilding(c.x, c.y, BuildingDefs.Bin);
+                var block = new RectInt(xStarts[i], yStarts[j], xEnds[i] - xStarts[i], yEnds[j] - yStarts[j]);
+                if (block.width >= 4 && block.height >= 4) BuildTerrace(map, block);
             }
         }
 
-        void Split(RectInt r, int depth, int maxDepth, int minLot, List<RectInt> lots)
+        List<int> Cuts(int start, int end, int min, int max)
         {
-            bool canSplitX = r.width >= minLot * 2 + 1;
-            bool canSplitY = r.height >= minLot * 2 + 1;
-            bool stop = depth >= maxDepth || (!canSplitX && !canSplitY) || (depth >= 1 && rng.NextDouble() < 0.2);
-            if (stop)
+            var cuts = new List<int>();
+            int pos = start + rng.Next(min, max + 1);
+            while (pos < end - min)
             {
-                lots.Add(r);
-                return;
+                cuts.Add(pos);
+                pos += VicoloWidth + rng.Next(min, max + 1);
             }
+            return cuts;
+        }
 
-            bool splitX = canSplitX && (!canSplitY || r.width >= r.height);
-            if (splitX)
+        /// <summary>A block of buildings packed wall to wall, each opening onto a vicolo.</summary>
+        void BuildTerrace(Map map, RectInt block)
+        {
+            int y = block.y;
+            while (y < block.yMax - 1)
             {
-                int cut = rng.Next(minLot, r.width - minLot);
-                Split(new RectInt(r.x, r.y, cut, r.height), depth + 1, maxDepth, minLot, lots);
-                Split(new RectInt(r.x + cut + 1, r.y, r.width - cut - 1, r.height), depth + 1, maxDepth, minLot, lots);
-            }
-            else
-            {
-                int cut = rng.Next(minLot, r.height - minLot);
-                Split(new RectInt(r.x, r.y, r.width, cut), depth + 1, maxDepth, minLot, lots);
-                Split(new RectInt(r.x, r.y + cut + 1, r.width, r.height - cut - 1), depth + 1, maxDepth, minLot, lots);
+                int h = Mathf.Min(rng.Next(5, 9), block.yMax - y);
+                if (block.yMax - (y + h - 1) < 4) h = block.yMax - y; // don't leave a sliver
+                var lot = new RectInt(block.x, y, block.width, h);
+                if (lot.height >= 4)
+                {
+                    if (rng.NextDouble() < 0.07) BuildCourtyard(map, lot);
+                    else
+                    {
+                        // Doors on the long sides face the vicoli: the bassi open straight onto the alley.
+                        bool west = rng.NextDouble() < 0.5;
+                        var door = new Vector2Int(west ? lot.xMin : lot.xMax - 1, lot.y + rng.Next(1, lot.height - 1));
+                        BuildBuilding(map, lot, partitions: lot.width >= 8, door);
+                        AddProperty(lot, door, PropertyKind.Home);
+                        if (lot.width >= 6 && lot.height >= 5) shopLots.Add(lot);
+                        if (lot.width >= 8 && lot.height >= 7 && lot.width <= 13 && lot.height <= 11) homeLots.Add(lot);
+
+                        // A plastic chair outside the basso, for whoever's watching the street.
+                        var outside = door + (west ? Vector2Int.left : Vector2Int.right);
+                        if (rng.NextDouble() < 0.35 && map.InBounds(outside) && map.GetBuilding(outside) == null)
+                        {
+                            var chair = outside + (rng.NextDouble() < 0.5 ? Vector2Int.up : Vector2Int.down);
+                            if (map.InBounds(chair) && map.GetBuilding(chair) == null && map.GetTerrain(chair.x, chair.y) == TerrainType.Sidewalk)
+                                map.SetBuilding(chair.x, chair.y, BuildingDefs.PlasticChair);
+                        }
+                    }
+                }
+                y += h - 1; // shared wall with the next building
             }
         }
 
@@ -190,6 +201,7 @@ namespace OSistema.World
         {
             foreach (var c in GridUtil.Cells(lot, false))
             {
+                map.SetBuilding(c.x, c.y, null);
                 map.SetTerrain(c.x, c.y, rng.NextDouble() < 0.6 ? TerrainType.Ground : TerrainType.Grass);
                 if (rng.NextDouble() < 0.04) map.SetBuilding(c.x, c.y, BuildingDefs.Rubble);
             }
@@ -197,7 +209,7 @@ namespace OSistema.World
             if (rng.NextDouble() < 0.6) map.SetBuilding(mid.x, mid.y, BuildingDefs.Tree);
         }
 
-        Vector2Int BuildBuilding(Map map, RectInt lot, bool partitions, Vector2Int? fixedDoor = null)
+        void BuildBuilding(Map map, RectInt lot, bool partitions, Vector2Int door)
         {
             byte style = (byte)rng.Next(StyleCount);
             foreach (var c in GridUtil.Cells(lot, outlineOnly: false))
@@ -205,92 +217,63 @@ namespace OSistema.World
                 bool edge = c.x == lot.xMin || c.x == lot.xMax - 1 || c.y == lot.yMin || c.y == lot.yMax - 1;
                 map.SetTerrain(c.x, c.y, TerrainType.Floor);
                 map.SetStyle(c.x, c.y, style);
-                if (edge) map.SetBuilding(c.x, c.y, BuildingDefs.Wall);
+                map.SetBuilding(c.x, c.y, edge ? BuildingDefs.Wall : null);
             }
-
-            int side = rng.Next(4);
-            Vector2Int door = fixedDoor ?? side switch
-            {
-                0 => new Vector2Int(lot.x + rng.Next(1, lot.width - 1), lot.yMin),
-                1 => new Vector2Int(lot.x + rng.Next(1, lot.width - 1), lot.yMax - 1),
-                2 => new Vector2Int(lot.xMin, lot.y + rng.Next(1, lot.height - 1)),
-                _ => new Vector2Int(lot.xMax - 1, lot.y + rng.Next(1, lot.height - 1)),
-            };
             map.SetBuilding(door.x, door.y, BuildingDefs.Door);
 
-            if (partitions && lot.width >= 9 && lot.height >= 6 && rng.NextDouble() < 0.7)
+            if (partitions && lot.width >= 8 && lot.height >= 5 && rng.NextDouble() < 0.7)
             {
                 int wx = lot.x + rng.Next(3, lot.width - 3);
-                if (wx == door.x) wx = wx + 1 < lot.xMax - 2 ? wx + 1 : wx - 1; // don't wall off the entrance
                 int doorY = lot.y + rng.Next(1, lot.height - 1);
                 for (int y = lot.y + 1; y < lot.yMax - 1; y++)
                     map.SetBuilding(wx, y, y == doorY ? BuildingDefs.Door : BuildingDefs.Wall);
             }
-            return door;
         }
 
-        // ---------- Special blocks ----------
-
-        /// <summary>A brutalist housing megablock: corridors, flats either side, a ruined courtyard.</summary>
-        void BuildVele(Map map, RectInt inner)
+        void AddProperty(RectInt lot, Vector2Int door, PropertyKind kind)
         {
-            var shell = new RectInt(inner.x + 1, inner.y + 1, inner.width - 2, inner.height - 2);
-            foreach (var c in GridUtil.Cells(inner, false)) map.SetTerrain(c.x, c.y, TerrainType.Ground);
-            const byte concrete = 4;
-            foreach (var c in GridUtil.Cells(shell, false))
-            {
-                bool edge = c.x == shell.xMin || c.x == shell.xMax - 1 || c.y == shell.yMin || c.y == shell.yMax - 1;
-                map.SetTerrain(c.x, c.y, TerrainType.Floor);
-                map.SetStyle(c.x, c.y, concrete);
-                if (edge) map.SetBuilding(c.x, c.y, BuildingDefs.Wall);
-            }
-
-            // Corridors every 6 rows, flats between them with a door onto the corridor.
-            int midX = shell.x + shell.width / 2;
-            for (int y = shell.yMin + 1; y < shell.yMax - 1; y++)
-            {
-                int row = (y - shell.yMin) % 6;
-                bool corridor = row == 3;
-                for (int x = shell.xMin + 1; x < shell.xMax - 1; x++)
-                {
-                    if (corridor || x == midX || x == midX + 1)
-                    {
-                        map.SetTerrain(x, y, TerrainType.Paving);
-                        continue;
-                    }
-                    // Walls line both sides of each corridor; flats are split every 5 columns.
-                    bool flatWall = row == 2 || row == 4 || (x - shell.xMin) % 5 == 0;
-                    if (flatWall) map.SetBuilding(x, y, BuildingDefs.Wall);
-                }
-                if (corridor)
-                {
-                    // Doors from the corridor into the flats above and below.
-                    for (int x = shell.xMin + 3; x < shell.xMax - 2; x += 5)
-                    {
-                        if (y + 1 < shell.yMax - 1 && map.GetBuilding(x, y + 1) == BuildingDefs.Wall) map.SetBuilding(x, y + 1, BuildingDefs.Door);
-                        if (y - 1 > shell.yMin && map.GetBuilding(x, y - 1) == BuildingDefs.Wall) map.SetBuilding(x, y - 1, BuildingDefs.Door);
-                    }
-                    // Corridor exits on both ends.
-                    map.SetBuilding(shell.xMin, y, BuildingDefs.Door);
-                    map.SetBuilding(shell.xMax - 1, y, BuildingDefs.Door);
-                }
-            }
-            map.SetBuilding(midX, shell.yMin, BuildingDefs.Door);
-            map.SetBuilding(midX, shell.yMax - 1, BuildingDefs.Door);
-
-            // Rubble and abandoned flats: the place is falling apart.
-            foreach (var c in GridUtil.Cells(shell, false))
-                if (map.GetBuilding(c) == null && rng.NextDouble() < 0.02) map.SetBuilding(c.x, c.y, BuildingDefs.Rubble);
+            properties.Add(new Property { Rect = lot, Door = door, Kind = kind });
         }
 
-        void BuildChurch(Map map, RectInt inner)
-        {
-            foreach (var c in GridUtil.Cells(inner, false)) map.SetTerrain(c.x, c.y, TerrainType.Paving);
+        // ---------- Borgo: church piazza, market street, vicoli ----------
 
-            // The church takes the top half; the piazza in front of it the rest.
-            int churchH = Mathf.Max(8, inner.height / 2);
-            int churchW = Mathf.Min(inner.width - 4, 14);
-            var church = new RectInt(inner.x + (inner.width - churchW) / 2, inner.yMax - churchH, churchW, churchH);
+        void BuildBorgo(Map map, RectInt area)
+        {
+            int pw = Mathf.Min(26, area.width - 4), ph = Mathf.Min(22, area.height / 2);
+            var piazza = new RectInt(area.x + (area.width - pw) / 2, area.yMax - ph, pw, ph);
+            var rest = new RectInt(area.x, area.y, area.width, area.height - ph - 1);
+
+            BuildQuartieri(map, rest);
+            BuildChurch(map, piazza);
+
+            // Market street: a wider paved street with stalls along both sides.
+            int my = rest.y + rest.height / 2;
+            Fill(map, new RectInt(rest.x, my, rest.width, 4), TerrainType.Paving);
+            for (int x = rest.x; x < rest.xMax; x++)
+            {
+                for (int y = my; y < my + 4; y++) map.SetBuilding(x, y, null);
+                if (x % 3 != 0) continue;
+                map.SetBuilding(x, my, BuildingDefs.MarketStall);
+                map.SetBuilding(x, my + 3, BuildingDefs.MarketStall);
+            }
+            // Buildings cut in half by the market street are no longer properties.
+            var street = new RectInt(rest.x, my, rest.width, 4);
+            properties.RemoveAll(p => p.Rect.Overlaps(street));
+            shopLots.RemoveAll(l => l.Overlaps(street));
+            homeLots.RemoveAll(l => l.Overlaps(street));
+        }
+
+        void BuildChurch(Map map, RectInt area)
+        {
+            foreach (var c in GridUtil.Cells(area, false))
+            {
+                map.SetTerrain(c.x, c.y, TerrainType.Paving);
+                map.SetBuilding(c.x, c.y, null);
+            }
+
+            int churchH = Mathf.Max(9, area.height / 2 + 1);
+            int churchW = Mathf.Min(area.width - 6, 14);
+            var church = new RectInt(area.x + (area.width - churchW) / 2, area.yMax - churchH, churchW, churchH);
             const byte stone = 4;
             foreach (var c in GridUtil.Cells(church, false))
             {
@@ -307,65 +290,128 @@ namespace OSistema.World
             for (int y = church.yMin + 2; y < church.yMax - 3; y += 2)
             for (int x = church.xMin + 2; x < church.xMax - 2; x++)
                 if (x != doorX && x != doorX - 1) map.SetBuilding(x, y, BuildingDefs.Pew);
+            properties.RemoveAll(p => p.Rect.Overlaps(area));
+            shopLots.RemoveAll(l => l.Overlaps(area));
+            homeLots.RemoveAll(l => l.Overlaps(area));
+            properties.Add(new Property { Rect = church, Door = new Vector2Int(doorX, church.yMin), Kind = PropertyKind.Civic, Name = "The parish church" });
 
-            // The piazza: a fountain, benches, a few trees.
-            var plaza = new RectInt(inner.x, inner.y, inner.width, inner.height - churchH);
+            var plaza = new RectInt(area.x, area.y, area.width, area.height - churchH);
             var mid = Vector2Int.RoundToInt(plaza.center);
             map.SetBuilding(mid.x, mid.y, BuildingDefs.Fountain);
-            map.SetBuilding(plaza.xMin + 2, plaza.yMin + 2, BuildingDefs.Tree);
-            map.SetBuilding(plaza.xMax - 3, plaza.yMin + 2, BuildingDefs.Tree);
+            map.SetBuilding(plaza.xMin + 2, plaza.yMin + 1, BuildingDefs.Tree);
+            map.SetBuilding(plaza.xMax - 3, plaza.yMin + 1, BuildingDefs.Tree);
             map.SetBuilding(mid.x - 3, mid.y, BuildingDefs.Bench);
             map.SetBuilding(mid.x + 3, mid.y, BuildingDefs.Bench);
             map.SetBuilding(plaza.xMin + 1, plaza.yMax - 1, BuildingDefs.StreetLamp);
             map.SetBuilding(plaza.xMax - 2, plaza.yMax - 1, BuildingDefs.StreetLamp);
         }
 
-        void BuildPark(Map map, RectInt inner)
+        // ---------- Vele: housing megablocks on wasteland ----------
+
+        void BuildVeleQuarter(Map map, RectInt area)
         {
-            foreach (var c in GridUtil.Cells(inner, false))
+            foreach (var c in GridUtil.Cells(area, false))
             {
-                map.SetTerrain(c.x, c.y, TerrainType.Grass);
-                double r = rng.NextDouble();
-                if (r < 0.07) map.SetBuilding(c.x, c.y, BuildingDefs.Tree);
-                else if (r < 0.085) map.SetBuilding(c.x, c.y, BuildingDefs.Rubble);
+                map.SetTerrain(c.x, c.y, rng.NextDouble() < 0.75 ? TerrainType.Ground : TerrainType.Grass);
+                if (rng.NextDouble() < 0.015) map.SetBuilding(c.x, c.y, BuildingDefs.Rubble);
             }
-            // A dirt path across, with benches.
-            int py = inner.y + inner.height / 2;
-            for (int x = inner.xMin; x < inner.xMax; x++)
+            int slabs = area.width > 60 ? 3 : 2;
+            int slabW = (area.width - (slabs + 1) * 6) / slabs;
+            for (int i = 0; i < slabs; i++)
             {
-                map.SetTerrain(x, py, TerrainType.Ground);
-                if (map.GetBuilding(x, py) != null) map.SetBuilding(x, py, null);
-                if (x % 6 == 0 && py + 1 < inner.yMax && map.GetBuilding(x, py + 1) == null) map.SetBuilding(x, py + 1, BuildingDefs.Bench);
+                var slab = new RectInt(area.x + 6 + i * (slabW + 6), area.y + 6, slabW, area.height - 12);
+                if (slab.width >= 12 && slab.height >= 14) BuildVele(map, slab);
+            }
+            for (int i = 0; i < 6; i++)
+            {
+                var c = new Vector2Int(rng.Next(area.xMin, area.xMax), rng.Next(area.yMin, area.yMax));
+                if (map.GetBuilding(c) == null && map.GetTerrain(c.x, c.y) != TerrainType.Floor)
+                    map.SetBuilding(c.x, c.y, i % 2 == 0 ? BuildingDefs.ParkedCar : BuildingDefs.Tree);
             }
         }
 
-        void BuildMarket(Map map, RectInt inner)
+        void BuildVele(Map map, RectInt shell)
         {
-            // Shops around the edge, stalls in rows down the middle.
-            foreach (var c in GridUtil.Cells(inner, false)) map.SetTerrain(c.x, c.y, TerrainType.Paving);
-            var top = new RectInt(inner.x, inner.yMax - 7, inner.width, 7);
-            var lots = new List<RectInt>();
-            Split(top, 0, 2, 6, lots);
-            foreach (var lot in lots)
+            const byte concrete = 4;
+            foreach (var c in GridUtil.Cells(shell, false))
             {
-                if (lot.height < 6) continue;
-                BuildBuilding(map, lot, partitions: false, new Vector2Int(lot.x + lot.width / 2, lot.yMin));
-                if (lot.width >= 6) shopLots.Add(lot);
+                bool edge = c.x == shell.xMin || c.x == shell.xMax - 1 || c.y == shell.yMin || c.y == shell.yMax - 1;
+                map.SetTerrain(c.x, c.y, TerrainType.Floor);
+                map.SetStyle(c.x, c.y, concrete);
+                map.SetBuilding(c.x, c.y, edge ? BuildingDefs.Wall : null);
             }
-            for (int y = inner.yMin + 2; y < inner.yMax - 9; y += 3)
-            for (int x = inner.xMin + 2; x < inner.xMax - 2; x++)
-                if ((x - inner.xMin) % 6 != 0) map.SetBuilding(x, y, BuildingDefs.MarketStall);
+
+            int midX = shell.x + shell.width / 2;
+            for (int y = shell.yMin + 1; y < shell.yMax - 1; y++)
+            {
+                int row = (y - shell.yMin) % 6;
+                bool corridor = row == 3;
+                for (int x = shell.xMin + 1; x < shell.xMax - 1; x++)
+                {
+                    if (corridor || x == midX || x == midX + 1)
+                    {
+                        map.SetTerrain(x, y, TerrainType.Paving);
+                        continue;
+                    }
+                    bool flatWall = row == 2 || row == 4 || (x - shell.xMin) % 5 == 0;
+                    if (flatWall) map.SetBuilding(x, y, BuildingDefs.Wall);
+                }
+                if (!corridor) continue;
+                for (int x = shell.xMin + 3; x < shell.xMax - 2; x += 5)
+                {
+                    if (map.GetBuilding(x, y + 1) == BuildingDefs.Wall) map.SetBuilding(x, y + 1, BuildingDefs.Door);
+                    if (map.GetBuilding(x, y - 1) == BuildingDefs.Wall) map.SetBuilding(x, y - 1, BuildingDefs.Door);
+                }
+                map.SetBuilding(shell.xMin, y, BuildingDefs.Door);
+                map.SetBuilding(shell.xMax - 1, y, BuildingDefs.Door);
+            }
+            map.SetBuilding(midX, shell.yMin, BuildingDefs.Door);
+            map.SetBuilding(midX, shell.yMax - 1, BuildingDefs.Door);
+            foreach (var c in GridUtil.Cells(shell, false))
+                if (map.GetBuilding(c) == null && rng.NextDouble() < 0.02) map.SetBuilding(c.x, c.y, BuildingDefs.Rubble);
+        }
+
+        // ---------- Hospital ----------
+
+        void BuildHospital(Map map, RectInt quarter)
+        {
+            // In the corner of a quarter, its doors opening onto the pavement of the road below.
+            var lot = new RectInt(quarter.x + 2, quarter.y + 2, Mathf.Min(16, quarter.width - 4), 10);
+            var door = new Vector2Int(lot.x + lot.width / 2, lot.yMin);
+            foreach (var c in GridUtil.Cells(new RectInt(lot.x - 1, quarter.y + 1, lot.width + 2, lot.yMax - quarter.y), false))
+                if (map.InBounds(c))
+                {
+                    map.SetBuilding(c.x, c.y, null);
+                    map.SetTerrain(c.x, c.y, TerrainType.Paving);
+                }
+            const byte white = 5;
+            foreach (var c in GridUtil.Cells(lot, false))
+            {
+                bool edge = c.x == lot.xMin || c.x == lot.xMax - 1 || c.y == lot.yMin || c.y == lot.yMax - 1;
+                map.SetTerrain(c.x, c.y, TerrainType.Marble);
+                map.SetStyle(c.x, c.y, white);
+                map.SetBuilding(c.x, c.y, edge ? BuildingDefs.Wall : null);
+            }
+            map.SetBuilding(door.x, door.y, BuildingDefs.Door);
+            map.SetBuilding(door.x - 1, door.y, BuildingDefs.Door);
+            map.SetBuilding(door.x, door.y + 3, BuildingDefs.HospitalDesk);
+            for (int x = lot.xMin + 2; x < lot.xMax - 2; x += 3) map.SetBuilding(x, lot.yMax - 2, BuildingDefs.Bed);
+
+            var footprint = new RectInt(lot.x - 1, quarter.y, lot.width + 2, lot.yMax - quarter.y + 1);
+            properties.RemoveAll(p => p.Rect.Overlaps(footprint));
+            shopLots.RemoveAll(l => l.Overlaps(footprint));
+            homeLots.RemoveAll(l => l.Overlaps(footprint));
+            properties.Add(new Property { Rect = lot, Door = door, Kind = PropertyKind.Civic, Name = "Ospedale" });
         }
 
         // ---------- The crew's home and the shops ----------
 
-        RectInt PickLot(List<RectInt> lots, Vector2 near, int minArea)
+        static RectInt PickLot(List<RectInt> lots, Vector2 near)
         {
-            RectInt best = lots.Count > 0 ? lots[0] : new RectInt(near.x > 0 ? (int)near.x : 0, (int)near.y, 8, 8);
+            RectInt best = lots.Count > 0 ? lots[0] : new RectInt((int)near.x, (int)near.y, 9, 8);
             float bestDist = float.MaxValue;
             foreach (var lot in lots)
             {
-                if (lot.width * lot.height < minArea) continue;
                 float d = (lot.center - near).sqrMagnitude;
                 if (d < bestDist)
                 {
@@ -378,29 +424,31 @@ namespace OSistema.World
 
         void BuildBase(Map map, RectInt lot)
         {
-            // Clear whatever the block put there, then a simple basso: one big room.
-            foreach (var c in GridUtil.Cells(lot, false)) map.SetBuilding(c.x, c.y, null);
-            var door = new Vector2Int(lot.x + lot.width / 2, lot.yMin);
+            // One big room, its door onto the alley.
+            var door = new Vector2Int(lot.xMin, lot.y + lot.height / 2);
+            if (!map.InBounds(door.x - 1, door.y) || !map.IsPassable(door.x - 1, door.y) || map.GetTerrain(door.x - 1, door.y) == TerrainType.Floor)
+                door = new Vector2Int(lot.xMax - 1, lot.y + lot.height / 2);
             BuildBuilding(map, lot, partitions: false, door);
-            // Make sure the door opens onto walkable ground.
-            if (map.InBounds(door.x, door.y - 1) && !map.IsPassable(door.x, door.y - 1)) map.SetBuilding(door.x, door.y - 1, null);
+            properties.Add(new Property { Rect = lot, Door = door, Kind = PropertyKind.Home, OwnedByPlayer = true, Name = "The family basso" });
 
-            for (int i = 0; i < 3 && lot.x + 1 + i * 2 < lot.xMax - 1; i++)
-                map.SetBuilding(lot.x + 1 + i * 2, lot.yMax - 2, BuildingDefs.Bed);
-            map.SetBuilding(lot.x + 1, lot.y + 1, BuildingDefs.Stove);
-            map.SetBuilding(lot.x + 1, lot.y + 2, BuildingDefs.Pantry);
+            for (int i = 0; i < 3 && lot.x + 2 + i * 2 < lot.xMax - 1; i++)
+                map.SetBuilding(lot.x + 2 + i * 2, lot.yMax - 2, BuildingDefs.Bed);
+            int kitchenX = door.x == lot.xMin ? lot.xMax - 2 : lot.xMin + 1;
+            map.SetBuilding(kitchenX, lot.y + 1, BuildingDefs.Stove);
+            map.SetBuilding(kitchenX, lot.y + 2, BuildingDefs.Pantry);
             var mid = Vector2Int.RoundToInt(lot.center);
             map.SetBuilding(mid.x, mid.y - 1, BuildingDefs.Table);
-            map.SetBuilding(lot.xMax - 2, lot.y + 1, BuildingDefs.Shrine);
+            int shrineX = door.x == lot.xMin ? lot.xMin + 1 : lot.xMax - 2;
+            map.SetBuilding(shrineX, lot.y + 1, BuildingDefs.Shrine);
         }
 
         void PlaceShops(Map map)
         {
             var shops = new[]
             {
-                BuildingDefs.PizzeriaCounter, BuildingDefs.PizzeriaCounter, BuildingDefs.PizzeriaCounter,
+                BuildingDefs.PizzeriaCounter, BuildingDefs.PizzeriaCounter, BuildingDefs.PizzeriaCounter, BuildingDefs.PizzeriaCounter,
                 BuildingDefs.SalumeriaCounter, BuildingDefs.SalumeriaCounter, BuildingDefs.FarmaciaCounter,
-                BuildingDefs.BarCounter, BuildingDefs.BarCounter, BuildingDefs.BarCounter,
+                BuildingDefs.BarCounter, BuildingDefs.BarCounter, BuildingDefs.BarCounter, BuildingDefs.BarCounter,
                 BuildingDefs.MacelleriaCounter, BuildingDefs.MacelleriaCounter,
                 BuildingDefs.TabaccheriaCounter, BuildingDefs.TabaccheriaCounter,
             };
@@ -414,47 +462,106 @@ namespace OSistema.World
             {
                 if (placed >= shops.Length) break;
                 var mid = Vector2Int.RoundToInt(lot.center);
-                // The lot must still be a building with free floor in the middle.
                 if (map.GetTerrain(mid.x, mid.y) != TerrainType.Floor || map.GetBuilding(mid.x, mid.y) != null) continue;
                 bool clear = true;
                 foreach (var c in GridUtil.CellsAround(mid, 1))
                     if (map.GetBuilding(c) == BuildingDefs.Wall) clear = false;
                 if (!clear) continue;
                 map.SetBuilding(mid.x, mid.y, shops[placed++]);
+                var prop = properties.Find(p => p.Rect.Equals(lot));
+                if (prop != null) prop.Kind = PropertyKind.Shop;
             }
         }
 
         // ---------- Street furniture ----------
 
-        void DecorateStreets(Map map, List<RectInt> blocks)
+        void DecorateStreets(Map map, List<RectInt> quarters)
         {
-            foreach (var block in blocks)
+            // Lamps and parked scooters along the pavements of the main roads.
+            foreach (var q in quarters)
             {
                 int i = 0;
-                foreach (var c in GridUtil.Cells(block, outlineOnly: true))
+                foreach (var c in GridUtil.Cells(q, outlineOnly: true))
                 {
                     i++;
-                    if (map.GetBuilding(c) != null) continue;
+                    if (map.GetBuilding(c) != null || map.GetTerrain(c.x, c.y) != TerrainType.Sidewalk) continue;
                     if (i % 9 == 0) map.SetBuilding(c.x, c.y, BuildingDefs.StreetLamp);
-                    else if (rng.NextDouble() < 0.025) map.SetBuilding(c.x, c.y, BuildingDefs.ParkedScooter);
+                    else if (rng.NextDouble() < 0.03) map.SetBuilding(c.x, c.y, BuildingDefs.ParkedScooter);
                     else if (rng.NextDouble() < 0.012) map.SetBuilding(c.x, c.y, BuildingDefs.Bin);
                 }
             }
 
-            // Parked cars along the kerb of wide roads, leaving the lanes free.
+            // In the vicoli: shrines and lamps on the walls, bins and scooters against them.
+            for (int y = 1; y < map.Height - 1; y++)
+            for (int x = 1; x < map.Width - 1; x++)
+            {
+                var b = map.GetBuilding(x, y);
+                if (b == BuildingDefs.Wall && FacesAlley(map, x, y))
+                {
+                    double r = rng.NextDouble();
+                    if (r < 0.012) map.SetBuilding(x, y, BuildingDefs.Shrine);
+                    else if (r < 0.06) map.SetDecor(x, y, MapDecor.WallLamp);
+                }
+                else if (b == null && map.GetTerrain(x, y) == TerrainType.Sidewalk && NextToWall(map, x, y) && !NextToDoor(map, x, y))
+                {
+                    double r = rng.NextDouble();
+                    if (r < 0.012) map.SetBuilding(x, y, BuildingDefs.ParkedScooter);
+                    else if (r < 0.02) map.SetBuilding(x, y, BuildingDefs.Bin);
+                }
+            }
+
+            // Parked cars along the kerb of the asphalt roads, leaving the lanes free.
             for (int y = 1; y < map.Height - 1; y++)
             for (int x = 1; x < map.Width - 1; x++)
             {
                 if (map.GetTerrain(x, y) != TerrainType.Road || map.GetBuilding(x, y) != null) continue;
-                bool kerb = IsSidewalk(map, x + 1, y) || IsSidewalk(map, x - 1, y) || IsSidewalk(map, x, y + 1) || IsSidewalk(map, x, y - 1);
-                bool wide = RoadWidthAt(map, x, y) >= 4;
-                bool corner = (IsRoad(map, x + 1, y) || IsRoad(map, x - 1, y)) && (IsRoad(map, x, y + 1) || IsRoad(map, x, y - 1)) && CountRoad(map, x, y) >= 3;
-                if (kerb && wide && !corner && rng.NextDouble() < 0.12) map.SetBuilding(x, y, BuildingDefs.ParkedCar);
+                bool kerb = IsT(map, x + 1, y, TerrainType.Sidewalk) || IsT(map, x - 1, y, TerrainType.Sidewalk) ||
+                            IsT(map, x, y + 1, TerrainType.Sidewalk) || IsT(map, x, y - 1, TerrainType.Sidewalk);
+                if (kerb && !NearJunction(map, x, y) && rng.NextDouble() < 0.1) map.SetBuilding(x, y, BuildingDefs.ParkedCar);
             }
         }
 
-        static bool IsSidewalk(Map map, int x, int y) => map.InBounds(x, y) && map.GetTerrain(x, y) == TerrainType.Sidewalk;
-        static bool IsRoad(Map map, int x, int y) => map.InBounds(x, y) && map.GetTerrain(x, y) == TerrainType.Road;
+        // Laundry strung across the vicoli between facing buildings.
+        void HangLaundry(Map map)
+        {
+            for (int y = 1; y < map.Height - 1; y++)
+            for (int x = 1; x < map.Width - 2; x++)
+            {
+                if (!IsT(map, x, y, TerrainType.Sidewalk) || !IsT(map, x + 1, y, TerrainType.Sidewalk)) continue;
+                bool westWall = map.GetBuilding(x - 1, y) == BuildingDefs.Wall;
+                bool eastWall = map.InBounds(x + 2, y) && map.GetBuilding(x + 2, y) == BuildingDefs.Wall;
+                if (!westWall || !eastWall || rng.NextDouble() > 0.3) continue;
+                map.SetDecor(x, y, MapDecor.Laundry);
+                map.SetDecor(x + 1, y, MapDecor.Laundry);
+            }
+        }
+
+        static bool FacesAlley(Map map, int x, int y) =>
+            IsT(map, x - 1, y, TerrainType.Sidewalk) || IsT(map, x + 1, y, TerrainType.Sidewalk) ||
+            IsT(map, x, y - 1, TerrainType.Sidewalk);
+
+        static bool NextToWall(Map map, int x, int y) =>
+            map.GetBuilding(x - 1, y) == BuildingDefs.Wall || map.GetBuilding(x + 1, y) == BuildingDefs.Wall;
+
+        static bool NextToDoor(Map map, int x, int y)
+        {
+            for (int dy = -1; dy <= 1; dy++)
+            for (int dx = -1; dx <= 1; dx++)
+                if (map.InBounds(x + dx, y + dy) && map.GetBuilding(x + dx, y + dy) == BuildingDefs.Door) return true;
+            return false;
+        }
+
+        // Keep junctions clear of parked cars.
+        static bool NearJunction(Map map, int x, int y)
+        {
+            for (int dy = -3; dy <= 3; dy++)
+            for (int dx = -3; dx <= 3; dx++)
+                if (CountRoad(map, x + dx, y + dy) >= 4) return true;
+            return false;
+        }
+
+        static bool IsT(Map map, int x, int y, TerrainType t) => map.InBounds(x, y) && map.GetTerrain(x, y) == t;
+        static bool IsRoad(Map map, int x, int y) => IsT(map, x, y, TerrainType.Road);
 
         static int CountRoad(Map map, int x, int y)
         {
@@ -464,17 +571,6 @@ namespace OSistema.World
             if (IsRoad(map, x, y + 1)) n++;
             if (IsRoad(map, x, y - 1)) n++;
             return n;
-        }
-
-        // Width of the road through this cell, measured across its narrower axis.
-        static int RoadWidthAt(Map map, int x, int y)
-        {
-            int h = 1, v = 1;
-            for (int d = 1; d < 6 && IsRoad(map, x + d, y); d++) h++;
-            for (int d = 1; d < 6 && IsRoad(map, x - d, y); d++) h++;
-            for (int d = 1; d < 6 && IsRoad(map, x, y + d); d++) v++;
-            for (int d = 1; d < 6 && IsRoad(map, x, y - d); d++) v++;
-            return Mathf.Min(h, v);
         }
 
         static void Fill(Map map, RectInt r, TerrainType t)

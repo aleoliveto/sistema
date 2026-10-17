@@ -21,7 +21,9 @@ namespace OSistema.UI
         readonly Dictionary<int, CrewCard> cards = new Dictionary<int, CrewCard>();
         string crewSignature = "";
 
-        VisualElement inspector, inspectorDetail, injuriesBox, thoughtsBox;
+        VisualElement inspector, inspectorDetail, injuriesBox, thoughtsBox, moreBox, propertyPanel;
+        Button moreButton, callButton;
+        bool showMore;
         VisualElement inspectorAvatar;
         Label inspName, inspSub, inspJob, inspSkills, inspHealth, inspMulti;
         Button roleButton, draftButton, armButton;
@@ -75,10 +77,11 @@ namespace OSistema.UI
                 card.MoodFill.style.backgroundColor = MoodColor(p.Mood.Value);
                 float health = Mathf.Clamp01(1f - Mathf.Max(p.Health.Pain, p.Health.BloodLoss));
                 Ui.SetFill(card.HealthFill, health);
-                card.HealthFill.style.backgroundColor = health > 0.75f ? new Color(0.78f, 0.76f, 0.7f) : health > 0.4f ? new Color(0.92f, 0.65f, 0.3f) : new Color(0.86f, 0.3f, 0.26f);
+                card.HealthFill.style.backgroundColor = health > 0.4f ? new Color(0.92f, 0.65f, 0.3f) : new Color(0.86f, 0.3f, 0.26f);
+                card.HealthFill.parent.Show(health < 0.97f);
                 card.Root.Toggle("crew-card--selected", controller.Selected.Contains(p));
                 card.Root.Toggle("crew-card--drafted", p.Drafted);
-                card.Root.style.opacity = p.InJail ? 0.45f : 1f;
+                card.Root.style.opacity = p.InJail || p.InHospital ? 0.45f : 1f;
             }
         }
 
@@ -94,9 +97,10 @@ namespace OSistema.UI
 
             card.Root.RegisterCallback<ClickEvent>(e =>
             {
-                if (p.InJail || p.Dead) return;
+                if (p.InJail || p.InHospital || p.Dead) return;
                 bool additive = Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
                 if (!additive) controller.Selected.Clear();
+                controller.SelectProperty(null);
                 if (!controller.Selected.Contains(p)) controller.Selected.Add(p);
                 if (e.clickCount >= 2) FocusCamera(p.Position);
                 RefreshAll();
@@ -120,6 +124,7 @@ namespace OSistema.UI
         static string ShortStatus(Pawn p, long now)
         {
             if (p.InJail) return "<color=#F07A6E>In Poggioreale</color>";
+            if (p.InHospital) return "<color=#F2B866>In hospital</color>";
             if (p.Health.Downed) return "<color=#F07A6E>Downed</color>";
             if (p.InMentalBreak(now)) return "<color=#F07A6E>Breakdown</color>";
             if (p.Sleep != SleepState.Awake) return "Asleep";
@@ -150,6 +155,8 @@ namespace OSistema.UI
             Tip(draftButton, () => "Drafted crew take your orders and fight (R).\nRight-click a rival to focus fire.");
             armButton = Ui.Btn("", () => { if (Single(out var p)) ToggleArmed(p); RefreshAll(); }, actions, "btn--small");
             Tip(armButton, () => $"Give or take back a pistol. Pistols in the stash: {game.Stock.Pistols}.");
+            callButton = Ui.Btn("Call 118", () => { if (Single(out var p)) game.Hospital.Call(p, game, byPasserby: false); RefreshAll(); }, actions, "btn--small", "btn--danger");
+            Tip(callButton, () => "Send for an ambulance. The hospital will patch them up, and report any gunshot wound to the police.");
 
             inspJob = Ui.Text("", inspectorDetail, "small", "wrap");
             inspJob.style.marginTop = 4;
@@ -167,10 +174,15 @@ namespace OSistema.UI
             Ui.Text("HEALTH", inspectorDetail, "section");
             inspHealth = Ui.Text("", inspectorDetail, "small", "wrap");
             injuriesBox = Ui.Box("col").Into(inspectorDetail);
-            Ui.Text("THOUGHTS", inspectorDetail, "section");
-            thoughtsBox = Ui.Box("col").Into(inspectorDetail);
-            Ui.Text("SKILLS", inspectorDetail, "section");
-            inspSkills = Ui.Text("", inspectorDetail, "small", "wrap");
+            moreButton = Ui.Btn("More ▾", () => { showMore = !showMore; RefreshAll(); }, inspectorDetail, "btn--small");
+            moreButton.style.alignSelf = Align.FlexStart;
+            moreBox = Ui.Box("col").Into(inspectorDetail);
+            Ui.Text("THOUGHTS", moreBox, "section");
+            thoughtsBox = Ui.Box("col").Into(moreBox);
+            Ui.Text("SKILLS", moreBox, "section");
+            inspSkills = Ui.Text("", moreBox, "small", "wrap");
+
+            propertyPanel = Ui.Box("col").Into(inspector);
         }
 
         bool Single(out Pawn pawn)
@@ -199,8 +211,16 @@ namespace OSistema.UI
         void RefreshInspector()
         {
             int count = controller.Selected.Count;
-            inspector.Show(count > 0);
-            if (count == 0) return;
+            var property = controller.SelectedProperty;
+            inspector.Show(count > 0 || property != null);
+            propertyPanel.Show(count == 0 && property != null);
+            if (count == 0)
+            {
+                inspMulti.Show(false);
+                inspectorDetail.Show(false);
+                if (property != null) RefreshPropertyPanel(property);
+                return;
+            }
 
             bool single = Single(out var p);
             inspMulti.Show(!single);
@@ -226,6 +246,9 @@ namespace OSistema.UI
             draftButton.Toggle("btn--on", p.Drafted);
             armButton.text = p.Armed ? "Disarm" : "Arm";
             armButton.Toggle("btn--on", p.Armed);
+            callButton.Show(p.Health.Downed && !game.Hospital.IsCalled(p));
+            moreButton.text = showMore ? "Less ▴" : "More ▾";
+            moreBox.Show(showMore);
 
             string job = p.CurrentJob?.Label ?? "Thinking";
             if (p.Carrying != null) job += $" (carrying {p.Carrying})";

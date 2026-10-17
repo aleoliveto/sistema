@@ -37,11 +37,13 @@ namespace OSistema.Core
         public readonly CombatSystem Combat = new CombatSystem();
         public readonly EventSystem Events = new EventSystem();
         public StreetLife StreetLife { get; private set; }
+        public readonly PropertyManager Properties;
+        public readonly Hospital Hospital;
 
         /// <summary>Interior of the crew's starting apartment.</summary>
         public readonly RectInt PlayerBase;
 
-        public Game(int seed, Map map, RectInt playerBase, long ticks, IEnumerable<Zone> zones)
+        public Game(int seed, Map map, RectInt playerBase, long ticks, IEnumerable<Zone> zones, List<Property> properties)
         {
             Seed = seed;
             // System.Random can't be saved, so a loaded game reseeds from seed + time.
@@ -56,17 +58,20 @@ namespace OSistema.Core
             Pawns = new PawnManager();
             Log = new MessageLog(Ticks);
             Territory = new Territory(Map, zones);
+            Properties = new PropertyManager(Map, properties);
             StreetLife = new StreetLife(this);
+            Hospital = new Hospital(this);
             Ticks.OnTick += Tick;
         }
 
         public static Game NewGame(int seed)
         {
             var generator = new MapGenerator(seed);
-            var map = generator.Generate(MapWidth, MapHeight, out var playerBase, out var blocks);
+            var map = generator.Generate(MapWidth, MapHeight, out var playerBase, out var zoneRects, out var properties);
             var rng = new System.Random(seed);
-            var game = new Game(seed, map, playerBase, 0, Territory.FromBlocks(blocks, rng));
+            var game = new Game(seed, map, playerBase, 0, Territory.FromBlocks(zoneRects, rng), properties);
             game.Org.BuildBusinesses(map, rng);
+            game.NameProperties();
             game.Stock.Cash = 800;
             game.Stock.Pistols = 1;
             game.SpawnStartingCrew();
@@ -82,12 +87,28 @@ namespace OSistema.Core
             if (Org.GameOver) return;
             Pawns.Tick(this);
             StreetLife.Tick(this);
+            Hospital.Tick(this);
             Npcs.Tick(this);
             Combat.Tick(this);
             Police.Tick(this);
             Org.Tick(this);
             Rival.Tick(this);
             Events.Tick(this);
+        }
+
+        /// <summary>Names and asking prices for every building, from its rione and its shop.</summary>
+        void NameProperties()
+        {
+            foreach (var p in Properties.All)
+            {
+                var zone = Territory.ZoneAt(Vector2Int.RoundToInt(p.Rect.center));
+                string where = zone != null ? zone.Name : "the rione";
+                var business = Org.Businesses.Find(b => p.Rect.Contains(b.Cell));
+                if (p.Name == null)
+                    p.Name = business != null ? business.Name
+                        : p.Rect.width * p.Rect.height < 70 ? $"A basso in {where}" : $"A palazzo in {where}";
+                p.Price = PropertyManager.PriceFor(p, zone != null ? zone.Demand : 1f);
+            }
         }
 
         void SpawnStartingCrew()

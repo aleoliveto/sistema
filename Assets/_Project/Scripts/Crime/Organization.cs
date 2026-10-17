@@ -63,6 +63,7 @@ namespace OSistema.Crime
             ReopenBurnedShops(game);
             game.Police.HourlyCheck(game);
             LeadershipHourly(game);
+            game.Hospital.Discharge(game);
         }
 
         void OnNewDay(Game game)
@@ -120,6 +121,7 @@ namespace OSistema.Crime
 
         void Payday(Game game)
         {
+            PayFronts(game);
             LastPaydayWeek = WeekOf(game.Clock);
             long now = game.Ticks.TicksGame;
             var stock = game.Stock;

@@ -17,6 +17,12 @@ namespace OSistema.Views
         Vector2 lastPos;
         float heading;              // degrees; 0 = facing north
         bool hasPos;
+        float stride;               // walking cycle phase
+        float moving;               // 0 standing .. 1 walking, smoothed
+        bool aiming;
+
+        static readonly Vector3 HandLRest = new Vector3(-0.3f, 0.14f, 0f);
+        static readonly Vector3 HandRRest = new Vector3(0.3f, 0.14f, 0f);
 
         public Transform Root => root;
 
@@ -88,17 +94,40 @@ namespace OSistema.Views
         {
             var d = point - (Vector2)root.position;
             if (d.sqrMagnitude > 0.0001f) heading = Mathf.Atan2(-d.x, d.y) * Mathf.Rad2Deg;
+            aiming = true;
         }
 
         public void Update(Vector2 position, bool lying, float dt)
         {
+            float speed = 0f;
             if (hasPos)
             {
                 var delta = position - lastPos;
                 if (delta.sqrMagnitude > 0.00002f) heading = Mathf.Atan2(-delta.x, delta.y) * Mathf.Rad2Deg;
+                speed = dt > 0f ? delta.magnitude / dt : 0f;
             }
             lastPos = position;
             hasPos = true;
+
+            // Arms swing while walking; both hands come forward when aiming.
+            moving = Mathf.MoveTowards(moving, !lying && speed > 0.2f ? 1f : 0f, dt * 6f);
+            stride += speed * dt * 9f;
+            float swing = Mathf.Sin(stride) * 0.12f * moving;
+            if (aiming && !lying)
+            {
+                handL.transform.localPosition = new Vector3(-0.08f, 0.36f, 0f);
+                handR.transform.localPosition = new Vector3(0.1f, 0.4f, 0f);
+                gun.transform.localPosition = new Vector3(0.02f, 0.55f, 0f);
+            }
+            else
+            {
+                handL.transform.localPosition = HandLRest + new Vector3(0f, swing, 0f);
+                handR.transform.localPosition = HandRRest - new Vector3(0f, swing, 0f);
+                gun.transform.localPosition = new Vector3(0.3f, 0.32f - swing, 0f);
+            }
+            aiming = false;
+            // A slight bob of the shoulders as the weight shifts.
+            body.transform.localScale = Vector3.one * (1f + Mathf.Abs(Mathf.Sin(stride)) * 0.04f * moving);
 
             root.position = new Vector3(position.x, position.y, 0f);
             float current = pivot.localEulerAngles.z;

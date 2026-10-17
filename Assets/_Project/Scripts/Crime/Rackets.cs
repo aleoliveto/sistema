@@ -32,7 +32,7 @@ namespace OSistema.Crime
         public string HoursLabel => OpenHour == CloseHour ? "24 hours" : $"{OpenHour:00}:00–{CloseHour:00}:00";
     }
 
-    public enum BusinessStatus { Free, Targeted, Paying, Refusing, Closed }
+    public enum BusinessStatus { Free, Targeted, Paying, Refusing, Closed, Owned }
 
     /// <summary>What to do to a business that won't pay.</summary>
     public enum Retaliation { None, Scare, Burn }
@@ -58,6 +58,7 @@ namespace OSistema.Crime
             BusinessStatus.Targeted => "Collector on the way",
             BusinessStatus.Paying => $"Paying €{WeeklyPizzo}/week",
             BusinessStatus.Closed => "Burned out",
+            BusinessStatus.Owned => "Yours (front)",
             _ when PendingAction == Retaliation.Scare => "Refused · scare ordered",
             _ when PendingAction == Retaliation.Burn => "Refused · arson ordered",
             _ => "Refused",

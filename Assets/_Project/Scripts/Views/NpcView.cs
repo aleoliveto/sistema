@@ -9,9 +9,21 @@ namespace OSistema.Views
         PersonRig rig;
         SpriteRenderer scooter;
 
+        // Ambulance
+        SpriteRenderer van, cross;
+        UnityEngine.Rendering.Universal.Light2D beacon;
+        float sirenTimer;
+        Vector2 lastPos;
+
         public void Init(Npc n)
         {
             npc = n;
+            if (n.Kind == NpcKind.Ambulance)
+            {
+                BuildAmbulance();
+                LateUpdate();
+                return;
+            }
             float scale = n.Kind == NpcKind.Child ? 0.7f : 0.92f;
             rig = new PersonRig(transform, scale, 9);
             var hair = n.Kind == NpcKind.Police ? new Color(0.1f, 0.12f, 0.25f) : PersonRig.HairFor(n.Id);
@@ -31,14 +43,69 @@ namespace OSistema.Views
             LateUpdate();
         }
 
+        void BuildAmbulance()
+        {
+            van = gameObject.AddComponent<SpriteRenderer>();
+            van.sprite = SpriteFactory.CenteredPixel;
+            van.sharedMaterial = SpriteFactory.LitMaterial;
+            van.sortingOrder = 14;
+            van.color = new Color(0.95f, 0.95f, 0.93f);
+            transform.localScale = new Vector3(0.9f, 1.8f, 1f);
+
+            var crossGo = new GameObject("Cross");
+            crossGo.transform.SetParent(transform, false);
+            crossGo.transform.localScale = new Vector3(0.45f, 0.22f, 1f);
+            cross = crossGo.AddComponent<SpriteRenderer>();
+            cross.sprite = SpriteFactory.CenteredPixel;
+            cross.sharedMaterial = SpriteFactory.LitMaterial;
+            cross.sortingOrder = 15;
+            cross.color = new Color(0.8f, 0.1f, 0.1f);
+
+            var lightGo = new GameObject("Beacon");
+            lightGo.transform.SetParent(transform, false);
+            beacon = lightGo.AddComponent<UnityEngine.Rendering.Universal.Light2D>();
+            beacon.lightType = UnityEngine.Rendering.Universal.Light2D.LightType.Point;
+            beacon.color = new Color(0.3f, 0.5f, 1f);
+            beacon.pointLightOuterRadius = 4f;
+            beacon.intensity = 1.5f;
+        }
+
+        void UpdateAmbulance()
+        {
+            var pos = npc.Mover.Position;
+            transform.position = new Vector3(pos.x, pos.y, 0f);
+            var delta = pos - lastPos;
+            if (delta.sqrMagnitude > 0.00002f)
+                transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(-delta.x, delta.y) * Mathf.Rad2Deg);
+            lastPos = pos;
+
+            bool visible = FogOfWar.CanSee(pos);
+            van.enabled = cross.enabled = visible;
+            beacon.enabled = visible && Mathf.Repeat(Time.time * 3f, 1f) < 0.5f;
+
+            // The siren carries further than you can see.
+            sirenTimer -= Time.deltaTime;
+            if (sirenTimer <= 0f && npc.State != 1)
+            {
+                sirenTimer = 1.6f;
+                SoundManager.PlayAt(AudioSynth.Siren, pos, 0.25f);
+            }
+        }
+
         void LateUpdate()
         {
-            if (npc == null || rig == null) return;
+            if (npc == null) return;
             if (npc.Despawned)
             {
                 Destroy(gameObject);
                 return;
             }
+            if (van != null)
+            {
+                UpdateAmbulance();
+                return;
+            }
+            if (rig == null) return;
             bool visible = FogOfWar.CanSee(npc.Mover.Position);
             rig.SetVisible(visible);
             if (scooter != null) scooter.enabled = visible;

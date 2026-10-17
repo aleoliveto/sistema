@@ -9,8 +9,8 @@ namespace OSistema.UI
     /// <summary>Notification feed, event cards and the game-over screen.</summary>
     public sealed partial class Hud
     {
-        const int FeedTicksVisible = 9000;
-        const int FeedMax = 6;
+        const int FeedTicksVisible = 5000;
+        const int FeedMax = 4;
 
         static readonly Color[] CardBands =
         {

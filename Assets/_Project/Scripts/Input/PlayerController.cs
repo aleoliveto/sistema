@@ -31,6 +31,18 @@ namespace OSistema.Input
         public BuildingDef CurrentDef { get; private set; }
         public readonly List<Pawn> Selected = new List<Pawn>();
 
+        /// <summary>A building clicked on the map (shown in the inspector), or null.</summary>
+        public Property SelectedProperty { get; private set; }
+
+        public void SelectProperty(Property p)
+        {
+            SelectedProperty = p;
+            if (p != null) Selected.Clear();
+        }
+
+        /// <summary>Frame on which Escape was used to cancel a tool or a selection (so menus don't open too).</summary>
+        public int EscapeConsumedFrame { get; private set; } = -1;
+
         Game game;
         Camera cam;
         Hud hud;
@@ -58,6 +70,7 @@ namespace OSistema.Input
         {
             game = g;
             Selected.Clear();
+            SelectedProperty = null;
             SetTool(Tool.Select);
         }
 
@@ -79,7 +92,7 @@ namespace OSistema.Input
             var mouse = Mouse.current;
             if (kb == null || mouse == null || game == null) return;
 
-            Selected.RemoveAll(p => p.Dead || p.InJail);
+            Selected.RemoveAll(p => p.Dead || p.InJail || p.InHospital);
 
             Vector2 mousePos = mouse.position.ReadValue();
             bool overUi = hud.IsPointerOver(mousePos);
@@ -104,7 +117,13 @@ namespace OSistema.Input
             if (kb.escapeKey.wasPressedThisFrame)
             {
                 if (CurrentTool != Tool.Select) SetTool(Tool.Select);
-                else Selected.Clear();
+                else if (Selected.Count > 0 || SelectedProperty != null)
+                {
+                    Selected.Clear();
+                    SelectedProperty = null;
+                }
+                else return;
+                EscapeConsumedFrame = Time.frameCount;
             }
         }
 
@@ -222,9 +241,17 @@ namespace OSistema.Input
                     {
                         var pawn = PawnAt(ScreenToWorld(mousePos));
                         if (pawn != null && !Selected.Contains(pawn)) Selected.Add(pawn);
+                        // Clicking a building (that the crew knows about) shows it in the inspector.
+                        SelectedProperty = null;
+                        if (pawn == null && OSistema.Views.FogOfWar.HasExplored(start))
+                        {
+                            var p = game.Properties.At(start);
+                            if (p != null) SelectProperty(p);
+                        }
                     }
                     else
                     {
+                        SelectedProperty = null;
                         foreach (var pawn in game.Pawns.Crew)
                             if (pawn.IsPresent && rect.Contains(pawn.Cell) && !Selected.Contains(pawn)) Selected.Add(pawn);
                     }
