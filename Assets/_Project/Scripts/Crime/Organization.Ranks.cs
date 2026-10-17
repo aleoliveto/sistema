@@ -49,6 +49,7 @@ namespace OSistema.Crime
             Rank = rank;
             game.Log.Add($"The family is now a {RankName}. Unlocked: {UnlocksAt(rank)}.", MessageKind.Good);
             game.Events.Raise(EventCards.RankUp(game, rank));
+            game.Newspaper.Report(game, 3, "A new power in the old town?", $"Shopkeepers speak, off the record, of a family growing in influence. They call them a {RankName.ToLower()}.");
         }
 
         /// <summary>Restores the rank from a save without fanfare.</summary>

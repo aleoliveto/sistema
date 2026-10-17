@@ -145,7 +145,7 @@ namespace OSistema.Crime
         void Arrest(Pawn pawn, Raid raid, Game game)
         {
             bool pusher = pawn.CurrentJob is PostJob post && post.Role == CrewRole.Pusher || pawn.Role == CrewRole.Pusher;
-            int seized = pusher ? Mathf.Min(game.Stock.Product, 15) : 0;
+            int seized = pusher && !game.Favours.StashHidden(game) ? Mathf.Min(game.Stock.Product, 15) : 0;
             game.Stock.Product -= seized;
 
             int days = game.Rng.Next(3, 10) + (pawn.Armed ? 5 : 0); // caught with a gun: longer inside
@@ -157,13 +157,12 @@ namespace OSistema.Crime
             string gunText = pawn.Armed ? " He was carrying a gun." : "";
             game.Log.Add($"{pawn.DisplayName} was arrested at the piazza and taken to Poggioreale for {days} days.{seizedText}{gunText}", MessageKind.Bad);
 
-            // Every arrest is a chance to talk. The disloyal take it.
+            // Every arrest is a chance to talk. Inside, the investigators lean on him every day.
             game.Org.AddEvidence(6f, game);
-            if (!pawn.IsBoss && pawn.Loyalty < 30f && game.Rng.NextDouble() < 0.5)
-            {
-                game.Org.AddEvidence(20f, game);
-                game.Log.Add($"Word from the lawyers: {pawn.Nickname} has been talking to the investigators.", MessageKind.Bad);
-            }
+            if (!pawn.IsBoss) game.Informants.Of(pawn).Pressure += pawn.Loyalty < 40f ? 30f : 12f;
+            var zone = game.Territory.Zones[raid.Square.ZoneId];
+            game.Newspaper.Report(game, 3, $"Arrest at a drug market in {zone.Name}",
+                $"{pawn.FirstName} {pawn.LastName[0]}. was taken to Poggioreale after a raid.{(seized > 0 ? $" Police seized {seized} doses." : "")}{(pawn.Armed ? " He was carrying a pistol." : "")}");
 
             foreach (var other in game.Pawns.Crew)
                 if (other != pawn && other.IsPresent)

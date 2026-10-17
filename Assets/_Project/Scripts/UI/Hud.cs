@@ -43,6 +43,7 @@ namespace OSistema.UI
             BuildDock();
             BuildWindows();
             BuildJobsWindow();
+            BuildPhone();
             BuildModals();
             BuildMenus();
 
@@ -58,6 +59,7 @@ namespace OSistema.UI
             ResetWorldLabels();
             popups.Clear();
             HookPopups(g);
+            HookPhone(g);
             RefreshAll();
             ShowTitleOnce();
         }
@@ -148,6 +150,7 @@ namespace OSistema.UI
                 if (kb.hKey.wasPressedThisFrame) ToggleWindow(Window.Help);
                 if (kb.bKey.wasPressedThisFrame) ToggleWindow(Window.Business);
                 if (kb.jKey.wasPressedThisFrame) ToggleWindow(Window.Jobs);
+                if (kb.pKey.wasPressedThisFrame) ToggleWindow(Window.Phone);
             }
             if (game == null) return;
 
@@ -173,6 +176,7 @@ namespace OSistema.UI
             RefreshInspector();
             RefreshFeed();
             RefreshDock();
+            RefreshPhone();
             RefreshWindows();
             RefreshModals();
         }

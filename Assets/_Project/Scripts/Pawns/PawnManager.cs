@@ -77,6 +77,9 @@ namespace OSistema.Pawns
             if (pawn.Dead) return;
             pawn.Die(cause, game);
 
+            var zone = game.Territory.ZoneAt(pawn.Cell);
+            game.Newspaper.Report(game, 4, $"Shot dead in {zone?.Name ?? "the rione"}",
+                $"{pawn.FirstName} {pawn.LastName}, known as {pawn.Nickname}, died of {cause}. Investigators speak of a settling of scores.");
             if (pawn.Faction == Faction.Rival)
             {
                 game.Rival.OnSoldierDied(pawn, game);

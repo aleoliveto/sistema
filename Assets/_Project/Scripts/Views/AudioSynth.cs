@@ -21,6 +21,26 @@ namespace OSistema.Views
         public static AudioClip Click => click != null ? click : click = MakeClick();
         public static AudioClip Siren => siren != null ? siren : siren = MakeSiren();
         public static AudioClip Horn => horn != null ? horn : horn = MakeHorn();
+        public static AudioClip Ring => ring != null ? ring : ring = MakeRing();
+
+        static AudioClip ring;
+
+        // A mobile's double chirp.
+        static AudioClip MakeRing()
+        {
+            int n = (int)(Rate * 0.9f);
+            var d = new float[n];
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)Rate;
+                bool on = t < 0.3f || (t > 0.45f && t < 0.75f);
+                if (!on) continue;
+                float f = (Mathf.Sin(2f * Mathf.PI * 22f * t) > 0f) ? 1320f : 990f;
+                float env = Mathf.Min(1f, (t % 0.45f) * 40f);
+                d[i] = Mathf.Sin(2f * Mathf.PI * f * t) * 0.35f * env;
+            }
+            return Clip("ring", d);
+        }
 
         // A scooter's thin, impatient beep-beep.
         static AudioClip MakeHorn()

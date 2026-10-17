@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using OSistema.Crime;
 using OSistema.Pawns;
+using OSistema.Social;
 using OSistema.World;
 using UnityEngine;
 
@@ -14,7 +15,7 @@ namespace OSistema.Core
     /// </summary>
     public static class SaveSystem
     {
-        public const int Version = 5;
+        public const int Version = 6;
         const int OldestReadable = 5; // the map generator changed too much to migrate older saves
 
         public static string DefaultPath => Path.Combine(Application.persistentDataPath, "save1.json");
@@ -78,6 +79,10 @@ namespace OSistema.Core
                 rivalTruceUntil = game.Rival.TruceUntilDay,
                 rivalWarned = game.Rival.Warned,
                 rivalDestroyed = game.Rival.Destroyed,
+                phone = game.Phone.S,
+                favours = game.Favours.S,
+                informants = game.Informants.S,
+                news = game.Newspaper.S,
             };
             foreach (var sq in game.Rival.Squares)
                 data.rivalSquares.Add(new SquareData { x = sq.Cell.x, y = sq.Cell.y, zone = sq.ZoneId });
@@ -226,6 +231,13 @@ namespace OSistema.Core
                 if (pawn != null) pawn.MissionTarget = game.Pawns.ById(pd.missionTarget);
             }
 
+            // Version 5 saves predate the phone and the neighbours: start them fresh.
+            if (data.phone != null) game.Phone.S = data.phone;
+            if (data.informants != null) game.Informants.S = data.informants;
+            if (data.news != null) game.Newspaper.S = data.news;
+            if (data.favours != null && data.favours.Neighbours.Count > 0) game.Favours.S = data.favours;
+            else game.Favours.Setup(game, game.Rng);
+
             game.Log.Add("Game loaded.", MessageKind.Info);
             return game;
         }
@@ -331,6 +343,10 @@ namespace OSistema.Core
             public int baseX, baseY, baseW, baseH;
             public int cash, groceries, meals, medicine, product;
             public float respect;
+            public PhoneState phone;
+            public FavourState favours;
+            public InformantState informants;
+            public NewsState news;
             public int pendingOrderUnits, pendingOrderDay, lastPaydayWeek;
             public List<ZoneData> zones = new List<ZoneData>();
             public List<SquareData> squares = new List<SquareData>();

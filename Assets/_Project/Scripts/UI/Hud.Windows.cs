@@ -11,8 +11,8 @@ namespace OSistema.UI
     /// <summary>The business window (B) with its tabs, and the help window (H).</summary>
     public sealed partial class Hud
     {
-        enum Window { None, Business, Help, Jobs }
-        enum BizTab { Crew, Piazze, Pizzo, Property, Supply, Rivals }
+        enum Window { None, Business, Help, Jobs, Phone }
+        enum BizTab { Crew, Piazze, Pizzo, Property, Supply, Favours, Rivals }
 
         Window openWindow;
         BizTab bizTab;
@@ -31,7 +31,7 @@ namespace OSistema.UI
             foreach (BizTab tab in System.Enum.GetValues(typeof(BizTab)))
             {
                 var t = tab;
-                bizTabButtons[t] = Ui.Btn(tab == BizTab.Supply ? "Supply & arms" : tab.ToString(), () =>
+                bizTabButtons[t] = Ui.Btn(tab == BizTab.Supply ? "Supply & arms" : tab == BizTab.Favours ? "Favours & trust" : tab.ToString(), () =>
                 {
                     bizTab = t;
                     bizDirty = true;
@@ -63,6 +63,7 @@ namespace OSistema.UI
                 "<b>Debug</b>  F6 shoot selected · F7 +€200 · F10 rival hit squad · F11 stesa on your piazza\n" +
                 "<b>Build</b>  open the BUILD / FURNISH tabs at the bottom. Walls drag as a room outline.\n" +
                 "<b>Business</b>  B opens the panel: roles, wages, piazze hours, pizzo, supplier, pistols, rivals.\n" +
+                "<b>Phone</b>  P opens the telefonino: neighbours ask favours, contacts pass on gossip. Answer in time.\n" +
                 "<b>Save</b>  F5 save · F9 load\n\n" +
                 "<color=#A89F8E>You only see what your crew can see. Gunfire can be heard from anywhere; civilians run from it, and it brings the police.</color>",
                 hb, "wrap");
@@ -75,6 +76,8 @@ namespace OSistema.UI
             businessWindow.Show(openWindow == Window.Business);
             helpWindow.Show(openWindow == Window.Help);
             jobsWindow.Show(openWindow == Window.Jobs);
+            phoneWindow.Show(openWindow == Window.Phone);
+            phoneSignature = -1;
             jobsVersion = -1;
             bizDirty = true;
             if (game != null) RefreshWindows();
@@ -99,6 +102,7 @@ namespace OSistema.UI
                 case BizTab.Piazze: PiazzeTab(); break;
                 case BizTab.Pizzo: PizzoTab(); break;
                 case BizTab.Supply: SupplyTab(); break;
+                case BizTab.Favours: FavoursTab(); break;
                 case BizTab.Property: PropertyTab(); break;
                 case BizTab.Rivals: RivalsTab(); break;
             }

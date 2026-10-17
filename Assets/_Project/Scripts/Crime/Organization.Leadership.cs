@@ -52,6 +52,8 @@ namespace OSistema.Crime
             var boss = Boss(game);
             if (boss == null || !boss.IsPresent) return;
             WarrantActive = true;
+            game.Newspaper.Report(game, 7, $"Arrest warrant for {boss.FirstName} {boss.LastName}",
+                "The prosecutors say they have enough to put the head of the family away. His lawyers say he is a businessman.");
             game.Events.Raise(EventCards.Warrant(game));
         }
 

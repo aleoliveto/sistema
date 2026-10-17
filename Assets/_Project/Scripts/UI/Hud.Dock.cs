@@ -81,6 +81,8 @@ namespace OSistema.UI
             Ui.Box("divider").Into(tabs).style.height = 24;
             jobsButton = IconTab(tabs, "LAVORETTI", IconKind.Jobs, () => ToggleWindow(Window.Jobs));
             Tip(jobsButton, () => "Jobs from the neighbourhood's contacts (J).");
+            phoneButton = IconTab(tabs, "PHONE", IconKind.Phone, () => ToggleWindow(Window.Phone));
+            Tip(phoneButton, () => "The family phone (P): favours, gossip, warnings.");
             businessButton = IconTab(tabs, "BUSINESS", IconKind.Business, () => ToggleWindow(Window.Business));
             Tip(businessButton, () => "Crew, piazze, pizzo, supplies, property, rivals (B).");
             helpButton = IconTab(tabs, "", IconKind.Help, () => ToggleWindow(Window.Help));

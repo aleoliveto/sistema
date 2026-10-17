@@ -4,6 +4,7 @@ using OSistema.Combat;
 using OSistema.Crime;
 using OSistema.Npcs;
 using OSistema.Pawns;
+using OSistema.Social;
 using OSistema.Story;
 using OSistema.World;
 using UnityEngine;
@@ -37,6 +38,11 @@ namespace OSistema.Core
         public readonly CombatSystem Combat = new CombatSystem();
         public readonly EventSystem Events = new EventSystem();
         public readonly ContractBoard Contracts = new ContractBoard();
+        public readonly Phone Phone = new Phone();
+        public readonly Favours Favours = new Favours();
+        public readonly Informants Informants = new Informants();
+        public readonly Newspaper Newspaper = new Newspaper();
+        int socialHour = -1;
 
         /// <summary>Floating text over the world (money earned and the like). Presentation only.</summary>
         public event System.Action<Vector2, string> Popup;
@@ -81,6 +87,7 @@ namespace OSistema.Core
             game.Stock.Pistols = 1;
             game.SpawnStartingCrew();
             game.Rival.Setup(game, rng);
+            game.Favours.Setup(game, rng);
             game.Log.Add("The crew moves into a basso in the rione. Keep them fed, paid and out of prison.");
             game.Log.Add("Press B to open the business panel. Use the Piazza tool to open a drug square.");
             game.Log.Add($"The {game.Rival.Name} runs the far side of the district. Don't get too close.");
@@ -100,6 +107,21 @@ namespace OSistema.Core
             Org.Tick(this);
             Rival.Tick(this);
             Events.Tick(this);
+            SocialTick();
+        }
+
+        // The phone, the neighbours, the rats and the paper all think once an hour.
+        void SocialTick()
+        {
+            int hour = Clock.Day * 24 + Clock.Hour;
+            if (hour == socialHour) return;
+            bool first = socialHour < 0;
+            socialHour = hour;
+            if (first) return;
+            Phone.Hourly(this);
+            Favours.Hourly(this);
+            Informants.Hourly(this);
+            Newspaper.Hourly(this);
         }
 
         /// <summary>Names and asking prices for every building, from its rione and its shop.</summary>

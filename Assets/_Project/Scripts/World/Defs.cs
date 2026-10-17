@@ -259,6 +259,8 @@ namespace OSistema.World
         public const int CigaretteStreet = 25;  // per case, sold from the deposito
         public const int BillsPerHome = 40;     // weekly: light, gas, water
         public const int BillsPerOperation = 80;
+        public const int Burner = 150;          // a week of a clean SIM
+        public const int Bonifica = 400;        // a technician sweeps for bugs
 
         /// <summary>Anything this expensive can't be paid in dirty cash without questions.</summary>
         public const int CleanMoneyThreshold = 3000;

@@ -183,13 +183,14 @@ namespace OSistema.Crime
 
         // ---------- Recruiting ----------
 
-        public Pawn Recruit(Game game, out string error)
+        /// <summary>Takes on a new guaglione. Free when a neighbour sends their son: no signing bonus.</summary>
+        public Pawn Recruit(Game game, out string error, bool free = false)
         {
             error = null;
             int crew = 0;
             foreach (var p in game.Pawns.Crew) if (!p.Dead) crew++;
             if (crew >= MaxCrewForRank) error = $"A {RankName} can't keep more than {MaxCrewForRank} people. Climb higher for a bigger crew.";
-            else if (game.Stock.Cash < Prices.RecruitBonus) error = $"Recruiting costs €{Prices.RecruitBonus}.";
+            else if (!free && game.Stock.Cash < Prices.RecruitBonus) error = $"Recruiting costs €{Prices.RecruitBonus}.";
             if (error != null) return null;
 
             var rng = game.Rng;
@@ -220,7 +221,7 @@ namespace OSistema.Crime
                 Wage = 120,
                 Loyalty = 45f + rng.Next(0, 20),
             };
-            game.Stock.Cash -= Prices.RecruitBonus; // a signing bonus, in cash
+            if (!free) game.Stock.Cash -= Prices.RecruitBonus; // a signing bonus, in cash
             game.Pawns.Add(pawn);
             pawn.Say("recruited");
             game.Log.Add($"{pawn.FullName} “{pawn.Nickname}” joins the crew.", MessageKind.Good);
@@ -270,6 +271,7 @@ namespace OSistema.Crime
             Squares.Add(square);
             SquaresVersion++;
             game.Log.Add($"Opened a piazza in {zone.Name}. Assign pushers and lookouts, and order product.");
+            game.Newspaper.Report(game, 2, $"New drug market in {zone.Name}, residents say", "\"They sell on the corner in broad daylight,\" says a pensioner. \"The police drive past and look the other way.\"");
             return true;
         }
 
@@ -474,6 +476,7 @@ namespace OSistema.Crime
             AddEvidence(3f, game);
             pawn.Say("scare");
             game.Log.Add($"{pawn.Nickname} smashed the window of {b.Name}. The owner will think twice now.");
+            game.Newspaper.Report(game, 2, $"Shop window smashed in {zone?.Name ?? "the old town"}", $"The owner of {b.Name} found glass all over the floor. \"Kids,\" he told reporters.");
             if (game.Rng.NextDouble() < b.Defiance * 0.5)
             {
                 game.Territory.AddHeat(b.Cell, 10f);
@@ -492,6 +495,8 @@ namespace OSistema.Crime
             AddEvidence(10f, game);
             pawn.Say("burn");
             game.Log.Add($"{b.Name} burned in the night. The owner's family watches from the street.", MessageKind.Bad);
+            game.Newspaper.Report(game, 5, $"Fire in the night: {b.Name} destroyed",
+                $"Firefighters found traces of petrol. Investigators suspect extortion. The owner says he saw nothing and has no enemies.");
 
             // Fear spreads through the zone: everyone saw what happens to those who don't pay.
             int caved = 0;
