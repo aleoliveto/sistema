@@ -11,7 +11,7 @@ namespace OSistema.Pawns
     public enum SleepState { Awake, InBed, OnFloor }
 
     /// <summary>The crew member's job in the clan. Hierarchy comes later; for now it's what they do all day.</summary>
-    public enum CrewRole { General, Pusher, Lookout, Collector, Manager }
+    public enum CrewRole { General, Pusher, Lookout, Collector, Manager, Bagger, Roller, Bodyguard }
 
     public enum Skill { Construction, Cooking, Medicine, Intimidation, Awareness, Shooting }
 
@@ -173,7 +173,14 @@ namespace OSistema.Pawns
         public bool InJail => JailedUntil > 0;
         public bool InHospital => HospitalUntil > 0;
         public bool IsAggressive(long now) => AggressiveUntil > now;
-        public bool Titled;              // a boss is "Don" only once the family is somebody
+        public bool Titled;
+
+        /// <summary>The player's own character, moved with WASD. The AI only takes over when the player leaves him be.</summary>
+        public bool Controlled;
+        public long LastInputTick = -1000000;
+        public Vector2? AimPoint;        // where the player is aiming with the mouse
+        public const int ManualHoldTicks = 1500;
+        public bool Manual(long now) => Controlled && now - LastInputTick < ManualHoldTicks;              // a boss is "Don" only once the family is somebody
         public string DisplayName => IsBoss ? (Titled ? $"Don {FirstName}" : FirstName) : Nickname;
         public bool InMentalBreak(long now) => BreakUntilTick > now;
         public bool IsLyingLow(long now) => LyingLowUntil > now;
@@ -228,6 +235,8 @@ namespace OSistema.Pawns
             if ((now + Id * 37) % CheckInterval == 0) PeriodicCheck(game, now);
 
             if (Health.Downed && !(CurrentJob is DownedJob)) ForceJob(new DownedJob(this), game);
+            // The player is steering: nothing happens unless he asked for it.
+            if (CurrentJob == null && Manual(now)) return;
             if (CurrentJob == null) CurrentJob = JobGiver.Next(this, game);
             if (CurrentJob.Tick(game))
             {
@@ -271,13 +280,13 @@ namespace OSistema.Pawns
                 game.Log.Add($"{Nickname} has calmed down.", MessageKind.Good);
             }
 
-            if (!InMentalBreak(now) && !Drafted && CanAct && Mood.Value < Mood.BreakBelow && game.Rng.NextDouble() < 0.012)
+            if (!Controlled && !InMentalBreak(now) && !Drafted && CanAct && Mood.Value < Mood.BreakBelow && game.Rng.NextDouble() < 0.012)
             {
                 StartMentalBreak(game, now);
                 return;
             }
 
-            if (CurrentJob == null || Drafted || InMentalBreak(now) || !CanAct) return;
+            if (CurrentJob == null || Drafted || InMentalBreak(now) || !CanAct || Manual(now)) return;
             if (CurrentJob.IsIdle)
             {
                 var job = JobGiver.TryNonIdle(this, game);

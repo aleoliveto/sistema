@@ -51,6 +51,7 @@ namespace OSistema.Crime
                 OnHour(game);
             }
             SpawnCustomers(game);
+            TickCarrying(game);
         }
 
         void OnHour(Game game)
@@ -331,6 +332,7 @@ namespace OSistema.Crime
             }
             game.Stock.Product--;
             game.Stock.Cash += Prices.ProductStreet;
+            CheckDoseComplaints(game);
             square.SalesToday++;
             square.RevenueToday += Prices.ProductStreet;
             game.Territory.AddHeat(square.Cell, HeatPerSale);

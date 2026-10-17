@@ -25,7 +25,7 @@ namespace OSistema.Crime
         {
             Operation.Bisca => "Cards, dice and bets on the football. Nightly takings depend on how much the manager is feared.",
             Operation.Laboratorio => "Fake bags and Napoli shirts for the market stalls. A handy manager makes more.",
-            Operation.Deposito => "Sells contraband cigarettes by the case. Needs shipments from 'o Marenaro.",
+            Operation.Deposito => "Sells your ROSSE by the pack, all day, to the stalls and the bars. Keep it stocked from the rolling table.",
             _ => "",
         };
 
@@ -121,12 +121,12 @@ namespace OSistema.Crime
                         m.Learn(Skill.Construction, 4f, game);
                         break;
                     default:
-                        int sold = Mathf.Min(game.Stock.Cigarettes, 6 + m.AwarenessSkill / 2);
+                        int sold = Mathf.Min(game.Stock.Cigarettes, 15 + m.AwarenessSkill * 2);
                         game.Stock.Cigarettes -= sold;
-                        income = sold * Prices.CigaretteStreet;
+                        income = sold * PackPrice(game);
                         heat = 0.4f;
                         m.Learn(Skill.Awareness, 3f, game);
-                        if (sold == 0) lines.Add("the deposito had no cigarettes to sell");
+                        if (sold == 0) lines.Add("the deposito had no ROSSE to sell");
                         break;
                 }
                 if (income <= 0) continue;

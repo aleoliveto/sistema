@@ -67,6 +67,7 @@ namespace OSistema.World
             ["wall"] = 15, ["door"] = 50, ["bed"] = 150, ["table"] = 100, ["stove"] = 300, ["pantry"] = 150, ["bunker"] = 2000,
             ["sofa"] = 300, ["armchair"] = 150, ["tv"] = 400, ["wardrobe"] = 200, ["kitchen_counter"] = 250, ["fridge"] = 350,
             ["plant"] = 40, ["rug"] = 120, ["safe"] = 600, ["home_shrine"] = 100,
+            ["bagging_table"] = 60, ["rolling_table"] = 35,
         };
 
         public static int CostOf(BuildingDef d) => d != null && Costs.TryGetValue(d.Id, out var c) ? c : 0;
@@ -213,6 +214,10 @@ namespace OSistema.World
         public static readonly BuildingDef Safe = Furniture("safe", "Safe", new Color32(70, 74, 80, 255), 0.5f, passable: false, cover: true);
         public static readonly BuildingDef HomeShrine = Furniture("home_shrine", "Home shrine", new Color32(70, 110, 190, 255), 2.5f, passable: false);
 
+        // ---- Workstations: where the money is made by hand ----
+        public static readonly BuildingDef BaggingTable = Furniture("bagging_table", "Bagging table", new Color32(176, 170, 160, 255), 0f, passable: false, cover: true);
+        public static readonly BuildingDef RollingTable = Furniture("rolling_table", "Rolling table", new Color32(150, 110, 70, 255), 0f, passable: false, cover: true);
+
         static BuildingDef Furniture(string id, string label, Color32 color, float beauty, bool passable, bool cover = false) => new BuildingDef
         {
             Id = id, Label = label, Passable = passable, PathCost = passable ? 1f : 1f, WorkToBuild = 250, Color = color,
@@ -223,6 +228,7 @@ namespace OSistema.World
         {
             Wall, Door, Bed, Table, Stove, Pantry, Bunker,
             Sofa, Armchair, Television, Wardrobe, KitchenCounter, Fridge, Plant, Rug, Safe, HomeShrine,
+            BaggingTable, RollingTable,
         };
 
         /// <summary>Every def, in a fixed order used by save files. Only ever append to this list.</summary>
@@ -233,6 +239,7 @@ namespace OSistema.World
             Tree, ParkedCar, ParkedScooter, Bench, Bin, StreetLamp, MarketStall, Shrine, Altar, Pew, Fountain, Rubble,
             Railing, HospitalDesk, PlasticChair,
             Sofa, Armchair, Television, Wardrobe, KitchenCounter, Fridge, Plant, Rug, Safe, HomeShrine,
+            BaggingTable, RollingTable,
         };
 
         public static BuildingDef ById(string id)
@@ -260,6 +267,23 @@ namespace OSistema.World
         public const int BillsPerHome = 40;     // weekly: light, gas, water
         public const int BillsPerOperation = 80;
         public const int Burner = 150;          // a week of a clean SIM
+
+        // Product, bought in bulk from Zi Tore and cut into doses of half a gram.
+        public const int DoseDg = 5;            // a dose is 0.5 g (in decigrams)
+        public const int Etto = 900;            // 100 g, for a beginner
+        public const int HalfKilo = 4000;
+        public const int Kilo = 7500;
+        public const int Baggies100 = 6;
+
+        // Cigarettes, rolled at home and sold by the pack.
+        public const int TobaccoPer100g = 8;
+        public const int Papers200 = 4;         // papers and filters for ten packs
+        public const int EmptyPacks20 = 6;      // ROSSE packs from Nanninella's printer
+        public const int TobaccoPerPack = 14;   // grams in a pack of 20
+        public const int PackStreet = 4;
+        public const int DigitalScale = 120;
+        public const int HeatSealer = 90;
+        public const int RollingMachine = 150;
         public const int Bonifica = 400;        // a technician sweeps for bugs
 
         /// <summary>Anything this expensive can't be paid in dirty cash without questions.</summary>

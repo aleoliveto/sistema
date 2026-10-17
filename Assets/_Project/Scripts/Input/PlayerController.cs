@@ -52,6 +52,7 @@ namespace OSistema.Input
         Hud hud;
         SpriteRenderer preview;
         SpriteRenderer ghost;
+        LineRenderer aimLine;
         Texture2D ghostTex;
         readonly Color32[] ghostPixels = new Color32[TilePainter.Hi * TilePainter.Hi];
         (BuildingDef def, int rot, Vector2Int cell) ghostKey;
@@ -72,6 +73,14 @@ namespace OSistema.Input
             preview.sharedMaterial = SpriteFactory.UnlitMaterial;
             preview.sortingOrder = 20;
             preview.enabled = false;
+
+            aimLine = new GameObject("Aim").AddComponent<LineRenderer>();
+            aimLine.sharedMaterial = SpriteFactory.UnlitMaterial;
+            aimLine.startWidth = 0.05f;
+            aimLine.endWidth = 0.02f;
+            aimLine.sortingOrder = 30;
+            aimLine.positionCount = 2;
+            aimLine.enabled = false;
 
             // A see-through copy of the furniture under the cursor, so you can see which way it faces.
             ghostTex = new Texture2D(TilePainter.Hi, TilePainter.Hi, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
@@ -105,11 +114,10 @@ namespace OSistema.Input
             Selected.Clear();
             SelectedProperty = null;
             SetTool(Tool.Select);
-            // Start on the boss, and keep him in view.
-            var boss = g.Org.Boss(g);
+            // Start on the player's character, and keep him in view.
+            var boss = g.Player;
             if (boss != null)
             {
-                Selected.Add(boss);
                 follow = boss;
                 cam.transform.position = new Vector3(boss.Position.x, boss.Position.y, cam.transform.position.z);
             }
@@ -138,10 +146,20 @@ namespace OSistema.Input
             Vector2 mousePos = mouse.position.ReadValue();
             bool overUi = hud.IsPointerOver(mousePos);
 
+            var player = game.Player;
+            if (hud.MinigameOpen)
+            {
+                Aiming = false;
+                aimLine.enabled = false;
+                if (player != null) player.AimPoint = null;
+                return;
+            }
+
             HandleKeys(kb);
             HandleDebugKeys(kb);
+            HandlePlayer(kb, mouse, mousePos, overUi);
             HandleCamera(kb, mouse, mousePos, overUi);
-            HandleMouse(kb, mouse, mousePos, overUi);
+            if (!Aiming) HandleMouse(kb, mouse, mousePos, overUi);
             UpdatePreview(mousePos, overUi);
         }
 
@@ -153,9 +171,8 @@ namespace OSistema.Input
             if (kb.digit3Key.wasPressedThisFrame) game.Ticks.SetSpeed(3);
             if (kb.digit4Key.wasPressedThisFrame) game.Ticks.SetSpeed(4); // debug ×30
             if (kb.digit5Key.wasPressedThisFrame) game.Ticks.SetSpeed(5); // debug ×120
-            if (kb.rKey.wasPressedThisFrame) ToggleDraftSelected();
-            if (kb.eKey.wasPressedThisFrame && CurrentTool != Tool.Build) TalkToNearest();
-            if (kb.fKey.wasPressedThisFrame) follow = follow == null && Selected.Count > 0 ? Selected[0] : null;
+            if (kb.eKey.wasPressedThisFrame && CurrentTool != Tool.Build) Interaction()?.Act();
+            if (kb.fKey.wasPressedThisFrame) follow = game.Player;
             if (CurrentTool == Tool.Build && kb.qKey.wasPressedThisFrame) PlacementRotation = (PlacementRotation + 1) % 4;
             if (CurrentTool == Tool.Build && kb.eKey.wasPressedThisFrame) PlacementRotation = (PlacementRotation + 3) % 4;
 
@@ -207,7 +224,7 @@ namespace OSistema.Input
             }
         }
 
-        public void ToggleDraftSelected()
+        void ToggleDraftSelected()
         {
             if (Selected.Count == 0) return;
             bool draft = Selected.Exists(p => !p.Drafted);
@@ -219,11 +236,12 @@ namespace OSistema.Input
         void HandleCamera(Keyboard kb, Mouse mouse, Vector2 mousePos, bool overUi)
         {
             float size = cam.orthographicSize;
+            // Arrow keys look around; WASD moves the character and brings the camera back to him.
             var move = Vector2.zero;
-            if (kb.wKey.isPressed || kb.upArrowKey.isPressed) move.y += 1f;
-            if (kb.sKey.isPressed || kb.downArrowKey.isPressed) move.y -= 1f;
-            if (kb.aKey.isPressed || kb.leftArrowKey.isPressed) move.x -= 1f;
-            if (kb.dKey.isPressed || kb.rightArrowKey.isPressed) move.x += 1f;
+            if (kb.upArrowKey.isPressed) move.y += 1f;
+            if (kb.downArrowKey.isPressed) move.y -= 1f;
+            if (kb.leftArrowKey.isPressed) move.x -= 1f;
+            if (kb.rightArrowKey.isPressed) move.x += 1f;
             cam.transform.position += (Vector3)(move * (size * 1.6f * Time.unscaledDeltaTime));
             if (move != Vector2.zero || mouse.middleButton.isPressed) follow = null;
             if (follow != null && follow.IsPresent)
@@ -274,13 +292,8 @@ namespace OSistema.Input
                 OnLeftRelease(dragStartCell, ScreenToCell(mousePos), isClick, mousePos, kb.leftShiftKey.isPressed);
             }
 
-            if (mouse.rightButton.wasPressedThisFrame && !overUi)
-            {
-                if (CurrentTool != Tool.Select) SetTool(Tool.Select);
-                else if (Selected.Count > 0 && EnemyAt(ScreenToWorld(mousePos)) is Pawn enemy) OrderAttack(enemy);
-                else if (Selected.Count > 0 && game.Contacts.At(ScreenToWorld(mousePos)) is Contact contact) OrderTalk(contact);
-                else OrderMove(ScreenToCell(mousePos));
-            }
+            // Right-click cancels a tool; with the select tool it's the aim button (see HandlePlayer).
+            if (mouse.rightButton.wasPressedThisFrame && !overUi && CurrentTool != Tool.Select) SetTool(Tool.Select);
         }
 
         void OnLeftRelease(Vector2Int start, Vector2Int end, bool isClick, Vector2 mousePos, bool additive)
@@ -386,9 +399,8 @@ namespace OSistema.Input
         /// <summary>The contact the selected pawn could talk to right now (E), if any.</summary>
         public Contact ContactInReach(out Pawn pawn)
         {
-            long now = game.Ticks.TicksGame;
-            pawn = Selected.Find(p => p.CanAct && !p.InMentalBreak(now));
-            if (pawn == null) return null;
+            pawn = game.Player;
+            if (pawn == null || !pawn.CanAct) return null;
             Contact best = null;
             float bestD = TalkReach * TalkReach;
             foreach (var c in game.Contacts.All)
@@ -406,44 +418,116 @@ namespace OSistema.Input
 
         public const float TalkReach = 3.5f;
 
-        void TalkToNearest()
+
+        // ---------- The player's character ----------
+
+        public bool Aiming { get; private set; }
+
+        void HandlePlayer(Keyboard kb, Mouse mouse, Vector2 mousePos, bool overUi)
         {
-            var contact = ContactInReach(out _);
-            if (contact != null) OrderTalk(contact);
+            var p = game.Player;
+            if (p == null || !p.CanAct || game.Org.Hiding) { Aiming = false; aimLine.enabled = false; return; }
+            long now = game.Ticks.TicksGame;
+
+            var dir = Vector2.zero;
+            if (kb.wKey.isPressed) dir.y += 1f;
+            if (kb.sKey.isPressed) dir.y -= 1f;
+            if (kb.aKey.isPressed) dir.x -= 1f;
+            if (kb.dKey.isPressed) dir.x += 1f;
+            if (dir != Vector2.zero && game.Ticks.Speed > 0 && game.Events.Current == null)
+            {
+                p.LastInputTick = now;
+                if (p.CurrentJob != null && !(p.CurrentJob is DownedJob)) p.EndCurrentJob(game);
+                if (p.Sleep != SleepState.Awake) p.Sleep = SleepState.Awake;
+                // Real-time steering: faster game speeds help a little, but never make him uncontrollable.
+                float mult = Mathf.Min(TickManager.SpeedMultipliers[game.Ticks.Speed], 2f);
+                float step = Pawn.BaseSpeed * p.SpeedFactor * TickManager.TicksPerSecond * mult * Time.unscaledDeltaTime;
+                if (kb.leftShiftKey.isPressed) step *= 1.5f;   // running
+                p.Mover.Slide(dir.normalized * step, game.Map);
+                follow = p;
+            }
+
+            // Hold the right button to aim, click the left to shoot (or punch, unarmed).
+            Aiming = mouse.rightButton.isPressed && !overUi && CurrentTool == Tool.Select;
+            p.AimPoint = Aiming ? (Vector2)ScreenToWorld(mousePos) : (Vector2?)null;
+            aimLine.enabled = Aiming;
+            if (Aiming)
+            {
+                var to = (Vector2)ScreenToWorld(mousePos);
+                var aim = to - p.Position;
+                float range = p.Armed ? Combat.CombatSystem.PistolRange : Combat.CombatSystem.MeleeRange;
+                if (aim.magnitude > range) to = p.Position + aim.normalized * range;
+                var col = p.Armed ? new Color(1f, 0.25f, 0.2f, 0.75f) : new Color(1f, 0.9f, 0.6f, 0.6f);
+                aimLine.startColor = col;
+                aimLine.endColor = new Color(col.r, col.g, col.b, 0.1f);
+                aimLine.SetPosition(0, new Vector3(p.Position.x, p.Position.y, 0f));
+                aimLine.SetPosition(1, new Vector3(to.x, to.y, 0f));
+            }
+            if (Aiming)
+            {
+                p.LastInputTick = now;
+                if (mouse.leftButton.wasPressedThisFrame && game.Ticks.Speed > 0) game.Combat.PlayerAttack(p, ScreenToWorld(mousePos), game);
+            }
         }
 
-        // Only one goes to talk: the first selected who's free.
+        /// <summary>Something the player can do with E right now.</summary>
+        public sealed class Action
+        {
+            public string Label;
+            public System.Action Do;
+            public void Act() => Do();
+        }
+
+        public Action Interaction()
+        {
+            var p = game.Player;
+            if (p == null || !p.CanAct) return null;
+            var contact = ContactInReach(out _);
+            if (contact != null) return new Action { Label = $"Talk to {contact.Name}", Do = () => OrderTalk(contact) };
+
+            if (Near(p, BuildingDefs.BaggingTable, out _))
+                return new Action { Label = "Cut and bag doses", Do = () => hud.OpenBagging() };
+            if (Near(p, BuildingDefs.RollingTable, out _))
+                return new Action { Label = "Roll a pack of ROSSE", Do = () => hud.OpenRolling() };
+
+            foreach (var b in game.Org.Businesses)
+            {
+                if (b.Status == BusinessStatus.Closed || (b.Kind != ShopKind.Tabaccheria && b.Kind != ShopKind.Salumeria)) continue;
+                if ((Mover.CellCenter(b.Cell) - p.Position).sqrMagnitude > 4.5f * 4.5f) continue;
+                int hour = game.Clock.Hour;
+                if (hour < 8 || hour >= 21) return new Action { Label = $"{b.Name} is closed", Do = () => { } };
+                var shop = b;
+                return new Action { Label = $"Shop at {b.Name}", Do = () => game.Events.Raise(Story.ShopCards.Shop(shop, game)) };
+            }
+
+            if (Near(p, BuildingDefs.Bed, out var bed) && (game.PlayerBase.Contains(bed) || game.Properties.IsOwnedHome(bed)))
+                return new Action { Label = "Sleep", Do = () => { p.LastInputTick = -1000000; p.ForceJob(new SleepJob(p, bed, null), game); } };
+            if (game.Stock.Meals > 0 && p.Needs.Food < 0.8f && Near(p, BuildingDefs.Pantry, out var pantry))
+                return new Action { Label = "Eat something", Do = () => { p.LastInputTick = -1000000; p.ForceJob(new EatJob(p, pantry, atShop: false), game); } };
+            return null;
+        }
+
+        bool Near(Pawn p, BuildingDef def, out Vector2Int at)
+        {
+            at = default;
+            foreach (var c in GridUtil.CellsAround(p.Cell, 1))
+            {
+                if (!game.Map.InBounds(c) || game.Map.GetBuilding(c) != def) continue;
+                if ((Mover.CellCenter(c) - p.Position).sqrMagnitude > 1.8f * 1.8f) continue;
+                at = c;
+                return true;
+            }
+            return false;
+        }
+
+        // The player's character goes to talk.
         void OrderTalk(Contact contact)
         {
-            long now = game.Ticks.TicksGame;
-            var pawn = Selected.Find(p => p.CanAct && !p.InMentalBreak(now));
-            if (pawn == null) return;
+            var pawn = game.Player;
+            if (pawn == null || !pawn.CanAct) return;
             pawn.SetDrafted(false, game);
             pawn.ForceJob(new TalkJob(pawn, contact), game);
             pawn.Say("order_move");
-        }
-
-        void OrderMove(Vector2Int target)
-        {
-            if (Selected.Count == 0 || !game.Map.InBounds(target)) return;
-            foreach (var p in Selected) p.ForcedTarget = null;
-
-            // Spread the group over free cells around the click.
-            var destinations = new List<Vector2Int>();
-            foreach (var c in GridUtil.CellsAround(target, 4))
-            {
-                if (destinations.Count >= Selected.Count) break;
-                if (game.Map.IsPassable(c)) destinations.Add(c);
-            }
-
-            for (int i = 0; i < Selected.Count && i < destinations.Count; i++)
-            {
-                var pawn = Selected[i];
-                if (!pawn.CanAct || pawn.InMentalBreak(game.Ticks.TicksGame)) continue; // sulking pawns ignore orders
-                pawn.SetDrafted(true, game);
-                pawn.ForceJob(new GotoJob(pawn, destinations[i]), game);
-            }
-            Selected[0].Say("order_move");
         }
 
         void UpdatePreview(Vector2 mousePos, bool overUi)

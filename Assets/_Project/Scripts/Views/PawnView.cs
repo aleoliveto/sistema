@@ -70,6 +70,7 @@ namespace OSistema.Views
             bool lying = pawn.Dead || pawn.Health.Downed || pawn.Sleep != SleepState.Awake;
             rig.Update(pawn.Position, lying, Time.deltaTime);
             if (pawn.AimTarget != null && !lying) rig.FaceTowards(pawn.AimTarget.Position);
+            else if (pawn.AimPoint.HasValue && !lying) rig.FaceTowards(pawn.AimPoint.Value);
             rig.SetArmed(pawn.Armed && !pawn.Dead);
             scooter.enabled = pawn.Riding;
             if (pawn.Riding)

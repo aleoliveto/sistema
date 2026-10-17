@@ -61,33 +61,63 @@ namespace OSistema.AI
                     if (!g.Contracts.Assign(job, pawn, g, out var error)) g.Log.Add(error, MessageKind.Bad);
                 }, g => !busy && pawn.CanAct);
             }
+            // Some contacts trade as well as giving work.
+            if (contact.Name == ContactBook.Totonno && game.Stock.Cigarettes > 0 && game.Org.TotonnoWants(game) > 0)
+            {
+                int n = System.Math.Min(game.Stock.Cigarettes, game.Org.TotonnoWants(game));
+                e.Option($"Sell him {n} packs of ROSSE · €{n * game.Org.TotonnoPrice(game)}", "He sells them under the counter. Up to 20 packs a day.", g => g.Org.SellPacksToTotonno(g));
+            }
+            if (contact.Name == ContactBook.Nanninella)
+            {
+                e.Option($"Empty ROSSE packs ×20 · €{Prices.EmptyPacks20}", "From a printer she knows. Red and white, nobody looks twice.", g =>
+                {
+                    if (g.Org.Pay(Prices.EmptyPacks20, g, out var err)) g.Stock.EmptyPacks += 20; else g.Log.Add(err, MessageKind.Bad);
+                });
+                if (!game.Stock.DigitalScale)
+                    e.Option($"A digital scale · €{Prices.DigitalScale}", "Weighs to a hundredth of a gram. Honest doses, faster baggers.", g =>
+                    {
+                        if (g.Org.Pay(Prices.DigitalScale, g, out var err)) g.Stock.DigitalScale = true; else g.Log.Add(err, MessageKind.Bad);
+                    });
+                if (!game.Stock.HeatSealer)
+                    e.Option($"A heat sealer · €{Prices.HeatSealer}", "Seals a bag in a second. Baggers work faster.", g =>
+                    {
+                        if (g.Org.Pay(Prices.HeatSealer, g, out var err)) g.Stock.HeatSealer = true; else g.Log.Add(err, MessageKind.Bad);
+                    });
+                if (!game.Stock.RollingMachine)
+                    e.Option($"A rolling machine · €{Prices.RollingMachine}", "Rolls twenty at a time. Better cigarettes, faster rollers.", g =>
+                    {
+                        if (g.Org.Pay(Prices.RollingMachine, g, out var err)) g.Stock.RollingMachine = true; else g.Log.Add(err, MessageKind.Bad);
+                    });
+            }
             e.Option(offers.Count > 0 ? "Not now" : "Leave", busy ? $"{pawn.Nickname} is already on a job." : "Walk away.", g => { });
             return e;
         }
 
-        // Ordering product: face to face, at night, cash up front.
+        // Buying product: face to face, at night, cash up front.
         static GameEvent SupplierCard(Contact contact, Game game)
         {
-            bool pending = game.Contracts.ShipmentPending(ContractKind.Shipment);
+            bool carrying = game.Org.CarriedDg > 0;
             var e = new GameEvent
             {
                 Id = "contact_supplier",
                 Title = contact.Name,
-                Neapolitan = pending ? "'A roba toja sta già 'ncopp' 'a varca. Nun me fa' perdere tiempo." : contact.Greeting,
-                English = pending ? "Your stuff's already on the boat. Don't waste my time." : contact.GreetingEn,
-                Body = pending
-                    ? "Your last order hasn't been collected yet. It comes in by boat at night: send someone to the port."
-                    : $"{contact.Who}\n\nWholesale €{Prices.ProductWholesale} a unit, paid now. The load comes in by boat tonight; someone has to be at the port to collect it.",
+                Neapolitan = carrying ? "Tiene ancora 'a roba 'ncuollo? Vattenne a casa, primma ca te fermano." : contact.Greeting,
+                English = carrying ? "You've still got the stuff on you? Go home, before they stop you." : contact.GreetingEn,
+                Body = carrying
+                    ? "Get the last lot home first."
+                    : $"{contact.Who}\n\nCash only. You carry it home yourself: if a patrol stops you on the way, it's gone and so are you. At home, cut it into half-gram doses at the bagging table.",
             };
-            if (!pending)
-                foreach (int units in new[] { 20, 50, 100 })
+            if (!carrying)
+            {
+                foreach (var (grams, price, label) in new[] { (100, Prices.Etto, "An etto, 100 g"), (500, Prices.HalfKilo, "Half a kilo"), (1000, Prices.Kilo, "A kilo") })
                 {
-                    int u = units;
-                    e.Option($"Order {u} units · €{u * Prices.ProductWholesale}", "Collect it at the port tonight, between 22:00 and 04:00, or it's lost.", g =>
+                    int gr = grams, pr = price;
+                    e.Option($"{label} · €{pr}", $"{gr * 10 / Prices.DoseDg} doses once bagged.", g =>
                     {
-                        if (!g.Org.OrderProduct(u, g, out var error)) g.Log.Add(error, MessageKind.Bad);
-                    }, g => g.Stock.Cash + g.Stock.Clean >= u * Prices.ProductWholesale);
+                        if (!g.Org.BuyBulk(gr, pr, g, out var error)) g.Log.Add(error, MessageKind.Bad);
+                    }, g => g.Stock.Cash + g.Stock.Clean >= pr);
                 }
+            }
             e.Option("Leave", "Walk away.", g => { });
             return e;
         }

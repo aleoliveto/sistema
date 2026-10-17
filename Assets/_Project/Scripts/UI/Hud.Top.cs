@@ -51,12 +51,12 @@ namespace OSistema.UI
             dirtyValue = Chip(mid, IconKind.Dirty, () => "Dirty money: what crime pays. Fine for drugs, guns, wages and small things. Launder it to spend on anything big.");
             cleanValue = Chip(mid, IconKind.Clean, () => $"Clean money: legal income and laundered cash. Needed for property and anything from €{OSistema.World.Prices.CleanMoneyThreshold} up.");
             Divider(mid);
-            productValue = Chip(mid, IconKind.Product, () => "Product ('a roba) at the basso, for the piazze. Ordered from the supplier, collected at the port.");
+            productValue = Chip(mid, IconKind.Product, () => $"Doses ready for the piazze, and product still to cut ({game.Stock.BulkDg / 10f:0.0} g). Bought by the etto or kilo from Zi Tore, bagged at the table.");
             foodChip = Chip(mid, IconKind.Food, () => $"Meals {game.Stock.Meals} · groceries {game.Stock.Groceries} (each cooks two meals).");
             medicineValue = Chip(mid, IconKind.Medicine, () => "Medicine from the farmacia: better treatment for wounds.");
             scooterValue = Chip(mid, IconKind.Scooter, () => "The family's scooters. Crew ride them on long trips.");
             scooterChip = scooterValue.parent;
-            cigaretteValue = Chip(mid, IconKind.Business, () => "Cases of contraband cigarettes for the deposito.");
+            cigaretteValue = Chip(mid, IconKind.Business, () => $"Packs of ROSSE ready to sell. Tobacco {game.Stock.TobaccoG} g, papers {game.Stock.Papers}, empty packs {game.Stock.EmptyPacks}.");
             cigaretteChip = cigaretteValue.parent;
             Divider(mid);
             respectValue = Chip(mid, IconKind.Respect, () => "Respect: how much the rione fears and honours the family.");
@@ -107,13 +107,13 @@ namespace OSistema.UI
             var s = game.Stock;
             dirtyValue.text = $"€{s.Cash}";
             cleanValue.text = $"€{s.Clean}";
-            productValue.text = s.Product.ToString();
+            productValue.text = s.BulkDg > 0 ? $"{s.Product} · {s.BulkDg / 10}g" : s.Product.ToString();
             foodChip.text = $"{s.Meals}+{s.Groceries * 2}";
             medicineValue.text = s.Medicine.ToString();
             scooterValue.text = s.Scooters.ToString();
             scooterChip.Show(s.Scooters > 0);
             cigaretteValue.text = s.Cigarettes.ToString();
-            cigaretteChip.Show(s.Cigarettes > 0);
+            cigaretteChip.Show(s.Cigarettes > 0 || s.TobaccoG > 0);
             respectValue.text = $"{game.Org.Respect:0}";
 
             var org = game.Org;

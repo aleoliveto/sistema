@@ -15,7 +15,7 @@ namespace OSistema.Core
     /// </summary>
     public static class SaveSystem
     {
-        public const int Version = 8;
+        public const int Version = 9;
         const int OldestReadable = 5; // the map generator changed too much to migrate older saves
 
         public static string DefaultPath => Path.Combine(Application.persistentDataPath, "save1.json");
@@ -86,6 +86,10 @@ namespace OSistema.Core
                 friendsJoined = game.Org.FriendsJoined,
                 lookoutShifts = game.Org.LookoutShifts,
                 supplierIntroduced = game.Org.SupplierIntroduced,
+                bulkDg = game.Stock.BulkDg, carriedDg = game.Org.CarriedDg, baggies = game.Stock.Baggies,
+                tobaccoG = game.Stock.TobaccoG, papers = game.Stock.Papers, emptyPacks = game.Stock.EmptyPacks,
+                digitalScale = game.Stock.DigitalScale, heatSealer = game.Stock.HeatSealer, rollingMachine = game.Stock.RollingMachine,
+                doseQuality = game.Stock.DoseQuality, packQuality = game.Stock.PackQuality,
             };
             foreach (var sq in game.Rival.Squares)
                 data.rivalSquares.Add(new SquareData { x = sq.Cell.x, y = sq.Cell.y, zone = sq.ZoneId });
@@ -241,11 +245,17 @@ namespace OSistema.Core
             // Before version 7 the crew started with all three friends.
             game.Org.FriendsJoined = data.version >= 7 ? data.friendsJoined : Game.FriendCount;
             game.Org.LookoutShifts = data.lookoutShifts;
+            var st = game.Stock;
+            st.BulkDg = data.bulkDg; game.Org.CarriedDg = data.carriedDg; st.Baggies = data.baggies;
+            st.TobaccoG = data.tobaccoG; st.Papers = data.papers; st.EmptyPacks = data.emptyPacks;
+            st.DigitalScale = data.digitalScale; st.HeatSealer = data.heatSealer; st.RollingMachine = data.rollingMachine;
+            if (data.version >= 9) { st.DoseQuality = data.doseQuality; st.PackQuality = data.packQuality; }
             // Families from before version 8 already had a supplier.
             game.Org.SupplierIntroduced = data.version < 8 || data.supplierIntroduced;
             if (data.favours != null && data.favours.Neighbours.Count > 0) game.Favours.S = data.favours;
             else game.Favours.Setup(game, game.Rng);
 
+            game.EnsurePlayer();
             var loadedBoss = game.Org.Boss(game);
             if (loadedBoss != null) loadedBoss.Titled = game.Org.Rank >= 1;
             game.Log.Add("Game loaded.", MessageKind.Info);
@@ -360,6 +370,9 @@ namespace OSistema.Core
             public int friendsJoined;
             public int lookoutShifts;
             public bool supplierIntroduced;
+            public int bulkDg, carriedDg, baggies, tobaccoG, papers, emptyPacks;
+            public bool digitalScale, heatSealer, rollingMachine;
+            public float doseQuality = 0.75f, packQuality = 0.75f;
             public int pendingOrderUnits, pendingOrderDay, lastPaydayWeek;
             public List<ZoneData> zones = new List<ZoneData>();
             public List<SquareData> squares = new List<SquareData>();

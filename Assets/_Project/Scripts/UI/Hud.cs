@@ -186,6 +186,7 @@ namespace OSistema.UI
 
         void LateUpdate()
         {
+            UpdateMinigame();
             HandleEscape();
             if (game == null || root?.panel == null) return;
             UpdateWorldLabels();

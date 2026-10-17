@@ -36,6 +36,9 @@ namespace OSistema.UI
             CrewRole.Lookout => "Lookout (vedetta)",
             CrewRole.Collector => "Collector (pizzo)",
             CrewRole.Manager => "Manager",
+            CrewRole.Bagger => "Bagger (cuts and bags doses)",
+            CrewRole.Roller => "Roller (makes ROSSE)",
+            CrewRole.Bodyguard => "Bodyguard",
             _ => "General",
         };
 
@@ -153,9 +156,14 @@ namespace OSistema.UI
 
             var actions = Ui.Row(inspectorDetail);
             roleButton = Ui.Btn("", () => { if (Single(out var p)) CycleRole(p); RefreshAll(); }, actions, "btn--small");
-            Tip(roleButton, () => "Click to change role: General, Pusher, Lookout, Collector.");
-            draftButton = Ui.Btn("", () => { controller.ToggleDraftSelected(); RefreshAll(); }, actions, "btn--small");
-            Tip(draftButton, () => "Drafted crew take your orders and fight (R).\nRight-click a rival to focus fire.");
+            Tip(roleButton, () => "Click to change job: general, pusher, lookout, collector, bagger, roller, bodyguard.");
+            draftButton = Ui.Btn("Call over", () =>
+            {
+                var boss = game.Player;
+                if (Single(out var p) && boss != null && !p.Controlled && p.CanAct) p.ForceJob(new OSistema.AI.GotoJob(p, boss.Cell, "Coming over"), game);
+                RefreshAll();
+            }, actions, "btn--small");
+            Tip(draftButton, () => "Call him over to where you are.");
             armButton = Ui.Btn("", () => { if (Single(out var p)) ToggleArmed(p); RefreshAll(); }, actions, "btn--small");
             Tip(armButton, () => $"Give or take back a pistol. Pistols in the stash: {game.Stock.Pistols}.");
             callButton = Ui.Btn("Call 118", () => { if (Single(out var p)) game.Hospital.Call(p, game, byPasserby: false); RefreshAll(); }, actions, "btn--small", "btn--danger");
@@ -245,8 +253,8 @@ namespace OSistema.UI
             inspName.text = p.IsBoss ? $"<color=#E8C26A>{p.DisplayName}</color> {p.LastName}" : p.FullName;
             inspSub.text = $"“{p.Nickname}”  ·  {RoleLabel(p.Role)}  ·  €{p.Wage}/week";
             roleButton.text = $"Role: {RoleLabel(p.Role)}";
-            draftButton.text = p.Drafted ? "Release (R)" : "Draft (R)";
-            draftButton.Toggle("btn--on", p.Drafted);
+            draftButton.Show(!p.Controlled);
+            roleButton.Show(!p.Controlled);
             armButton.text = p.Armed ? "Disarm" : "Arm";
             armButton.Toggle("btn--on", p.Armed);
             callButton.Show(p.Health.Downed && !game.Hospital.IsCalled(p));

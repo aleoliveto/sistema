@@ -76,13 +76,118 @@ namespace OSistema.Combat
             }
         }
 
+        /// <summary>When the player last pulled the trigger: bodyguards join in.</summary>
+        public long LastPlayerShotTick { get; private set; } = -100000;
+
         /// <summary>Who starts shooting at whom.</summary>
-        static bool WantsToFight(Pawn a, Pawn b, long now)
+        bool WantsToFight(Pawn a, Pawn b, long now)
         {
             if (a.Faction == b.Faction || !b.IsPresent || b.Health.Downed) return false;
-            // Crew only open fire on your orders, or to defend themselves from rivals who are already shooting.
-            if (a.Faction == Faction.Crew) return a.Drafted || (a.Armed && b.IsAggressive(now));
+            if (a.Controlled) return false;   // the player aims and fires himself
+            if (a.Faction == Faction.Crew)
+            {
+                // Bodyguards fight for the boss: anyone shooting, or anyone the boss is shooting at.
+                if (a.Role == CrewRole.Bodyguard && a.Armed) return b.IsAggressive(now) || now - LastPlayerShotTick < 900;
+                return a.Drafted || (a.Armed && b.IsAggressive(now));
+            }
             return a.IsAggressive(now);
+        }
+
+        /// <summary>
+        /// The player shoots (or swings, unarmed) towards a point. The bullet hits the first person
+        /// along the line, if the shot is good; walls stop it. Shooting a passer-by or a policeman
+        /// is the worst thing you can do.
+        /// </summary>
+        public void PlayerAttack(Pawn shooter, Vector2 point, Game game)
+        {
+            long now = game.Ticks.TicksGame;
+            if (!shooter.CanAct || now < shooter.NextAttackTick) return;
+            bool melee = !shooter.Armed;
+            float range = melee ? MeleeRange : PistolRange;
+            var from = shooter.Position;
+            var dir = point - from;
+            if (dir.sqrMagnitude < 0.0001f) return;
+            dir.Normalize();
+            shooter.NextAttackTick = now + (melee ? 50 : 55);
+            var rng = game.Rng;
+
+            // Walk the line: who's on it first, and where does a wall stop it?
+            float wallAt = range;
+            for (float t = 0.3f; t < range; t += 0.2f)
+            {
+                var c = Vector2Int.FloorToInt(from + dir * t);
+                if (c != shooter.Cell && (!game.Map.InBounds(c) || !game.Map.IsPassable(c.x, c.y))) { wallAt = t; break; }
+            }
+            Pawn hitPawn = null;
+            Npcs.Npc hitNpc = null;
+            float best = wallAt;
+            foreach (var p in game.Pawns.All)
+            {
+                if (p == shooter || !p.IsPresent || p.Dead) continue;
+                if (Along(from, dir, p.Position, best, out float t)) { best = t; hitPawn = p; }
+            }
+            foreach (var n in game.Npcs.All)
+            {
+                if (n.Despawned || n.Kind == Npcs.NpcKind.Scooter || n.Kind == Npcs.NpcKind.Ambulance) continue;
+                if (Along(from, dir, n.Mover.Position, best, out float t)) { best = t; hitNpc = n; hitPawn = null; }
+            }
+
+            var to = from + dir * best;
+            float chance = melee ? 0.6f + 0.03f * shooter.IntimidationSkill : 0.5f + 0.04f * shooter.ShootingSkill - 0.025f * best;
+            chance *= 1f - shooter.Health.Pain * 0.5f;
+            bool covered = hitPawn != null && !melee && IsInCover(game.Map, hitPawn.Cell, from);
+            if (covered) chance *= CoverFactor;
+            bool hit = (hitPawn != null || hitNpc != null) && rng.NextDouble() < Mathf.Clamp(chance, 0.05f, 0.92f);
+            if (!hit && (hitPawn != null || hitNpc != null)) to += new Vector2((float)rng.NextDouble() - 0.5f, (float)rng.NextDouble() - 0.5f) * 1.5f;
+
+            Shot?.Invoke(new ShotEvent(from, to, hit, melee, covered && !hit));
+            if (!melee)
+            {
+                shooter.Learn(Skill.Shooting, 3f, game);
+                game.Territory.AddHeat(shooter.Cell, 1.2f);
+                Fired(from, game);
+                LastPlayerShotTick = now;
+            }
+
+            if (hitPawn != null)
+            {
+                OnAttacked(hitPawn, shooter, game, now);
+                if (hit) Wound(hitPawn, melee, game);
+                if (hit && hitPawn.Faction == Faction.Crew)
+                {
+                    hitPawn.Loyalty = Mathf.Max(0f, hitPawn.Loyalty - 25f);
+                    game.Log.Add($"You hit {hitPawn.DisplayName}. He won't forget it.", MessageKind.Bad);
+                }
+            }
+            else if (hitNpc != null && hit) ShotBystander(hitNpc, melee, game);
+        }
+
+        static bool Along(Vector2 from, Vector2 dir, Vector2 at, float maxT, out float t)
+        {
+            var rel = at - from;
+            t = Vector2.Dot(rel, dir);
+            if (t <= 0.2f || t >= maxT) return false;
+            return (rel - dir * t).sqrMagnitude < 0.45f * 0.45f;
+        }
+
+        static void ShotBystander(Npcs.Npc npc, bool melee, Game game)
+        {
+            bool cop = npc.Kind == Npcs.NpcKind.Police;
+            var zone = game.Territory.ZoneAt(npc.Mover.Cell);
+            if (melee)
+            {
+                game.Org.AddEvidence(cop ? 10f : 2f, game);
+                game.Territory.AddHeat(npc.Mover.Cell, cop ? 25f : 6f);
+                game.Log.Add(cop ? "You punched a policeman. Every patrol in the city will know your face." : "You punched a passer-by. People saw.", MessageKind.Bad);
+                return;
+            }
+            npc.Despawned = true;
+            game.Org.AddEvidence(cop ? 40f : 20f, game);
+            game.Territory.AddHeat(npc.Mover.Cell, cop ? 60f : 35f);
+            game.Org.Respect = Mathf.Max(0f, game.Org.Respect - (cop ? 0f : 8f));
+            game.Log.Add(cop ? "You shot a policeman. There is no going back from this." : "You shot an innocent passer-by. The rione turns its back on the family.", MessageKind.Bad, npc.Mover.Cell);
+            game.Newspaper.Report(game, cop ? 9 : 7, cop ? $"Policeman shot in {zone?.Name ?? "the old town"}" : $"Passer-by shot dead in {zone?.Name ?? "the old town"}",
+                cop ? "The interior minister is flying to Naples. Hundreds of officers are being sent to the city." : "An innocent caught in the crossfire. The cardinal will say mass for the victim on Sunday.");
         }
 
         Pawn PickTarget(Pawn attacker, Game game, long now)
@@ -99,7 +204,8 @@ namespace OSistema.Combat
 
             Pawn best = null;
             float bestDist = range;
-            foreach (var other in game.Pawns.All)
+            var all = game.Pawns.All;
+            foreach (var other in all)
             {
                 if (!WantsToFight(attacker, other, now)) continue;
                 float d = (other.Position - attacker.Position).magnitude;
@@ -155,7 +261,7 @@ namespace OSistema.Combat
                 target.Mission = RivalMission.Leave;
                 target.EndCurrentJob(game);
             }
-            else if (target.Faction == Faction.Crew && !target.Drafted && !target.Armed && target.CanAct && !(target.CurrentJob is FleeJob))
+            else if (target.Faction == Faction.Crew && !target.Controlled && !target.Drafted && !target.Armed && target.CanAct && !(target.CurrentJob is FleeJob))
             {
                 target.ForceJob(new FleeJob(target, null, game), game);
             }

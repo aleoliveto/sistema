@@ -623,3 +623,26 @@
     padding: 0 5px;
     -unity-font-style: bold;
 }
+
+/* ---------- Minigames ---------- */
+.minigame { width: 860px; padding: 14px 18px; }
+.root .minigame__readout {
+    -unity-font-definition: resource("Fonts/BarlowCondensed-Bold");
+    font-size: 26px;
+    color: #8FE08A;
+    background-color: #101410;
+    padding: 2px 12px;
+    border-radius: 3px;
+}
+.root .pack__brand {
+    position: absolute; left: 55px; top: 24px; width: 110px;
+    -unity-text-align: middle-center;
+    -unity-font-definition: resource("Fonts/BarlowCondensed-Bold");
+    font-size: 30px; letter-spacing: 4px; color: #F4F0E6;
+}
+.root .pack__warning {
+    position: absolute; left: 62px; top: 150px; width: 96px;
+    -unity-text-align: middle-center;
+    -unity-font-definition: resource("Fonts/Barlow-Bold");
+    font-size: 11px; color: #F4F0E6;
+}

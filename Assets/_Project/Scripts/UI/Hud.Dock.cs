@@ -57,13 +57,14 @@ namespace OSistema.UI
             };
             toolsByTab[DockTab.Crime] = new List<ToolEntry>
             {
+                Def(BuildingDefs.BaggingTable, "Where 'a roba is cut and bagged into half-gram doses. Press E at it, or give someone the Bagger job."),
+                Def(BuildingDefs.RollingTable, "Where ROSSE are rolled and boxed. Press E at it, or give someone the Roller job."),
                 new ToolEntry { Label = "Piazza", Tool = Tool.Square, Swatch = new Color(0.8f, 0.25f, 0.9f), Tip = "Open a drug square on a sidewalk. Then assign pushers and lookouts and order product (B)." },
                 new ToolEntry { Label = "Business", Swatch = new Color(0.91f, 0.76f, 0.42f), Action = () => ToggleWindow(Window.Business), Tip = "The business panel: crew, piazze, pizzo, supplier, arms, rivals (B)." },
             };
             toolsByTab[DockTab.Orders] = new List<ToolEntry>
             {
                 new ToolEntry { Label = "Select", Tool = Tool.Select, Swatch = new Color(0.9f, 0.9f, 0.9f), Tip = "Select crew. Right-click to move, or to attack a rival (Esc)." },
-                new ToolEntry { Label = "Draft", Swatch = new Color(0.94f, 0.48f, 0.43f), Action = () => controller.ToggleDraftSelected(), Tip = "Draft or release the selected crew (R)." },
                 new ToolEntry { Label = "Demolish", Tool = Tool.Deconstruct, Swatch = new Color(0.9f, 0.3f, 0.25f), Tip = "Drag over buildings to tear them down." },
                 new ToolEntry { Label = "Cancel", Tool = Tool.Cancel, Swatch = new Color(0.95f, 0.65f, 0.3f), Tip = "Drag to cancel blueprints or close a piazza." },
             };

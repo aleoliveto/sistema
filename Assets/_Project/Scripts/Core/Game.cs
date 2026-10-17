@@ -43,6 +43,40 @@ namespace OSistema.Core
         public readonly Informants Informants = new Informants();
         public readonly Newspaper Newspaper = new Newspaper();
         public readonly ContactBook Contacts = new ContactBook();
+
+        /// <summary>The character the player moves directly: the head of the family.</summary>
+        public Pawn Player
+        {
+            get
+            {
+                foreach (var p in Pawns.Crew) if (p.Controlled && !p.Dead && !p.Departed) return p;
+                return null;
+            }
+        }
+
+        void PlaceStarterTable()
+        {
+            var r = PlayerBase;
+            for (int y = r.yMin; y < r.yMax; y++)
+            for (int x = r.xMin; x < r.xMax; x++)
+            {
+                bool edge = x == r.xMin || x == r.xMax - 1 || y == r.yMax - 1;
+                if (!edge || Map.GetBuilding(x, y) != null || !Map.IsPassable(new Vector2Int(x, y))) continue;
+                bool nearDoor = false;
+                foreach (var c in GridUtil.CellsAround(new Vector2Int(x, y), 1))
+                    if (Map.InBounds(c) && Map.GetBuilding(c.x, c.y) == BuildingDefs.Door) nearDoor = true;
+                if (nearDoor) continue;
+                Map.SetBuilding(x, y, BuildingDefs.RollingTable);
+                return;
+            }
+        }
+
+        /// <summary>Hands control to the boss (at the start, after loading, after a succession).</summary>
+        public void EnsurePlayer()
+        {
+            var boss = Org.Boss(this);
+            foreach (var p in Pawns.Crew) p.Controlled = p == boss;
+        }
         int socialHour = -1;
 
         /// <summary>Floating text over the world (money earned and the like). Presentation only.</summary>
@@ -86,18 +120,23 @@ namespace OSistema.Core
             game.Org.BuildBusinesses(map, rng);
             game.NameProperties();
             game.Stock.Cash = 40; // what a seventeen-year-old has in his pocket
+            // Mamma's basso has an old rolling table and the end of a pouch: enough for a few packs.
+            game.Stock.TobaccoG = 45;
+            game.Stock.Papers = 60;
+            game.Stock.EmptyPacks = 3;
+            game.PlaceStarterTable();
             game.SpawnStartingCrew();
             game.Rival.Setup(game, rng);
             game.Favours.Setup(game, rng);
             game.Log.Add("Gennaro is seventeen. He lives with his mother in a basso in the rione, and he wants more.");
-            game.Log.Add("Walk Gennaro up to someone with work (a gold ! over their head) and press E to talk, or right-click them.");
+            game.Log.Add("WASD to walk, E to talk or use things. Someone with work has a gold ! over their head.");
             game.Phone.Send(game, Social.MsgKind.Info, "Mammà",
                 "Gennà, nun fa' tarde stasera. E statte accorto a chi frequiente.",
                 "Gennà, don't be late tonight. And be careful who you spend time with.", null);
             game.Phone.Send(game, Social.MsgKind.Info, ContactBook.Totonno,
                 "Passa d''o bar quanno puo'. Tengo 'na cosa pe' te.",
                 "Drop by the bar when you can. I've got something for you.",
-                "Zio Totonno stands outside his bar every day. Walk over and hear him out.");
+                "Zio Totonno stands outside his bar every day. Walk over and hear him out. He also buys cigarettes, no questions asked: there's an old rolling table in mamma's basso.");
             return game;
         }
 
@@ -162,7 +201,11 @@ namespace OSistema.Core
         public Pawn AddFriend(int i) => SpawnCrew(Friends[i + 1], boss: false);
 
         // Gennaro starts alone. His friends come when he's somebody.
-        void SpawnStartingCrew() => SpawnCrew(Friends[0], boss: true);
+        void SpawnStartingCrew()
+        {
+            SpawnCrew(Friends[0], boss: true);
+            EnsurePlayer();
+        }
 
         Pawn SpawnCrew((string, string, string, Color32, int, int, int, int, int, int, CrewRole) f, bool boss)
         {

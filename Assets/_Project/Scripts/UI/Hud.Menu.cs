@@ -135,6 +135,11 @@ namespace OSistema.UI
             if (kb == null || !kb.escapeKey.wasPressedThisFrame) return;
             if (controller.EscapeConsumedFrame == Time.frameCount) return;
             if (game != null && game.Events.Current != null) return;
+            if (MinigameOpen)
+            {
+                CloseMinigame();
+                return;
+            }
 
             if (openMenu == Menu.Settings) OpenMenu(settingsReturnTo);
             else if (openMenu == Menu.Pause) CloseMenu();

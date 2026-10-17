@@ -200,6 +200,12 @@ namespace OSistema.AI
             var org = game.Org;
 
             if (pawn.Role == CrewRole.Collector) return CollectorDuty(pawn, game);
+            if (pawn.Role == CrewRole.Bodyguard)
+                return game.Player != null && game.Player.IsPresent && !game.Player.InJail ? new BodyguardJob(pawn) : null;
+            if (pawn.Role == CrewRole.Bagger)
+                return game.Org.CanMakeDose(game) && StationJob.TryFind(pawn, BuildingDefs.BaggingTable, game, out var table) ? new BagJob(pawn, table) : null;
+            if (pawn.Role == CrewRole.Roller)
+                return game.Org.CanMakePack(game) && StationJob.TryFind(pawn, BuildingDefs.RollingTable, game, out var roller) ? new RollJob(pawn, roller) : null;
             if (pawn.Role == CrewRole.Manager)
             {
                 var place = org.ManagedBy(pawn, game);

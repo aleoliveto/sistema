@@ -55,10 +55,10 @@ namespace OSistema.UI
             Ui.Btn("✕", () => ToggleWindow(Window.Help), hh, "btn--small");
             var hb = Ui.Box("window__body").Into(helpWindow);
             Ui.Text(
-                "<b>Camera</b>  WASD / arrows or middle-drag to pan · scroll or + / − to zoom\n" +
-                "<b>Crew</b>  click or drag to select · click a portrait, double-click to find them\n" +
-                "<b>Orders</b>  right-click to move (drafts them) · R to draft or release\n" +
-                "<b>Fighting</b>  draft armed crew, right-click a rival to focus fire. Drafted crew take cover on their own. Cover (walls, cars, trees, benches, stalls) halves the chance of being hit.\n" +
+                "<b>You</b>  WASD to walk, Shift to run · E to talk, shop, work at a table, eat, sleep · F brings the camera back\n" +
+                "<b>Camera</b>  arrow keys or middle-drag to look around · scroll or + / − to zoom\n" +
+                "<b>Fighting</b>  hold the right mouse button to aim, left click to shoot (or punch, unarmed). Cover (walls, cars, trees, benches, stalls) halves the chance of being hit. Bodyguards fight on their own.\n" +
+                "<b>Crew</b>  click a portrait to see someone; give them a job: pusher, lookout, collector, bagger, roller, bodyguard. Leave Gennaro alone for a while and he looks after himself.\n" +
                 "<b>Time</b>  Space pause · 1 2 3 speed · debug: 4 ×30, 5 ×120, F8 skip 6 hours\n" +
                 "<b>Debug</b>  F6 shoot selected · F7 +€200 · F10 rival hit squad · F11 stesa on your piazza\n" +
                 "<b>Build</b>  open the BUILD / FURNISH tabs at the bottom. Walls drag as a room outline.\n" +
@@ -240,37 +240,24 @@ namespace OSistema.UI
                 b.SetEnabled(st.Cash >= a);
             }
 
-            Ui.Text("SUPPLIER", bizBody, "section");
-            Ui.Text($"Product at the basso: <b>{st.Product}</b> units · wholesale €{Prices.ProductWholesale}, street €{Prices.ProductStreet}.", bizBody, "small", "wrap");
+            Ui.Text("PRODUCT", bizBody, "section");
+            Ui.Text($"Doses ready: <b>{st.Product}</b> · to cut: <b>{st.BulkDg / 10f:0.0} g</b> · bags: {st.Baggies} · street price €{Prices.ProductStreet} a dose · honesty of the doses {st.DoseQuality * 100f:0}%", bizBody, "small", "wrap");
+            if (org.CarriedDg > 0) Ui.Text($"{org.CarriedDg / 10} g on the boss, not yet home.", bizBody, "warn", "small");
             if (!org.SupplierIntroduced)
                 Ui.Text($"Nobody sells product to a stranger. {org.SupplierProgress}", bizBody, "warn", "small", "wrap");
-            else if (game.Contracts.ShipmentPending(ContractKind.Shipment))
-                Ui.Text("A shipment is on its way by boat. Send someone to the port tonight (Taccuino, J).", bizBody, "warn", "small", "wrap");
             else
             {
                 var tore = game.Contacts.ByName(ContactBook.Supplier);
                 var row = Ui.Row(bizBody);
-                Ui.Text($"Orders are made in person with {ContactBook.Supplier}, {tore?.Hours}. Select someone and press E next to him.", row, "small", "wrap").style.flexShrink = 1;
+                Ui.Text($"Buy by the etto, half kilo or kilo from {ContactBook.Supplier}, in person, {tore?.Hours}. Cut it into doses at a bagging table (E), or give someone the Bagger job.", row, "small", "wrap").style.flexShrink = 1;
                 if (tore != null) Ui.Btn("Show", () => FocusCamera(tore.Position), row, "btn--small");
             }
 
-            Ui.Text("'O MARENARO · CIGARETTES", bizBody, "section");
-            Ui.Text($"Cases in stock: <b>{st.Cigarettes}</b> · €{Prices.CigaretteCase} a case off the boat, €{Prices.CigaretteStreet} on the street. A deposito sells them every night. Needs rank 2.", bizBody, "small", "wrap");
-            if (game.Contracts.ShipmentPending(ContractKind.CigaretteRun))
-                Ui.Text("A load of cigarettes is waiting at the port tonight.", bizBody, "warn", "small");
-            else
-            {
-                var row = Ui.Row(bizBody);
-                foreach (int cases in new[] { 20, 50 })
-                {
-                    int c = cases;
-                    var b = Ui.Btn($"Order {c} cases (€{c * Prices.CigaretteCase})", Do(() =>
-                    {
-                        if (!org.OrderCigarettes(c, game, out var error)) game.Log.Add(error, MessageKind.Bad);
-                    }), row, "btn--small");
-                    b.SetEnabled(org.Rank >= 2);
-                }
-            }
+            Ui.Text("ROSSE · CIGARETTES", bizBody, "section");
+            Ui.Text($"Packs ready: <b>{st.Cigarettes}</b> (quality {st.PackQuality * 100f:0}%, about €{org.PackPrice(game)} each) · tobacco {st.TobaccoG} g · papers {st.Papers} · empty packs {st.EmptyPacks}", bizBody, "small", "wrap");
+            Ui.Text("Tobacco and papers from the tabaccaio, empty packs from Nanninella. Roll them at a rolling table (E), or give someone the Roller job. Zio Totonno buys up to 20 packs a day; a deposito sells many more.", bizBody, "small", "muted", "wrap");
+            Ui.Text("GEAR", bizBody, "section");
+            Ui.Text($"{(st.DigitalScale ? "✓" : "✗")} digital scale   {(st.HeatSealer ? "✓" : "✗")} heat sealer   {(st.RollingMachine ? "✓" : "✗")} rolling machine   · Nanninella sells them.", bizBody, "small");
 
             Ui.Text("SCOOTERS", bizBody, "section");
             Ui.Text($"The family has <b>{st.Scooters}</b>. Crew take a free scooter for any long trip: far faster across the city.", bizBody, "small", "wrap");

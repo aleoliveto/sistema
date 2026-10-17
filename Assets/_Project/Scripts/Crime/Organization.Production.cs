@@ -1,0 +1,153 @@
+using OSistema.Core;
+using OSistema.Npcs;
+using OSistema.Pawns;
+using OSistema.World;
+using UnityEngine;
+
+namespace OSistema.Crime
+{
+    /// <summary>
+    /// Making the goods. Product comes from Zi Tore by the etto, half kilo or kilo and has to be carried
+    /// home and cut into half-gram doses; cigarettes are rolled at home from tobacco bought at the
+    /// tabaccaio and boxed in ROSSE packs. By hand at first; later, people on the tables do it for you.
+    /// </summary>
+    public sealed partial class Organization
+    {
+        public int CarriedDg;            // product on the boss, not yet home
+        public int TotonnoPacksDay, TotonnoPacksToday;
+        long lastCarryCheck;
+        float lastQualityWarning = -999f;
+
+        /// <summary>Drugs are paid in cash, however much: nobody launders money to buy cocaine.</summary>
+        public bool PayCash(int amount, Game game, out string error)
+        {
+            error = null;
+            var s = game.Stock;
+            if (s.Cash + s.Clean < amount)
+            {
+                error = $"Not enough money (€{amount} needed).";
+                return false;
+            }
+            int fromCash = Mathf.Min(s.Cash, amount);
+            s.Cash -= fromCash;
+            s.Clean -= amount - fromCash;
+            return true;
+        }
+
+        public bool BuyBulk(int grams, int price, Game game, out string error)
+        {
+            error = null;
+            if (!SupplierIntroduced) error = "Nobody sells product to a stranger. Someone has to vouch for you.";
+            else if (CarriedDg > 0) error = "Get the last lot home first.";
+            if (error != null) return false;
+            if (!PayCash(price, game, out error)) return false;
+            CarriedDg = grams * 10;
+            game.Log.Add($"{grams} g wrapped in cling film, under your jacket. Get it home to the basso without meeting the police.", MessageKind.Info);
+            return true;
+        }
+
+        /// <summary>Product on the boss's person: home safe, or stopped and searched on the way.</summary>
+        void TickCarrying(Game game)
+        {
+            if (CarriedDg <= 0) return;
+            long now = game.Ticks.TicksGame;
+            if (now - lastCarryCheck < 60) return;
+            lastCarryCheck = now;
+            var p = game.Player;
+            if (p == null || !p.IsPresent)
+            {
+                game.Log.Add("The product the boss was carrying is gone.", MessageKind.Bad);
+                CarriedDg = 0;
+                return;
+            }
+            if (game.PlayerBase.Contains(p.Cell) || game.Properties.IsOwnedHome(p.Cell))
+            {
+                game.Stock.BulkDg += CarriedDg;
+                game.Log.Add($"{CarriedDg / 10} g are in the stash. Cut it into doses at the bagging table.", MessageKind.Good);
+                CarriedDg = 0;
+                return;
+            }
+            foreach (var npc in game.Npcs.All)
+            {
+                if (npc.Kind != NpcKind.Police || npc.Despawned) continue;
+                if ((npc.Mover.Position - p.Position).sqrMagnitude > 16f) continue;
+                if (!Combat.CombatSystem.HasLineOfSight(game.Map, npc.Mover.Cell, p.Cell)) continue;
+                float chance = Mathf.Max(0.01f, 0.06f - p.AwarenessSkill * 0.004f);
+                if (game.Rng.NextDouble() >= chance) return;
+                int days = 10 + game.Rng.Next(0, 10) + CarriedDg / 1000;
+                game.Log.Add($"Stopped and searched: the police found {CarriedDg / 10} g on {p.DisplayName}. {days} days in Poggioreale.", MessageKind.Bad, p.Cell);
+                game.Newspaper.Report(game, 4, "Young man caught carrying drugs", $"Officers on patrol found {CarriedDg / 10} grams of cocaine under his jacket.");
+                CarriedDg = 0;
+                p.SendToJail(now + days * GameClock.TicksPerDay, game);
+                AddEvidence(12f, game);
+                return;
+            }
+        }
+
+        /// <summary>One bag, weighed by hand. Short bags cheat customers; heavy ones give product away.</summary>
+        public void MakeDose(float grams, Game game)
+        {
+            var s = game.Stock;
+            int dg = Mathf.Clamp(Mathf.RoundToInt(grams * 10f), 1, s.BulkDg);
+            s.BulkDg -= dg;
+            s.Baggies--;
+            s.Product++;
+            float err = (grams - Prices.DoseDg / 10f) / (Prices.DoseDg / 10f);
+            float q = err < 0f ? 1f - Mathf.Clamp01(-err * 3f) : 1f - Mathf.Clamp01(err * 0.8f);
+            s.DoseQuality = Mathf.Lerp(s.DoseQuality, q, 0.04f);
+        }
+
+        public bool CanMakeDose(Game game) => game.Stock.BulkDg >= 2 && game.Stock.Baggies > 0;
+
+        public bool CanMakePack(Game game)
+        {
+            var s = game.Stock;
+            return s.TobaccoG >= 8 && s.Papers >= 20 && s.EmptyPacks > 0;
+        }
+
+        /// <summary>A pack of 20, rolled and boxed. Uses the tobacco actually put in the trough.</summary>
+        public void MakePack(int tobaccoG, float quality, Game game)
+        {
+            var s = game.Stock;
+            s.TobaccoG = Mathf.Max(0, s.TobaccoG - tobaccoG);
+            s.Papers -= 20;
+            s.EmptyPacks--;
+            s.Cigarettes++;
+            s.PackQuality = Mathf.Lerp(s.PackQuality, Mathf.Clamp01(quality), 0.1f);
+        }
+
+        public int PackPrice(Game game) => Mathf.Max(1, Mathf.RoundToInt(Prices.PackStreet * (0.55f + 0.6f * game.Stock.PackQuality)));
+        public int TotonnoPrice(Game game) => Mathf.Max(1, PackPrice(game) - 1);
+        public int TotonnoWants(Game game)
+        {
+            if (TotonnoPacksDay != game.Clock.Day)
+            {
+                TotonnoPacksDay = game.Clock.Day;
+                TotonnoPacksToday = 0;
+            }
+            return Mathf.Max(0, 20 - TotonnoPacksToday);
+        }
+
+        public void SellPacksToTotonno(Game game)
+        {
+            int n = Mathf.Min(game.Stock.Cigarettes, TotonnoWants(game));
+            if (n <= 0) return;
+            int price = TotonnoPrice(game);
+            game.Stock.Cigarettes -= n;
+            game.Stock.Cash += n * price;
+            TotonnoPacksToday += n;
+            game.Log.Add($"Zio Totonno took {n} packs of ROSSE for under the counter: €{n * price}.", MessageKind.Good);
+        }
+
+        /// <summary>Customers notice light bags.</summary>
+        void CheckDoseComplaints(Game game)
+        {
+            float q = game.Stock.DoseQuality;
+            if (q > 0.65f || game.Rng.NextDouble() > (0.65f - q) * 0.6f) return;
+            Respect = Mathf.Max(0f, Respect - 0.15f);
+            if (Time.unscaledTime - lastQualityWarning < 60f) return;
+            lastQualityWarning = Time.unscaledTime;
+            game.Log.Add("Customers say the bags are light. Weigh them properly.", MessageKind.Bad);
+        }
+    }
+}

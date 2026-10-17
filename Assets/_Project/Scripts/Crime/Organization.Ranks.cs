@@ -49,6 +49,7 @@ namespace OSistema.Crime
             CheckIntroduction(game);
             var head = Boss(game);
             if (head != null) head.Titled = Rank >= 1;
+            if (head != null && !head.Controlled) game.EnsurePlayer();
 
             // Word gets round: the friends from the vicolo call.
             if (Respect >= FriendsRespect && FriendsJoined < Game.FriendCount && !FriendCalling(game) && game.Clock.Hour >= 9 && game.Clock.Hour <= 22

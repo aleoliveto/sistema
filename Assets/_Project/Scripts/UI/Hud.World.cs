@@ -93,6 +93,19 @@ namespace OSistema.UI
             }
 
             var reach = controller.ContactInReach(out _);
+
+            // What E would do right now, over the player's head.
+            var player = game.Player;
+            var act = player != null && !MinigameOpen && game.Events.Current == null ? controller.Interaction() : null;
+            if (act != null && reach == null)
+            {
+                var tag = NextTag();
+                tag.AddToClassList("tag--work");
+                tag.text = $"<b>[E]</b> {act.Label}";
+                var pos = WorldToPanel(player.Position);
+                tag.style.left = pos.x;
+                tag.style.top = pos.y - unit * 1.1f;
+            }
             foreach (var contact in game.Contacts.All)
             {
                 if (!contact.Present || !FogOfWar.CanSee(contact.Position) || !OnScreen(contact.Position)) continue;
