@@ -67,21 +67,12 @@ namespace OSistema.Crime
                 CarriedDg = 0;
                 return;
             }
-            foreach (var npc in game.Npcs.All)
-            {
-                if (npc.Kind != NpcKind.Police || npc.Despawned) continue;
-                if ((npc.Mover.Position - p.Position).sqrMagnitude > 16f) continue;
-                if (!Combat.CombatSystem.HasLineOfSight(game.Map, npc.Mover.Cell, p.Cell)) continue;
-                float chance = Mathf.Max(0.01f, 0.06f - p.AwarenessSkill * 0.004f);
-                if (game.Rng.NextDouble() >= chance) return;
-                int days = 10 + game.Rng.Next(0, 10) + CarriedDg / 1000;
-                game.Log.Add($"Stopped and searched: the police found {CarriedDg / 10} g on {p.DisplayName}. {days} days in Poggioreale.", MessageKind.Bad, p.Cell);
-                game.Newspaper.Report(game, 4, "Young man caught carrying drugs", $"Officers on patrol found {CarriedDg / 10} grams of cocaine under his jacket.");
-                CarriedDg = 0;
-                p.SendToJail(now + days * GameClock.TicksPerDay, game);
-                AddEvidence(12f, game);
-                return;
-            }
+            // A patrol that takes a good look at a nervous kid with a bulge in his jacket.
+            if (game.Pursuit.Active) return;
+            var cop = Pursuit.WitnessCop(game, 4f);
+            if (cop == null) return;
+            float chance = Mathf.Max(0.01f, 0.06f - p.AwarenessSkill * 0.004f) * (p.Riding ? 0.5f : 1f);
+            if (game.Rng.NextDouble() < chance) game.Pursuit.Start(cop, "A patrol wants to search you, and you're carrying.", game);
         }
 
         /// <summary>One bag, weighed by hand. Short bags cheat customers; heavy ones give product away.</summary>

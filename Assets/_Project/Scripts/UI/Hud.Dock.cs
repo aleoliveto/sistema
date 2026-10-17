@@ -54,6 +54,7 @@ namespace OSistema.UI
                 Def(BuildingDefs.Rug, "A rug from the market."),
                 Def(BuildingDefs.Safe, "Where the money sleeps."),
                 Def(BuildingDefs.HomeShrine, "A little altar to the Madonna. Everyone feels watched over."),
+                Def(BuildingDefs.Bunker, "A hidden room under the floor for the boss's latitanza. Searches rarely find it."),
             };
             toolsByTab[DockTab.Crime] = new List<ToolEntry>
             {
@@ -63,8 +64,8 @@ namespace OSistema.UI
             };
             toolsByTab[DockTab.Orders] = new List<ToolEntry>
             {
-                new ToolEntry { Label = "Demolish", Tool = Tool.Deconstruct, Swatch = new Color(0.9f, 0.3f, 0.25f), Tip = "Drag over buildings to tear them down." },
-                new ToolEntry { Label = "Cancel", Tool = Tool.Cancel, Swatch = new Color(0.95f, 0.65f, 0.3f), Tip = "Drag to cancel blueprints or close a piazza." },
+                new ToolEntry { Label = "Sell furniture", Tool = Tool.Deconstruct, Swatch = new Color(0.9f, 0.3f, 0.25f), Tip = "Click or drag over furniture in your homes to sell it back for half what you paid." },
+                new ToolEntry { Label = "Close piazza", Tool = Tool.Cancel, Swatch = new Color(0.95f, 0.65f, 0.3f), Tip = "Click a piazza of yours to close it." },
             };
 
             var dock = Ui.Box("dock").Into(hudLayer);
@@ -72,10 +73,9 @@ namespace OSistema.UI
             buildHint = Ui.Text("", dock, "build-hint");
             dockTools = Ui.Box("panel", "dock__tools").Into(dock);
             buildTabs = Ui.Box("panel", "dock__tabs").Into(dock);
-            AddTab(buildTabs, DockTab.Build, "WALLS", IconKind.Build);
             AddTab(buildTabs, DockTab.Furnish, "FURNISH", IconKind.Furnish);
             AddTab(buildTabs, DockTab.Crime, "WORK & CRIME", IconKind.Crime);
-            AddTab(buildTabs, DockTab.Orders, "DEMOLISH", IconKind.Orders);
+            AddTab(buildTabs, DockTab.Orders, "REMOVE", IconKind.Orders);
             buildTabs.style.marginBottom = 4;
 
             // The hotbar: every screen, with its key.

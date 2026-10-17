@@ -321,7 +321,7 @@ namespace OSistema.Crime
 
         /// <summary>Whether a square (ours or the rivals') is still operating.</summary>
         public bool IsActiveSquare(DrugSquare square, Game game) =>
-            Squares.Contains(square) || game.Rival.Squares.Contains(square);
+            square != null && (square == DealingCorner || Squares.Contains(square) || game.Rival.Squares.Contains(square));
 
         public void Sell(DrugSquare square, Pawn pusher, Game game)
         {
@@ -356,6 +356,7 @@ namespace OSistema.Crime
 
         void SpawnCustomers(Game game)
         {
+            SpawnCornerCustomers(game);
             if (Squares.Count == 0 && game.Rival.Squares.Count == 0) return;
             if (game.Npcs.Count(NpcKind.Customer) >= MaxCustomers) return;
             if (game.Territory.Entrances.Count == 0) return;

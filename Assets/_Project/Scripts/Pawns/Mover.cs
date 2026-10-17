@@ -50,25 +50,36 @@ namespace OSistema.Pawns
         }
 
         /// <summary>Walks freely (the player's WASD), sliding along walls. Radius in cells.</summary>
-        public void Slide(Vector2 delta, Map map, float radius = 0.28f)
+        /// <summary>
+        /// Walks freely (the player's WASD), sliding along walls. Returns which axes were blocked.
+        /// Outdoors only for a scooter: it can't go through doors or inside.
+        /// </summary>
+        public (bool x, bool y) Slide(Vector2 delta, Map map, float radius = 0.28f, bool outdoorsOnly = false)
         {
             path = null;
             progress = 0f;
             var pos = Position;
+            bool bx = false, by = false;
             var tryX = new Vector2(pos.x + delta.x, pos.y);
-            if (Free(tryX, map, radius)) pos = tryX;
+            if (Free(tryX, map, radius, outdoorsOnly)) pos = tryX; else bx = delta.x != 0f;
             var tryY = new Vector2(pos.x, pos.y + delta.y);
-            if (Free(tryY, map, radius)) pos = tryY;
+            if (Free(tryY, map, radius, outdoorsOnly)) pos = tryY; else by = delta.y != 0f;
             Position = pos;
             Cell = new Vector2Int(Mathf.FloorToInt(pos.x), Mathf.FloorToInt(pos.y));
+            return (bx, by);
         }
 
-        static bool Free(Vector2 p, Map map, float r)
+        static bool Free(Vector2 p, Map map, float r, bool outdoorsOnly)
         {
             for (int i = 0; i < 4; i++)
             {
                 var c = new Vector2Int(Mathf.FloorToInt(p.x + (i % 2 == 0 ? -r : r)), Mathf.FloorToInt(p.y + (i < 2 ? -r : r)));
                 if (!map.InBounds(c) || !map.IsPassable(c)) return false;
+                if (outdoorsOnly)
+                {
+                    var t = map.GetTerrain(c.x, c.y);
+                    if (t == TerrainType.Floor || t == TerrainType.Marble || map.GetBuilding(c.x, c.y) == BuildingDefs.Door) return false;
+                }
             }
             return true;
         }

@@ -18,12 +18,65 @@ namespace OSistema.Story
             g.Log.Add($"Bought {what} for €{price}.");
         }
 
+        /// <summary>True when there's pizzo business to do with this shop in person.</summary>
+        public static bool PizzoActionable(Business b, Game game)
+        {
+            if (b.Status == BusinessStatus.Owned || b.Status == BusinessStatus.Closed) return false;
+            if (game.Org.PizzoBlocker(b, game) != null) return false;
+            if (b.Status == BusinessStatus.Paying) return game.Org.IsDue(b, Organization.WeekOf(game.Clock));
+            return true;
+        }
+
+        /// <summary>Adds the pizzo choices that fit this shop's situation to a card.</summary>
+        static GameEvent WithPizzo(GameEvent e, Business b, Game game)
+        {
+            var org = game.Org;
+            var p = game.Player;
+            if (p == null || b.Status == BusinessStatus.Owned || b.Status == BusinessStatus.Closed) return e;
+            string blocker = org.PizzoBlocker(b, game);
+            if (blocker != null) return e;
+            int week = Organization.WeekOf(game.Clock);
+            if (b.Status == BusinessStatus.Paying)
+            {
+                if (org.IsDue(b, week)) e.Option($"Collect this week's envelope · €{b.WeeklyPizzo}", "He's expecting you.", g => g.Org.CollectPizzoInPerson(b, g));
+            }
+            else if (b.Status == BusinessStatus.Refusing)
+            {
+                e.Option($"Ask him again · €{b.WeeklyPizzo} a week", $"Chance about {org.PizzoChance(b, p) * 100f:0}%.", g => g.Org.DemandPizzo(b, g));
+                e.Option("Smash his window", "Fear works. Heat and evidence rise; he'll think again.", g => g.Org.ScareInPerson(b, g));
+            }
+            else
+                e.Option($"Ask for €{b.WeeklyPizzo} a week, for protection", $"Chance about {org.PizzoChance(b, p) * 100f:0}%: intimidation and respect help.", g => g.Org.DemandPizzo(b, g));
+            return e;
+        }
+
+        /// <summary>A shop with nothing to sell you: just the owner, and the pizzo.</summary>
+        public static GameEvent Owner(Business b, Game game)
+        {
+            string status = b.Status switch
+            {
+                BusinessStatus.Paying => "He pays the family.",
+                BusinessStatus.Refusing => "He refused to pay.",
+                _ => "He doesn't pay anyone. Yet.",
+            };
+            var e = new GameEvent
+            {
+                Id = "owner",
+                Title = b.Name,
+                Neapolitan = b.Status == BusinessStatus.Paying ? "Ecco, Don. Comme sempe." : "Che vulite? Io sto faticanno.",
+                English = b.Status == BusinessStatus.Paying ? "Here you are. As always." : "What do you want? I'm working.",
+                Body = $"{status} {game.Org.PizzoBlocker(b, game) ?? ""}".Trim(),
+            };
+            WithPizzo(e, b, game);
+            return e.Option("Leave", "", g => { });
+        }
+
         public static GameEvent Shop(Business shop, Game game)
         {
             var s = game.Stock;
             if (shop.Kind == ShopKind.Tabaccheria)
             {
-                return new GameEvent
+                return WithPizzo(new GameEvent
                 {
                     Id = "shop_tabacchi",
                     Title = shop.Name,
@@ -33,10 +86,10 @@ namespace OSistema.Story
                 }
                 .Option($"Tobacco, 100 g · €{Prices.TobaccoPer100g}", "Enough for seven packs.", g => Buy(g, Prices.TobaccoPer100g, "100 g of tobacco", () => g.Stock.TobaccoG += 100))
                 .Option($"Tobacco, 500 g · €{Prices.TobaccoPer100g * 5 - 4}", "Enough for 35 packs.", g => Buy(g, Prices.TobaccoPer100g * 5 - 4, "500 g of tobacco", () => g.Stock.TobaccoG += 500))
-                .Option($"Papers and filters ×200 · €{Prices.Papers200}", "Enough for ten packs.", g => Buy(g, Prices.Papers200, "200 papers and filters", () => g.Stock.Papers += 200))
+                .Option($"Papers and filters ×200 · €{Prices.Papers200}", "Enough for ten packs.", g => Buy(g, Prices.Papers200, "200 papers and filters", () => g.Stock.Papers += 200)), shop, game)
                 .Option("Leave", "", g => { });
             }
-            return new GameEvent
+            return WithPizzo(new GameEvent
             {
                 Id = "shop_salumeria",
                 Title = shop.Name,
@@ -45,7 +98,7 @@ namespace OSistema.Story
                 Body = $"At the basso: {s.Baggies} small bags, {s.Groceries} groceries.",
             }
             .Option($"Small food bags ×100 · €{Prices.Baggies100}", "Nobody asks what a seventeen-year-old needs a hundred little bags for.", g => Buy(g, Prices.Baggies100, "100 small bags", () => g.Stock.Baggies += 100))
-            .Option($"Groceries ×5 · €{Prices.Groceries * 5}", "Each cooks two meals.", g => Buy(g, Prices.Groceries * 5, "groceries", () => g.Stock.Groceries += 5))
+            .Option($"Groceries ×5 · €{Prices.Groceries * 5}", "Each cooks two meals.", g => Buy(g, Prices.Groceries * 5, "groceries", () => g.Stock.Groceries += 5)), shop, game)
             .Option("Leave", "", g => { });
         }
     }

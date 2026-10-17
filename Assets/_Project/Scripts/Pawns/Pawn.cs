@@ -179,6 +179,8 @@ namespace OSistema.Pawns
         public bool Controlled;
         public long LastInputTick = -1000000;
         public Vector2? AimPoint;        // where the player is aiming with the mouse
+        public float Stamina = 1f;       // the player's breath for running
+        public Vector2 Velocity;         // the player's scooter keeps its momentum
         public const int ManualHoldTicks = 1500;
         public bool Manual(long now) => Controlled && now - LastInputTick < ManualHoldTicks;              // a boss is "Don" only once the family is somebody
         public string DisplayName => IsBoss ? (Titled ? $"Don {FirstName}" : FirstName) : Nickname;

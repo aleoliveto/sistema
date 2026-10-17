@@ -1,0 +1,140 @@
+using OSistema.Core;
+using OSistema.Pawns;
+using UnityEngine;
+using UnityEngine.UIElements;
+
+namespace OSistema.UI
+{
+    /// <summary>
+    /// Gennaro's body, bottom left: health, hunger, energy, breath. And the moments when he can't
+    /// play on: down in the street, in hospital, in Poggioreale. Plus the chase banner.
+    /// </summary>
+    public sealed partial class Hud
+    {
+        VisualElement vitals, statusBox, wanted, wantedFill;
+        Label vitalsName, vitalsState, statusTitle, statusText;
+        VisualElement vHealthFill, vFoodFill, vRestFill, vStaminaFill;
+        Button statusButton, statusButton2;
+
+        void BuildVitals()
+        {
+            vitals = Ui.Box("panel", "vitals").Into(hudLayer);
+            var head = Ui.Row(vitals);
+            vitalsName = Ui.Text("", head, "bold");
+            Ui.Box("spacer").Into(head);
+            vitalsState = Ui.Text("", head, "tiny");
+            (_, vHealthFill) = VitalBar(vitals, "HEALTH", new Color(0.86f, 0.3f, 0.26f));
+            (_, vFoodFill) = VitalBar(vitals, "HUNGER", new Color(0.92f, 0.62f, 0.3f));
+            (_, vRestFill) = VitalBar(vitals, "ENERGY", new Color(0.45f, 0.62f, 0.92f));
+            (_, vStaminaFill) = VitalBar(vitals, "BREATH", new Color(0.85f, 0.85f, 0.8f));
+            Tip(vitals, () =>
+            {
+                var p = game?.Player;
+                if (p == null) return "";
+                return "Health: wounds and blood. Hunger: eat at home (E at the pantry) or a pizza.\n" +
+                       "Energy: sleep in your bed (E). Breath: running with Shift uses it up." +
+                       (p.Health.NeedsTending ? "\nYou're bleeding: someone has to tend the wound." : "");
+            });
+
+            statusBox = Ui.Box("panel", "status-box").Into(modalLayer);
+            statusTitle = Ui.Text("", statusBox, "title", "gold");
+            statusText = Ui.Text("", statusBox, "small", "wrap");
+            var row = Ui.Row(statusBox);
+            row.style.marginTop = 6;
+            statusButton = Ui.Btn("", null, row, "btn--small");
+            statusButton2 = Ui.Btn("", null, row, "btn--small");
+            statusBox.Show(false);
+
+            wanted = Ui.Box("wanted").Into(hudLayer);
+            Ui.Text("FERMO! POLIZIA!", wanted, "wanted__title");
+            Ui.Text("Run (Shift), get out of sight, or jump on a scooter (R).", wanted, "tiny");
+            var bar = Ui.Box("bar", "bar--thin").Into(wanted);
+            wantedFill = Ui.Box("bar__fill").Into(bar);
+            wantedFill.style.backgroundColor = new Color(0.55f, 0.85f, 0.5f);
+            wanted.pickingMode = PickingMode.Ignore;
+            wanted.Show(false);
+        }
+
+        (Label, VisualElement) VitalBar(VisualElement parent, string label, Color color)
+        {
+            var row = Ui.Row(parent);
+            row.style.alignItems = Align.Center;
+            Ui.Text(label, row, "tiny").style.width = 52;
+            var col = Ui.Box("col", "grow").Into(row);
+            return Ui.Bar("", color, col, thin: true);
+        }
+
+        System.Action statusAction, statusAction2;
+
+        void RefreshVitals()
+        {
+            var p = game.Player;
+            vitals.Show(p != null);
+            if (p == null) return;
+            vitalsName.text = p.DisplayName;
+            vitalsState.text = p.Riding ? "ON THE SCOOTER" : game.Org.DealingCorner != null ? "DEALING" : game.Org.CarriedDg > 0 ? $"CARRYING {game.Org.CarriedDg / 10} G" : "";
+            float health = 1f - Mathf.Max(p.Health.BloodLoss / 0.6f, p.Health.Pain / 0.8f);
+            Ui.SetFill(vHealthFill, health);
+            Ui.SetFill(vFoodFill, p.Needs.Food);
+            Ui.SetFill(vRestFill, p.Needs.Rest);
+            Ui.SetFill(vStaminaFill, p.Stamina);
+
+            wanted.Show(game.Pursuit.Active);
+            if (game.Pursuit.Active) Ui.SetFill(wantedFill, game.Pursuit.EscapeProgress);
+
+            // When the player can't play on, say why and what can be done.
+            long now = game.Ticks.TicksGame;
+            string title = null, text = null, b1 = null, b2 = null;
+            statusAction = statusAction2 = null;
+            if (p.InJail)
+            {
+                long days = (p.JailedUntil - now) / GameClock.TicksPerDay + 1;
+                title = "POGGIOREALE";
+                text = $"{p.DisplayName} is inside for {days} more day{(days == 1 ? "" : "s")}. The family carries on without him: your crew still work their jobs, and the phone still rings.";
+                b1 = "Let the days pass";
+                statusAction = () => game.Ticks.SetSpeed(4);
+            }
+            else if (p.InHospital)
+            {
+                long hours = (p.HospitalUntil - now) / GameClock.TicksPerHour + 1;
+                title = "OSPEDALE";
+                text = $"The doctors are patching {p.DisplayName} up. Out in about {hours} hours. They report gunshot wounds to the police.";
+                b1 = "Let the time pass";
+                statusAction = () => game.Ticks.SetSpeed(3);
+            }
+            else if (p.Health.Downed && !p.Dead)
+            {
+                title = "A TERRA";
+                text = p.Health.BleedRatePerDay > 0.01f
+                    ? "You're down and bleeding. Someone has to stop the bleeding, or an ambulance has to come."
+                    : "You're down. You can't get up yet.";
+                if (!game.Hospital.IsCalled(p))
+                {
+                    b1 = "Call 118 yourself";
+                    statusAction = () => game.Hospital.Call(p, game, byPasserby: false);
+                }
+                else text += " The ambulance is on its way.";
+            }
+            if (title != null && game.Ticks.Speed >= 3 && (p.InJail || p.InHospital))
+            {
+                b2 = "Back to normal speed";
+                statusAction2 = () => game.Ticks.SetSpeed(1);
+            }
+
+            statusBox.Show(title != null);
+            if (title == null) return;
+            statusTitle.text = title;
+            statusText.text = text;
+            statusButton.text = b1 ?? "";
+            statusButton.Show(b1 != null);
+            statusButton2.text = b2 ?? "";
+            statusButton2.Show(b2 != null);
+            if (statusButton.userData == null)
+            {
+                statusButton.clicked += () => statusAction?.Invoke();
+                statusButton2.clicked += () => statusAction2?.Invoke();
+                statusButton.userData = true;
+            }
+        }
+    }
+}

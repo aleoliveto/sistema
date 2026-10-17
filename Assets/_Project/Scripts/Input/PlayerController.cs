@@ -99,6 +99,7 @@ namespace OSistema.Input
             ghost.enabled = show;
             if (!show) return;
             ghost.transform.position = new Vector3(cell.x, cell.y, 0f);
+            ghost.color = CanPlace(cell, out _) ? new Color(1f, 1f, 1f, 0.85f) : new Color(1f, 0.35f, 0.3f, 0.6f);
             var key = (CurrentDef, PlacementRotation, cell);
             if (key == ghostKey) return;
             ghostKey = key;
@@ -319,25 +320,35 @@ namespace OSistema.Input
 
                 case Tool.Build:
                 {
-                    // Materials and furniture cost money, paid up front.
-                    int cost = BuildingDef.CostOf(CurrentDef), spent = 0;
-                    bool broke = false;
-                    var cells = CurrentDef.PlaceMode == PlaceMode.Single ? new List<Vector2Int> { start }
-                        : new List<Vector2Int>(GridUtil.Cells(rect, CurrentDef.PlaceMode == PlaceMode.Outline));
-                    foreach (var c in cells)
+                    // Bought, carried in, put down: no building work.
+                    if (!CanPlace(start, out var why))
                     {
-                        if (game.Stock.Cash < cost) { broke = true; break; }
-                        if (!game.Construction.PlaceBuild(c, CurrentDef, PlacementRotation)) continue;
-                        game.Stock.Cash -= cost;
-                        spent += cost;
+                        if (why != null) game.Log.Add(why, MessageKind.Bad);
+                        break;
                     }
-                    if (spent > 0) game.PopupAt(ScreenToWorld(mousePos), $"-€{spent}");
-                    if (broke) game.Log.Add($"Not enough cash: a {CurrentDef.Label.ToLower()} costs €{cost}.", MessageKind.Bad);
+                    int cost = BuildingDef.CostOf(CurrentDef);
+                    if (!game.Org.Pay(cost, game, out var payError))
+                    {
+                        game.Log.Add(payError, MessageKind.Bad);
+                        break;
+                    }
+                    game.Map.SetRotation(start.x, start.y, (byte)PlacementRotation);
+                    game.Map.SetBuilding(start.x, start.y, CurrentDef);
+                    game.PopupAt(ScreenToWorld(mousePos), $"-€{cost}");
+                    OSistema.Views.SoundManager.PlayUi(OSistema.Views.AudioSynth.Click, 0.3f);
                     break;
                 }
 
                 case Tool.Deconstruct:
-                    foreach (var c in GridUtil.Cells(rect, false)) game.Construction.PlaceDeconstruct(c);
+                    foreach (var c in GridUtil.Cells(rect, false))
+                    {
+                        var b = game.Map.GetBuilding(c.x, c.y);
+                        if (b == null || !InOwnedHome(c) || b == BuildingDefs.Wall || b == BuildingDefs.Door) continue;
+                        int refund = BuildingDef.CostOf(b) / 2;
+                        game.Map.SetBuilding(c.x, c.y, null);
+                        game.Stock.Cash += refund;
+                        if (refund > 0) game.PopupAt(Mover.CellCenter(c), $"+€{refund}");
+                    }
                     break;
 
                 case Tool.Cancel:
@@ -355,6 +366,22 @@ namespace OSistema.Input
                     else SetTool(Tool.Select);
                     break;
             }
+        }
+
+        bool InOwnedHome(Vector2Int c) => game.PlayerBase.Contains(c) || game.Properties.IsOwnedHome(c);
+
+        /// <summary>Furniture goes on a free floor tile inside a home the family owns.</summary>
+        public bool CanPlace(Vector2Int c, out string why)
+        {
+            why = null;
+            if (CurrentDef == null || !game.Map.InBounds(c)) return false;
+            if (!InOwnedHome(c)) { why = "You can only furnish homes the family owns. Buy a place first (Famiglia, Property)."; return false; }
+            var t = game.Map.GetTerrain(c.x, c.y);
+            if (t != TerrainType.Floor && t != TerrainType.Marble) { why = "Put it indoors."; return false; }
+            if (game.Map.GetBuilding(c.x, c.y) != null) { why = "Something is already there."; return false; }
+            foreach (var p in game.Pawns.All)
+                if (p.IsPresent && p.Cell == c) { why = "Someone is standing there."; return false; }
+            return true;
         }
 
         /// <summary>A visible hostile under the cursor, for focus-fire orders.</summary>
@@ -428,18 +455,45 @@ namespace OSistema.Input
             if (kb.sKey.isPressed) dir.y -= 1f;
             if (kb.aKey.isPressed) dir.x -= 1f;
             if (kb.dKey.isPressed) dir.x += 1f;
-            if (dir != Vector2.zero && game.Ticks.Speed > 0 && game.Events.Current == null)
+            float dt = Time.unscaledDeltaTime;
+            bool running = false;
+            bool live = game.Ticks.Speed > 0 && game.Events.Current == null;
+
+            // R: get on or off your scooter.
+            if (kb.rKey.wasPressedThisFrame && live) ToggleScooter(p);
+
+            if (p.Riding && live)
+            {
+                // A scooter has momentum: it speeds up, coasts, and bangs into walls.
+                float top = Pawn.BaseSpeed * TickManager.TicksPerSecond * 2.6f;
+                var want = dir.normalized * top;
+                p.Velocity = Vector2.MoveTowards(p.Velocity, want, (dir == Vector2.zero ? 9f : 16f) * dt);
+                if (p.Velocity.sqrMagnitude > 0.0001f)
+                {
+                    p.LastInputTick = now;
+                    if (p.CurrentJob != null && !(p.CurrentJob is DownedJob)) p.EndCurrentJob(game);
+                    var hitWall = p.Mover.Slide(p.Velocity * dt, game.Map, 0.34f, outdoorsOnly: true);
+                    if (hitWall.x) p.Velocity.x *= -0.2f;
+                    if (hitWall.y) p.Velocity.y *= -0.2f;
+                    follow = p;
+                }
+            }
+            else if (dir != Vector2.zero && live)
             {
                 p.LastInputTick = now;
                 if (p.CurrentJob != null && !(p.CurrentJob is DownedJob)) p.EndCurrentJob(game);
                 if (p.Sleep != SleepState.Awake) p.Sleep = SleepState.Awake;
                 // Real-time steering: faster game speeds help a little, but never make him uncontrollable.
                 float mult = Mathf.Min(TickManager.SpeedMultipliers[game.Ticks.Speed], 2f);
-                float step = Pawn.BaseSpeed * p.SpeedFactor * TickManager.TicksPerSecond * mult * Time.unscaledDeltaTime;
-                if (kb.leftShiftKey.isPressed) step *= 1.5f;   // running
+                float step = Pawn.BaseSpeed * p.SpeedFactor * TickManager.TicksPerSecond * mult * dt;
+                // Tired or hungry legs are slower.
+                if (p.Needs.Rest < Needs.ExhaustedBelow * 2f || p.Needs.Food < Needs.RavenousBelow) step *= 0.8f;
+                running = kb.leftShiftKey.isPressed && p.Stamina > 0.05f;
+                if (running) step *= 1.55f;
                 p.Mover.Slide(dir.normalized * step, game.Map);
                 follow = p;
             }
+            p.Stamina = Mathf.Clamp01(p.Stamina + (running ? -0.2f : 0.12f) * dt);
 
             // Hold the right button to aim, click the left to shoot (or punch, unarmed).
             Aiming = mouse.rightButton.isPressed && !overUi && CurrentTool == Tool.Select;
@@ -464,6 +518,32 @@ namespace OSistema.Input
             }
         }
 
+        void ToggleScooter(Pawn p)
+        {
+            if (p.Riding)
+            {
+                p.Riding = p.OnScooter = false;
+                p.Velocity = Vector2.zero;
+                return;
+            }
+            int inUse = 0;
+            foreach (var c in game.Pawns.Crew) if (c != p && c.OnScooter) inUse++;
+            if (game.Stock.Scooters - inUse <= 0)
+            {
+                game.Log.Add(game.Stock.Scooters == 0 ? "The family has no scooter. Buy one (Famiglia, Supply)." : "Every scooter is out with the crew.", MessageKind.Info);
+                return;
+            }
+            var t = game.Map.GetTerrain(p.Cell.x, p.Cell.y);
+            if (t == TerrainType.Floor || t == TerrainType.Marble)
+            {
+                game.Log.Add("Get outside first.", MessageKind.Info);
+                return;
+            }
+            p.Riding = p.OnScooter = true;
+            p.Velocity = Vector2.zero;
+            p.EndCurrentJob(game);
+        }
+
         /// <summary>Something the player can do with E right now.</summary>
         public sealed class Action
         {
@@ -476,6 +556,10 @@ namespace OSistema.Input
         {
             var p = game.Player;
             if (p == null || !p.CanAct) return null;
+            var customer = game.Org.WaitingCustomer(game);
+            if (customer != null && game.Stock.Product > 0)
+                return new Action { Label = $"Sell a dose · €{Prices.ProductStreet}", Do = () => game.Org.SellToCustomer(customer, game) };
+
             var contact = ContactInReach(out _);
             if (contact != null) return new Action { Label = $"Talk to {contact.Name}", Do = () => OrderTalk(contact) };
 
@@ -495,18 +579,27 @@ namespace OSistema.Input
 
             foreach (var b in game.Org.Businesses)
             {
-                if (b.Status == BusinessStatus.Closed || (b.Kind != ShopKind.Tabaccheria && b.Kind != ShopKind.Salumeria)) continue;
+                if (b.Status == BusinessStatus.Closed) continue;
                 if ((Mover.CellCenter(b.Cell) - p.Position).sqrMagnitude > 4.5f * 4.5f) continue;
                 int hour = game.Clock.Hour;
+                bool shopKind = b.Kind == ShopKind.Tabaccheria || b.Kind == ShopKind.Salumeria;
+                if (!shopKind && !Story.ShopCards.PizzoActionable(b, game)) continue;
                 if (hour < 8 || hour >= 21) return new Action { Label = $"{b.Name} is closed", Do = () => { } };
                 var shop = b;
-                return new Action { Label = $"Shop at {b.Name}", Do = () => game.Events.Raise(Story.ShopCards.Shop(shop, game)) };
+                if (shopKind) return new Action { Label = $"Go into {b.Name}", Do = () => game.Events.Raise(Story.ShopCards.Shop(shop, game)) };
+                string what = b.Status == BusinessStatus.Paying ? "Collect the pizzo at" : "Have a word with the owner of";
+                return new Action { Label = $"{what} {b.Name}", Do = () => game.Events.Raise(Story.ShopCards.Owner(shop, game)) };
             }
 
             if (Near(p, BuildingDefs.Bed, out var bed) && (game.PlayerBase.Contains(bed) || game.Properties.IsOwnedHome(bed)))
                 return new Action { Label = "Sleep", Do = () => { p.LastInputTick = -1000000; p.ForceJob(new SleepJob(p, bed, null), game); } };
             if (game.Stock.Meals > 0 && p.Needs.Food < 0.8f && Near(p, BuildingDefs.Pantry, out var pantry))
                 return new Action { Label = "Eat something", Do = () => { p.LastInputTick = -1000000; p.ForceJob(new EatJob(p, pantry, atShop: false), game); } };
+
+            var corner = game.Org.DealingCorner;
+            if (corner != null) return new Action { Label = "Leave the corner", Do = () => game.Org.StopDealing(game) };
+            if (game.Org.CanDealHere(p, game))
+                return new Action { Label = $"Deal here ({game.Stock.Product} doses on you)", Do = () => game.Org.StartDealing(game) };
             return null;
         }
 

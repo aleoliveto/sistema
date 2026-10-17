@@ -128,6 +128,7 @@ namespace OSistema.Npcs
                 {
                     case NpcKind.Customer: CustomerAI.Tick(npc, game); break;
                     case NpcKind.Police:
+                        if (npc.State == 9) break;   // chasing the player: see Pursuit
                         if (npc.IsPatrol) StreetLife.TickPatrol(npc, game);
                         else PoliceAI.Tick(npc, game);
                         break;
@@ -256,6 +257,16 @@ namespace OSistema.Npcs
                     if (!game.Org.IsActiveSquare(npc.Square, game))
                     {
                         Leave(npc);
+                        return;
+                    }
+                    if (npc.Square == game.Org.DealingCorner)
+                    {
+                        // At the player's corner: wait for him to hand it over (E).
+                        if (--npc.Timer <= 0)
+                        {
+                            game.Org.LoseCustomer(npc.Square, game);
+                            Leave(npc);
+                        }
                         return;
                     }
                     bool rival = npc.Square.Rival;

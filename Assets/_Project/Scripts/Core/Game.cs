@@ -43,6 +43,7 @@ namespace OSistema.Core
         public readonly Informants Informants = new Informants();
         public readonly Newspaper Newspaper = new Newspaper();
         public readonly ContactBook Contacts = new ContactBook();
+        public readonly Pursuit Pursuit = new Pursuit();
 
         /// <summary>The character the player moves directly: the head of the family.</summary>
         public Pawn Player
@@ -148,6 +149,7 @@ namespace OSistema.Core
             Hospital.Tick(this);
             Contracts.Tick(this);
             Contacts.Tick(this);
+            Pursuit.Tick(this);
             Npcs.Tick(this);
             Combat.Tick(this);
             Police.Tick(this);

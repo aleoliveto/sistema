@@ -39,6 +39,7 @@ namespace OSistema.UI
             BuildDocument();
             BuildTop();
             BuildMap();
+            BuildVitals();
             BuildCrewBar();
             BuildInspector();
             BuildFeed();
@@ -187,6 +188,7 @@ namespace OSistema.UI
             RefreshFeed();
             RefreshDock();
             RefreshPhone();
+            RefreshVitals();
             RefreshWindows();
             RefreshModals();
         }
