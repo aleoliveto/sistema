@@ -8,7 +8,7 @@ namespace OSistema.Views
     /// but readable: paving, plaster facades with a fake 3/4 wall face, furniture, street props.
     /// Pixel (0,0) is a cell's bottom-left corner; y grows north.
     /// </summary>
-    public static class TilePainter
+    public static partial class TilePainter
     {
         public const int Size = 16;
 
@@ -220,7 +220,7 @@ namespace OSistema.Views
         /// The afternoon sun comes from the south-west, low over the gulf: buildings throw soft shadows
         /// up and to the right across the street. Sampled per pixel so the edge is soft.
         /// </summary>
-        static void CastShadows(Map map, int x, int y, Color32[] buf, int stride, int ox, int oy)
+        static void CastShadows(Map map, int x, int y, Color32[] buf, int stride, int ox, int oy, int sz = Size)
         {
             // Quick reject: no building mass within reach.
             bool near = false;
@@ -229,15 +229,15 @@ namespace OSistema.Views
                 if ((dx != 0 || dy != 0) && Mass(map, x + dx, y + dy)) near = true;
             if (!near) return;
 
-            for (int py = 0; py < Size; py++)
-            for (int px = 0; px < Size; px++)
+            for (int py = 0; py < sz; py++)
+            for (int px = 0; px < sz; px++)
             {
-                int gx = x * Size + px, gy = y * Size + py;
+                int gx = x * sz + px, gy = y * sz + py;
                 int hits = 0;
                 for (int s = 1; s <= 4; s++)
                 {
-                    int d = s * 6;
-                    int cx = (gx - d) / Size, cy = (gy - (d * 3) / 4) / Size;
+                    int d = s * 6 * sz / Size;
+                    int cx = (gx - d) / sz, cy = (gy - (d * 3) / 4) / sz;
                     if (Mass(map, cx, cy)) hits++;
                 }
                 if (hits == 0) continue;
@@ -250,14 +250,15 @@ namespace OSistema.Views
         }
 
         /// <summary>Grime, stains and sun-bleaching in big soft patches, so no surface is a flat colour.</summary>
-        static void Weather(TerrainType t, int x, int y, Color32[] buf, int stride, int ox, int oy, bool wall)
+        static void Weather(TerrainType t, int x, int y, Color32[] buf, int stride, int ox, int oy, bool wall, int sz = Size)
         {
             float strength = wall ? 0.16f : Indoor(t) ? 0.06f : t == TerrainType.Water ? 0f : 0.12f;
             if (strength <= 0f) return;
-            for (int py = 0; py < Size; py++)
-            for (int px = 0; px < Size; px++)
+            for (int py = 0; py < sz; py++)
+            for (int px = 0; px < sz; px++)
             {
-                int gx = x * Size + px, gy = y * Size + py;
+                float k = Size / (float)sz;
+                float gx = (x * sz + px) * k, gy = (y * sz + py) * k;
                 // Two octaves of blotchy noise, bilinear so they read as stains rather than pixels.
                 float big = Smooth(gx / 24f, gy / 24f, 31), mid = Smooth(gx / 7f, gy / 7f, 32);
                 float g = (big - 0.5f) * 1.4f + (mid - 0.5f) * 0.6f;
@@ -289,18 +290,18 @@ namespace OSistema.Views
         }
 
         // Soft shadows at the foot of walls sell the height.
-        static void AmbientOcclusion(Map map, int x, int y, Color32[] buf, int stride, int ox, int oy)
+        static void AmbientOcclusion(Map map, int x, int y, Color32[] buf, int stride, int ox, int oy, int sz = Size)
         {
             bool n = IsWall(map, x, y + 1), s = IsWall(map, x, y - 1), e = IsWall(map, x + 1, y), w = IsWall(map, x - 1, y);
             if (!n && !s && !e && !w) return;
-            for (int py = 0; py < Size; py++)
-            for (int px = 0; px < Size; px++)
+            for (int py = 0; py < sz; py++)
+            for (int px = 0; px < sz; px++)
             {
-                float f = 1f;
-                if (n) f *= Mathf.Lerp(0.55f, 1f, Mathf.Clamp01((Size - 1 - py) / 5f));
-                if (w) f *= Mathf.Lerp(0.7f, 1f, Mathf.Clamp01(px / 3f));
-                if (e) f *= Mathf.Lerp(0.8f, 1f, Mathf.Clamp01((Size - 1 - px) / 2f));
-                if (s) f *= Mathf.Lerp(0.85f, 1f, Mathf.Clamp01(py / 2f));
+                float f = 1f, k = Size / (float)sz;
+                if (n) f *= Mathf.Lerp(0.55f, 1f, Mathf.Clamp01((sz - 1 - py) * k / 5f));
+                if (w) f *= Mathf.Lerp(0.7f, 1f, Mathf.Clamp01(px * k / 3f));
+                if (e) f *= Mathf.Lerp(0.8f, 1f, Mathf.Clamp01((sz - 1 - px) * k / 2f));
+                if (s) f *= Mathf.Lerp(0.85f, 1f, Mathf.Clamp01(py * k / 2f));
                 if (f >= 0.999f) continue;
                 int i = (oy + py) * stride + ox + px;
                 buf[i] = Shade(buf[i], f);
@@ -723,6 +724,11 @@ namespace OSistema.Views
                     }
                 }
             }
+            PaintWallDecor(map, x, y, wallS, buf, stride, ox, oy);
+        }
+
+        static void PaintWallDecor(Map map, int x, int y, bool wallS, Color32[] buf, int stride, int ox, int oy)
+        {
             // An edicola votiva hung on the wall: a little arched niche with the Madonna and a candle.
             if (map.GetDecor(x, y) == MapDecor.Shrine)
             {

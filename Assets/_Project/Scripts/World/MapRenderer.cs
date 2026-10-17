@@ -6,13 +6,13 @@ using UnityEngine;
 namespace OSistema.World
 {
     /// <summary>
-    /// Draws the map as chunks of procedural pixel-art tiles (16 px per cell, 32x32 cells per chunk),
+    /// Draws the map as chunks of procedural tiles (32 px per cell, 32x32 cells per chunk),
     /// repainting only the cells that change. A 1-pixel-per-cell overlay shows blueprints and piazze.
     /// </summary>
     public sealed class MapRenderer : MonoBehaviour
     {
         const int ChunkCells = 32;
-        const int Tile = TilePainter.Size;
+        const int Tile = TilePainter.Hi;
 
         static readonly Color32 BuildBlueprint = new Color32(90, 190, 255, 140);
         static readonly Color32 DemolishBlueprint = new Color32(255, 70, 60, 150);
@@ -103,7 +103,7 @@ namespace OSistema.World
         void PaintInto(Chunk chunk, int x, int y)
         {
             int lx = x - chunk.Cells.x, ly = y - chunk.Cells.y;
-            TilePainter.PaintCell(map, x, y, chunk.Pixels, chunk.Cells.width * Tile, lx * Tile, ly * Tile);
+            TilePainter.PaintCellHi(map, x, y, chunk.Pixels, chunk.Cells.width * Tile, lx * Tile, ly * Tile);
         }
 
         void OnDestroy()
