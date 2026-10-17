@@ -579,7 +579,7 @@
 .phone__title { margin-left: 6px; font-size: 13px; letter-spacing: 2px; color: #E8C26A; }
 .phone__line { font-size: 10px; color: #A89F8E; padding: 0 8px 6px 8px; border-bottom-width: 1px; border-bottom-color: rgba(255,255,255,0.06); }
 .phone__body { flex-grow: 1; margin-top: 6px; }
-.bubble {
+.msg {
     background-color: rgb(34, 31, 30);
     border-radius: 10px;
     padding: 7px 9px;
@@ -587,11 +587,11 @@
     border-left-width: 3px;
     border-left-color: rgba(255,255,255,0.06);
 }
-.bubble--open { border-left-color: #E8C26A; background-color: rgb(44, 38, 30); }
-.bubble__from { -unity-font-style: bold; color: #F3E9D2; font-size: 12px; }
-.bubble__nap { -unity-font-style: italic; color: #E8D6B0; font-size: 12px; margin-top: 2px; }
-.bubble__choice { margin-top: 4px; align-self: flex-start; }
-.bubble__answer { font-size: 11px; color: #8FD18A; margin-top: 3px; }
+.msg--open { border-left-color: #E8C26A; background-color: rgb(44, 38, 30); }
+.msg__from { -unity-font-style: bold; color: #F3E9D2; font-size: 12px; }
+.msg__nap { -unity-font-style: italic; color: #E8D6B0; font-size: 12px; margin-top: 2px; }
+.msg__choice { margin-top: 4px; align-self: flex-start; }
+.msg__answer { font-size: 11px; color: #8FD18A; margin-top: 3px; }
 .tab--alert { border-color: #E8C26A; }
 
 /* ---------- La Sirena ---------- */
@@ -615,3 +615,11 @@
 .paper__foot { border-top-width: 1px; border-top-color: rgb(120, 110, 100); margin-top: 10px; padding-top: 6px; }
 .paper__sidebar { -unity-font-style: italic; color: rgb(120, 30, 24); }
 .paper__close { margin-top: 12px; }
+
+.tag--work {
+    color: #1A1410;
+    background-color: #E8C26A;
+    border-radius: 3px;
+    padding: 0 5px;
+    -unity-font-style: bold;
+}

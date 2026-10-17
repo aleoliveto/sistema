@@ -345,7 +345,8 @@ namespace OSistema.Npcs
                 }
                 case Standing:
                 {
-                    // Shopkeepers and vendors: stay put, go in at closing time.
+                    // Shopkeepers and vendors: stay put, go in at closing time. Contacts keep their own hours.
+                    if (npc.ContactName != null) return;
                     if (game.Clock.Hour >= 21 || game.Clock.Hour < 8) npc.Despawned = true;
                     return;
                 }

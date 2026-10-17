@@ -25,8 +25,8 @@ namespace OSistema.UI
             jobsWindow = Ui.Box("panel", "window").Into(hudLayer);
             jobsWindow.style.width = 620;
             var header = Ui.Box("window__header").Into(jobsWindow);
-            Ui.Text("LAVORETTI", header, "title", "gold").style.marginRight = 12;
-            Ui.Text("Small jobs for the neighbourhood's contacts. Money, respect, and the road to your own piazza.", header, "small", "muted");
+            Ui.Text("TACCUINO", header, "title", "gold").style.marginRight = 12;
+            Ui.Text("Who has work, and where to find them. Work is offered face to face.", header, "small", "muted");
             Ui.Box("spacer").Into(header);
             Ui.Btn("✕", () => ToggleWindow(Window.Jobs), header, "btn--small");
             jobsScroll = new ScrollView(ScrollViewMode.Vertical).Cls("window__body").Into(jobsWindow);
@@ -70,10 +70,28 @@ namespace OSistema.UI
                 }
             }
 
-            Ui.Text("ON OFFER", jobsBody, "section");
-            var offers = game.Contracts.Offers.ToList();
-            if (offers.Count == 0) Ui.Text("Nothing right now. New work comes in the morning, after lunch and in the evening.", jobsBody, "muted", "small");
             long now = game.Ticks.TicksGame;
+            Ui.Text("PEOPLE WITH WORK", jobsBody, "section");
+            Ui.Text("Select someone from the crew and right-click a contact to go and talk to them.", jobsBody, "small", "muted");
+            int hour = game.Clock.Hour;
+            foreach (var contact in game.Contacts.All)
+            {
+                var row = Ui.Box("table-row").Into(jobsBody);
+                var col = Ui.Box("col").Into(row);
+                col.style.width = 420;
+                bool work = game.Contacts.HasWork(contact, game);
+                string state = !contact.OpenAt(hour) ? $"<color=#A89F8E>not around · {contact.Hours}</color>"
+                    : work ? "<color=#E8C26A>has work for you</color>" : "<color=#A89F8E>nothing right now</color>";
+                Ui.Text($"<b>{contact.Name}</b> · {state}", col);
+                Ui.Text(contact.Who, col, "small", "muted", "wrap");
+                var ct = contact;
+                Ui.Box("spacer").Into(row);
+                Ui.Btn("Show", () => FocusCamera(ct.Position), row, "btn--small");
+            }
+
+            // Shipments are the family's own business: anyone can be sent from here.
+            var offers = game.Contracts.Offers.Where(c => c.IsShipment).ToList();
+            if (offers.Count > 0) Ui.Text("SHIPMENTS TO COLLECT", jobsBody, "section");
             foreach (var c in offers)
             {
                 var card = Ui.Box("panel").Into(jobsBody);

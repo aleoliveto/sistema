@@ -15,7 +15,7 @@ namespace OSistema.Core
     /// </summary>
     public static class SaveSystem
     {
-        public const int Version = 6;
+        public const int Version = 7;
         const int OldestReadable = 5; // the map generator changed too much to migrate older saves
 
         public static string DefaultPath => Path.Combine(Application.persistentDataPath, "save1.json");
@@ -83,6 +83,7 @@ namespace OSistema.Core
                 favours = game.Favours.S,
                 informants = game.Informants.S,
                 news = game.Newspaper.S,
+                friendsJoined = game.Org.FriendsJoined,
             };
             foreach (var sq in game.Rival.Squares)
                 data.rivalSquares.Add(new SquareData { x = sq.Cell.x, y = sq.Cell.y, zone = sq.ZoneId });
@@ -235,6 +236,8 @@ namespace OSistema.Core
             if (data.phone != null) game.Phone.S = data.phone;
             if (data.informants != null) game.Informants.S = data.informants;
             if (data.news != null) game.Newspaper.S = data.news;
+            // Before version 7 the crew started with all three friends.
+            game.Org.FriendsJoined = data.version >= 7 ? data.friendsJoined : Game.FriendCount;
             if (data.favours != null && data.favours.Neighbours.Count > 0) game.Favours.S = data.favours;
             else game.Favours.Setup(game, game.Rng);
 
@@ -347,6 +350,7 @@ namespace OSistema.Core
             public FavourState favours;
             public InformantState informants;
             public NewsState news;
+            public int friendsJoined;
             public int pendingOrderUnits, pendingOrderDay, lastPaydayWeek;
             public List<ZoneData> zones = new List<ZoneData>();
             public List<SquareData> squares = new List<SquareData>();

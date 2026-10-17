@@ -92,6 +92,19 @@ namespace OSistema.UI
                 }
             }
 
+            foreach (var contact in game.Contacts.All)
+            {
+                if (!contact.Present || !FogOfWar.CanSee(contact.Position) || !OnScreen(contact.Position)) continue;
+                bool work = game.Contacts.HasWork(contact, game);
+                if (!work && !close) continue;
+                var tag = NextTag();
+                tag.text = work ? $"{contact.Name}  <b>!</b>" : contact.Name;
+                tag.AddToClassList(work ? "tag--work" : "tag--place");
+                var pos = WorldToPanel(contact.Position);
+                tag.style.left = pos.x;
+                tag.style.top = pos.y + unit * 0.42f;
+            }
+
             foreach (var npc in game.Npcs.All)
             {
                 if (npc.Kind != NpcKind.Police || !FogOfWar.CanSee(npc.Mover.Position) || !OnScreen(npc.Mover.Position)) continue;

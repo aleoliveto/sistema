@@ -42,6 +42,7 @@ namespace OSistema.Core
         public readonly Favours Favours = new Favours();
         public readonly Informants Informants = new Informants();
         public readonly Newspaper Newspaper = new Newspaper();
+        public readonly ContactBook Contacts = new ContactBook();
         int socialHour = -1;
 
         /// <summary>Floating text over the world (money earned and the like). Presentation only.</summary>
@@ -72,6 +73,7 @@ namespace OSistema.Core
             Properties = new PropertyManager(Map, properties);
             StreetLife = new StreetLife(this);
             Hospital = new Hospital(this);
+            Contacts.Setup(this);
             Ticks.OnTick += Tick;
         }
 
@@ -83,14 +85,19 @@ namespace OSistema.Core
             var game = new Game(seed, map, playerBase, 0, Territory.FromBlocks(zoneRects, rng), properties);
             game.Org.BuildBusinesses(map, rng);
             game.NameProperties();
-            game.Stock.Cash = 300; // a few hundred euro of dirty money to start with
-            game.Stock.Pistols = 1;
+            game.Stock.Cash = 40; // what a seventeen-year-old has in his pocket
             game.SpawnStartingCrew();
             game.Rival.Setup(game, rng);
             game.Favours.Setup(game, rng);
-            game.Log.Add("The crew moves into a basso in the rione. Keep them fed, paid and out of prison.");
-            game.Log.Add("Press B to open the business panel. Use the Piazza tool to open a drug square.");
-            game.Log.Add($"The {game.Rival.Name} runs the far side of the district. Don't get too close.");
+            game.Log.Add("Gennaro is seventeen. He lives with his mother in a basso in the rione, and he wants more.");
+            game.Log.Add("Select him and right-click someone with work (a gold ! over their head) to go and talk to them.");
+            game.Phone.Send(game, Social.MsgKind.Info, "Mammà",
+                "Gennà, nun fa' tarde stasera. E statte accorto a chi frequiente.",
+                "Gennà, don't be late tonight. And be careful who you spend time with.", null);
+            game.Phone.Send(game, Social.MsgKind.Info, ContactBook.Totonno,
+                "Passa d''o bar quanno puo'. Tengo 'na cosa pe' te.",
+                "Drop by the bar when you can. I've got something for you.",
+                "Zio Totonno stands outside his bar every day. Walk over and hear him out.");
             return game;
         }
 
@@ -101,6 +108,7 @@ namespace OSistema.Core
             StreetLife.Tick(this);
             Hospital.Tick(this);
             Contracts.Tick(this);
+            Contacts.Tick(this);
             Npcs.Tick(this);
             Combat.Tick(this);
             Police.Tick(this);
@@ -139,23 +147,29 @@ namespace OSistema.Core
             }
         }
 
-        void SpawnStartingCrew()
+        // (first, last, nickname, shirt, construction, cooking, medicine, intimidation, awareness, shooting, role)
+        static readonly (string, string, string, Color32, int, int, int, int, int, int, CrewRole)[] Friends =
         {
-            // (first, last, nickname, shirt, construction, cooking, medicine, intimidation, awareness, shooting, role)
-            var crew = new[]
-            {
-                ("Gennaro", "Iaccarino", "'o Russo", new Color32(176, 58, 46, 255), 6, 2, 3, 7, 4, 6, CrewRole.Collector),
-                ("Ciro", "Capasso", "Capatosta", new Color32(41, 98, 160, 255), 3, 7, 1, 4, 3, 4, CrewRole.General),
-                ("Salvatore", "Scognamiglio", "'o Sicco", new Color32(214, 214, 205, 255), 8, 1, 6, 2, 7, 3, CrewRole.General),
-            };
+            ("Gennaro", "Iaccarino", "'o Russo", new Color32(176, 58, 46, 255), 3, 2, 1, 4, 4, 2, CrewRole.General),
+            ("Ciro", "Capasso", "Capatosta", new Color32(41, 98, 160, 255), 3, 7, 1, 4, 3, 4, CrewRole.General),
+            ("Salvatore", "Scognamiglio", "'o Sicco", new Color32(214, 214, 205, 255), 8, 1, 6, 2, 7, 3, CrewRole.General),
+        };
 
-            int i = 0;
+        public static int FriendCount => Friends.Length - 1;
+        public static string FriendName(int i) => $"{Friends[i + 1].Item1} “{Friends[i + 1].Item3}”";
+
+        /// <summary>A childhood friend from the vicolo joins (i = 0 or 1).</summary>
+        public Pawn AddFriend(int i) => SpawnCrew(Friends[i + 1], boss: false);
+
+        // Gennaro starts alone. His friends come when he's somebody.
+        void SpawnStartingCrew() => SpawnCrew(Friends[0], boss: true);
+
+        Pawn SpawnCrew((string, string, string, Color32, int, int, int, int, int, int, CrewRole) f, bool boss)
+        {
             foreach (var cell in GridUtil.CellsAround(Vector2Int.RoundToInt(PlayerBase.center), 6))
             {
-                if (i >= crew.Length) break;
-                if (!PlayerBase.Contains(cell) || !Map.IsPassable(cell)) continue;
-                bool boss = i == 0; // Gennaro leads the family
-                var (first, last, nick, shirt, construction, cooking, medicine, intimidation, awareness, shooting, role) = crew[i++];
+                if (!PlayerBase.Contains(cell) || !Map.IsPassable(cell) || Pawns.SomeoneElseAt(cell, null)) continue;
+                var (first, last, nick, shirt, construction, cooking, medicine, intimidation, awareness, shooting, role) = f;
                 var pawn = new Pawn(Pawns.NextId(), first, last, nick, shirt, cell)
                 {
                     ConstructionSkill = construction,
@@ -166,7 +180,8 @@ namespace OSistema.Core
                     ShootingSkill = shooting,
                     Role = role,
                     IsBoss = boss,
-                    Loyalty = boss ? 100f : 65f,
+                    Loyalty = boss ? 100f : 70f,
+                    Wage = boss ? 0 : 60,
                 };
                 pawn.Needs.Food = 0.5f + (float)Rng.NextDouble() * 0.4f;
                 pawn.Needs.Rest = 0.6f + (float)Rng.NextDouble() * 0.35f;
@@ -178,7 +193,9 @@ namespace OSistema.Core
                     break;
                 }
                 Pawns.Add(pawn);
+                return pawn;
             }
+            return null;
         }
     }
 }

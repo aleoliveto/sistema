@@ -42,6 +42,7 @@ namespace OSistema.Npcs
         public bool IsFixture;       // shopkeepers and vendors: stand all day, not counted as passers-by
         public bool Sitting;         // heading for, or sitting on, a chair
         public bool Playing;         // kids running around
+        public string ContactName;   // someone who hands out work (see ContactBook)
 
         public Npc(int id, NpcKind kind, Vector2Int cell, float speed, Color32 color)
         {

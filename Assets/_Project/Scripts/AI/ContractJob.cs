@@ -28,6 +28,7 @@ namespace OSistema.AI
             ContractKind.Delivery => contract.Stage < GoingToDrop ? "Picking up a parcel" : "Delivering a parcel",
             ContractKind.Debt => "Collecting a debt",
             ContractKind.ScooterTheft => contract.Stage < GoingToDrop ? "Stealing a scooter" : "Riding a stolen scooter",
+            ContractKind.Lookout => contract.Stage == AtPickup ? "Keeping watch on the corner" : "Going to the corner",
             _ => contract.Stage == AtPickup ? "Waiting for the boat" : contract.Stage < AtPickup ? "Going down to the port" : "Carrying the load home",
         };
 
@@ -61,12 +62,13 @@ namespace OSistema.AI
                         c.Stage = GoingToDrop;
                         return false;
                     }
-                    if (!Walk(c.From.Value, !c.AtNight, game, 1f)) return false;
+                    if (!Walk(c.From.Value, !c.AtNight && c.Kind != ContractKind.Lookout, game, 1f)) return false;
                     c.Stage = AtPickup;
-                    c.Work = c.Kind == ContractKind.ScooterTheft ? 240 : c.AtNight ? 700 : 90;
+                    c.Work = c.Kind == ContractKind.Lookout ? GameClock.TicksPerHour * 3 : c.Kind == ContractKind.ScooterTheft ? 240 : c.AtNight ? 700 : 90;
                     return false;
 
                 case AtPickup:
+                    if (c.Kind == ContractKind.Lookout && game.Ticks.TicksGame % 120 == 0) Watch(game);
                     if (--c.Work > 0) return false;
                     return Pickup(game);
 
@@ -104,9 +106,32 @@ namespace OSistema.AI
             return true;
         }
 
+        // A lookout who spots a patrol whistles; Don Saverio hears about it.
+        void Watch(Game game)
+        {
+            foreach (var npc in game.Npcs.All)
+            {
+                if (npc.Kind != NpcKind.Police || npc.Despawned) continue;
+                if ((npc.Mover.Position - Pawn.Position).sqrMagnitude > 100f) continue;
+                if (contract.Outcome == "spotted") return;
+                contract.Outcome = "spotted";
+                contract.Reward += 20;
+                Pawn.Learn(Skill.Awareness, 10f, game);
+                Pawn.Say("police");
+                game.Log.Add($"{Pawn.Nickname} whistled: police on the street. Down the vicolo, the piazza goes quiet.", MessageKind.Good, Pawn.Cell);
+                return;
+            }
+        }
+
         bool Pickup(Game game)
         {
             var c = contract;
+            if (c.Kind == ContractKind.Lookout)
+            {
+                Pawn.Learn(Skill.Awareness, 6f, game);
+                game.Contracts.Finish(c, true, c.Outcome == "spotted" ? "you saw them coming. Don Saverio noticed." : "a quiet night on the corner.", game);
+                return true;
+            }
             switch (c.Kind)
             {
                 case ContractKind.ScooterTheft:

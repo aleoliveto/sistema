@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace OSistema.Crime
 {
-    public enum ContractKind { Delivery, Debt, ScooterTheft, Smuggling, Shipment, CigaretteRun }
+    public enum ContractKind { Delivery, Debt, ScooterTheft, Smuggling, Shipment, CigaretteRun, Lookout }
     public enum ContractState { Offered, Active, Done, Failed, Expired }
 
     /// <summary>
@@ -43,7 +43,7 @@ namespace OSistema.Crime
     /// <summary>The jobs on offer from the neighbourhood's contacts, refreshed through the day.</summary>
     public sealed class ContractBoard
     {
-        const int MaxOffers = 4;
+        const int MaxOffers = 5;
 
         public readonly List<Contract> All = new List<Contract>();
         public int Completed;
@@ -91,41 +91,67 @@ namespace OSistema.Crime
             All.RemoveAll(c => (c.State == ContractState.Expired || c.State == ContractState.Done || c.State == ContractState.Failed) && now - c.ExpiresTick > GameClock.TicksPerDay * 2);
 
             int hour = game.Clock.Hour;
-            // Work comes in the morning, after lunch and, for the smugglers, in the evening.
-            if (first || hour == 9 || hour == 14 || hour == 19)
+            // Contacts think of something for you through the day. You hear about it in person.
+            if (first || hour == 8 || hour == 11 || hour == 14 || hour == 17 || hour == 20)
             {
                 int added = 0;
-                while (OfferCount < MaxOffers && added < 2)
+                foreach (var contact in game.Contacts.All)
                 {
-                    var c = Generate(game, hour);
-                    if (c == null) break;
+                    if (OfferCount >= MaxOffers || added >= 2) break;
+                    if (HasOffer(contact.Name) || game.Rng.NextDouble() < 0.35) continue;
+                    var c = Generate(game, contact.Name);
+                    if (c == null) continue;
                     All.Add(c);
                     added++;
                 }
-                if (added > 0)
+                if (added > 0) Version++;
+            }
+            // Don Saverio always needs eyes on the corner at night.
+            if ((first || hour == 16) && !HasOffer(ContactBook.Saverio))
+            {
+                var c = Generate(game, ContactBook.Saverio);
+                if (c != null)
                 {
+                    All.Add(c);
                     Version++;
-                    game.Log.Add(added == 1 ? $"{LastGiver} has a lavoretto for you. (Lavoretti button, bottom right)" : "New lavoretti on offer. (Lavoretti button, bottom right)", MessageKind.Good);
                 }
             }
         }
 
-        string LastGiver => All.Count > 0 ? All[All.Count - 1].Giver : "Someone";
+        bool HasOffer(string giver) => All.Exists(c => c.Giver == giver && c.State == ContractState.Offered);
 
         // ---------- Generating jobs ----------
 
-        Contract Generate(Game game, int hour)
+        Contract Generate(Game game, string giver)
         {
             var rng = game.Rng;
-            bool evening = hour >= 18;
-            var kinds = new List<ContractKind> { ContractKind.Delivery, ContractKind.Debt, ContractKind.ScooterTheft };
-            if (evening) { kinds.Add(ContractKind.Smuggling); kinds.Add(ContractKind.Smuggling); }
-            var kind = kinds[rng.Next(kinds.Count)];
+            var kind = giver switch
+            {
+                ContactBook.Totonno => ContractKind.Delivery,
+                ContactBook.Peppe => ContractKind.Debt,
+                ContactBook.Nanninella => ContractKind.ScooterTheft,
+                ContactBook.Saverio => ContractKind.Lookout,
+                _ => ContractKind.Smuggling,
+            };
             var home = Vector2Int.RoundToInt(game.PlayerBase.center);
             long expires = game.Ticks.TicksGame + GameClock.TicksPerDay;
 
             switch (kind)
             {
+                case ContractKind.Lookout:
+                {
+                    var boss = game.Contacts.ByName(ContactBook.Saverio);
+                    var corner = CornerNear(game, boss != null ? boss.Spot : home);
+                    if (corner == null) return null;
+                    int hour = game.Clock.Hour;
+                    long untilEleven = ((hour < 23 ? 23 - hour : 24) * GameClock.TicksPerHour);
+                    var c = Make(kind, ContactBook.Saverio, "Keep watch on the corner",
+                        $"Stand on the corner in {ZoneName(game, corner.Value)} for three hours tonight. Whistle if you see the police or a face you don't know. Don't talk to anyone.",
+                        "Tiene ll'uocchie apierte e 'a vocca chiusa.", "Keep your eyes open and your mouth shut.",
+                        rng.Next(4, 7) * 10, 0.75f, "Patrols pass by. A lookout who runs at the wrong moment gets noticed.", corner, corner.Value,
+                        game.Ticks.TicksGame + untilEleven);
+                    return c;
+                }
                 case ContractKind.Delivery:
                 {
                     var from = DoorNear(game, home, 8, 30);
@@ -177,6 +203,22 @@ namespace OSistema.Crime
         };
 
         static string ZoneName(Game game, Vector2Int c) => game.Territory.ZoneAt(c)?.Name ?? "the rione";
+
+        static Vector2Int? CornerNear(Game game, Vector2Int around)
+        {
+            var map = game.Map;
+            foreach (var c in GridUtil.CellsAround(around, 10))
+            {
+                if ((c - around).sqrMagnitude < 9 || !map.InBounds(c) || !map.IsPassable(c) || map.GetBuilding(c.x, c.y) != null) continue;
+                if (map.GetTerrain(c.x, c.y) != TerrainType.Sidewalk) continue;
+                // A corner: open street on two sides.
+                int open = 0;
+                foreach (var n in new[] { c + Vector2Int.left, c + Vector2Int.right, c + Vector2Int.up, c + Vector2Int.down })
+                    if (map.InBounds(n) && map.GetTerrain(n.x, n.y) == TerrainType.Road) open++;
+                if (open >= 1 && game.Rng.NextDouble() < 0.3) return c;
+            }
+            return null;
+        }
 
         static Vector2Int? DoorNear(Game game, Vector2Int around, int min, int max)
         {

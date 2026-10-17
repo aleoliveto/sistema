@@ -95,15 +95,15 @@ namespace OSistema.UI
         void Bubble(PhoneMessage m, long now)
         {
             bool open = m.Open(now);
-            var b = Ui.Box("bubble").Into(phoneBody);
-            if (open) b.AddToClassList("bubble--open");
+            var b = Ui.Box("msg").Into(phoneBody);
+            if (open) b.AddToClassList("msg--open");
             var head = Ui.Row(b);
-            Ui.Text(m.From, head, "bubble__from");
+            Ui.Text(m.From, head, "msg__from");
             Ui.Box("spacer").Into(head);
             Ui.Text($"day {m.Day} · {Phone.TimeOf(m)}", head, "tiny");
             if (!string.IsNullOrEmpty(m.Neapolitan))
             {
-                Ui.Text($"“{m.Neapolitan}”", b, "bubble__nap", "wrap");
+                Ui.Text($"“{m.Neapolitan}”", b, "msg__nap", "wrap");
                 Ui.Text(m.English, b, "small", "muted", "wrap");
             }
             if (!string.IsNullOrEmpty(m.Body)) Ui.Text(m.Body, b, "small", "wrap").style.marginTop = 3;
@@ -121,13 +121,13 @@ namespace OSistema.UI
                         game.Phone.Answer(msg, choice, game);
                         phoneSignature = -1;
                         RefreshAll();
-                    }, b, "btn--small", "bubble__choice");
+                    }, b, "btn--small", "msg__choice");
                     string hint = i < m.Hints.Count ? m.Hints[i] : null;
                     if (!string.IsNullOrEmpty(hint)) Tip(btn, () => hint + (msg.Criminal && choice == 0 && game.Phone.Tapped(game.Ticks.TicksGame) ? "\n(If anyone's listening, they heard that.)" : ""));
                 }
             }
             else if (m.Answer >= 0 && m.Answer < m.Choices.Count)
-                Ui.Text($"→ {m.Choices[m.Answer]}", b, "bubble__answer");
+                Ui.Text($"→ {m.Choices[m.Answer]}", b, "msg__answer");
         }
 
         // ---------- La Sirena ----------

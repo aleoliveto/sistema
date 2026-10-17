@@ -1,0 +1,183 @@
+using System.Collections.Generic;
+using OSistema.Core;
+using OSistema.Npcs;
+using OSistema.Pawns;
+using OSistema.World;
+using UnityEngine;
+
+namespace OSistema.Crime
+{
+    /// <summary>Someone in the rione who hands out work, in person, from their usual spot.</summary>
+    public sealed class Contact
+    {
+        public string Name;
+        public string Who;              // a line about them, for the notebook
+        public string Greeting, GreetingEn;
+        public string NoWork, NoWorkEn;
+        public Vector2Int Spot;
+        public int OpenHour, CloseHour;
+        public Color32 Color;
+        public Npc Npc;
+
+        public bool OpenAt(int hour) => OpenHour < CloseHour ? hour >= OpenHour && hour < CloseHour : hour >= OpenHour || hour < CloseHour;
+        public string Hours => $"{OpenHour:00}:00–{CloseHour:00}:00";
+        public Vector2 Position => Npc != null && !Npc.Despawned ? Npc.Mover.Position : Mover.CellCenter(Spot);
+        public bool Present => Npc != null && !Npc.Despawned;
+    }
+
+    /// <summary>
+    /// The people who give a guaglione his first work. Their spots come from the map, so they don't need
+    /// saving: the same city always has the same Zio Totonno outside the same bar.
+    /// </summary>
+    public sealed class ContactBook
+    {
+        public const string Totonno = "'O Zio Totonno";
+        public const string Peppe = "Don Peppe 'o Strozzino";
+        public const string Nanninella = "Nanninella 'a Ricettatrice";
+        public const string Marenaro = "'O Marenaro";
+        public const string Saverio = "Don Saverio 'o Malommo";
+
+        public readonly List<Contact> All = new List<Contact>();
+
+        public Contact ByName(string name) => All.Find(c => c.Name == name);
+
+        public void Setup(Game game)
+        {
+            All.Clear();
+            var map = game.Map;
+            var home = Vector2Int.RoundToInt(game.PlayerBase.center);
+            var used = new HashSet<Vector2Int>();
+
+            Vector2Int? ShopFront(ShopKind kind, float min, float max)
+            {
+                Vector2Int? best = null;
+                float bestD = float.MaxValue;
+                foreach (var def in BuildingDefs.All)
+                {
+                    if (def.Shop != kind) continue;
+                    foreach (var counter in map.PositionsOf(def))
+                    {
+                        var prop = game.Properties.At(counter);
+                        if (prop == null) continue;
+                        var spot = Outside(map, prop.Door);
+                        if (!spot.HasValue || used.Contains(spot.Value)) continue;
+                        float d = (spot.Value - home).magnitude;
+                        if (d < min || d > max || d >= bestD) continue;
+                        bestD = d;
+                        best = spot;
+                    }
+                }
+                return best;
+            }
+
+            Vector2Int StreetSpot(float min, float max, int salt)
+            {
+                var rng = new System.Random(game.Seed + salt);
+                for (int i = 0; i < 400; i++)
+                {
+                    var c = new Vector2Int(rng.Next(map.Width), rng.Next(map.Height));
+                    float d = (c - home).magnitude;
+                    if (d < min || d > max || used.Contains(c) || !map.IsPassable(c) || map.GetBuilding(c.x, c.y) != null) continue;
+                    var t = map.GetTerrain(c.x, c.y);
+                    if (t == TerrainType.Sidewalk || t == TerrainType.Paving) return c;
+                }
+                return home;
+            }
+
+            Contact Add(string name, string who, Vector2Int spot, int open, int close, Color32 color,
+                string greet, string greetEn, string none, string noneEn)
+            {
+                used.Add(spot);
+                var c = new Contact
+                {
+                    Name = name, Who = who, Spot = spot, OpenHour = open, CloseHour = close, Color = color,
+                    Greeting = greet, GreetingEn = greetEn, NoWork = none, NoWorkEn = noneEn,
+                };
+                All.Add(c);
+                return c;
+            }
+
+            Add(Totonno, "Runs the bar on the corner. Knows everyone, owes nobody. Always has an errand.",
+                ShopFront(ShopKind.Bar, 3, 60) ?? StreetSpot(6, 25, 11), 7, 22, new Color32(120, 90, 70, 255),
+                "Guagliò, viene ccà. Tengo 'na cosa pe' te.", "Come here, kid. I've got something for you.",
+                "Pe' mo' niente. Pigliate 'nu caffè e passa cchiù tarde.", "Nothing for now. Have a coffee and come back later.");
+            Add(Saverio, "Runs the corner for the people above him. Pays lookouts by the night, and watches who's reliable.",
+                StreetSpot(8, 30, 23), 15, 2, new Color32(40, 40, 46, 255),
+                "Tu si 'o figlio d''a signora Iaccarino? Sient'a me.", "You're Mrs Iaccarino's son? Listen to me.",
+                "Stasera nun me serve nisciuno. Vattenne a casa.", "I don't need anyone tonight. Go home.");
+            Add(Peppe, "Lends money at rates the banks would blush at. Needs young legs to collect.",
+                ShopFront(ShopKind.Tabaccheria, 6, 70) ?? ShopFront(ShopKind.Salumeria, 6, 70) ?? StreetSpot(10, 40, 37), 9, 20, new Color32(90, 70, 110, 255),
+                "'E sorde nun cadono d''o cielo, guagliò.", "Money doesn't fall from the sky, kid.",
+                "Oggi pavano tutte quante. Miracolo.", "Everyone's paying today. A miracle.");
+            Add(Nanninella, "Fences anything with wheels or a screen. Never asks where it came from.",
+                StreetSpot(20, 55, 41), 10, 21, new Color32(150, 60, 70, 255),
+                "Tiene 'e mmane leste? Allora parlammo.", "Quick hands? Then let's talk.",
+                "Aggio chino 'o garage. Torna dimane.", "The garage is full. Come back tomorrow.");
+            Add(Marenaro, "Has a boat, and friends on other boats. Works when the sea is dark.",
+                Landing(map) ?? StreetSpot(30, 120, 53), 18, 4, new Color32(60, 80, 100, 255),
+                "'O mare stanotte è calmo. Buono pe' fatica'.", "The sea's calm tonight. Good for work.",
+                "Stanotte nun esce nisciuna varca.", "No boats going out tonight.");
+        }
+
+        static Vector2Int? Outside(Map map, Vector2Int door)
+        {
+            foreach (var n in new[] { door + Vector2Int.down, door + Vector2Int.up, door + Vector2Int.left, door + Vector2Int.right })
+                if (map.InBounds(n) && map.IsPassable(n) && map.GetTerrain(n.x, n.y) != TerrainType.Floor && map.GetBuilding(n.x, n.y) == null) return n;
+            return null;
+        }
+
+        static Vector2Int? Landing(Map map)
+        {
+            for (int x = map.Width / 2; x < map.Width - 1; x++)
+            for (int y = 1; y < 20; y++)
+                if (map.GetTerrain(x, y - 1) == TerrainType.Water && map.GetTerrain(x, y) == TerrainType.Paving && map.GetBuilding(x, y) == null)
+                    return new Vector2Int(x, y + 1);
+            return null;
+        }
+
+        /// <summary>Contacts come to their spot at opening time and leave at closing time.</summary>
+        public void Tick(Game game)
+        {
+            if (game.Ticks.TicksGame % 60 != 0) return;
+            int hour = game.Clock.Hour;
+            foreach (var c in All)
+            {
+                bool open = c.OpenAt(hour);
+                if (open && !c.Present)
+                {
+                    c.Npc = game.Npcs.Spawn(NpcKind.Civilian, c.Spot, 0.05f, c.Color);
+                    c.Npc.IsFixture = true;
+                    c.Npc.ContactName = c.Name;
+                }
+                else if (!open && c.Present)
+                {
+                    c.Npc.Despawned = true;
+                    c.Npc = null;
+                }
+            }
+        }
+
+        public Contact At(Vector2 world)
+        {
+            Contact best = null;
+            float bestD = 0.8f * 0.8f;
+            foreach (var c in All)
+            {
+                if (!c.Present) continue;
+                float d = (c.Position - world).sqrMagnitude;
+                if (d < bestD)
+                {
+                    bestD = d;
+                    best = c;
+                }
+            }
+            return best;
+        }
+
+        public bool HasWork(Contact c, Game game)
+        {
+            foreach (var o in game.Contracts.Offers) if (o.Giver == c.Name) return true;
+            return false;
+        }
+    }
+}

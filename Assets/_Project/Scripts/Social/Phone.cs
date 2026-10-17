@@ -16,6 +16,7 @@ namespace OSistema.Social
         RatClue,         // gossip that points at someone in the crew
         TestResult,      // the outcome of a false-shipment test
         BugClue,         // a hint that someone is listening
+        Friend,          // a friend from the vicolo wants in
     }
 
     [Serializable]
@@ -133,6 +134,9 @@ namespace OSistema.Social
                 case MsgKind.TestResult:
                 case MsgKind.BugClue:
                     game.Informants.OnAnswer(m, choice, game);
+                    break;
+                case MsgKind.Friend:
+                    game.Org.OnFriendAnswer(m, choice, game);
                     break;
             }
         }

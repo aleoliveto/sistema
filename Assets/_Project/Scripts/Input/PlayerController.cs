@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using OSistema.AI;
 using OSistema.Core;
+using OSistema.Crime;
 using OSistema.Pawns;
 using OSistema.UI;
 using OSistema.Views;
@@ -55,6 +56,7 @@ namespace OSistema.Input
         readonly Color32[] ghostPixels = new Color32[TilePainter.Size * TilePainter.Size];
         (BuildingDef def, int rot, Vector2Int cell) ghostKey;
 
+        Pawn follow;   // the camera keeps this pawn in view until the player pans away
         bool dragging;
         Vector2Int dragStartCell;
         Vector2 dragStartScreen;
@@ -103,6 +105,14 @@ namespace OSistema.Input
             Selected.Clear();
             SelectedProperty = null;
             SetTool(Tool.Select);
+            // Start on the boss, and keep him in view.
+            var boss = g.Org.Boss(g);
+            if (boss != null)
+            {
+                Selected.Add(boss);
+                follow = boss;
+                cam.transform.position = new Vector3(boss.Position.x, boss.Position.y, cam.transform.position.z);
+            }
         }
 
         void OnDestroy()
@@ -144,6 +154,7 @@ namespace OSistema.Input
             if (kb.digit4Key.wasPressedThisFrame) game.Ticks.SetSpeed(4); // debug ×30
             if (kb.digit5Key.wasPressedThisFrame) game.Ticks.SetSpeed(5); // debug ×120
             if (kb.rKey.wasPressedThisFrame) ToggleDraftSelected();
+            if (kb.fKey.wasPressedThisFrame) follow = follow == null && Selected.Count > 0 ? Selected[0] : null;
             if (CurrentTool == Tool.Build && kb.qKey.wasPressedThisFrame) PlacementRotation = (PlacementRotation + 1) % 4;
             if (CurrentTool == Tool.Build && kb.eKey.wasPressedThisFrame) PlacementRotation = (PlacementRotation + 3) % 4;
 
@@ -213,6 +224,13 @@ namespace OSistema.Input
             if (kb.aKey.isPressed || kb.leftArrowKey.isPressed) move.x -= 1f;
             if (kb.dKey.isPressed || kb.rightArrowKey.isPressed) move.x += 1f;
             cam.transform.position += (Vector3)(move * (size * 1.6f * Time.unscaledDeltaTime));
+            if (move != Vector2.zero || mouse.middleButton.isPressed) follow = null;
+            if (follow != null && follow.IsPresent)
+            {
+                var c = cam.transform.position;
+                var t = new Vector3(follow.Position.x, follow.Position.y, c.z);
+                cam.transform.position = Vector3.Lerp(c, t, 1f - Mathf.Exp(-6f * Time.unscaledDeltaTime));
+            }
 
             if (mouse.middleButton.isPressed)
             {
@@ -259,6 +277,7 @@ namespace OSistema.Input
             {
                 if (CurrentTool != Tool.Select) SetTool(Tool.Select);
                 else if (Selected.Count > 0 && EnemyAt(ScreenToWorld(mousePos)) is Pawn enemy) OrderAttack(enemy);
+                else if (Selected.Count > 0 && game.Contacts.At(ScreenToWorld(mousePos)) is Contact contact) OrderTalk(contact);
                 else OrderMove(ScreenToCell(mousePos));
             }
         }
@@ -361,6 +380,17 @@ namespace OSistema.Input
                 any = true;
             }
             if (any) Selected[0].Say("fight");
+        }
+
+        // Only one goes to talk: the first selected who's free.
+        void OrderTalk(Contact contact)
+        {
+            long now = game.Ticks.TicksGame;
+            var pawn = Selected.Find(p => p.CanAct && !p.InMentalBreak(now));
+            if (pawn == null) return;
+            pawn.SetDrafted(false, game);
+            pawn.ForceJob(new TalkJob(pawn, contact), game);
+            pawn.Say("order_move");
         }
 
         void OrderMove(Vector2Int target)
