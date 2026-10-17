@@ -59,6 +59,14 @@ namespace OSistema.Pawns
 
         public Pawn ById(int id) => pawns.Find(p => p.Id == id);
 
+        /// <summary>Is another pawn standing (not just passing) on this cell?</summary>
+        public bool SomeoneElseAt(Vector2Int cell, Pawn me)
+        {
+            foreach (var p in pawns)
+                if (p != me && p.Cell == cell && !p.Dead && !p.InJail && !p.InHospital && !p.Departed && !p.Mover.IsMoving) return true;
+            return false;
+        }
+
         public void Tick(Game game)
         {
             for (int i = 0; i < pawns.Count; i++) pawns[i].Tick(game);

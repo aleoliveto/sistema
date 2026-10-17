@@ -26,6 +26,7 @@ namespace OSistema.UI
         VisualElement root, worldLayer, hudLayer, modalLayer;
         Label tooltip, alert;
         Func<string> tooltipText;
+        VisualElement tooltipOwner;
         float refreshTimer, alertUntil;
 
         /// <summary>Raised when the player starts over from the game-over screen.</summary>
@@ -132,12 +133,14 @@ namespace OSistema.UI
             e.RegisterCallback<PointerEnterEvent>(_ =>
             {
                 tooltipText = text;
+                tooltipOwner = e;
                 tooltip.text = text();
                 tooltip.Show(!string.IsNullOrEmpty(tooltip.text));
             });
             e.RegisterCallback<PointerLeaveEvent>(_ =>
             {
                 tooltipText = null;
+                tooltipOwner = null;
                 tooltip.Show(false);
             });
         }
@@ -190,9 +193,17 @@ namespace OSistema.UI
 
             if (tooltipText != null && Mouse.current != null)
             {
-                tooltip.text = tooltipText();
                 var m = Mouse.current.position.ReadValue();
                 var p = RuntimePanelUtils.ScreenToPanel(root.panel, new Vector2(m.x, Screen.height - m.y));
+                // Windows rebuild their rows; a row removed under the mouse never gets a "leave".
+                if (tooltipOwner == null || tooltipOwner.panel == null || !tooltipOwner.worldBound.Contains(p))
+                {
+                    tooltipText = null;
+                    tooltipOwner = null;
+                    tooltip.Show(false);
+                    return;
+                }
+                tooltip.text = tooltipText();
                 tooltip.style.left = p.x + 16f;
                 tooltip.style.top = p.y + 16f;
             }

@@ -46,6 +46,11 @@ namespace OSistema.AI
         readonly bool roadOnly;
         bool started;
         int repaths;
+        int spreads;
+        Vector2Int? exact;   // a free spot picked because someone was already standing on ours
+
+        /// <summary>Any nearby free spot will do (wandering, moving): don't stand on top of someone.</summary>
+        public bool Flexible;
 
         public Walker(Vector2Int target, bool adjacent, float speedMultiplier = 1f, bool roadOnly = false)
         {
@@ -83,6 +88,17 @@ namespace OSistema.AI
                               && game.Map.GetBuilding(pawn.Cell.x, pawn.Cell.y) == null;
             }
             var status = Tick(pawn.Mover, pawn.SpeedFactor, game);
+            if (status == WalkStatus.Arrived && (Flexible || adjacent) && spreads < 3 && game.Pawns.SomeoneElseAt(pawn.Cell, pawn))
+            {
+                var free = FreeSpot(pawn, game);
+                if (free.HasValue)
+                {
+                    spreads++;
+                    exact = free;
+                    started = false;
+                    return WalkStatus.Walking;
+                }
+            }
             if (status != WalkStatus.Walking) pawn.OnScooter = pawn.Riding = false;
             return status;
         }
@@ -91,7 +107,9 @@ namespace OSistema.AI
         {
             if (!started)
             {
-                var path = game.Pathfinder.FindPath(mover.Cell, target, adjacent, roadOnly);
+                var path = exact.HasValue
+                    ? game.Pathfinder.FindPath(mover.Cell, exact.Value, false, roadOnly)
+                    : game.Pathfinder.FindPath(mover.Cell, target, adjacent, roadOnly);
                 if (path == null) return WalkStatus.Failed;
                 mover.SetPath(path);
                 started = true;
@@ -109,6 +127,31 @@ namespace OSistema.AI
         }
 
         public static bool IsNextTo(Vector2Int a, Vector2Int b) => GridUtil.Manhattan(a, b) == 1;
+
+        // The nearest cell that still does the job (next to the target, or near the spot) with nobody on it.
+        Vector2Int? FreeSpot(Pawn pawn, Game game)
+        {
+            var map = game.Map;
+            var here = pawn.Cell;
+            var terrain = map.GetTerrain(here.x, here.y);
+            Vector2Int? best = null;
+            int bestDist = int.MaxValue;
+            for (int dy = -2; dy <= 2; dy++)
+            for (int dx = -2; dx <= 2; dx++)
+            {
+                var c = new Vector2Int(here.x + dx, here.y + dy);
+                if (c == here || !map.InBounds(c.x, c.y) || !map.IsPassable(c)) continue;
+                if (adjacent ? !IsNextTo(c, target) : map.GetTerrain(c.x, c.y) != terrain) continue;
+                if (map.GetBuilding(c.x, c.y) == BuildingDefs.Door || game.Pawns.SomeoneElseAt(c, pawn)) continue;
+                int d = Mathf.Abs(dx) + Mathf.Abs(dy);
+                if (d < bestDist)
+                {
+                    bestDist = d;
+                    best = c;
+                }
+            }
+            return best;
+        }
     }
 
     public sealed class GotoJob : Job
@@ -118,7 +161,7 @@ namespace OSistema.AI
 
         public GotoJob(Pawn pawn, Vector2Int target, string label = "Moving") : base(pawn)
         {
-            walker = new Walker(target, adjacent: false);
+            walker = new Walker(target, adjacent: false) { Flexible = true };
             this.label = label;
         }
 
@@ -160,7 +203,7 @@ namespace OSistema.AI
 
         public WanderJob(Pawn pawn, Vector2Int target, int waitTicks) : base(pawn)
         {
-            walker = new Walker(target, adjacent: false);
+            walker = new Walker(target, adjacent: false) { Flexible = true };
             this.waitTicks = waitTicks;
         }
 
