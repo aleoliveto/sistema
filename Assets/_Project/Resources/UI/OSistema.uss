@@ -455,3 +455,80 @@
 .setting__label { width: 130px; }
 
 .popup { color: #8FD18A; font-size: 13px; }
+
+
+/* ---------- Top bar (v2) ---------- */
+
+.topbar {
+    position: absolute;
+    left: 0; top: 0; right: 0;
+    height: 40px;
+    flex-direction: row;
+    align-items: center;
+    padding: 0 10px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(232, 194, 106, 0.35);
+}
+
+.topbar__section {
+    flex-direction: row;
+    align-items: center;
+}
+
+.topbar .clock__time { font-size: 18px; margin: 0 8px 0 6px; }
+.topbar .clock__day { font-size: 10px; letter-spacing: 1px; margin-right: 10px; }
+.topbar .speed-btn { width: 30px; height: 22px; align-items: center; justify-content: center; }
+.topbar .chip { background-color: rgba(0, 0, 0, 0); padding: 0 6px; margin: 0 2px; }
+.topbar .chip__value { margin-left: 5px; }
+
+.divider {
+    width: 1px;
+    height: 20px;
+    background-color: rgba(232, 194, 106, 0.25);
+    margin: 0 8px;
+}
+
+.badge {
+    background-color: rgba(232, 194, 106, 0.18);
+    border-width: 1px;
+    border-color: rgba(232, 194, 106, 0.6);
+    border-radius: 3px;
+    color: #E8C26A;
+    font-size: 10px;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+    padding: 2px 7px;
+    margin-right: 8px;
+}
+
+.tiny { font-size: 9px; color: #A89F8E; letter-spacing: 1px; }
+
+/* Layout below the bar */
+.family { top: 46px; right: 8px; width: 290px; padding: 6px 10px; }
+.crew-bar { top: 46px; }
+.feed { top: 128px; width: 290px; }
+
+/* Dock (v2): icon buttons */
+.tab { flex-direction: row; align-items: center; justify-content: center; min-width: 96px; height: 32px; }
+.tab .tab__label { margin-left: 6px; font-size: 11px; -unity-font-style: bold; letter-spacing: 1px; }
+.dock__tabs { padding: 4px 6px; }
+.panel { border-color: rgba(232, 194, 106, 0.22); }
+
+.build-hint {
+    background-color: rgba(10, 8, 6, 0.85);
+    border-radius: 3px;
+    padding: 3px 10px;
+    margin-bottom: 4px;
+    font-size: 11px;
+}
+.panel { border-top-color: rgba(232, 194, 106, 0.45); }
+.tool { border-width: 1px; border-color: rgba(255, 255, 255, 0.05); }
+.tool:hover { border-color: rgba(232, 194, 106, 0.5); }
+.op-card {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-width: 1px;
+    border-color: rgba(232, 194, 106, 0.2);
+    border-radius: 4px;
+    padding: 5px 7px;
+    margin-bottom: 4px;
+}

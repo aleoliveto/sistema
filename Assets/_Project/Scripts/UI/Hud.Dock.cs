@@ -28,6 +28,7 @@ namespace OSistema.UI
         DockTab openTab;
         DockTab builtTab = DockTab.None;
         Button businessButton, helpButton;
+        Label buildHint;
 
         void BuildDock()
         {
@@ -69,31 +70,44 @@ namespace OSistema.UI
 
             var dock = Ui.Box("dock").Into(hudLayer);
             dock.pickingMode = PickingMode.Ignore;
+            buildHint = Ui.Text("", dock, "build-hint");
             dockTools = Ui.Box("panel", "dock__tools").Into(dock);
             var tabs = Ui.Box("panel", "dock__tabs").Into(dock);
 
-            AddTab(tabs, DockTab.Build, "BUILD");
-            AddTab(tabs, DockTab.Furnish, "FURNISH");
-            AddTab(tabs, DockTab.Crime, "CRIME");
-            AddTab(tabs, DockTab.Orders, "ORDERS");
-            Ui.Box().Into(tabs).style.width = 18;
-            jobsButton = Ui.Btn("Lavoretti", () => ToggleWindow(Window.Jobs), tabs, "tab");
+            AddTab(tabs, DockTab.Build, "BUILD", IconKind.Build);
+            AddTab(tabs, DockTab.Furnish, "FURNISH", IconKind.Furnish);
+            AddTab(tabs, DockTab.Crime, "CRIME", IconKind.Crime);
+            AddTab(tabs, DockTab.Orders, "ORDERS", IconKind.Orders);
+            Ui.Box("divider").Into(tabs).style.height = 24;
+            jobsButton = IconTab(tabs, "LAVORETTI", IconKind.Jobs, () => ToggleWindow(Window.Jobs));
             Tip(jobsButton, () => "Jobs from the neighbourhood's contacts (J).");
-            businessButton = Ui.Btn("Business (B)", () => ToggleWindow(Window.Business), tabs, "tab");
-            helpButton = Ui.Btn("Help (H)", () => ToggleWindow(Window.Help), tabs, "tab");
+            businessButton = IconTab(tabs, "BUSINESS", IconKind.Business, () => ToggleWindow(Window.Business));
+            Tip(businessButton, () => "Crew, piazze, pizzo, supplies, property, rivals (B).");
+            helpButton = IconTab(tabs, "", IconKind.Help, () => ToggleWindow(Window.Help));
+            helpButton.style.minWidth = 36;
+            Tip(helpButton, () => "Help (H)");
+
         }
 
         ToolEntry Def(BuildingDef def, string tip) =>
             new ToolEntry { Label = def.Label, Tool = Tool.Build, Def = def, Swatch = def.Color, Tip = tip };
 
-        void AddTab(VisualElement parent, DockTab tab, string label)
+        void AddTab(VisualElement parent, DockTab tab, string label, IconKind icon)
         {
-            tabButtons[tab] = Ui.Btn(label, () =>
+            tabButtons[tab] = IconTab(parent, label, icon, () =>
             {
                 openTab = openTab == tab ? DockTab.None : tab;
                 if (openTab == DockTab.None) controller.SetTool(Tool.Select);
                 RefreshDock();
-            }, parent, "tab");
+            });
+        }
+
+        static Button IconTab(VisualElement parent, string label, IconKind icon, System.Action onClick)
+        {
+            var b = Ui.Btn("", onClick, parent, "tab");
+            new Icon(icon, 16).Into(b);
+            if (label.Length > 0) Ui.Text(label, b, "tab__label");
+            return b;
         }
 
         void RefreshDock()
@@ -101,6 +115,14 @@ namespace OSistema.UI
             foreach (var kv in tabButtons) kv.Value.Toggle("btn--on", kv.Key == openTab);
             businessButton.Toggle("btn--on", openWindow == Window.Business);
             helpButton.Toggle("btn--on", openWindow == Window.Help);
+
+            bool building = controller.CurrentTool == Tool.Build && controller.CurrentDef != null;
+            bool rotatable = building && controller.CurrentDef != BuildingDefs.Wall && controller.CurrentDef != BuildingDefs.Door;
+            buildHint.Show(building);
+            if (building)
+                buildHint.text = $"<b>{controller.CurrentDef.Label}</b> · €{BuildingDef.CostOf(controller.CurrentDef)} each" +
+                    (rotatable ? $" · <color=#E8C26A>Q / E</color> rotate ({controller.PlacementRotation * 90}°)" : " · drag to draw") +
+                    " · right-click to stop";
 
             dockTools.Show(openTab != DockTab.None);
             if (openTab == DockTab.None) return;

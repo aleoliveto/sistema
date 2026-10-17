@@ -118,7 +118,7 @@ namespace OSistema.UI
         void CrewTab()
         {
             var org = game.Org;
-            Ui.Text($"Treasury <b>€{game.Stock.Cash}</b> · weekly mesata and family support <b>€{org.WeeklyWageBill(game)}</b>, paid Sunday at 12:00", bizBody, "wrap");
+            Ui.Text($"Dirty cash <b>€{game.Stock.Cash}</b> · weekly mesata and family support <b>€{org.WeeklyWageBill(game)}</b>, paid Sunday at 12:00", bizBody, "wrap");
             long now = game.Ticks.TicksGame;
             foreach (var p in game.Pawns.Crew.Where(p => !p.Dead))
             {
@@ -186,7 +186,7 @@ namespace OSistema.UI
         {
             var org = game.Org;
             int weekly = org.Businesses.Where(b => b.Status == BusinessStatus.Paying).Sum(b => b.WeeklyPizzo);
-            Ui.Text($"Paying businesses bring in <b>€{weekly}</b> a week. Your collector visits them; refusals can be punished.", bizBody, "wrap");
+            Ui.Text($"Paying businesses bring in <b>€{weekly}</b> a week. You can only squeeze the shops on your own turf ({string.Join(", ", org.Turf(game).Select(z => z.Name))}); the rest pay someone else, or nobody yet.", bizBody, "wrap");
             foreach (var b in org.Businesses)
             {
                 var row = Ui.Box("table-row").Into(bizBody);
@@ -200,7 +200,9 @@ namespace OSistema.UI
                     : b.StatusLabel;
                 Ui.Text(status, row, "small", b.Status == BusinessStatus.Paying ? "good" : b.Status == BusinessStatus.Refusing ? "bad" : "muted").style.width = 170;
                 var biz = b;
-                if (b.Status == BusinessStatus.Free) Ui.Btn($"Impose €{b.WeeklyPizzo}", Do(() => org.Target(biz, game)), row, "btn--small");
+                string blocker = b.Status == BusinessStatus.Free ? org.PizzoBlocker(b, game) : null;
+                if (blocker != null) Ui.Text(blocker, row, "small", "muted");
+                else if (b.Status == BusinessStatus.Free) Ui.Btn($"Impose €{b.WeeklyPizzo}", Do(() => org.Target(biz, game)), row, "btn--small");
                 if (b.Status == BusinessStatus.Refusing)
                 {
                     Ui.Btn("Ask again", Do(() => org.Target(biz, game)), row, "btn--small");
@@ -215,10 +217,29 @@ namespace OSistema.UI
         void SupplyTab()
         {
             var org = game.Org;
+            var st = game.Stock;
+            Ui.Text($"Dirty <b>€{st.Cash}</b> · clean <b>€{st.Clean}</b>. Drugs, guns and small things can be paid in cash; anything from €{Prices.CleanMoneyThreshold} up (and every property) needs clean money.", bizBody, "wrap");
+
+            Ui.Text("LAUNDERING", bizBody, "section");
+            Ui.Text(org.FrontCount > 0
+                ? $"Your {org.FrontCount} front(s) wash up to <b>€{org.WeeklyLaunderingCapacity}</b> every Sunday for a {Organization.FrontLaunderingFee:P0} cut."
+                : "Buy a shop to use it as a front: it washes dirty money every week for a small cut.", bizBody, "small", "wrap");
+            Ui.Text($"The commercialista does it today, for {Organization.CommercialistaFee:P0}, and every middleman adds to the evidence.", bizBody, "small", "muted", "wrap");
+            var lr = Ui.Row(bizBody);
+            foreach (int amount in new[] { 500, 2000, 5000 })
+            {
+                int a = amount;
+                var b = Ui.Btn($"Wash €{a} → €{Mathf.RoundToInt(a * (1f - Organization.CommercialistaFee))}", Do(() =>
+                {
+                    if (!org.LaunderViaCommercialista(a, game, out var error)) game.Log.Add(error, MessageKind.Bad);
+                }), lr, "btn--small");
+                b.SetEnabled(st.Cash >= a);
+            }
+
             Ui.Text("SUPPLIER", bizBody, "section");
-            Ui.Text($"Product at the basso: <b>{game.Stock.Product}</b> units · wholesale €{Prices.ProductWholesale}, street €{Prices.ProductStreet}", bizBody);
-            if (org.PendingOrderUnits > 0)
-                Ui.Text($"An order of {org.PendingOrderUnits} units arrives on day {org.PendingOrderDay} at 08:00.", bizBody, "muted");
+            Ui.Text($"Product at the basso: <b>{st.Product}</b> units · wholesale €{Prices.ProductWholesale}, street €{Prices.ProductStreet}. The load comes in by boat at night: send someone to the port to collect it, or it's lost.", bizBody, "small", "wrap");
+            if (game.Contracts.ShipmentPending(ContractKind.Shipment))
+                Ui.Text("A shipment is on its way. Check the Lavoretti window to send someone to the port.", bizBody, "warn", "small");
             else
             {
                 var row = Ui.Row(bizBody);
@@ -228,23 +249,52 @@ namespace OSistema.UI
                     Ui.Btn($"Order {u} (€{u * Prices.ProductWholesale})", Do(() =>
                     {
                         if (!org.OrderProduct(u, game, out var error)) game.Log.Add(error, MessageKind.Bad);
-                    }), row);
+                    }), row, "btn--small");
                 }
             }
 
-            Ui.Text("ARMS", bizBody, "section");
-            Ui.Text($"Pistols in the stash: <b>{game.Stock.Pistols}</b>. Armed crew defend themselves and fight when drafted, but get longer sentences if arrested.", bizBody, "wrap");
-            Ui.Btn($"Buy a pistol (€{Prices.Pistol})", Do(() =>
+            Ui.Text("'O MARENARO · CIGARETTES", bizBody, "section");
+            Ui.Text($"Cases in stock: <b>{st.Cigarettes}</b> · €{Prices.CigaretteCase} a case off the boat, €{Prices.CigaretteStreet} on the street. A deposito sells them every night. Needs rank 2.", bizBody, "small", "wrap");
+            if (game.Contracts.ShipmentPending(ContractKind.CigaretteRun))
+                Ui.Text("A load of cigarettes is waiting at the port tonight.", bizBody, "warn", "small");
+            else
             {
-                if (!game.Org.RequireRank(1, "Buying guns", game, out var rankError)) game.Log.Add(rankError, MessageKind.Bad);
-                else if (game.Stock.Cash < Prices.Pistol) game.Log.Add($"A pistol costs €{Prices.Pistol}.", MessageKind.Bad);
+                var row = Ui.Row(bizBody);
+                foreach (int cases in new[] { 20, 50 })
+                {
+                    int c = cases;
+                    var b = Ui.Btn($"Order {c} cases (€{c * Prices.CigaretteCase})", Do(() =>
+                    {
+                        if (!org.OrderCigarettes(c, game, out var error)) game.Log.Add(error, MessageKind.Bad);
+                    }), row, "btn--small");
+                    b.SetEnabled(org.Rank >= 2);
+                }
+            }
+
+            Ui.Text("SCOOTERS", bizBody, "section");
+            Ui.Text($"The family has <b>{st.Scooters}</b>. Crew take a free scooter for any long trip: far faster across the city.", bizBody, "small", "wrap");
+            Ui.Btn($"Buy a scooter (€{Prices.Scooter})", Do(() =>
+            {
+                if (!org.Pay(Prices.Scooter, game, out var error)) game.Log.Add(error, MessageKind.Bad);
                 else
                 {
-                    game.Stock.Cash -= Prices.Pistol;
-                    game.Stock.Pistols++;
+                    st.Scooters++;
+                    game.Log.Add("A second-hand Liberty, no questions asked. It's parked outside the basso.", MessageKind.Good);
+                }
+            }), bizBody, "btn--small").style.alignSelf = Align.FlexStart;
+
+            Ui.Text("ARMS", bizBody, "section");
+            Ui.Text($"Pistols in the stash: <b>{st.Pistols}</b>. Armed crew defend themselves and fight when drafted, but get longer sentences if arrested.", bizBody, "small", "wrap");
+            Ui.Btn($"Buy a pistol (€{Prices.Pistol})", Do(() =>
+            {
+                if (!org.RequireRank(1, "Buying guns", game, out var rankError)) game.Log.Add(rankError, MessageKind.Bad);
+                else if (!org.Pay(Prices.Pistol, game, out var error)) game.Log.Add(error, MessageKind.Bad);
+                else
+                {
+                    st.Pistols++;
                     game.Log.Add("A pistol, wrapped in a cloth, now sits in the stash.");
                 }
-            }), bizBody).style.alignSelf = Align.FlexStart;
+            }), bizBody, "btn--small").style.alignSelf = Align.FlexStart;
         }
 
         void RivalsTab()

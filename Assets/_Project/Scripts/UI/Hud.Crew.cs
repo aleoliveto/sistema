@@ -35,13 +35,16 @@ namespace OSistema.UI
             CrewRole.Pusher => "Pusher",
             CrewRole.Lookout => "Lookout (vedetta)",
             CrewRole.Collector => "Collector (pizzo)",
+            CrewRole.Manager => "Manager",
             _ => "General",
         };
 
         static void CycleRole(Pawn p)
         {
             var roles = (CrewRole[])Enum.GetValues(typeof(CrewRole));
-            p.Role = roles[(Array.IndexOf(roles, p.Role) + 1) % roles.Length];
+            // Managers are appointed from the property panel, so the cycle skips that role.
+            do p.Role = roles[(Array.IndexOf(roles, p.Role) + 1) % roles.Length];
+            while (p.Role == CrewRole.Manager);
         }
 
         static Color MoodColor(float mood) =>

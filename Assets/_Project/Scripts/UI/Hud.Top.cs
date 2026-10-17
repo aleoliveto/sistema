@@ -4,69 +4,93 @@ using UnityEngine.UIElements;
 
 namespace OSistema.UI
 {
-    /// <summary>Clock and speed (top left), resources (top centre), the family (top right).</summary>
+    /// <summary>
+    /// One continuous strip across the top: time and speed on the left, money and supplies in the middle,
+    /// the family's rank and boss on the right. Below it on the right, a small card with the two numbers
+    /// that can end everything: evidence against the boss and the rivals' hostility.
+    /// </summary>
     public sealed partial class Hud
     {
-        static readonly string[] SpeedLabels = { "II", ">", ">>", ">>>" };
-
-        Label dayLabel, timeLabel, debugSpeed;
+        Label timeLabel, dayLabel, debugSpeed;
+        Icon dayIcon;
         readonly Button[] speedButtons = new Button[4];
-        Label cashValue, productValue, foodChip, medicineValue, respectValue;
-        Label familyTitle, familyState, rankLabel;
+        Label dirtyValue, cleanValue, productValue, foodChip, medicineValue, respectValue, scooterValue, cigaretteValue;
+        VisualElement scooterChip, cigaretteChip;
+        Label rankBadge, bossLabel;
+        Label familyState, rankLabel;
         VisualElement evidenceFill, hostilityFill;
 
         void BuildTop()
         {
-            // Clock: one compact row.
-            var clock = Ui.Box("panel", "clock").Into(hudLayer);
-            timeLabel = Ui.Text("", clock, "clock__time");
-            dayLabel = Ui.Text("", clock, "clock__day");
+            var bar = Ui.Box("topbar").Into(hudLayer);
+            bar.style.backgroundImage = new StyleBackground(Ui.Gradient(new Color(0.14f, 0.11f, 0.08f, 0.97f), new Color(0.06f, 0.05f, 0.04f, 0.97f)));
+
+            // Left: time and speed
+            var left = Ui.Box("topbar__section").Into(bar);
+            dayIcon = new Icon(IconKind.Sun, 20).Into(left);
+            timeLabel = Ui.Text("", left, "clock__time");
+            dayLabel = Ui.Text("", left, "clock__day");
+            var speedIcons = new[] { IconKind.Pause, IconKind.Play, IconKind.Fast, IconKind.Faster };
             for (int i = 0; i < 4; i++)
             {
                 int s = i;
-                speedButtons[i] = Ui.Btn(SpeedLabels[i], () =>
+                var b = Ui.Btn("", () =>
                 {
                     if (s == 0) game.Ticks.TogglePause();
                     else game.Ticks.SetSpeed(s);
-                }, clock, "speed-btn");
-                Tip(speedButtons[i], () => s == 0 ? "Pause (Space)" : $"Speed {s} (key {s})");
+                }, left, "speed-btn");
+                new Icon(speedIcons[i], 12).Into(b);
+                speedButtons[i] = b;
+                Tip(b, () => s == 0 ? "Pause (Space)" : $"Speed {s} (key {s})");
             }
-            debugSpeed = Ui.Text("", clock, "bad", "small", "bold");
+            debugSpeed = Ui.Text("", left, "bad", "small", "bold");
 
-            // Resources
-            var res = Ui.Box("resources").Into(hudLayer);
-            res.pickingMode = PickingMode.Ignore;
-            cashValue = Chip(res, new Color(0.91f, 0.76f, 0.42f), "", () => "The clan's treasury, 'a bacinella. Wages are paid from it every Sunday.");
-            productValue = Chip(res, new Color(0.8f, 0.4f, 0.9f), "roba", () => "Units of product at the basso, for the piazze.");
-            foodChip = Chip(res, new Color(0.9f, 0.55f, 0.3f), "food", () => $"Meals {game.Stock.Meals} · groceries {game.Stock.Groceries} (each cooks two meals).");
-            medicineValue = Chip(res, new Color(0.45f, 0.8f, 0.7f), "medicine", () => "Medicine from the farmacia: better treatment for wounds.");
-            respectValue = Chip(res, new Color(0.95f, 0.95f, 0.95f), "respect", () => "How much the rione fears and honours the family.");
+            // Middle: money and supplies
+            var mid = Ui.Box("topbar__section", "grow").Into(bar);
+            mid.style.justifyContent = Justify.Center;
+            dirtyValue = Chip(mid, IconKind.Dirty, () => "Dirty money: what crime pays. Fine for drugs, guns, wages and small things. Launder it to spend on anything big.");
+            cleanValue = Chip(mid, IconKind.Clean, () => $"Clean money: legal income and laundered cash. Needed for property and anything from €{OSistema.World.Prices.CleanMoneyThreshold} up.");
+            Divider(mid);
+            productValue = Chip(mid, IconKind.Product, () => "Product ('a roba) at the basso, for the piazze. Ordered from the supplier, collected at the port.");
+            foodChip = Chip(mid, IconKind.Food, () => $"Meals {game.Stock.Meals} · groceries {game.Stock.Groceries} (each cooks two meals).");
+            medicineValue = Chip(mid, IconKind.Medicine, () => "Medicine from the farmacia: better treatment for wounds.");
+            scooterValue = Chip(mid, IconKind.Scooter, () => "The family's scooters. Crew ride them on long trips.");
+            scooterChip = scooterValue.parent;
+            cigaretteValue = Chip(mid, IconKind.Business, () => "Cases of contraband cigarettes for the deposito.");
+            cigaretteChip = cigaretteValue.parent;
+            Divider(mid);
+            respectValue = Chip(mid, IconKind.Respect, () => "Respect: how much the rione fears and honours the family.");
 
-            // Family: who leads, and the two numbers that can end the family.
+            // Right: rank and boss
+            var right = Ui.Box("topbar__section").Into(bar);
+            rankBadge = Ui.Text("", right, "badge");
+            bossLabel = Ui.Text("", right, "bold");
+            Tip(right, () => game.Org.NextRankGoal(game) ?? "The top of the System.");
+
+            // The family card
             var fam = Ui.Box("panel", "family").Into(hudLayer);
-            familyTitle = Ui.Text("", fam, "bold");
-            familyState = Ui.Text("", fam, "small", "muted");
             rankLabel = Ui.Text("", fam, "small", "wrap");
+            familyState = Ui.Text("", fam, "small", "muted");
             var bars = Ui.Row(fam);
             var ev = Ui.Box("col", "grow").Into(bars);
-            ev.style.marginRight = 6;
-            Ui.Text("evidence", ev, "small", "muted");
+            ev.style.marginRight = 8;
+            Ui.Text("EVIDENCE", ev, "tiny");
             (_, evidenceFill) = Ui.Bar("", new Color(0.86f, 0.3f, 0.26f), ev, thin: true);
             var ho = Ui.Box("col", "grow").Into(bars);
-            Ui.Text("rival hostility", ho, "small", "muted");
+            Ui.Text("RIVAL HOSTILITY", ho, "tiny");
             (_, hostilityFill) = Ui.Bar("", new Color(0.95f, 0.55f, 0.25f), ho, thin: true);
             Tip(fam, () =>
                 $"Evidence against the boss: {game.Org.Evidence:0}/100. At 100 an arrest warrant is issued.\n" +
                 $"{game.Rival.Name}: hostility {game.Rival.Hostility:0}/100, {game.Rival.Soldiers} soldiers. Above 40: stese. Above 70: ambushes.");
         }
 
-        Label Chip(VisualElement parent, Color dot, string label, System.Func<string> tip)
+        static void Divider(VisualElement parent) => Ui.Box("divider").Into(parent);
+
+        Label Chip(VisualElement parent, IconKind icon, System.Func<string> tip)
         {
             var chip = Ui.Box("chip").Into(parent);
-            var d = Ui.Box("chip__dot").Into(chip);
-            d.style.backgroundColor = dot;
+            new Icon(icon, 16).Into(chip);
             var value = Ui.Text("", chip, "chip__value");
-            if (label.Length > 0) Ui.Text(label, chip, "chip__label");
             Tip(chip, tip);
             return value;
         }
@@ -74,27 +98,35 @@ namespace OSistema.UI
         void RefreshTop()
         {
             var clock = game.Clock;
+            dayIcon.Set(clock.Daylight > 0.35f ? IconKind.Sun : IconKind.Moon);
             timeLabel.text = clock.TimeString;
-            dayLabel.text = $"Day {clock.Day} · {clock.Weekday.Substring(0, 3)}{(clock.IsPayday ? " · <color=#E8C26A>payday</color>" : "")}";
+            dayLabel.text = $"DAY {clock.Day} · {clock.Weekday.Substring(0, 3).ToUpper()}{(clock.IsPayday ? " · <color=#E8C26A>PAYDAY</color>" : "")}";
             for (int i = 0; i < 4; i++) speedButtons[i].Toggle("btn--on", game.Ticks.Speed == i);
             debugSpeed.text = game.Ticks.Speed >= TickManager.NormalSpeedCount ? $" ×{TickManager.SpeedMultipliers[game.Ticks.Speed]}" : "";
 
             var s = game.Stock;
-            cashValue.text = $"€{s.Cash}";
+            dirtyValue.text = $"€{s.Cash}";
+            cleanValue.text = $"€{s.Clean}";
             productValue.text = s.Product.ToString();
             foodChip.text = $"{s.Meals}+{s.Groceries * 2}";
             medicineValue.text = s.Medicine.ToString();
+            scooterValue.text = s.Scooters.ToString();
+            scooterChip.Show(s.Scooters > 0);
+            cigaretteValue.text = s.Cigarettes.ToString();
+            cigaretteChip.Show(s.Cigarettes > 0);
             respectValue.text = $"{game.Org.Respect:0}";
 
             var org = game.Org;
             var boss = org.Boss(game);
-            familyTitle.text = boss != null ? $"<color=#E8C26A>{boss.DisplayName}</color> {boss.LastName}" : "<color=#F07A6E>No boss</color>";
-            familyState.text = $"Generation {org.Generation}" +
+            rankBadge.text = org.RankName.ToUpper();
+            bossLabel.text = boss != null ? $"{boss.DisplayName} {boss.LastName}" : "<color=#F07A6E>No boss</color>";
+
+            string goal = org.NextRankGoal(game);
+            rankLabel.text = goal != null ? $"<color=#E8C26A>{goal}</color>" : "<color=#E8C26A>At the top of the System.</color>";
+            familyState.text = $"Generation {org.Generation} · turf: {org.Turf(game).Count} rioni" +
                 (org.Hiding ? $" · <color=#F2B866>latitanza day {clock.Day - org.HidingSinceDay + 1}</color>" :
                  org.WarrantActive ? " · <color=#F07A6E>arrest warrant</color>" : "") +
                 (org.PendingPizzini > 0 ? $" · {org.PendingPizzini} pizzini" : "");
-            string goal = org.NextRankGoal(game);
-            rankLabel.text = $"<color=#E8C26A>{org.RankName}</color>" + (goal != null ? $" <color=#A89F8E>· {goal.Replace("Next: ", "next ")}</color>" : "");
             Ui.SetFill(evidenceFill, org.Evidence / 100f);
             Ui.SetFill(hostilityFill, game.Rival.Destroyed ? 0f : game.Rival.Hostility / 100f);
         }

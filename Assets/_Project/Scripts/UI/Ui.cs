@@ -80,5 +80,15 @@ namespace OSistema.UI
             fill.style.width = Length.Percent(Mathf.Clamp01(t) * 100f);
 
         public static string Hex(Color c) => "#" + ColorUtility.ToHtmlStringRGB(c);
+
+        /// <summary>A vertical gradient texture for panel backgrounds (top colour to bottom colour).</summary>
+        public static Texture2D Gradient(Color top, Color bottom)
+        {
+            const int h = 64;
+            var tex = new Texture2D(1, h, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            for (int y = 0; y < h; y++) tex.SetPixel(0, y, Color.Lerp(bottom, top, y / (float)(h - 1)));
+            tex.Apply();
+            return tex;
+        }
     }
 }
