@@ -37,7 +37,7 @@ namespace OSistema.Core
             controller = gameObject.AddComponent<PlayerController>();
             controller.Init(cam, hud);
             hud.Init(controller, cam);
-            hud.NewGameRequested += () => StartGame(Game.NewGame(UnityEngine.Random.Range(0, int.MaxValue)));
+            hud.NewGameRequested += setup => StartGame(Game.NewGame(UnityEngine.Random.Range(0, int.MaxValue), setup));
             hud.SaveRequested += SaveGame;
             hud.LoadRequested += LoadGame;
 
@@ -178,7 +178,7 @@ namespace OSistema.Core
                 cam.tag = "MainCamera";
             }
             cam.orthographic = true;
-            cam.orthographicSize = 9f;
+            cam.orthographicSize = 6.5f;   // close enough to see faces and hands; scroll out for the map
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color32(14, 14, 18, 255);
             PostFx.Setup(cam);

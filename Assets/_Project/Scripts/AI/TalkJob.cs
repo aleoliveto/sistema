@@ -48,6 +48,7 @@ namespace OSistema.AI
             {
                 Id = "contact_" + contact.Name,
                 Title = contact.Name,
+                Portrait = contact.Face,
                 Neapolitan = offers.Count > 0 ? (offers[0].Neapolitan ?? contact.Greeting) : contact.NoWork,
                 English = offers.Count > 0 ? (offers[0].English ?? contact.GreetingEn) : contact.NoWorkEn,
                 Body = offers.Count > 0 ? $"{contact.Who}\n\n{offers[0].Text}" : contact.Who,
@@ -101,6 +102,7 @@ namespace OSistema.AI
             {
                 Id = "contact_supplier",
                 Title = contact.Name,
+                Portrait = contact.Face,
                 Neapolitan = carrying ? "Tiene ancora 'a roba 'ncuollo? Vattenne a casa, primma ca te fermano." : contact.Greeting,
                 English = carrying ? "You've still got the stuff on you? Go home, before they stop you." : contact.GreetingEn,
                 Body = carrying

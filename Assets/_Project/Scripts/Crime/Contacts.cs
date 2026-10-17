@@ -19,6 +19,7 @@ namespace OSistema.Crime
         public Color32 Color;
         public Npc Npc;
         public bool Secret;             // only shows up once someone has vouched for you
+        public int Face = -1;           // portrait
 
         public bool OpenAt(int hour) => OpenHour < CloseHour ? hour >= OpenHour && hour < CloseHour : hour >= OpenHour || hour < CloseHour;
         public string Hours => $"{OpenHour:00}:00–{CloseHour:00}:00";
@@ -44,6 +45,11 @@ namespace OSistema.Crime
         public Contact ByName(string name) => All.Find(c => c.Name == name);
 
         public bool Visible(Contact c, Game game) => !c.Secret || game.Org.SupplierIntroduced;
+
+        static readonly System.Collections.Generic.Dictionary<string, int> Faces = new System.Collections.Generic.Dictionary<string, int>
+        {
+            [Totonno] = 11, [Saverio] = 3, [Peppe] = 15, [Marenaro] = 12, [Supplier] = 2,
+        };
 
         public void Setup(Game game)
         {
@@ -97,6 +103,7 @@ namespace OSistema.Crime
                     Name = name, Who = who, Spot = spot, OpenHour = open, CloseHour = close, Color = color,
                     Greeting = greet, GreetingEn = greetEn, NoWork = none, NoWorkEn = noneEn,
                 };
+                c.Face = Faces.TryGetValue(name, out int f) ? f : -1;
                 All.Add(c);
                 return c;
             }

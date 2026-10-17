@@ -28,9 +28,9 @@ namespace OSistema.Pawns
         const int MentalBreakTicks = 15000; // ~6 in-game hours
 
         public readonly int Id;
-        public readonly string FirstName;
-        public readonly string LastName;
-        public readonly string Nickname;
+        public string FirstName;
+        public string LastName;
+        public string Nickname;
         public readonly Color32 ShirtColor;
 
         public int ConstructionSkill;
@@ -155,9 +155,13 @@ namespace OSistema.Pawns
         public Barks.Line Bark { get; private set; }
         float barkUntil = -1f;
 
+        /// <summary>Clothes, head, hair, hat, chain and portrait (painted art).</summary>
+        public Look Look;
+
         public Pawn(int id, string firstName, string lastName, string nickname, Color32 shirt, Vector2Int cell)
         {
             Id = id;
+            Look = Look.Young(id);
             FirstName = firstName;
             LastName = lastName;
             Nickname = nickname;

@@ -16,7 +16,7 @@ namespace OSistema.Input
     /// <summary>Camera, selection, orders and build tools. Turns player input into simulation commands.</summary>
     public sealed class PlayerController : MonoBehaviour
     {
-        const float MinZoom = 4f;
+        const float MinZoom = 3f;
         const float MaxZoom = 45f;
         const float ClickThresholdPixels = 6f;
 
@@ -149,6 +149,8 @@ namespace OSistema.Input
 
             Vector2 mousePos = mouse.position.ReadValue();
             bool overUi = hud.IsPointerOver(mousePos);
+
+            if (hud.MenuOpen) return;   // typing a name, or in a menu: the keys aren't for the game
 
             var player = game.Player;
             if (hud.MinigameOpen)
@@ -490,13 +492,7 @@ namespace OSistema.Input
                 {
                     p.LastInputTick = now;
                     if (p.CurrentJob != null && !(p.CurrentJob is DownedJob)) p.EndCurrentJob(game);
-                    var hitWall = p.Mover.Slide(p.Velocity * dt, game.Map, 0.34f, outdoorsOnly: true);
-                    if (hitWall.x || hitWall.y)
-                    {
-                        if (Mathf.Abs(p.ScooterSpeed) > 5f) OSistema.Views.SoundManager.PlayAt(OSistema.Views.AudioSynth.Punch, p.Position, 0.3f);
-                        p.ScooterSpeed *= 0.3f;
-                        p.Velocity *= 0.3f;
-                    }
+                    RideStep(p, dt);
                     follow = p;
                 }
             }
@@ -539,6 +535,62 @@ namespace OSistema.Input
                 p.LastInputTick = now;
                 if (mouse.leftButton.wasPressedThisFrame && game.Ticks.Speed > 0) game.Combat.PlayerAttack(p, ScreenToWorld(mousePos), game);
             }
+        }
+
+        /// <summary>
+        /// Moves the scooter with a slim hitbox. Grazing a wall doesn't stop you: the blocked part of the
+        /// motion is dropped, the rest carries on, and the scooter turns to follow the wall. Clipping a
+        /// corner or a lamppost nudges you round it. Only a head-on hit really slows you down.
+        /// </summary>
+        void RideStep(Pawn p, float dt)
+        {
+            const float radius = 0.2f;
+            var map = game.Map;
+            var move = p.Velocity * dt;
+            var before = p.Position;
+            var hit = p.Mover.Slide(move, map, radius, outdoorsOnly: true);
+            if (!hit.x && !hit.y) return;
+
+            // Corner assist: try slipping sideways a little to get round the edge.
+            var blockedPart = new Vector2(hit.x ? move.x : 0f, hit.y ? move.y : 0f);
+            if (blockedPart.sqrMagnitude > 0f)
+            {
+                var side = new Vector2(-blockedPart.y, blockedPart.x).normalized;
+                foreach (float s in new[] { 0.12f, -0.12f, 0.24f, -0.24f })
+                {
+                    var probe = p.Position + side * s + blockedPart;
+                    if (!Clear(probe, radius, map)) continue;
+                    p.Mover.Place(probe);
+                    return;
+                }
+            }
+
+            // Glance off: keep the speed along the wall, turn the nose to follow it.
+            var moved = p.Position - before;
+            float along = move.sqrMagnitude > 0f ? moved.magnitude / move.magnitude : 0f;
+            if (hit.x) p.Velocity.x = 0f;
+            if (hit.y) p.Velocity.y = 0f;
+            if (p.Velocity.sqrMagnitude > 0.04f)
+            {
+                float target = Mathf.Atan2(-p.Velocity.x, p.Velocity.y) * Mathf.Rad2Deg;
+                if (p.ScooterSpeed < 0f) target += 180f;
+                p.Heading = Mathf.MoveTowardsAngle(p.Heading, target, 360f * dt);
+            }
+            float keep = Mathf.Lerp(0.35f, 0.97f, along);
+            if (keep < 0.5f && Mathf.Abs(p.ScooterSpeed) > 6f) OSistema.Views.SoundManager.PlayAt(OSistema.Views.AudioSynth.Punch, p.Position, 0.25f);
+            p.ScooterSpeed *= keep;
+        }
+
+        static bool Clear(Vector2 at, float r, Map map)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                var c = new Vector2Int(Mathf.FloorToInt(at.x + (i % 2 == 0 ? -r : r)), Mathf.FloorToInt(at.y + (i < 2 ? -r : r)));
+                if (!map.InBounds(c) || !map.IsPassable(c)) return false;
+                var t = map.GetTerrain(c.x, c.y);
+                if (t == TerrainType.Floor || t == TerrainType.Marble || map.GetBuilding(c.x, c.y) == BuildingDefs.Door) return false;
+            }
+            return true;
         }
 
         void ToggleScooter(Pawn p)

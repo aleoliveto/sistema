@@ -120,9 +120,18 @@ namespace OSistema.UI
             var avatar = Ui.Box("avatar").Into(parent);
             if (big) avatar.AddToClassList("avatar--big");
             avatar.style.backgroundColor = (Color)p.ShirtColor;
-            var initial = Ui.Text(p.FirstName.Substring(0, 1), avatar);
-            initial.style.flexGrow = 1;
-            initial.style.unityTextAlign = TextAnchor.MiddleCenter;
+            var face = p.Look != null ? OSistema.Views.CharacterArt.Face(p.Look.Face) : null;
+            if (face != null)
+            {
+                avatar.style.backgroundImage = new StyleBackground(face);
+                avatar.AddToClassList("avatar--portrait");
+            }
+            else
+            {
+                var initial = Ui.Text(p.FirstName.Substring(0, 1), avatar);
+                initial.style.flexGrow = 1;
+                initial.style.unityTextAlign = TextAnchor.MiddleCenter;
+            }
             avatar.pickingMode = PickingMode.Ignore;
             return avatar;
         }

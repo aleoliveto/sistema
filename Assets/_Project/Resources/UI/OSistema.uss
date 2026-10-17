@@ -731,3 +731,13 @@
 .tool { width: 82px; height: 86px; }
 .tool__picture { width: 40px; height: 40px; border-width: 0; border-radius: 3px; background-color: rgba(0,0,0,0.35); -unity-background-scale-mode: scale-to-fit; }
 .tool__price { font-size: 10px; color: #E8C26A; }
+
+/* ---------- Portraits ---------- */
+.avatar--portrait { -unity-background-scale-mode: scale-and-crop; border-color: rgba(232, 194, 106, 0.6); }
+.card__portrait { width: 84px; height: 84px; margin-right: 14px; border-radius: 4px; border-width: 2px; border-color: rgba(0,0,0,0.6); -unity-background-scale-mode: scale-and-crop; flex-shrink: 0; }
+
+/* ---------- Character creator ---------- */
+.creator { width: 900px; }
+.creator__portrait { width: 170px; height: 170px; margin-right: 12px; border-radius: 4px; border-width: 2px; border-color: rgba(232,194,106,0.5); -unity-background-scale-mode: scale-and-crop; background-color: #111; }
+.creator__preview { width: 170px; height: 170px; border-radius: 4px; background-color: rgb(78, 76, 82); margin-bottom: 8px; }
+.creator__layer { position: absolute; left: 0; top: 0; right: 0; bottom: 0; -unity-background-scale-mode: scale-to-fit; }

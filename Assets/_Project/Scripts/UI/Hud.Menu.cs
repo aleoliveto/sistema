@@ -7,7 +7,7 @@ namespace OSistema.UI
     /// <summary>Title screen, pause menu (Esc) and settings. Settings persist in PlayerPrefs.</summary>
     public sealed partial class Hud
     {
-        enum Menu { None, Title, Pause, Settings }
+        enum Menu { None, Title, Pause, Settings, Creator }
 
         public event Action SaveRequested;
         public event Action LoadRequested;
@@ -46,6 +46,7 @@ namespace OSistema.UI
                 case Menu.Title: BuildTitle(); break;
                 case Menu.Pause: BuildPause(); break;
                 case Menu.Settings: BuildSettings(); break;
+                case Menu.Creator: BuildCreator(); break;
             }
         }
 
@@ -72,7 +73,7 @@ namespace OSistema.UI
         void BuildTitle()
         {
             var body = MenuCard("A life in the System. Every choice has a price.");
-            Ui.Btn("New family", CloseMenu, body, "menu-btn");
+            Ui.Btn("New family", () => OpenMenu(Menu.Creator), body, "menu-btn");
             var load = Ui.Btn("Load game", () => { CloseMenu(); LoadRequested?.Invoke(); }, body, "menu-btn");
             load.SetEnabled(Core.SaveSystem.HasSave(Core.SaveSystem.DefaultPath));
             Ui.Btn("Settings", () => { settingsReturnTo = Menu.Title; OpenMenu(Menu.Settings); }, body, "menu-btn");
@@ -89,7 +90,7 @@ namespace OSistema.UI
             load.SetEnabled(Core.SaveSystem.HasSave(Core.SaveSystem.DefaultPath));
             Ui.Btn("Settings", () => { settingsReturnTo = Menu.Pause; OpenMenu(Menu.Settings); }, body, "menu-btn");
             Ui.Btn("Help (H)", () => { CloseMenu(); ToggleWindow(Window.Help); }, body, "menu-btn");
-            Ui.Btn("New family", () => { CloseMenu(); NewGameRequested?.Invoke(); }, body, "menu-btn", "btn--danger");
+            Ui.Btn("New family", () => OpenMenu(Menu.Creator), body, "menu-btn", "btn--danger");
             Ui.Btn("Quit", Application.Quit, body, "menu-btn");
         }
 
@@ -154,6 +155,7 @@ namespace OSistema.UI
             if (openMenu == Menu.Settings) OpenMenu(settingsReturnTo);
             else if (openMenu == Menu.Pause) CloseMenu();
             else if (openMenu == Menu.Title) { }
+            else if (openMenu == Menu.Creator) OpenMenu(Menu.Title);
             else if (openWindow != Window.None) ToggleWindow(openWindow);
             else OpenMenu(Menu.Pause);
         }
@@ -162,6 +164,8 @@ namespace OSistema.UI
         {
             if (titleShown) return;
             titleShown = true;
+            // Developer switch: a file named dev_autoplay in the save folder skips the title (for testing).
+            if (System.IO.File.Exists(System.IO.Path.Combine(Application.persistentDataPath, "dev_autoplay"))) return;
             OpenMenu(Menu.Title);
         }
     }

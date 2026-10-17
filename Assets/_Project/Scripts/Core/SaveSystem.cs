@@ -15,7 +15,7 @@ namespace OSistema.Core
     /// </summary>
     public static class SaveSystem
     {
-        public const int Version = 9;
+        public const int Version = 10;
         const int OldestReadable = 5; // the map generator changed too much to migrate older saves
 
         public static string DefaultPath => Path.Combine(Application.persistentDataPath, "save1.json");
@@ -304,6 +304,9 @@ namespace OSistema.Core
                 bloodLoss = p.Health.BloodLoss,
                 hasBed = p.Bed.HasValue,
                 schedule = p.ScheduleString,
+                hasLook = p.Look != null,
+                lookBody = p.Look?.Body ?? 0, lookHead = p.Look?.Head ?? 0, lookHair = p.Look?.Hair ?? 0,
+                lookHat = p.Look?.Hat ?? -1, lookNeck = p.Look?.Neck ?? -1, lookFace = p.Look?.Face ?? -1,
                 bedX = p.Bed?.x ?? 0,
                 bedY = p.Bed?.y ?? 0,
             };
@@ -339,6 +342,7 @@ namespace OSistema.Core
                 Bed = d.hasBed ? new Vector2Int(d.bedX, d.bedY) : (Vector2Int?)null,
             };
             p.ScheduleString = d.schedule;
+            if (d.hasLook) p.Look = new Look { Body = d.lookBody, Head = d.lookHead, Hair = d.lookHair, Hat = d.lookHat, Neck = d.lookNeck, Face = d.lookFace };
             p.RestoreState(d.drafted, d.dead, d.deathCause, d.breakUntil);
             if (d.xp != null) System.Array.Copy(d.xp, p.SkillXp, Mathf.Min(d.xp.Length, p.SkillXp.Length));
             p.Needs.Food = d.food;
@@ -452,6 +456,8 @@ namespace OSistema.Core
             public float food, rest, bloodLoss;
             public bool hasBed;
             public string schedule;
+            public bool hasLook;
+            public int lookBody, lookHead, lookHair, lookHat = -1, lookNeck = -1, lookFace = -1;
             public int bedX, bedY;
             public List<InjuryData> injuries = new List<InjuryData>();
             public List<ThoughtData> memories = new List<ThoughtData>();

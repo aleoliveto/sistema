@@ -45,6 +45,39 @@ namespace OSistema.Core
         public readonly ContactBook Contacts = new ContactBook();
         public readonly Pursuit Pursuit = new Pursuit();
 
+        /// <summary>
+        /// Street furniture (lamps, bins, benches, parked cars and scooters, chairs) must never choke a
+        /// vicolo: anything that leaves less than two clear cells beside it, across the lane, goes.
+        /// </summary>
+        void ClearNarrowLanes()
+        {
+            var clutter = new[] { BuildingDefs.StreetLamp, BuildingDefs.Bin, BuildingDefs.Bench, BuildingDefs.ParkedCar,
+                BuildingDefs.ParkedScooter, BuildingDefs.PlasticChair, BuildingDefs.MarketStall };
+            int Span(int x, int y, int dx, int dy)
+            {
+                int n = 0;
+                for (int k = 1; k <= 3; k++)
+                {
+                    int cx = x + dx * k, cy = y + dy * k;
+                    if (!Map.InBounds(cx, cy) || !Map.IsPassable(new Vector2Int(cx, cy))) break;
+                    var t = Map.GetTerrain(cx, cy);
+                    if (t == TerrainType.Floor || t == TerrainType.Marble) break;
+                    n++;
+                }
+                return n;
+            }
+            int removed = 0;
+            foreach (var def in clutter)
+            foreach (var c in new List<Vector2Int>(Map.PositionsOf(def)))
+            {
+                int across = Mathf.Min(Span(c.x, c.y, 1, 0) + Span(c.x, c.y, -1, 0), Span(c.x, c.y, 0, 1) + Span(c.x, c.y, 0, -1));
+                if (across >= 2) continue;
+                Map.SetBuilding(c.x, c.y, null);
+                removed++;
+            }
+            if (removed > 0) Debug.Log($"[O Sistema] Cleared {removed} props out of narrow lanes.");
+        }
+
         /// <summary>The character the player moves directly: the head of the family.</summary>
         public Pawn Player
         {
@@ -108,11 +141,12 @@ namespace OSistema.Core
             Properties = new PropertyManager(Map, properties);
             StreetLife = new StreetLife(this);
             Hospital = new Hospital(this);
+            ClearNarrowLanes();
             Contacts.Setup(this);
             Ticks.OnTick += Tick;
         }
 
-        public static Game NewGame(int seed)
+        public static Game NewGame(int seed, CharacterSetup setup = null)
         {
             var generator = new MapGenerator(seed);
             var map = generator.Generate(MapWidth, MapHeight, out var playerBase, out var zoneRects, out var properties);
@@ -126,10 +160,10 @@ namespace OSistema.Core
             game.Stock.Papers = 60;
             game.Stock.EmptyPacks = 3;
             game.PlaceStarterTable();
-            game.SpawnStartingCrew();
+            game.SpawnStartingCrew(setup);
             game.Rival.Setup(game, rng);
             game.Favours.Setup(game, rng);
-            game.Log.Add("Gennaro is seventeen. He lives with his mother in a basso in the rione, and he wants more.");
+            game.Log.Add($"{game.Player?.FirstName ?? "Gennaro"} is seventeen. He lives with his mother in a basso in the rione, and he wants more.");
             game.Log.Add("WASD to walk, E to talk or use things. Someone with work has a gold ! over their head.");
             game.Phone.Send(game, Social.MsgKind.Info, "Mammà",
                 "Gennà, nun fa' tarde stasera. E statte accorto a chi frequiente.",
@@ -203,10 +237,41 @@ namespace OSistema.Core
         public Pawn AddFriend(int i) => SpawnCrew(Friends[i + 1], boss: false);
 
         // Gennaro starts alone. His friends come when he's somebody.
-        void SpawnStartingCrew()
+        void SpawnStartingCrew(CharacterSetup setup)
         {
-            SpawnCrew(Friends[0], boss: true);
+            var me = SpawnCrew(Friends[0], boss: true);
             EnsurePlayer();
+            if (me == null) return;
+            me.Look = new Pawns.Look { Body = 0, Head = 2, Hair = 1, Face = 0 };
+            if (setup == null) return;
+            // The player's own character, as he made him.
+            me.FirstName = setup.FirstName;
+            me.LastName = setup.LastName;
+            me.Nickname = setup.Nickname;
+            me.Look = setup.Look.Clone();
+            var sk = setup.Skills;
+            me.ConstructionSkill = sk[0];
+            me.CookingSkill = sk[1];
+            me.MedicineSkill = sk[2];
+            me.IntimidationSkill = sk[3];
+            me.AwarenessSkill = sk[4];
+            me.ShootingSkill = sk[5];
+            switch (setup.Background)
+            {
+                case Background.KidFromTheVele:
+                    me.AwarenessSkill += 2;
+                    Org.Respect += 3f;
+                    break;
+                case Background.OutOfJuvie:
+                    me.IntimidationSkill += 2;
+                    me.ShootingSkill += 1;
+                    Org.Respect += 5f;
+                    Org.Evidence += 12f;
+                    break;
+                default:
+                    Stock.Cash += 80;
+                    break;
+            }
         }
 
         Pawn SpawnCrew((string, string, string, Color32, int, int, int, int, int, int, CrewRole) f, bool boss)

@@ -22,6 +22,7 @@ namespace OSistema.Story
         public string Neapolitan;           // a line in dialect…
         public string English;              // …and its subtitle
         public string Body;
+        public int Portrait = -1;           // face shown on the card (Resources/Characters/face_NN)
         public readonly List<EventOption> Options = new List<EventOption>();
 
         public GameEvent Option(string label, string hint, Action<Game> apply, Func<Game, bool> available = null)

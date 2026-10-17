@@ -70,8 +70,57 @@ namespace OSistema.Views
             return sr;
         }
 
+        // ---------- Painted parts ----------
+
+        SpriteRenderer hat, neck;
+        bool art;
+        bool visibleNow = true;
+        Color artTint = Color.white;
+
+        /// <summary>Switches to the painted parts (clothes, head, hair, hat, chain). False if the art isn't there.</summary>
+        public bool ApplyLook(OSistema.Pawns.Look look)
+        {
+            if (look == null || !CharacterArt.Available) return false;
+            var b = CharacterArt.Sprite("body", look.Body);
+            var h = CharacterArt.Sprite("head", look.Head);
+            var hr = CharacterArt.Sprite("hair", look.Hair);
+            if (b == null || h == null || hr == null) return false;
+            art = true;
+            body.sprite = b;
+            head.sprite = h;
+            hair.sprite = hr;
+            body.transform.localPosition = Vector3.zero;
+            head.transform.localPosition = Vector3.zero;
+            hair.transform.localPosition = Vector3.zero;
+            if (neck == null) neck = Part("Chain", pivot, null, SpriteFactory.LitMaterial, head.sortingOrder - 1);
+            if (hat == null) hat = Part("Hat", pivot, null, SpriteFactory.LitMaterial, hair.sortingOrder + 1);
+            neck.sprite = CharacterArt.Sprite("neck", look.Neck);
+            hat.sprite = CharacterArt.Sprite("hat", look.Hat);
+            SetVisible(visibleNow);
+            SetColors(Color.white, Color.white, Color.white);
+            return true;
+        }
+
+        /// <summary>For painted parts: white is normal, grey is downed or dead, reddish is a hit.</summary>
+        public void SetArtTint(Color c)
+        {
+            artTint = c;
+            if (!art) return;
+            body.color = head.color = hair.color = c;
+            if (hat != null) hat.color = c;
+            if (neck != null) neck.color = c;
+        }
+
+        public bool UsesArt => art;
+
         public void SetColors(Color shirt, Color skin, Color hairColor)
         {
+            if (art)
+            {
+                handL.color = handR.color = skin == Color.white ? new Color(0.86f, 0.68f, 0.52f) : skin;
+                SetArtTint(artTint);
+                return;
+            }
             body.color = shirt;
             head.color = skin;
             handL.color = skin;
@@ -81,12 +130,17 @@ namespace OSistema.Views
 
         public void SetVisible(bool visible)
         {
+            visibleNow = visible;
             shadow.enabled = visible;
             body.enabled = visible;
             head.enabled = visible;
             hair.enabled = visible;
-            handL.enabled = visible;
-            handR.enabled = visible;
+            // The painted bodies have their own arms: the hands only show to hold a gun or the handlebars.
+            bool hands = visible && (!art || aiming || Seated);
+            handL.enabled = hands;
+            handR.enabled = hands;
+            if (hat != null) hat.enabled = visible && hat.sprite != null;
+            if (neck != null) neck.enabled = visible && neck.sprite != null;
             if (!visible) gun.enabled = false;
         }
 
@@ -133,6 +187,12 @@ namespace OSistema.Views
                 handL.transform.localPosition = HandLRest + new Vector3(0f, swing, 0f);
                 handR.transform.localPosition = HandRRest - new Vector3(0f, swing, 0f);
                 gun.transform.localPosition = new Vector3(0.3f, 0.32f - swing, 0f);
+            }
+            if (art)
+            {
+                bool hands = visibleNow && (aiming || Seated) && !lying;
+                handL.enabled = hands;
+                handR.enabled = hands;
             }
             aiming = false;
             // A slight bob of the shoulders as the weight shifts.

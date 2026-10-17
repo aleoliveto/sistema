@@ -35,6 +35,7 @@ namespace OSistema.Views
             skin = PersonRig.SkinFor(p.Id);
             hair = PersonRig.HairFor(p.Id + 3);
             rig.SetColors(shirt, skin, hair);
+            rig.ApplyLook(p.Faction == Faction.Rival ? Look.Rival(p.Id) : p.Look);
 
             var scooterGo = new GameObject("Scooter");
             scooterGo.transform.SetParent(transform, false);
@@ -108,6 +109,7 @@ namespace OSistema.Views
             c.a = 1f;
             bool flash = Time.unscaledTime - pawn.LastHitTime < 0.12f;
             rig.SetColors(flash ? Color.white : c, flash ? Color.white : pawn.Dead ? skin * 0.6f : skin, hair);
+            rig.SetArtTint(flash ? new Color(1f, 0.55f, 0.5f) : pawn.Dead ? new Color(0.5f, 0.5f, 0.52f) : pawn.Health.Downed ? new Color(0.75f, 0.72f, 0.72f) : Color.white);
 
             // Someone who goes down bleeds onto the street.
             if ((pawn.Dead || pawn.Health.Downed) && pawn.Health.BloodLoss > 0.05f && !pooled && CombatView.Instance != null)

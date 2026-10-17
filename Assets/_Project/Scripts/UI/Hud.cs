@@ -30,7 +30,7 @@ namespace OSistema.UI
         float refreshTimer, alertUntil;
 
         /// <summary>Raised when the player starts over from the game-over screen.</summary>
-        public event Action NewGameRequested;
+        public event Action<CharacterSetup> NewGameRequested;
 
         public void Init(PlayerController pc, Camera c)
         {

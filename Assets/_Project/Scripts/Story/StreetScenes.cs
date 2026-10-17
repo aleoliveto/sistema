@@ -44,6 +44,7 @@ namespace OSistema.Story
             {
                 Id = "knock",
                 Title = "The debtor's door",
+                Portrait = 13,
                 Neapolitan = "Chi è? ...Ah, si' tu. Nun tengo niente, 'o giuro 'ncopp' 'e figlie mie.",
                 English = "Who is it? ...Oh, it's you. I've got nothing, I swear on my children.",
                 Body = $"A man in a vest opens the door a crack, then steps out so the wife won't hear. He owes Don Peppe money. You keep a third of €{job.Reward * 3}.",

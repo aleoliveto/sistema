@@ -376,11 +376,20 @@ namespace OSistema.Npcs
         {
             // Somebody in the way: brake, and lean on the horn, rather than ride through them.
             var p = game.Player;
-            if (p != null && p.IsPresent && (p.Position - npc.Mover.Position).sqrMagnitude < 2.2f * 2.2f)
+            if (p != null && p.IsPresent && npc.Timer < 90)
             {
-                if (game.Rng.NextDouble() < 0.004) OSistema.Views.SoundManager.PlayAt(OSistema.Views.AudioSynth.Horn, npc.Mover.Position, 0.25f);
-                return;
+                var to = p.Position - npc.Mover.Position;
+                var ahead = npc.Mover.Position - npc.Target;   // reuse Target as the last position seen
+                bool inFront = to.sqrMagnitude < 1.3f * 1.3f && (ahead.sqrMagnitude < 0.0001f || Vector2.Dot(-ahead.normalized, to.normalized) > 0.5f);
+                if (inFront)
+                {
+                    // A moment's pause and a toot; then they squeeze past anyway.
+                    if (npc.Timer++ == 0 && game.Rng.NextDouble() < 0.5) OSistema.Views.SoundManager.PlayAt(OSistema.Views.AudioSynth.Horn, npc.Mover.Position, 0.22f);
+                    return;
+                }
             }
+            if (npc.Timer > 0 && (p == null || (p.Position - npc.Mover.Position).sqrMagnitude > 4f)) npc.Timer = 0;
+            npc.Target = Vector2Int.FloorToInt(npc.Mover.Position);
             npc.Walker ??= new Walker(npc.Exit, adjacent: false, roadOnly: true); // streets and vicoli, never indoors
             if (npc.Walker.Tick(npc.Mover, 1f, game) != WalkStatus.Walking) npc.Despawned = true;
         }

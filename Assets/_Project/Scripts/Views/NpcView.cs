@@ -10,6 +10,7 @@ namespace OSistema.Views
         SpriteRenderer scooter;
         Exhaust exhaust;
         Vector2 exhaustLast;
+        bool contactDressed;
 
         // Ambulance
         SpriteRenderer van, cross;
@@ -31,6 +32,14 @@ namespace OSistema.Views
             var hair = n.Kind == NpcKind.Police ? new Color(0.1f, 0.12f, 0.25f) : PersonRig.HairFor(n.Id);
             if (n.Kind == NpcKind.Elder) hair = new Color(0.75f, 0.75f, 0.75f);
             rig.SetColors(n.Color, PersonRig.SkinFor(n.Id), hair);
+            switch (n.Kind)
+            {
+                case NpcKind.Police: rig.ApplyLook(OSistema.Pawns.Look.Police(n.Id)); break;
+                case NpcKind.Elder: rig.ApplyLook(OSistema.Pawns.Look.Old(n.Id)); break;
+                case NpcKind.Child:
+                case NpcKind.Paramedic: break;
+                default: rig.ApplyLook(OSistema.Pawns.Look.Young(n.Id + 5000)); break;
+            }
 
             if (n.Kind == NpcKind.Scooter)
             {
@@ -114,6 +123,12 @@ namespace OSistema.Views
                 return;
             }
             if (rig == null) return;
+            // Contacts are named after they appear: dress them for their part.
+            if (!contactDressed && npc.ContactName != null && npc.ContactName != "visitor")
+            {
+                contactDressed = true;
+                rig.ApplyLook(OSistema.Pawns.Look.Old(npc.ContactName.GetHashCode()));
+            }
             bool visible = FogOfWar.CanSee(npc.Mover.Position);
             rig.SetVisible(visible);
             if (scooter != null) scooter.enabled = visible;

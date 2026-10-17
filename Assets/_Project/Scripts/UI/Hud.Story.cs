@@ -132,6 +132,14 @@ namespace OSistema.UI
             var card = Ui.Box("panel", "card").Into(eventDim);
             var band = Ui.Box("card__band").Into(card);
             band.style.backgroundColor = CardBands[Mathf.Abs(e.Id.GetHashCode()) % CardBands.Length];
+            var face = OSistema.Views.CharacterArt.Face(e.Portrait);
+            if (face != null)
+            {
+                band.style.flexDirection = FlexDirection.Row;
+                band.style.alignItems = Align.Center;
+                var img = Ui.Box("card__portrait").Into(band);
+                img.style.backgroundImage = new StyleBackground(face);
+            }
             Ui.Text(e.Title, band, "card__title");
 
             var body = Ui.Box("card__body").Into(card);
@@ -164,7 +172,7 @@ namespace OSistema.UI
             var body = Ui.Box("card__body").Into(card);
             Ui.Text(game.Org.GameOverReason, body, "card__text");
             Ui.Text($"Survived {game.Clock.Day} days across {game.Org.Generation} generation(s).", body, "card__sub");
-            Ui.Btn("Start a new family", () => NewGameRequested?.Invoke(), body, "option");
+            Ui.Btn("Start a new family", () => OpenMenu(Menu.Creator), body, "option");
         }
     }
 }

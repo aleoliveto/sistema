@@ -1,0 +1,1419 @@
+fileFormatVersion: 2
+guid: 7fd2b00bfe6784fd5accc2f53cae9770
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -2530485722375810391
+    second: sheet_hair_0
+  - first:
+      213: -5370916962501901305
+    second: sheet_hair_1
+  - first:
+      213: -8346920074669104882
+    second: sheet_hair_2
+  - first:
+      213: -7570872382646623709
+    second: sheet_hair_3
+  - first:
+      213: -172636389391111483
+    second: sheet_hair_4
+  - first:
+      213: 3476499085656419711
+    second: sheet_hair_5
+  - first:
+      213: 4682404793034568952
+    second: sheet_hair_6
+  - first:
+      213: 5253381460454704097
+    second: sheet_hair_7
+  - first:
+      213: 2529487944483202905
+    second: sheet_hair_8
+  - first:
+      213: 468643638318963395
+    second: sheet_hair_9
+  - first:
+      213: 2894240977587461660
+    second: sheet_hair_10
+  - first:
+      213: 3044096760659911447
+    second: sheet_hair_11
+  - first:
+      213: 5796151115370978102
+    second: sheet_hair_12
+  - first:
+      213: 4976351094872884610
+    second: sheet_hair_13
+  - first:
+      213: -6453413293502664754
+    second: sheet_hair_14
+  - first:
+      213: -6320662431308693854
+    second: sheet_hair_15
+  - first:
+      213: 1781384672413550725
+    second: sheet_hair_16
+  - first:
+      213: 3982523514276313597
+    second: sheet_hair_17
+  - first:
+      213: -2776546730049892124
+    second: sheet_hair_18
+  - first:
+      213: 5658883156416306631
+    second: sheet_hair_19
+  - first:
+      213: -7388868015108230027
+    second: sheet_hair_20
+  - first:
+      213: 2473514516458634394
+    second: sheet_hair_21
+  - first:
+      213: 2877010292542083268
+    second: sheet_hair_22
+  - first:
+      213: -6904706240202722836
+    second: sheet_hair_23
+  - first:
+      213: 7273038843538968240
+    second: sheet_hair_24
+  - first:
+      213: 6042200005025686334
+    second: sheet_hair_25
+  - first:
+      213: -1341268378385629707
+    second: sheet_hair_26
+  - first:
+      213: 1818952431381929159
+    second: sheet_hair_27
+  - first:
+      213: -8089504009037371831
+    second: sheet_hair_28
+  - first:
+      213: -7421709277876275692
+    second: sheet_hair_29
+  - first:
+      213: 6054037786449507103
+    second: sheet_hair_30
+  - first:
+      213: -5092250944519112347
+    second: sheet_hair_31
+  - first:
+      213: 1365532321459110452
+    second: sheet_hair_32
+  - first:
+      213: 7809152787691634426
+    second: sheet_hair_33
+  - first:
+      213: 8820541878384890146
+    second: sheet_hair_34
+  - first:
+      213: 7096152472028978668
+    second: sheet_hair_35
+  - first:
+      213: 656928756252788210
+    second: sheet_hair_36
+  - first:
+      213: 489379861978219915
+    second: sheet_hair_37
+  - first:
+      213: 1333054694236185515
+    second: sheet_hair_38
+  - first:
+      213: -9187274487841841748
+    second: sheet_hair_39
+  - first:
+      213: 2775185232958649884
+    second: sheet_hair_40
+  - first:
+      213: -6980067142080781603
+    second: sheet_hair_41
+  - first:
+      213: 7117586194988543027
+    second: sheet_hair_42
+  - first:
+      213: 5560576341046503162
+    second: sheet_hair_43
+  - first:
+      213: 325563432345606406
+    second: sheet_hair_44
+  - first:
+      213: -4160906926868833610
+    second: sheet_hair_45
+  - first:
+      213: 7597195934620640934
+    second: sheet_hair_46
+  - first:
+      213: 4558759519998727186
+    second: sheet_hair_47
+  - first:
+      213: 6978569843377652334
+    second: sheet_hair_48
+  - first:
+      213: 6893560190844199776
+    second: sheet_hair_49
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: sheet_hair_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 939
+        width: 290
+        height: 279
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9a2979084a8e1ecd0800000000000000
+      internalID: -2530485722375810391
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_1
+      rect:
+        serializedVersion: 2
+        x: 303
+        y: 927
+        width: 339
+        height: 313
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 70444fb9a7ba675b0800000000000000
+      internalID: -5370916962501901305
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_2
+      rect:
+        serializedVersion: 2
+        x: 313
+        y: 1128
+        width: 22
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e0165cc7a68c92c80800000000000000
+      internalID: -8346920074669104882
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_3
+      rect:
+        serializedVersion: 2
+        x: 313
+        y: 1104
+        width: 26
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 32268802eabdee690800000000000000
+      internalID: -7570872382646623709
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_4
+      rect:
+        serializedVersion: 2
+        x: 327
+        y: 1128
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5ca69075e1caa9df0800000000000000
+      internalID: -172636389391111483
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_5
+      rect:
+        serializedVersion: 2
+        x: 649
+        y: 939
+        width: 285
+        height: 286
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f7d6586cf710f3030800000000000000
+      internalID: 3476499085656419711
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_6
+      rect:
+        serializedVersion: 2
+        x: 934
+        y: 933
+        width: 320
+        height: 291
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8f4796fc95e3bf040800000000000000
+      internalID: 4682404793034568952
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_7
+      rect:
+        serializedVersion: 2
+        x: 321
+        y: 1092
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1e3860cca92c7e840800000000000000
+      internalID: 5253381460454704097
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_8
+      rect:
+        serializedVersion: 2
+        x: 948
+        y: 1002
+        width: 10
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 957ed8a32eb8a1320800000000000000
+      internalID: 2529487944483202905
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_9
+      rect:
+        serializedVersion: 2
+        x: 267
+        y: 963
+        width: 25
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3ca9f34f7e4f08600800000000000000
+      internalID: 468643638318963395
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_10
+      rect:
+        serializedVersion: 2
+        x: 946
+        y: 982
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c1eda73b5d86a2820800000000000000
+      internalID: 2894240977587461660
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_11
+      rect:
+        serializedVersion: 2
+        x: 295
+        y: 931
+        width: 28
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7132d0120edce3a20800000000000000
+      internalID: 3044096760659911447
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_12
+      rect:
+        serializedVersion: 2
+        x: 873
+        y: 849
+        width: 77
+        height: 102
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 63bdb28eab0107050800000000000000
+      internalID: 5796151115370978102
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_13
+      rect:
+        serializedVersion: 2
+        x: 914
+        y: 945
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 285468774fc8f0540800000000000000
+      internalID: 4976351094872884610
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_14
+      rect:
+        serializedVersion: 2
+        x: 983
+        y: 938
+        width: 13
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ecf6dfb1dced076a0800000000000000
+      internalID: -6453413293502664754
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_15
+      rect:
+        serializedVersion: 2
+        x: 14
+        y: 616
+        width: 317
+        height: 321
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2ae30bcc10f7848a0800000000000000
+      internalID: -6320662431308693854
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_16
+      rect:
+        serializedVersion: 2
+        x: 348
+        y: 644
+        width: 280
+        height: 289
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 588098fdbefb8b810800000000000000
+      internalID: 1781384672413550725
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_17
+      rect:
+        serializedVersion: 2
+        x: 651
+        y: 616
+        width: 297
+        height: 311
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: df974123904c44730800000000000000
+      internalID: 3982523514276313597
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_18
+      rect:
+        serializedVersion: 2
+        x: 950
+        y: 923
+        width: 10
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4e09a15b579b779d0800000000000000
+      internalID: -2776546730049892124
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_19
+      rect:
+        serializedVersion: 2
+        x: 959
+        y: 923
+        width: 7
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7cd92abaf34688e40800000000000000
+      internalID: 5658883156416306631
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_20
+      rect:
+        serializedVersion: 2
+        x: 965
+        y: 923
+        width: 9
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5747a3b20b7757990800000000000000
+      internalID: -7388868015108230027
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_21
+      rect:
+        serializedVersion: 2
+        x: 969
+        y: 632
+        width: 272
+        height: 308
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a9cf944f850b35220800000000000000
+      internalID: 2473514516458634394
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_22
+      rect:
+        serializedVersion: 2
+        x: 594
+        y: 706
+        width: 8
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4c01d163e913de720800000000000000
+      internalID: 2877010292542083268
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_23
+      rect:
+        serializedVersion: 2
+        x: 601
+        y: 708
+        width: 11
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ce13b4ad14e8d20a0800000000000000
+      internalID: -6904706240202722836
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_24
+      rect:
+        serializedVersion: 2
+        x: 30
+        y: 341
+        width: 266
+        height: 274
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0be02c24b460fe460800000000000000
+      internalID: 7273038843538968240
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_25
+      rect:
+        serializedVersion: 2
+        x: 295
+        y: 578
+        width: 10
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e336b6144e43ad350800000000000000
+      internalID: 6042200005025686334
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_26
+      rect:
+        serializedVersion: 2
+        x: 301
+        y: 306
+        width: 331
+        height: 329
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5fd3cd5248bd26de0800000000000000
+      internalID: -1341268378385629707
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_27
+      rect:
+        serializedVersion: 2
+        x: 627
+        y: 326
+        width: 337
+        height: 285
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7cc5adf59973e3910800000000000000
+      internalID: 1818952431381929159
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_28
+      rect:
+        serializedVersion: 2
+        x: 979
+        y: 328
+        width: 252
+        height: 303
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 946aa3cb6fe4cbf80800000000000000
+      internalID: -8089504009037371831
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_29
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 325
+        height: 332
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 416b6f1dbbac00990800000000000000
+      internalID: -7421709277876275692
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_30
+      rect:
+        serializedVersion: 2
+        x: 338
+        y: 0
+        width: 272
+        height: 326
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f137d168a43440450800000000000000
+      internalID: 6054037786449507103
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_31
+      rect:
+        serializedVersion: 2
+        x: 577
+        y: 318
+        width: 29
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5697ac0feb0b459b0800000000000000
+      internalID: -5092250944519112347
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_32
+      rect:
+        serializedVersion: 2
+        x: 581
+        y: 0
+        width: 345
+        height: 328
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 43282e5596853f210800000000000000
+      internalID: 1365532321459110452
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_33
+      rect:
+        serializedVersion: 2
+        x: 936
+        y: 0
+        width: 306
+        height: 328
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: afe7c13f51faf5c60800000000000000
+      internalID: 7809152787691634426
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_34
+      rect:
+        serializedVersion: 2
+        x: 295
+        y: 278
+        width: 28
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 221969bea1cd86a70800000000000000
+      internalID: 8820541878384890146
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_35
+      rect:
+        serializedVersion: 2
+        x: 311
+        y: 274
+        width: 10
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ced1c4783199a7260800000000000000
+      internalID: 7096152472028978668
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_36
+      rect:
+        serializedVersion: 2
+        x: 611
+        y: 276
+        width: 31
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2f5cf272931ed1900800000000000000
+      internalID: 656928756252788210
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_37
+      rect:
+        serializedVersion: 2
+        x: 619
+        y: 272
+        width: 15
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b8501714460aac600800000000000000
+      internalID: 489379861978219915
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_38
+      rect:
+        serializedVersion: 2
+        x: 321
+        y: 248
+        width: 14
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ba36d1c7e26ff7210800000000000000
+      internalID: 1333054694236185515
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_39
+      rect:
+        serializedVersion: 2
+        x: 289
+        y: 119
+        width: 12
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cad9d22978e308080800000000000000
+      internalID: -9187274487841841748
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_40
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 113
+        width: 13
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c16f86c0440738620800000000000000
+      internalID: 2775185232958649884
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_41
+      rect:
+        serializedVersion: 2
+        x: 289
+        y: 81
+        width: 12
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dd226ef8ae1d12f90800000000000000
+      internalID: -6980067142080781603
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_42
+      rect:
+        serializedVersion: 2
+        x: 305
+        y: 89
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 33c248a0feeb6c260800000000000000
+      internalID: 7117586194988543027
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_43
+      rect:
+        serializedVersion: 2
+        x: 311
+        y: 79
+        width: 24
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: af6a48298b22b2d40800000000000000
+      internalID: 5560576341046503162
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_44
+      rect:
+        serializedVersion: 2
+        x: 595
+        y: 75
+        width: 11
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 60911d08732a48400800000000000000
+      internalID: 325563432345606406
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_45
+      rect:
+        serializedVersion: 2
+        x: 603
+        y: 54
+        width: 31
+        height: 43
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6ba5588023d7146c0800000000000000
+      internalID: -4160906926868833610
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_46
+      rect:
+        serializedVersion: 2
+        x: 890
+        y: 47
+        width: 27
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a6ea1c6379ae6960800000000000000
+      internalID: 7597195934620640934
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_47
+      rect:
+        serializedVersion: 2
+        x: 946
+        y: 69
+        width: 10
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 21454fd41a7f34f30800000000000000
+      internalID: 4558759519998727186
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_48
+      rect:
+        serializedVersion: 2
+        x: 538
+        y: 31
+        width: 12
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e6247ca6c4cd8d060800000000000000
+      internalID: 6978569843377652334
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hair_49
+      rect:
+        serializedVersion: 2
+        x: 989
+        y: 42
+        width: 15
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 063ea0d4878daaf50800000000000000
+      internalID: 6893560190844199776
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      sheet_hair_0: -2530485722375810391
+      sheet_hair_1: -5370916962501901305
+      sheet_hair_10: 2894240977587461660
+      sheet_hair_11: 3044096760659911447
+      sheet_hair_12: 5796151115370978102
+      sheet_hair_13: 4976351094872884610
+      sheet_hair_14: -6453413293502664754
+      sheet_hair_15: -6320662431308693854
+      sheet_hair_16: 1781384672413550725
+      sheet_hair_17: 3982523514276313597
+      sheet_hair_18: -2776546730049892124
+      sheet_hair_19: 5658883156416306631
+      sheet_hair_2: -8346920074669104882
+      sheet_hair_20: -7388868015108230027
+      sheet_hair_21: 2473514516458634394
+      sheet_hair_22: 2877010292542083268
+      sheet_hair_23: -6904706240202722836
+      sheet_hair_24: 7273038843538968240
+      sheet_hair_25: 6042200005025686334
+      sheet_hair_26: -1341268378385629707
+      sheet_hair_27: 1818952431381929159
+      sheet_hair_28: -8089504009037371831
+      sheet_hair_29: -7421709277876275692
+      sheet_hair_3: -7570872382646623709
+      sheet_hair_30: 6054037786449507103
+      sheet_hair_31: -5092250944519112347
+      sheet_hair_32: 1365532321459110452
+      sheet_hair_33: 7809152787691634426
+      sheet_hair_34: 8820541878384890146
+      sheet_hair_35: 7096152472028978668
+      sheet_hair_36: 656928756252788210
+      sheet_hair_37: 489379861978219915
+      sheet_hair_38: 1333054694236185515
+      sheet_hair_39: -9187274487841841748
+      sheet_hair_4: -172636389391111483
+      sheet_hair_40: 2775185232958649884
+      sheet_hair_41: -6980067142080781603
+      sheet_hair_42: 7117586194988543027
+      sheet_hair_43: 5560576341046503162
+      sheet_hair_44: 325563432345606406
+      sheet_hair_45: -4160906926868833610
+      sheet_hair_46: 7597195934620640934
+      sheet_hair_47: 4558759519998727186
+      sheet_hair_48: 6978569843377652334
+      sheet_hair_49: 6893560190844199776
+      sheet_hair_5: 3476499085656419711
+      sheet_hair_6: 4682404793034568952
+      sheet_hair_7: 5253381460454704097
+      sheet_hair_8: 2529487944483202905
+      sheet_hair_9: 468643638318963395
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
