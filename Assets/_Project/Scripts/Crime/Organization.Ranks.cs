@@ -46,6 +46,7 @@ namespace OSistema.Crime
 
         public void CheckRank(Game game)
         {
+            CheckIntroduction(game);
             var head = Boss(game);
             if (head != null) head.Titled = Rank >= 1;
 

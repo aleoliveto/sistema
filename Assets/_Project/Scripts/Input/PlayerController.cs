@@ -154,6 +154,7 @@ namespace OSistema.Input
             if (kb.digit4Key.wasPressedThisFrame) game.Ticks.SetSpeed(4); // debug ×30
             if (kb.digit5Key.wasPressedThisFrame) game.Ticks.SetSpeed(5); // debug ×120
             if (kb.rKey.wasPressedThisFrame) ToggleDraftSelected();
+            if (kb.eKey.wasPressedThisFrame && CurrentTool != Tool.Build) TalkToNearest();
             if (kb.fKey.wasPressedThisFrame) follow = follow == null && Selected.Count > 0 ? Selected[0] : null;
             if (CurrentTool == Tool.Build && kb.qKey.wasPressedThisFrame) PlacementRotation = (PlacementRotation + 1) % 4;
             if (CurrentTool == Tool.Build && kb.eKey.wasPressedThisFrame) PlacementRotation = (PlacementRotation + 3) % 4;
@@ -380,6 +381,35 @@ namespace OSistema.Input
                 any = true;
             }
             if (any) Selected[0].Say("fight");
+        }
+
+        /// <summary>The contact the selected pawn could talk to right now (E), if any.</summary>
+        public Contact ContactInReach(out Pawn pawn)
+        {
+            long now = game.Ticks.TicksGame;
+            pawn = Selected.Find(p => p.CanAct && !p.InMentalBreak(now));
+            if (pawn == null) return null;
+            Contact best = null;
+            float bestD = TalkReach * TalkReach;
+            foreach (var c in game.Contacts.All)
+            {
+                if (!c.Present || !game.Contacts.Visible(c, game)) continue;
+                float d = (c.Position - pawn.Position).sqrMagnitude;
+                if (d < bestD)
+                {
+                    bestD = d;
+                    best = c;
+                }
+            }
+            return best;
+        }
+
+        public const float TalkReach = 3.5f;
+
+        void TalkToNearest()
+        {
+            var contact = ContactInReach(out _);
+            if (contact != null) OrderTalk(contact);
         }
 
         // Only one goes to talk: the first selected who's free.

@@ -9,8 +9,7 @@ namespace OSistema.UI
     /// <summary>Notification feed, event cards and the game-over screen.</summary>
     public sealed partial class Hud
     {
-        const int FeedTicksVisible = 5000;
-        const int FeedMax = 4;
+        const int FeedMax = 3;
 
         static readonly Color[] CardBands =
         {
@@ -19,7 +18,6 @@ namespace OSistema.UI
 
         VisualElement feed;
         int feedVersion = -1;
-        long feedTick = -1;
 
         VisualElement eventDim, gameOverDim;
         GameEvent shownEvent;
@@ -30,30 +28,76 @@ namespace OSistema.UI
             feed.pickingMode = PickingMode.Ignore;
         }
 
+        // Messages queue up and come in one at a time, each staying long enough to read,
+        // however fast the game is running. Click a message to dismiss it (or go where it happened).
+        const float ToastSeconds = 9f, ToastGap = 1.2f;
+        const int ToastQueueMax = 8;
+        readonly System.Collections.Generic.Queue<Message> toastQueue = new System.Collections.Generic.Queue<Message>();
+        readonly System.Collections.Generic.List<(Message msg, float shown, Label label)> toasts = new System.Collections.Generic.List<(Message, float, Label)>();
+        float lastToastAt;
+        Game feedGame;
+
         void RefreshFeed()
         {
-            long now = game.Ticks.TicksGame;
-            // Rebuild when there's news, or now and then so old toasts drop off.
-            if (game.Log.Version == feedVersion && now - feedTick < 600) return;
-            feedVersion = game.Log.Version;
-            feedTick = now;
-
-            feed.Clear();
-            var recent = game.Log.All.Where(m => now - m.Tick < FeedTicksVisible).Reverse().Take(FeedMax).ToList();
-            foreach (var m in recent)
+            if (feedGame != game)
             {
-                var toast = Ui.Text(m.Text, feed, "toast");
+                feedGame = game;
+                feedVersion = game.Log.Version;
+                toastQueue.Clear();
+                foreach (var t in toasts) t.label.RemoveFromHierarchy();
+                toasts.Clear();
+                // A new or loaded game: show its opening lines.
+                foreach (var m in game.Log.All.Skip(System.Math.Max(0, game.Log.All.Count - 3))) toastQueue.Enqueue(m);
+            }
+            if (game.Log.Version != feedVersion)
+            {
+                int fresh = System.Math.Min(game.Log.Version - feedVersion, game.Log.All.Count);
+                feedVersion = game.Log.Version;
+                for (int i = game.Log.All.Count - fresh; i < game.Log.All.Count; i++) toastQueue.Enqueue(game.Log.All[i]);
+                // Too much at once: keep the bad news, drop the oldest small talk.
+                while (toastQueue.Count > ToastQueueMax)
+                {
+                    var items = toastQueue.ToList();
+                    int drop = items.FindIndex(m => m.Kind == MessageKind.Info);
+                    items.RemoveAt(drop >= 0 ? drop : 0);
+                    toastQueue.Clear();
+                    foreach (var m in items) toastQueue.Enqueue(m);
+                }
+            }
+
+            float now = Time.unscaledTime;
+            for (int i = toasts.Count - 1; i >= 0; i--)
+            {
+                float age = now - toasts[i].shown;
+                if (age > ToastSeconds)
+                {
+                    toasts[i].label.RemoveFromHierarchy();
+                    toasts.RemoveAt(i);
+                    continue;
+                }
+                toasts[i].label.style.opacity = Mathf.Clamp01((ToastSeconds - age) / 1.5f) * Mathf.Clamp01(age * 4f);
+            }
+
+            if (toastQueue.Count > 0 && toasts.Count < FeedMax && now - lastToastAt > ToastGap)
+            {
+                lastToastAt = now;
+                var m = toastQueue.Dequeue();
+                var toast = Ui.Text(m.Text, null, "toast");
+                feed.Insert(0, toast);
                 toast.pickingMode = PickingMode.Position;
                 if (m.Kind == MessageKind.Good) toast.AddToClassList("toast--good");
                 if (m.Kind == MessageKind.Bad) toast.AddToClassList("toast--bad");
-                float age = (now - m.Tick) / (float)FeedTicksVisible;
-                toast.style.opacity = Mathf.Clamp01(1.4f - age * 1.2f);
-                if (m.Location.HasValue)
+                toast.style.opacity = 0f;
+                var entry = (m, now, toast);
+                toasts.Add(entry);
+                var at = m.Location;
+                toast.RegisterCallback<ClickEvent>(_ =>
                 {
-                    var at = m.Location.Value;
-                    toast.RegisterCallback<ClickEvent>(_ => FocusCamera(new Vector2(at.x + 0.5f, at.y + 0.5f)));
-                    Tip(toast, () => "Click to go there.");
-                }
+                    if (at.HasValue) FocusCamera(new Vector2(at.Value.x + 0.5f, at.Value.y + 0.5f));
+                    toast.RemoveFromHierarchy();
+                    toasts.RemoveAll(t => t.label == toast);
+                });
+                Tip(toast, () => at.HasValue ? "Click to go there." : "Click to dismiss.");
             }
         }
 

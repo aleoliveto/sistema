@@ -92,7 +92,8 @@ namespace OSistema.Crime
         {
             error = null;
             int cost = units * Prices.ProductWholesale;
-            if (game.Contracts.ShipmentPending(ContractKind.Shipment)) error = "A shipment is already on its way.";
+            if (!SupplierIntroduced) error = "Nobody sells product to a stranger. Someone has to vouch for you.";
+            else if (game.Contracts.ShipmentPending(ContractKind.Shipment)) error = "A shipment is already on its way.";
             if (error != null) return false;
             if (!Pay(cost, game, out error)) return false;
             game.Contracts.AddShipment(game, ContractKind.Shipment, units);

@@ -18,6 +18,7 @@ namespace OSistema.Crime
         public int OpenHour, CloseHour;
         public Color32 Color;
         public Npc Npc;
+        public bool Secret;             // only shows up once someone has vouched for you
 
         public bool OpenAt(int hour) => OpenHour < CloseHour ? hour >= OpenHour && hour < CloseHour : hour >= OpenHour || hour < CloseHour;
         public string Hours => $"{OpenHour:00}:00–{CloseHour:00}:00";
@@ -36,10 +37,13 @@ namespace OSistema.Crime
         public const string Nanninella = "Nanninella 'a Ricettatrice";
         public const string Marenaro = "'O Marenaro";
         public const string Saverio = "Don Saverio 'o Malommo";
+        public const string Supplier = "Zì Tore 'o Grossista";
 
         public readonly List<Contact> All = new List<Contact>();
 
         public Contact ByName(string name) => All.Find(c => c.Name == name);
+
+        public bool Visible(Contact c, Game game) => !c.Secret || game.Org.SupplierIntroduced;
 
         public void Setup(Game game)
         {
@@ -113,6 +117,10 @@ namespace OSistema.Crime
                 StreetSpot(20, 55, 41), 10, 21, new Color32(150, 60, 70, 255),
                 "Tiene 'e mmane leste? Allora parlammo.", "Quick hands? Then let's talk.",
                 "Aggio chino 'o garage. Torna dimane.", "The garage is full. Come back tomorrow.");
+            Add(Supplier, "Sells product by the kilo to people he's been told to trust. Meets at night, never twice in a row on the phone.",
+                StreetSpot(35, 85, 67), 21, 3, new Color32(30, 30, 34, 255),
+                "Tu si chillo ca m'ha mannato Saverio. Parlammo.", "You're the one Saverio sent me. Let's talk.",
+                "Pe' mo' nun tengo niente. Torna 'n'ata sera.", "Nothing for now. Come back another night.").Secret = true;
             Add(Marenaro, "Has a boat, and friends on other boats. Works when the sea is dark.",
                 Landing(map) ?? StreetSpot(30, 120, 53), 18, 4, new Color32(60, 80, 100, 255),
                 "'O mare stanotte è calmo. Buono pe' fatica'.", "The sea's calm tonight. Good for work.",
@@ -142,7 +150,7 @@ namespace OSistema.Crime
             int hour = game.Clock.Hour;
             foreach (var c in All)
             {
-                bool open = c.OpenAt(hour);
+                bool open = c.OpenAt(hour) && Visible(c, game);
                 if (open && !c.Present)
                 {
                     c.Npc = game.Npcs.Spawn(NpcKind.Civilian, c.Spot, 0.05f, c.Color);

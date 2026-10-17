@@ -241,20 +241,17 @@ namespace OSistema.UI
             }
 
             Ui.Text("SUPPLIER", bizBody, "section");
-            Ui.Text($"Product at the basso: <b>{st.Product}</b> units · wholesale €{Prices.ProductWholesale}, street €{Prices.ProductStreet}. The load comes in by boat at night: send someone to the port to collect it, or it's lost.", bizBody, "small", "wrap");
-            if (game.Contracts.ShipmentPending(ContractKind.Shipment))
-                Ui.Text("A shipment is on its way. Check the Lavoretti window to send someone to the port.", bizBody, "warn", "small");
+            Ui.Text($"Product at the basso: <b>{st.Product}</b> units · wholesale €{Prices.ProductWholesale}, street €{Prices.ProductStreet}.", bizBody, "small", "wrap");
+            if (!org.SupplierIntroduced)
+                Ui.Text($"Nobody sells product to a stranger. {org.SupplierProgress}", bizBody, "warn", "small", "wrap");
+            else if (game.Contracts.ShipmentPending(ContractKind.Shipment))
+                Ui.Text("A shipment is on its way by boat. Send someone to the port tonight (Taccuino, J).", bizBody, "warn", "small", "wrap");
             else
             {
+                var tore = game.Contacts.ByName(ContactBook.Supplier);
                 var row = Ui.Row(bizBody);
-                foreach (int units in new[] { 20, 50, 100 })
-                {
-                    int u = units;
-                    Ui.Btn($"Order {u} (€{u * Prices.ProductWholesale})", Do(() =>
-                    {
-                        if (!org.OrderProduct(u, game, out var error)) game.Log.Add(error, MessageKind.Bad);
-                    }), row, "btn--small");
-                }
+                Ui.Text($"Orders are made in person with {ContactBook.Supplier}, {tore?.Hours}. Select someone and press E next to him.", row, "small", "wrap").style.flexShrink = 1;
+                if (tore != null) Ui.Btn("Show", () => FocusCamera(tore.Position), row, "btn--small");
             }
 
             Ui.Text("'O MARENARO · CIGARETTES", bizBody, "section");

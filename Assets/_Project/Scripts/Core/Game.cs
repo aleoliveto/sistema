@@ -90,7 +90,7 @@ namespace OSistema.Core
             game.Rival.Setup(game, rng);
             game.Favours.Setup(game, rng);
             game.Log.Add("Gennaro is seventeen. He lives with his mother in a basso in the rione, and he wants more.");
-            game.Log.Add("Select him and right-click someone with work (a gold ! over their head) to go and talk to them.");
+            game.Log.Add("Walk Gennaro up to someone with work (a gold ! over their head) and press E to talk, or right-click them.");
             game.Phone.Send(game, Social.MsgKind.Info, "Mammà",
                 "Gennà, nun fa' tarde stasera. E statte accorto a chi frequiente.",
                 "Gennà, don't be late tonight. And be careful who you spend time with.", null);

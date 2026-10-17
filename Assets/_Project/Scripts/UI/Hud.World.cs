@@ -92,13 +92,15 @@ namespace OSistema.UI
                 }
             }
 
+            var reach = controller.ContactInReach(out _);
             foreach (var contact in game.Contacts.All)
             {
                 if (!contact.Present || !FogOfWar.CanSee(contact.Position) || !OnScreen(contact.Position)) continue;
                 bool work = game.Contacts.HasWork(contact, game);
-                if (!work && !close) continue;
+                bool inReach = contact == reach;
+                if (!work && !close && !inReach) continue;
                 var tag = NextTag();
-                tag.text = work ? $"{contact.Name}  <b>!</b>" : contact.Name;
+                tag.text = (work ? $"{contact.Name}  <b>!</b>" : contact.Name) + (inReach ? "   <b>[E]</b> talk" : "");
                 tag.AddToClassList(work ? "tag--work" : "tag--place");
                 var pos = WorldToPanel(contact.Position);
                 tag.style.left = pos.x;

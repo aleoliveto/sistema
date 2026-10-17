@@ -72,10 +72,12 @@ namespace OSistema.UI
 
             long now = game.Ticks.TicksGame;
             Ui.Text("PEOPLE WITH WORK", jobsBody, "section");
-            Ui.Text("Select someone from the crew and right-click a contact to go and talk to them.", jobsBody, "small", "muted");
+            Ui.Text("Select someone from the crew and right-click a contact, or press E when you're close.", jobsBody, "small", "muted");
+            if (!org.SupplierIntroduced) Ui.Text(org.SupplierProgress, jobsBody, "small", "wrap");
             int hour = game.Clock.Hour;
             foreach (var contact in game.Contacts.All)
             {
+                if (!game.Contacts.Visible(contact, game)) continue;
                 var row = Ui.Box("table-row").Into(jobsBody);
                 var col = Ui.Box("col").Into(row);
                 col.style.width = 420;

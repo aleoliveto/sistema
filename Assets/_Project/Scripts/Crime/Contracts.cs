@@ -328,6 +328,7 @@ namespace OSistema.Crime
             else if (success)
             {
                 Completed++;
+                if (c.Kind == ContractKind.Lookout) game.Org.LookoutShifts++;
                 game.Stock.Cash += c.Reward;
                 game.Org.Respect = Mathf.Min(100f, game.Org.Respect + c.RespectReward);
                 game.PopupAt(p.Position, $"+€{c.Reward}");

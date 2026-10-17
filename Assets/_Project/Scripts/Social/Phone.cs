@@ -17,6 +17,7 @@ namespace OSistema.Social
         TestResult,      // the outcome of a false-shipment test
         BugClue,         // a hint that someone is listening
         Friend,          // a friend from the vicolo wants in
+        Intro,           // someone vouches for you with the supplier
     }
 
     [Serializable]
@@ -137,6 +138,9 @@ namespace OSistema.Social
                     break;
                 case MsgKind.Friend:
                     game.Org.OnFriendAnswer(m, choice, game);
+                    break;
+                case MsgKind.Intro:
+                    game.Org.OnIntroAnswer(m, choice, game);
                     break;
             }
         }
