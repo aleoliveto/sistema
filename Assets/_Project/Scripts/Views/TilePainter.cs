@@ -79,8 +79,41 @@ namespace OSistema.Views
 
             bool wallLike = building == BuildingDefs.Wall;
             if (!wallLike) AmbientOcclusion(map, x, y, buf, stride, ox, oy);
-            if (building != null) PaintBuilding(map, building, x, y, style, buf, stride, ox, oy);
+            if (building == null) return;
+
+            int rot = map.GetRotation(x, y);
+            if (rot == 0 || wallLike || building == BuildingDefs.Door)
+            {
+                PaintBuilding(map, building, x, y, style, buf, stride, ox, oy);
+                return;
+            }
+            // Rotated furniture: un-rotate the floor into a scratch tile, paint upright, rotate back.
+            var scratch = Scratch;
+            for (int py = 0; py < Size; py++)
+            for (int px = 0; px < Size; px++)
+            {
+                var (sx, sy) = Rotate(px, py, rot);
+                scratch[py * Size + px] = buf[(oy + sy) * stride + ox + sx];
+            }
+            PaintBuilding(map, building, x, y, style, scratch, Size, 0, 0);
+            for (int py = 0; py < Size; py++)
+            for (int px = 0; px < Size; px++)
+            {
+                var (sx, sy) = Rotate(px, py, rot);
+                buf[(oy + sy) * stride + ox + sx] = scratch[py * Size + px];
+            }
         }
+
+        static readonly Color32[] Scratch = new Color32[Size * Size];
+
+        // Quarter turns counter-clockwise inside a 16x16 tile.
+        static (int, int) Rotate(int x, int y, int quarterTurns) => quarterTurns switch
+        {
+            1 => (Size - 1 - y, x),
+            2 => (Size - 1 - x, Size - 1 - y),
+            3 => (y, Size - 1 - x),
+            _ => (x, y),
+        };
 
         // ---------- Terrain ----------
 
@@ -597,6 +630,20 @@ namespace OSistema.Views
                         Set(buf, stride, ox, oy, 11, 1, new Color32(200, 60, 70, 255)); // geraniums
                     }
                 }
+            }
+            // An edicola votiva hung on the wall: a little arched niche with the Madonna and a candle.
+            if (map.GetDecor(x, y) == MapDecor.Shrine)
+            {
+                int baseY = !wallS ? 0 : 5;
+                var stone = new Color32(214, 204, 184, 255);
+                Rect(buf, stride, ox, oy, 4, baseY, 11, baseY + 7, stone);
+                Rect(buf, stride, ox, oy, 5, baseY + 8, 10, baseY + 8, stone);
+                Rect(buf, stride, ox, oy, 5, baseY + 2, 10, baseY + 7, new Color32(28, 34, 70, 255));
+                Rect(buf, stride, ox, oy, 6, baseY + 2, 9, baseY + 5, new Color32(58, 98, 196, 255));
+                Rect(buf, stride, ox, oy, 7, baseY + 6, 8, baseY + 6, new Color32(236, 206, 176, 255));
+                Rect(buf, stride, ox, oy, 6, baseY + 7, 9, baseY + 7, new Color32(226, 186, 70, 255));
+                Set(buf, stride, ox, oy, 5, baseY + 1, new Color32(190, 30, 30, 255));
+                Set(buf, stride, ox, oy, 10, baseY + 1, new Color32(240, 90, 120, 255));
             }
             if (map.GetDecor(x, y) == MapDecor.WallLamp)
             {

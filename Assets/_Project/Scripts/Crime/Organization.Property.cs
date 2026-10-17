@@ -15,10 +15,11 @@ namespace OSistema.Crime
             if (p.OwnedByPlayer) error = "Already yours.";
             else if (p.Kind == PropertyKind.Civic) error = "Not for sale.";
             else if (p.Kind == PropertyKind.Shop && Rank < 2) error = $"Buying a shop as a front needs the family to be a {RankNames[2]}.";
-            else if (game.Stock.Cash < p.Price) error = $"You need €{p.Price}.";
+            else if (!CanExpandInto(game.Territory.ZoneAt(p.Door), game)) error = "That's outside your reach. Expand into the next rione first (a piazza or a house next to your turf).";
             if (error != null) return false;
+            if (!Pay(p.Price, game, out error)) return false;
 
-            game.Stock.Cash -= p.Price;
+            WarnIfRivalZone(game.Territory.ZoneAt(p.Door), game);
             p.OwnedByPlayer = true;
 
             var business = Businesses.Find(b => p.Rect.Contains(b.Cell));
@@ -77,8 +78,8 @@ namespace OSistema.Crime
             foreach (var b in Businesses)
                 if (b.Status == BusinessStatus.Owned) total += FrontIncome(b);
             if (total == 0) return;
-            game.Stock.Cash += total;
-            game.Log.Add($"Your shops made €{total} this week. On paper, all of it legal.", MessageKind.Good);
+            game.Stock.Clean += total;
+            game.Log.Add($"Your shops made €{total} this week, all of it clean.", MessageKind.Good);
         }
 
         float FrontsLaundering()

@@ -38,7 +38,10 @@ namespace OSistema.Views
                 scooter.sprite = SpriteFactory.CenteredPixel;
                 scooter.sharedMaterial = SpriteFactory.LitMaterial;
                 scooter.sortingOrder = 8;
-                scooter.color = new Color(0.75f, 0.1f, 0.1f);
+                // Every scooter its own colour: Liberty white, Vespa red, matte black, sky blue…
+                var bodies = new[] { new Color(0.92f, 0.92f, 0.9f), new Color(0.75f, 0.1f, 0.1f), new Color(0.12f, 0.12f, 0.13f),
+                    new Color(0.45f, 0.65f, 0.85f), new Color(0.85f, 0.75f, 0.3f), new Color(0.3f, 0.5f, 0.3f), new Color(0.55f, 0.55f, 0.58f) };
+                scooter.color = bodies[Mathf.Abs(n.Id * 7) % bodies.Length];
             }
             LateUpdate();
         }

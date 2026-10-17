@@ -78,6 +78,8 @@ namespace OSistema.Crime
             }
 
             LeadershipDaily(game);
+            DailyMoney(game);
+            DailyOperations(game);
 
             // Loyalty drifts with mood: a miserable crew stops believing in you.
             foreach (var p in game.Pawns.Crew)
@@ -90,14 +92,21 @@ namespace OSistema.Crime
         {
             error = null;
             int cost = units * Prices.ProductWholesale;
-            if (PendingOrderUnits > 0) error = "An order is already on its way.";
-            else if (game.Stock.Cash < cost) error = $"Not enough cash (€{cost} needed).";
+            if (game.Contracts.ShipmentPending(ContractKind.Shipment)) error = "A shipment is already on its way.";
             if (error != null) return false;
+            if (!Pay(cost, game, out error)) return false;
+            game.Contracts.AddShipment(game, ContractKind.Shipment, units);
+            return true;
+        }
 
-            game.Stock.Cash -= cost;
-            PendingOrderUnits = units;
-            PendingOrderDay = game.Clock.Hour < 8 ? game.Clock.Day : game.Clock.Day + 1;
-            game.Log.Add($"Ordered {units} units of product for €{cost}. The courier comes at 08:00.");
+        public bool OrderCigarettes(int cases, Game game, out string error)
+        {
+            error = null;
+            if (game.Contracts.ShipmentPending(ContractKind.CigaretteRun)) error = "'O Marenaro already has a load for you tonight.";
+            else if (!RequireRank(2, "Contraband cigarettes", game, out error)) return false;
+            if (error != null) return false;
+            if (!Pay(cases * Prices.CigaretteCase, game, out error)) return false;
+            game.Contracts.AddShipment(game, ContractKind.CigaretteRun, cases);
             return true;
         }
 
@@ -124,6 +133,7 @@ namespace OSistema.Crime
         void Payday(Game game)
         {
             PayFronts(game);
+            WeeklyMoney(game);
             LastPaydayWeek = WeekOf(game.Clock);
             long now = game.Ticks.TicksGame;
             var stock = game.Stock;
@@ -210,7 +220,7 @@ namespace OSistema.Crime
                 Wage = 120,
                 Loyalty = 45f + rng.Next(0, 20),
             };
-            game.Stock.Cash -= Prices.RecruitBonus;
+            game.Stock.Cash -= Prices.RecruitBonus; // a signing bonus, in cash
             game.Pawns.Add(pawn);
             pawn.Say("recruited");
             game.Log.Add($"{pawn.FullName} “{pawn.Nickname}” joins the crew.", MessageKind.Good);
@@ -249,6 +259,12 @@ namespace OSistema.Crime
             else if (Squares.Exists(s => (s.Cell - cell).sqrMagnitude < 64)) error = "Too close to another piazza.";
             if (error != null) return false;
 
+            if (!CanExpandInto(zone, game))
+            {
+                error = $"{zone.Name} is too far from your turf. Expand rione by rione.";
+                return false;
+            }
+            WarnIfRivalZone(zone, game);
             var square = new DrugSquare { Cell = cell, ZoneId = zone.Id };
             ComputeLookoutPosts(square, map);
             Squares.Add(square);
@@ -344,7 +360,7 @@ namespace OSistema.Crime
             {
                 if (!sq.IsOpenAt(hour)) continue;
                 var zone = game.Territory.Zones[sq.ZoneId];
-                float perHour = 3f * zone.Demand * (1f - zone.Heat / 150f) * (0.7f + Respect / 250f);
+                float perHour = 2.4f * zone.Demand * (1f - zone.Heat / 150f) * (0.7f + Respect / 250f);
                 if (game.Rival.NearRivalTerritory(sq)) perHour *= 0.7f; // customers have a choice
                 if (game.Rng.NextDouble() < perHour / GameClock.TicksPerHour)
                     game.Npcs.SpawnCustomer(sq, game);
@@ -372,7 +388,7 @@ namespace OSistema.Crime
                         Cell = cell,
                         Kind = def.Shop,
                         Name = BusinessName(def.Shop, rng),
-                        WeeklyPizzo = BasePizzo(def.Shop) + rng.Next(-2, 3) * 10,
+                        WeeklyPizzo = Mathf.RoundToInt(BasePizzo(def.Shop) * 0.7f / 10f) * 10 + rng.Next(-2, 3) * 10,
                         Defiance = 0.1f + (float)rng.NextDouble() * 0.5f,
                         CounterDefId = def.Id,
                     });
@@ -404,8 +420,19 @@ namespace OSistema.Crime
         public Business BusinessAt(Vector2Int cell) => Businesses.Find(b => b.Cell == cell);
 
         /// <summary>Orders a collector to go and impose pizzo.</summary>
-        public void Target(Business b)
+        public void Target(Business b) => Target(b, null);
+
+        public void Target(Business b, Game game)
         {
+            if (game != null)
+            {
+                var blocker = PizzoBlocker(b, game);
+                if (blocker != null)
+                {
+                    game.Log.Add($"{b.Name}: {blocker.ToLower()}. You can only impose pizzo in your own rioni.", MessageKind.Bad);
+                    return;
+                }
+            }
             if (b.Status == BusinessStatus.Free || b.Status == BusinessStatus.Refusing)
             {
                 b.Status = BusinessStatus.Targeted;

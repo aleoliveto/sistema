@@ -207,8 +207,8 @@ namespace OSistema.Npcs
 
             var to = entrances[rng.Next(entrances.Count)];
             for (int i = 0; i < 10 && (to - from).sqrMagnitude < 1600; i++) to = entrances[rng.Next(entrances.Count)];
-            var npc = game.Npcs.Spawn(NpcKind.Scooter, from, 0.18f + (float)rng.NextDouble() * 0.08f,
-                (Color32)Color.HSVToRGB((float)rng.NextDouble(), 0.3f, 0.5f + (float)rng.NextDouble() * 0.4f));
+            var npc = game.Npcs.Spawn(NpcKind.Scooter, from, 0.1f + (float)rng.NextDouble() * 0.045f,
+                (Color32)Color.HSVToRGB((float)rng.NextDouble(), 0.25f + (float)rng.NextDouble() * 0.5f, 0.35f + (float)rng.NextDouble() * 0.6f));
             npc.Exit = to;
         }
 

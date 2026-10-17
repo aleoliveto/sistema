@@ -47,7 +47,11 @@ namespace OSistema.Views
             var map = g.Map;
             for (int y = 0; y < map.Height; y++)
             for (int x = 0; x < map.Width; x++)
-                if (map.GetDecor(x, y) == MapDecor.WallLamp) lamps.Add(CreateLamp(new Vector2Int(x, y), false, 5f));
+            {
+                var decor = map.GetDecor(x, y);
+                if (decor == MapDecor.WallLamp) lamps.Add(CreateLamp(new Vector2Int(x, y), false, 5f));
+                else if (decor == MapDecor.Shrine) lamps.Add(CreateLamp(new Vector2Int(x, y), true));
+            }
         }
 
         Light2D CreateLamp(Vector2Int cell, bool candle, float radius = 7f)

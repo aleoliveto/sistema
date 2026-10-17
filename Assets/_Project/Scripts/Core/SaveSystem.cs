@@ -44,6 +44,7 @@ namespace OSistema.Core
                 buildings = Convert.ToBase64String(buildings),
                 styles = Convert.ToBase64String(map.RawStyles),
                 decor = Convert.ToBase64String(map.RawDecor),
+                rotation = Convert.ToBase64String(map.RawRotation),
                 baseX = game.PlayerBase.x,
                 baseY = game.PlayerBase.y,
                 baseW = game.PlayerBase.width,
@@ -58,6 +59,9 @@ namespace OSistema.Core
                 pendingOrderDay = game.Org.PendingOrderDay,
                 lastPaydayWeek = game.Org.LastPaydayWeek,
                 pistols = game.Stock.Pistols,
+                clean = game.Stock.Clean,
+                scooters = game.Stock.Scooters,
+                cigarettes = game.Stock.Cigarettes,
                 rank = game.Org.Rank,
                 jobsDone = game.Contracts.Completed,
                 evidence = game.Org.Evidence,
@@ -83,6 +87,7 @@ namespace OSistema.Core
                 {
                     x = p.Rect.x, y = p.Rect.y, w = p.Rect.width, h = p.Rect.height, doorX = p.Door.x, doorY = p.Door.y,
                     kind = (int)p.Kind, name = p.Name, owned = p.OwnedByPlayer, price = p.Price,
+                    operation = (int)p.Operation, manager = p.Manager?.Id ?? 0,
                 });
 
             foreach (var z in game.Territory.Zones)
@@ -130,12 +135,13 @@ namespace OSistema.Core
 
             System.Array.Copy(Convert.FromBase64String(data.styles), map.RawStyles, map.CellCount);
             System.Array.Copy(Convert.FromBase64String(data.decor), map.RawDecor, map.CellCount);
+            if (!string.IsNullOrEmpty(data.rotation)) System.Array.Copy(Convert.FromBase64String(data.rotation), map.RawRotation, map.CellCount);
             var properties = new List<Property>();
             foreach (var p in data.properties)
                 properties.Add(new Property
                 {
                     Rect = new RectInt(p.x, p.y, p.w, p.h), Door = new Vector2Int(p.doorX, p.doorY), Kind = (PropertyKind)p.kind,
-                    Name = p.name, OwnedByPlayer = p.owned, Price = p.price,
+                    Name = p.name, OwnedByPlayer = p.owned, Price = p.price, Operation = (Operation)p.operation,
                 });
 
             var zones = new List<Zone>();
@@ -150,6 +156,9 @@ namespace OSistema.Core
             game.Org.PendingOrderDay = data.pendingOrderDay;
             game.Org.LastPaydayWeek = data.lastPaydayWeek;
             game.Stock.Pistols = data.pistols;
+            game.Stock.Clean = data.clean;
+            game.Stock.Scooters = data.scooters;
+            game.Stock.Cigarettes = data.cigarettes;
             game.Org.RestoreRank(data.rank);
             game.Contracts.Completed = data.jobsDone;
             var org = game.Org;
@@ -207,7 +216,9 @@ namespace OSistema.Core
                     pawn.MissionSquare = rival.Squares[pd.missionSquare];
                 game.Pawns.Add(pawn);
             }
-            // Mission targets point at other pawns: resolve them once everyone exists.
+            // Operation managers and mission targets point at pawns: resolve them once everyone exists.
+            for (int i = 0; i < data.properties.Count && i < game.Properties.All.Count; i++)
+                if (data.properties[i].manager > 0) game.Properties.All[i].Manager = game.Pawns.ById(data.properties[i].manager);
             foreach (var pd in data.pawns)
             {
                 if (pd.missionTarget <= 0) continue;
@@ -315,7 +326,7 @@ namespace OSistema.Core
             public int seed;
             public long ticks;
             public int width, height;
-            public string terrain, buildings, styles, decor;
+            public string terrain, buildings, styles, decor, rotation;
             public List<PropertyData> properties = new List<PropertyData>();
             public int baseX, baseY, baseW, baseH;
             public int cash, groceries, meals, medicine, product;
@@ -324,7 +335,7 @@ namespace OSistema.Core
             public List<ZoneData> zones = new List<ZoneData>();
             public List<SquareData> squares = new List<SquareData>();
             public List<BusinessData> businesses = new List<BusinessData>();
-            public int pistols, generation, hidingSinceDay, rank, jobsDone;
+            public int pistols, generation, hidingSinceDay, rank, jobsDone, clean, scooters, cigarettes;
             public float evidence, leakRisk;
             public bool warrant, hiding;
             public string rivalName, rivalBoss;
@@ -339,7 +350,7 @@ namespace OSistema.Core
         [Serializable]
         sealed class PropertyData
         {
-            public int x, y, w, h, doorX, doorY, kind, price;
+            public int x, y, w, h, doorX, doorY, kind, price, operation, manager;
             public string name;
             public bool owned;
         }

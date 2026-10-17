@@ -29,6 +29,9 @@ namespace OSistema.Input
 
         public Tool CurrentTool { get; private set; } = Tool.Select;
         public BuildingDef CurrentDef { get; private set; }
+
+        /// <summary>Quarter turns for furniture being placed (Q / E).</summary>
+        public int PlacementRotation { get; private set; }
         public readonly List<Pawn> Selected = new List<Pawn>();
 
         /// <summary>A building clicked on the map (shown in the inspector), or null.</summary>
@@ -113,6 +116,8 @@ namespace OSistema.Input
             if (kb.digit4Key.wasPressedThisFrame) game.Ticks.SetSpeed(4); // debug ×30
             if (kb.digit5Key.wasPressedThisFrame) game.Ticks.SetSpeed(5); // debug ×120
             if (kb.rKey.wasPressedThisFrame) ToggleDraftSelected();
+            if (CurrentTool == Tool.Build && kb.qKey.wasPressedThisFrame) PlacementRotation = (PlacementRotation + 1) % 4;
+            if (CurrentTool == Tool.Build && kb.eKey.wasPressedThisFrame) PlacementRotation = (PlacementRotation + 3) % 4;
 
             if (kb.escapeKey.wasPressedThisFrame)
             {
@@ -267,7 +272,7 @@ namespace OSistema.Input
                     foreach (var c in cells)
                     {
                         if (game.Stock.Cash < cost) { broke = true; break; }
-                        if (!game.Construction.PlaceBuild(c, CurrentDef)) continue;
+                        if (!game.Construction.PlaceBuild(c, CurrentDef, PlacementRotation)) continue;
                         game.Stock.Cash -= cost;
                         spent += cost;
                     }

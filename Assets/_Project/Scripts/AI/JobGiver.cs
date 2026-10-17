@@ -185,7 +185,7 @@ namespace OSistema.AI
         {
             var c = game.Contracts.ActiveFor(pawn);
             if (c == null) return null;
-            if (c.Kind == ContractKind.Smuggling && c.Stage <= 1)
+            if (c.AtNight && c.Stage <= 1)
             {
                 int h = game.Clock.Hour;
                 if (!(h >= 21 || h < 4)) return null; // leave at nine for the ten o'clock boat
@@ -200,6 +200,16 @@ namespace OSistema.AI
             var org = game.Org;
 
             if (pawn.Role == CrewRole.Collector) return CollectorDuty(pawn, game);
+            if (pawn.Role == CrewRole.Manager)
+            {
+                var place = org.ManagedBy(pawn, game);
+                int h = game.Clock.Hour;
+                if (place == null || (h >= 2 && h < 10)) return null; // opens at ten, closes at two
+                var r = place.Interior;
+                var spot = new Vector2Int(game.Rng.Next(r.xMin, r.xMax), game.Rng.Next(r.yMin, r.yMax));
+                if (!game.Map.IsPassable(spot)) return null;
+                return new GotoJob(pawn, spot, $"Running the {Organization.Name(place.Operation).ToLower()}");
+            }
 
             int hour = game.Clock.Hour;
 

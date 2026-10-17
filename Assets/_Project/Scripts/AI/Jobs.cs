@@ -63,7 +63,23 @@ namespace OSistema.AI
             started = false;
         }
 
-        public WalkStatus Tick(Pawn pawn, Game game) => Tick(pawn.Mover, pawn.SpeedFactor, game);
+        public WalkStatus Tick(Pawn pawn, Game game)
+        {
+            // Long trips across the rione: take one of the family's scooters, if there's a free one.
+            if (!started && pawn.Faction == Faction.Crew && !pawn.OnScooter && game.Stock.Scooters > 0)
+            {
+                int dist = Mathf.Abs(target.x - pawn.Cell.x) + Mathf.Abs(target.y - pawn.Cell.y);
+                if (dist > 30)
+                {
+                    int inUse = 0;
+                    foreach (var p in game.Pawns.Crew) if (p.OnScooter) inUse++;
+                    if (inUse < game.Stock.Scooters) pawn.OnScooter = true;
+                }
+            }
+            var status = Tick(pawn.Mover, pawn.SpeedFactor, game);
+            if (status != WalkStatus.Walking) pawn.OnScooter = false;
+            return status;
+        }
 
         public WalkStatus Tick(Mover mover, float speedFactor, Game game)
         {

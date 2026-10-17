@@ -77,7 +77,7 @@ namespace OSistema.Core
             var game = new Game(seed, map, playerBase, 0, Territory.FromBlocks(zoneRects, rng), properties);
             game.Org.BuildBusinesses(map, rng);
             game.NameProperties();
-            game.Stock.Cash = 800;
+            game.Stock.Cash = 300; // a few hundred euro of dirty money to start with
             game.Stock.Pistols = 1;
             game.SpawnStartingCrew();
             game.Rival.Setup(game, rng);

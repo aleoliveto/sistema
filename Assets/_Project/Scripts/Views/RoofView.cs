@@ -17,7 +17,9 @@ namespace OSistema.Views
 
         sealed class Roof
         {
-            public Property Property;
+            public Property Property;     // null for buildings that aren't for sale (the Vele, odd corners)
+            public RectInt Bounds;
+            public bool[] Mask;            // which cells of Bounds this roof covers (null = all)
             public SpriteRenderer Sprite;
             public float Alpha = 1f;
             public bool Open;
@@ -34,8 +36,9 @@ namespace OSistema.Views
             {
                 var interior = p.Interior;
                 if (interior.width < 1 || interior.height < 1) continue;
-                roofs.Add(new Roof { Property = p, Sprite = CreateRoof(p, interior) });
+                roofs.Add(new Roof { Property = p, Bounds = interior, Sprite = CreateRoof(p, interior) });
             }
+            AddLeftoverRoofs(g);
             UpdateOpen();
             foreach (var r in roofs)
             {
@@ -60,6 +63,81 @@ namespace OSistema.Views
             sr.sprite = Sprite.Create(tex, new Rect(0, 0, w, h), Vector2.zero, Tile, 0, SpriteMeshType.FullRect);
             sr.sharedMaterial = SpriteFactory.LitMaterial;
             sr.sortingOrder = 6; // above floors and furniture, below people
+            return sr;
+        }
+
+        /// <summary>
+        /// Every indoor floor that isn't part of a property (the Vele, buildings cut by the market street)
+        /// still gets a roof, so no interior shows unless the crew is inside.
+        /// </summary>
+        void AddLeftoverRoofs(Game g)
+        {
+            var map = g.Map;
+            var covered = new bool[map.CellCount];
+            foreach (var p in g.Properties.All)
+                foreach (var c in GridUtil.Cells(p.Rect, false))
+                    if (map.InBounds(c)) covered[map.Index(c.x, c.y)] = true;
+            foreach (var c in GridUtil.Cells(g.PlayerBase, false)) covered[map.Index(c.x, c.y)] = true;
+
+            bool Indoor(int x, int y)
+            {
+                if (!map.InBounds(x, y) || covered[map.Index(x, y)] || map.GetTerrain(x, y) != TerrainType.Floor) return false;
+                var b = map.GetBuilding(x, y);
+                return b != BuildingDefs.Wall && b != BuildingDefs.Door;
+            }
+
+            var seen = new bool[map.CellCount];
+            var stack = new Stack<Vector2Int>();
+            var cells = new List<Vector2Int>();
+            int salt = 10000;
+            for (int y = 0; y < map.Height; y++)
+            for (int x = 0; x < map.Width; x++)
+            {
+                if (seen[map.Index(x, y)] || !Indoor(x, y)) continue;
+                cells.Clear();
+                stack.Push(new Vector2Int(x, y));
+                seen[map.Index(x, y)] = true;
+                int minX = x, minY = y, maxX = x, maxY = y;
+                while (stack.Count > 0)
+                {
+                    var c = stack.Pop();
+                    cells.Add(c);
+                    minX = Mathf.Min(minX, c.x); maxX = Mathf.Max(maxX, c.x);
+                    minY = Mathf.Min(minY, c.y); maxY = Mathf.Max(maxY, c.y);
+                    foreach (var n in new[] { c + Vector2Int.left, c + Vector2Int.right, c + Vector2Int.up, c + Vector2Int.down })
+                    {
+                        if (!Indoor(n.x, n.y) || seen[map.Index(n.x, n.y)]) continue;
+                        seen[map.Index(n.x, n.y)] = true;
+                        stack.Push(n);
+                    }
+                }
+                if (cells.Count < 2) continue;
+                var bounds = new RectInt(minX, minY, maxX - minX + 1, maxY - minY + 1);
+                var mask = new bool[bounds.width * bounds.height];
+                foreach (var c in cells) mask[(c.y - minY) * bounds.width + (c.x - minX)] = true;
+                roofs.Add(new Roof { Bounds = bounds, Mask = mask, Sprite = CreateMaskedRoof(bounds, mask, salt++) });
+            }
+        }
+
+        SpriteRenderer CreateMaskedRoof(RectInt bounds, bool[] mask, int salt)
+        {
+            int w = bounds.width * Tile, h = bounds.height * Tile;
+            var tex = new Texture2D(w, h, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
+            var px = new Color32[w * h];
+            Paint(px, w, h, salt, PropertyKind.Home, null);
+            for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+                if (!mask[(y / Tile) * bounds.width + x / Tile]) px[y * w + x] = new Color32(0, 0, 0, 0);
+            tex.SetPixels32(px);
+            tex.Apply(false);
+
+            var go = new GameObject($"Roof {salt}");
+            go.transform.SetParent(transform, false);
+            go.transform.position = new Vector3(bounds.x, bounds.y, 0f);
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = Sprite.Create(tex, new Rect(0, 0, w, h), Vector2.zero, Tile, 0, SpriteMeshType.FullRect);
+            sr.sharedMaterial = SpriteFactory.LitMaterial;
+            sr.sortingOrder = 6;
             return sr;
         }
 
@@ -222,19 +300,24 @@ namespace OSistema.Views
         {
             foreach (var r in roofs)
             {
-                var p = r.Property;
-                bool open = p.OwnedByPlayer;
+                bool open = r.Property != null && r.Property.OwnedByPlayer;
                 if (!open)
                 {
                     foreach (var pawn in game.Pawns.Crew)
                     {
-                        if (!pawn.IsPresent || !p.Interior.Contains(pawn.Cell)) continue;
+                        if (!pawn.IsPresent || !Covers(r, pawn.Cell)) continue;
                         open = true;
                         break;
                     }
                 }
                 r.Open = open;
             }
+        }
+
+        static bool Covers(Roof r, Vector2Int c)
+        {
+            if (!r.Bounds.Contains(c)) return false;
+            return r.Mask == null || r.Mask[(c.y - r.Bounds.y) * r.Bounds.width + (c.x - r.Bounds.x)];
         }
 
         void Apply(Roof r)

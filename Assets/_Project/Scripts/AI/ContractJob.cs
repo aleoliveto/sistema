@@ -28,7 +28,7 @@ namespace OSistema.AI
             ContractKind.Delivery => contract.Stage < GoingToDrop ? "Picking up a parcel" : "Delivering a parcel",
             ContractKind.Debt => "Collecting a debt",
             ContractKind.ScooterTheft => contract.Stage < GoingToDrop ? "Stealing a scooter" : "Riding a stolen scooter",
-            _ => contract.Stage == AtPickup ? "Waiting for the boat" : contract.Stage < AtPickup ? "Going down to the sea" : "Carrying contraband",
+            _ => contract.Stage == AtPickup ? "Waiting for the boat" : contract.Stage < AtPickup ? "Going down to the port" : "Carrying the load home",
         };
 
         public override bool Tick(Game game)
@@ -37,7 +37,7 @@ namespace OSistema.AI
             var c = contract;
 
             // The smugglers' boat only comes at night.
-            if (c.Kind == ContractKind.Smuggling && c.Stage <= AtPickup)
+            if (c.AtNight && c.Stage <= AtPickup)
             {
                 int h = game.Clock.Hour;
                 bool boatHours = h >= 22 || h < 4;
@@ -61,9 +61,9 @@ namespace OSistema.AI
                         c.Stage = GoingToDrop;
                         return false;
                     }
-                    if (!Walk(c.From.Value, c.Kind != ContractKind.Smuggling, game, 1f)) return false;
+                    if (!Walk(c.From.Value, !c.AtNight, game, 1f)) return false;
                     c.Stage = AtPickup;
-                    c.Work = c.Kind == ContractKind.ScooterTheft ? 240 : c.Kind == ContractKind.Smuggling ? 700 : 90;
+                    c.Work = c.Kind == ContractKind.ScooterTheft ? 240 : c.AtNight ? 700 : 90;
                     return false;
 
                 case AtPickup:
@@ -87,7 +87,7 @@ namespace OSistema.AI
             }
         }
 
-        bool CarriesRisk() => contract.Kind == ContractKind.Delivery || contract.Kind == ContractKind.Smuggling;
+        bool CarriesRisk() => contract.Kind == ContractKind.Delivery || contract.AtNight;
 
         /// <summary>Walk to a cell; true once there. A failed path abandons the job.</summary>
         bool Walk(Vector2Int target, bool adjacent, Game game, float speed)
@@ -127,6 +127,8 @@ namespace OSistema.AI
                     break;
                 }
                 case ContractKind.Smuggling:
+                case ContractKind.Shipment:
+                case ContractKind.CigaretteRun:
                 {
                     // The Guardia di Finanza sometimes watches the coast. Sharp eyes help.
                     float chance = Mathf.Max(0.04f, 0.16f - Pawn.AwarenessSkill * 0.012f);
@@ -135,7 +137,7 @@ namespace OSistema.AI
                         Arrest(game, "the Guardia di Finanza was waiting at the landing.");
                         return true;
                     }
-                    Pawn.Carrying = "cases of cigarettes";
+                    Pawn.Carrying = c.Kind == ContractKind.Shipment ? "the product shipment" : "cases of cigarettes";
                     break;
                 }
                 default:
@@ -171,7 +173,7 @@ namespace OSistema.AI
                 }
                 return;
             }
-            Pawn.Learn(Skill.Awareness, c.Kind == ContractKind.Smuggling ? 14f : 8f, game);
+            Pawn.Learn(Skill.Awareness, c.AtNight ? 14f : 8f, game);
             game.Contracts.Finish(c, true, c.Kind switch
             {
                 ContractKind.ScooterTheft => "Nanninella is happy with the scooter.",

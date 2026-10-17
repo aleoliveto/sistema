@@ -5,7 +5,7 @@ using UnityEngine;
 namespace OSistema.World
 {
     /// <summary>Purely visual details placed by the generator.</summary>
-    public enum MapDecor : byte { None, Laundry, WallLamp }
+    public enum MapDecor : byte { None, Laundry, WallLamp, Shrine }
 
     /// <summary>Grid data model: the single source of truth for terrain and buildings.</summary>
     public sealed class Map
@@ -17,6 +17,7 @@ namespace OSistema.World
         readonly BuildingDef[] buildings;
         readonly byte[] styles; // facade/floor palette per cell, chosen per building by the generator
         readonly byte[] decor;  // overhead or wall decoration: laundry lines, wall lamps (MapDecor)
+        readonly byte[] rotation; // quarter turns of the building on each cell (furniture facing)
 
         // Where each building type stands, so jobs can find the nearest stove or pizzeria quickly.
         readonly Dictionary<BuildingDef, HashSet<Vector2Int>> positions = new Dictionary<BuildingDef, HashSet<Vector2Int>>();
@@ -32,7 +33,12 @@ namespace OSistema.World
             buildings = new BuildingDef[width * height];
             styles = new byte[width * height];
             decor = new byte[width * height];
+            rotation = new byte[width * height];
         }
+
+        public int GetRotation(int x, int y) => rotation[Index(x, y)];
+        public void SetRotation(int x, int y, int quarterTurns) => rotation[Index(x, y)] = (byte)(((quarterTurns % 4) + 4) % 4);
+        public byte[] RawRotation => rotation;
 
         public MapDecor GetDecor(int x, int y) => (MapDecor)decor[Index(x, y)];
         public void SetDecor(int x, int y, MapDecor d) => decor[Index(x, y)] = (byte)d;

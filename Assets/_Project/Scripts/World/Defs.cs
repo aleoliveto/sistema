@@ -246,13 +246,21 @@ namespace OSistema.World
     /// <summary>Prices in euros.</summary>
     public static class Prices
     {
-        public const int Pizza = 6;
-        public const int Groceries = 5;  // one unit cooks two meals
-        public const int Medicine = 15;
-        public const int ProductWholesale = 10; // per unit, from the supplier
-        public const int ProductStreet = 25;    // per unit, at the piazza
-        public const int RecruitBonus = 100;
-        public const int JailedFamilySupport = 100; // weekly, per crew member inside
-        public const int Pistol = 400;
+        public const int Pizza = 8;
+        public const int Groceries = 6;  // one unit cooks two meals
+        public const int Medicine = 20;
+        public const int ProductWholesale = 12; // per unit, from the supplier
+        public const int ProductStreet = 20;    // per unit, at the piazza
+        public const int RecruitBonus = 250;
+        public const int JailedFamilySupport = 150; // weekly, per crew member inside
+        public const int Pistol = 600;
+        public const int Scooter = 900;
+        public const int CigaretteCase = 10;    // wholesale, from the smugglers
+        public const int CigaretteStreet = 25;  // per case, sold from the deposito
+        public const int BillsPerHome = 40;     // weekly: light, gas, water
+        public const int BillsPerOperation = 80;
+
+        /// <summary>Anything this expensive can't be paid in dirty cash without questions.</summary>
+        public const int CleanMoneyThreshold = 3000;
     }
 }

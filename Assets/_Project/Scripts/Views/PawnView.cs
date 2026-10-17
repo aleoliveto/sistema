@@ -15,6 +15,7 @@ namespace OSistema.Views
         SpriteRenderer ring;
         Color shirt, skin, hair;
         bool pooled;
+        SpriteRenderer scooter;
 
         public Pawn Pawn => pawn;
 
@@ -26,6 +27,15 @@ namespace OSistema.Views
             skin = PersonRig.SkinFor(p.Id);
             hair = PersonRig.HairFor(p.Id + 3);
             rig.SetColors(shirt, skin, hair);
+
+            var scooterGo = new GameObject("Scooter");
+            scooterGo.transform.SetParent(transform, false);
+            scooter = scooterGo.AddComponent<SpriteRenderer>();
+            scooter.sprite = SpriteFactory.CenteredPixel;
+            scooter.sharedMaterial = SpriteFactory.LitMaterial;
+            scooter.sortingOrder = 10;
+            scooter.color = new Color(0.12f, 0.12f, 0.13f);
+            scooter.enabled = false;
 
             var ringGo = new GameObject("Selection");
             ringGo.transform.SetParent(transform, false);
@@ -61,6 +71,12 @@ namespace OSistema.Views
             rig.Update(pawn.Position, lying, Time.deltaTime);
             if (pawn.AimTarget != null && !lying) rig.FaceTowards(pawn.AimTarget.Position);
             rig.SetArmed(pawn.Armed && !pawn.Dead);
+            scooter.enabled = pawn.OnScooter;
+            if (pawn.OnScooter)
+            {
+                scooter.transform.localRotation = transform.Find("Pivot").localRotation;
+                scooter.transform.localScale = new Vector3(0.36f, 1.15f, 1f);
+            }
 
             var c = pawn.Dead ? DeadShirt : pawn.Health.Downed ? shirt * 0.65f : shirt;
             c.a = 1f;

@@ -62,10 +62,10 @@ namespace OSistema.UI
                 var row = Ui.Row(propertyPanel);
                 var b = business;
                 if (b.Status == BusinessStatus.Free)
-                    Ui.Btn($"Impose €{b.WeeklyPizzo}/week", () => { game.Org.Target(b); shownProperty = null; RefreshAll(); }, row, "btn--small");
+                    Ui.Btn($"Impose €{b.WeeklyPizzo}/week", () => { game.Org.Target(b, game); shownProperty = null; RefreshAll(); }, row, "btn--small");
                 if (b.Status == BusinessStatus.Refusing)
                 {
-                    Ui.Btn("Ask again", () => { game.Org.Target(b); shownProperty = null; RefreshAll(); }, row, "btn--small");
+                    Ui.Btn("Ask again", () => { game.Org.Target(b, game); shownProperty = null; RefreshAll(); }, row, "btn--small");
                     Ui.Btn("Scare", () => { game.Org.OrderRetaliation(b, Retaliation.Scare, game); shownProperty = null; RefreshAll(); }, row, "btn--small", "btn--danger");
                     Ui.Btn("Burn", () => { game.Org.OrderRetaliation(b, Retaliation.Burn, game); shownProperty = null; RefreshAll(); }, row, "btn--small", "btn--danger");
                 }

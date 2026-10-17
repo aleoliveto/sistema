@@ -11,7 +11,7 @@ namespace OSistema.Pawns
     public enum SleepState { Awake, InBed, OnFloor }
 
     /// <summary>The crew member's job in the clan. Hierarchy comes later; for now it's what they do all day.</summary>
-    public enum CrewRole { General, Pusher, Lookout, Collector }
+    public enum CrewRole { General, Pusher, Lookout, Collector, Manager }
 
     public enum Skill { Construction, Cooking, Medicine, Intimidation, Awareness, Shooting }
 
@@ -42,6 +42,7 @@ namespace OSistema.Pawns
 
         public Faction Faction;          // set before adding to the PawnManager
         public bool Armed;               // carries a pistol
+        public bool OnScooter;           // riding one of the family's scooters for a long trip
         public bool IsBoss;
         public long AggressiveUntil;     // willing to start shooting until this tick
         public long NextAttackTick;
@@ -182,8 +183,8 @@ namespace OSistema.Pawns
         /// <summary>Alive and on the map (possibly downed).</summary>
         public bool IsPresent => !Dead && !InJail && !InHospital && !Departed;
 
-        /// <summary>Injuries slow you down.</summary>
-        public float SpeedFactor => 1f - Health.Pain * 0.5f;
+        /// <summary>Injuries slow you down; a scooter speeds you up.</summary>
+        public float SpeedFactor => (1f - Health.Pain * 0.5f) * (OnScooter ? 2.3f : 1f);
 
         /// <summary>A need bad enough to drop work for.</summary>
         public bool HasUrgentNeed =>

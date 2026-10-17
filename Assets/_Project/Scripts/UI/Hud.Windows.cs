@@ -200,10 +200,10 @@ namespace OSistema.UI
                     : b.StatusLabel;
                 Ui.Text(status, row, "small", b.Status == BusinessStatus.Paying ? "good" : b.Status == BusinessStatus.Refusing ? "bad" : "muted").style.width = 170;
                 var biz = b;
-                if (b.Status == BusinessStatus.Free) Ui.Btn($"Impose €{b.WeeklyPizzo}", Do(() => org.Target(biz)), row, "btn--small");
+                if (b.Status == BusinessStatus.Free) Ui.Btn($"Impose €{b.WeeklyPizzo}", Do(() => org.Target(biz, game)), row, "btn--small");
                 if (b.Status == BusinessStatus.Refusing)
                 {
-                    Ui.Btn("Ask again", Do(() => org.Target(biz)), row, "btn--small");
+                    Ui.Btn("Ask again", Do(() => org.Target(biz, game)), row, "btn--small");
                     Ui.Btn("Scare", Do(() => org.OrderRetaliation(biz, Retaliation.Scare, game)), row, "btn--small", "btn--danger");
                     Ui.Btn("Burn", Do(() => org.OrderRetaliation(biz, Retaliation.Burn, game)), row, "btn--small", "btn--danger");
                 }

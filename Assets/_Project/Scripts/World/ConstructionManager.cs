@@ -11,6 +11,7 @@ namespace OSistema.World
         public readonly Vector2Int Cell;
         public readonly BuildingDef Def;
         public readonly bool Deconstruct;
+        public int Rotation;
         public float WorkLeft;
         public Pawn ClaimedBy;
         public long RetryAfterTick;
@@ -40,10 +41,10 @@ namespace OSistema.World
 
         public bool IsValid(Blueprint bp) => byCell.TryGetValue(bp.Cell, out var b) && b == bp;
 
-        public bool PlaceBuild(Vector2Int cell, BuildingDef def)
+        public bool PlaceBuild(Vector2Int cell, BuildingDef def, int rotation = 0)
         {
             if (!map.InBounds(cell) || byCell.ContainsKey(cell) || map.GetBuilding(cell) != null) return false;
-            byCell[cell] = new Blueprint(cell, def, false, def.WorkToBuild);
+            byCell[cell] = new Blueprint(cell, def, false, def.WorkToBuild) { Rotation = rotation };
             Version++;
             return true;
         }
@@ -86,6 +87,7 @@ namespace OSistema.World
                 map.SetBuilding(bp.Cell.x, bp.Cell.y, null);
                 return;
             }
+            map.SetRotation(bp.Cell.x, bp.Cell.y, bp.Rotation);
             map.SetBuilding(bp.Cell.x, bp.Cell.y, bp.Def);
             if (!bp.Def.Passable) game.Pawns.EvictFrom(bp.Cell, map);
         }

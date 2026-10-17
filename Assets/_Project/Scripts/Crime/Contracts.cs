@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace OSistema.Crime
 {
-    public enum ContractKind { Delivery, Debt, ScooterTheft, Smuggling }
+    public enum ContractKind { Delivery, Debt, ScooterTheft, Smuggling, Shipment, CigaretteRun }
     public enum ContractState { Offered, Active, Done, Failed, Expired }
 
     /// <summary>
@@ -32,7 +32,11 @@ namespace OSistema.Crime
         public ContractState State;
         public Pawn Assignee;
         public string Outcome;
+        public int Units;          // shipments: how much product or how many cases
         public int Stage;          // progress, kept here so the job survives breaks for food and sleep
+
+        public bool IsShipment => Kind == ContractKind.Shipment || Kind == ContractKind.CigaretteRun;
+        public bool AtNight => Kind == ContractKind.Smuggling || IsShipment;
         public float Work;
     }
 
@@ -81,6 +85,8 @@ namespace OSistema.Crime
                 {
                     c.State = ContractState.Expired;
                     Version++;
+                    if (c.IsShipment)
+                        game.Log.Add($"Nobody went down to the port. The boat left with your {c.Units} {(c.Kind == ContractKind.Shipment ? "units of product" : "cases of cigarettes")}.", MessageKind.Bad);
                 }
             All.RemoveAll(c => (c.State == ContractState.Expired || c.State == ContractState.Done || c.State == ContractState.Failed) && now - c.ExpiresTick > GameClock.TicksPerDay * 2);
 
@@ -128,7 +134,7 @@ namespace OSistema.Crime
                     return Make(kind, "'O Zio Totonno", "Deliver a package",
                         $"Pick up a parcel in {ZoneName(game, from.Value)} and take it to a door in {ZoneName(game, to.Value)}. Don't open it. Don't get stopped by the police.",
                         "Nun 'o arapì. E nun te fa' fermà.", "Don't open it. And don't get stopped.",
-                        rng.Next(12, 26) * 10, 1f, "Police patrols may stop and search the courier.", from, to.Value, expires);
+                        rng.Next(8, 16) * 10, 1f, "Police patrols may stop and search the courier.", from, to.Value, expires);
                 }
                 case ContractKind.Debt:
                 {
@@ -137,7 +143,7 @@ namespace OSistema.Crime
                     return Make(kind, "Don Peppe 'o Strozzino", "Collect a debt",
                         $"A shopkeeper in {ZoneName(game, to.Value)} owes Don Peppe money and stopped answering the door. Go and remind him. You keep a third.",
                         "Chi tene 'o debito, tene 'o padrone.", "He who has a debt has a master.",
-                        rng.Next(15, 36) * 10, 1.5f, "He might refuse. Intimidation helps. Neighbours may call the police.", null, to.Value, expires);
+                        rng.Next(10, 23) * 10, 1.5f, "He might refuse. Intimidation helps. Neighbours may call the police.", null, to.Value, expires);
                 }
                 case ContractKind.ScooterTheft:
                 {
@@ -147,7 +153,7 @@ namespace OSistema.Crime
                     return Make(kind, "Nanninella 'a Ricettatrice", "Steal a scooter",
                         $"There's a nice scooter parked in {ZoneName(game, scooter.Value)}. Take it to Nanninella's garage in {ZoneName(game, fence.Value)} before anyone notices.",
                         "Nu Liberty nuovo nuovo. Portamelo, e nun fa' rummore.", "A brand new Liberty. Bring it to me, quietly.",
-                        rng.Next(20, 31) * 10, 1f, "Witnesses raise heat; a passer-by may call the police.", scooter, fence.Value, expires);
+                        rng.Next(12, 20) * 10, 1f, "Witnesses raise heat; a passer-by may call the police.", scooter, fence.Value, expires);
                 }
                 default:
                 {
@@ -157,7 +163,7 @@ namespace OSistema.Crime
                     return Make(ContractKind.Smuggling, "'O Marenaro", "Cigarettes off the boat",
                         $"Tonight, between 22:00 and 04:00, a boat comes in to the lungomare. Wait for it at the gap in the railing, then carry the cases to a basso in {ZoneName(game, drop.Value)}.",
                         "Stanotte 'a varca arriva. Nun fa' tardi.", "Tonight the boat comes. Don't be late.",
-                        rng.Next(35, 51) * 10, 2f, "The Guardia di Finanza sometimes watches the coast.", landing, drop.Value,
+                        rng.Next(20, 33) * 10, 2f, "The Guardia di Finanza sometimes watches the coast.", landing, drop.Value,
                         game.Ticks.TicksGame + GameClock.TicksPerDay / 2);
                 }
             }
@@ -213,6 +219,36 @@ namespace OSistema.Crime
             return gaps.Count > 0 ? gaps[game.Rng.Next(gaps.Count)] : (Vector2Int?)null;
         }
 
+        // ---------- Shipments ----------
+
+        public bool ShipmentPending(ContractKind kind) =>
+            All.Exists(c => c.Kind == kind && (c.State == ContractState.Offered || c.State == ContractState.Active));
+
+        /// <summary>A shipment is coming in by boat tonight. Someone has to be at the port to collect it.</summary>
+        public Contract AddShipment(Game game, ContractKind kind, int units)
+        {
+            var landing = Landing(game);
+            if (landing == null) return null;
+            var home = game.Properties.All.Find(p => p.OwnedByPlayer && p.Rect.Overlaps(game.PlayerBase));
+            var to = home != null ? home.Door : Vector2Int.RoundToInt(game.PlayerBase.center);
+
+            // The boat waits until five in the morning.
+            int hour = game.Clock.Hour;
+            long ticksToFive = ((hour < 5 ? 5 - hour : 29 - hour) * GameClock.TicksPerHour) - (long)((game.Clock.HourF - hour) * GameClock.TicksPerHour);
+            bool cigarettes = kind == ContractKind.CigaretteRun;
+            var c = Make(kind, cigarettes ? "'O Marenaro" : "The supplier",
+                cigarettes ? $"Collect {units} cases of cigarettes" : $"Collect {units} units of product",
+                $"The boat comes in to the lungomare tonight between 22:00 and 04:00. Send someone to meet it and bring the {(cigarettes ? "cases" : "goods")} back to the basso. If nobody goes, it's lost.",
+                "'A varca nun aspetta a nisciuno.", "The boat waits for no one.",
+                0, 0f, "The Guardia di Finanza may be watching the landing: the load would be seized.", landing, to,
+                game.Ticks.TicksGame + ticksToFive);
+            c.Units = units;
+            All.Add(c);
+            Version++;
+            game.Log.Add($"Shipment arranged: {units} {(cigarettes ? "cases" : "units")} at the port tonight. Assign someone in Lavoretti (J).", MessageKind.Info, landing);
+            return c;
+        }
+
         // ---------- Taking and finishing jobs ----------
 
         public bool Assign(Contract c, Pawn p, Game game, out string error)
@@ -240,7 +276,14 @@ namespace OSistema.Crime
             c.ExpiresTick = game.Ticks.TicksGame;
             Version++;
             var p = c.Assignee;
-            if (success)
+            if (success && c.IsShipment)
+            {
+                if (c.Kind == ContractKind.Shipment) game.Stock.Product += c.Units;
+                else game.Stock.Cigarettes += c.Units;
+                p.Say("job_done");
+                game.Log.Add($"{p.DisplayName} brought the shipment home: {c.Units} {(c.Kind == ContractKind.Shipment ? "units of product" : "cases of cigarettes")}.", MessageKind.Good, p.Cell);
+            }
+            else if (success)
             {
                 Completed++;
                 game.Stock.Cash += c.Reward;

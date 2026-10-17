@@ -5,6 +5,9 @@ namespace OSistema.World
 {
     public enum PropertyKind { Home, Shop, Civic }
 
+    /// <summary>An illegal business run out of a home the family owns.</summary>
+    public enum Operation { None, Bisca, Laboratorio, Deposito }
+
     /// <summary>A building on the map that can be owned: a basso, a flat, a shop.</summary>
     public sealed class Property
     {
@@ -15,6 +18,8 @@ namespace OSistema.World
         public PropertyKind Kind;
         public bool OwnedByPlayer;
         public int Price;
+        public Operation Operation;
+        public OSistema.Pawns.Pawn Manager;
 
         public RectInt Interior => new RectInt(Rect.x + 1, Rect.y + 1, Rect.width - 2, Rect.height - 2);
     }
@@ -478,7 +483,7 @@ namespace OSistema.World
             var mid = Vector2Int.RoundToInt(lot.center);
             map.SetBuilding(mid.x, mid.y - 1, BuildingDefs.Table);
             int shrineX = door.x == lot.xMin ? lot.xMin + 1 : lot.xMax - 2;
-            map.SetBuilding(shrineX, lot.y + 1, BuildingDefs.Shrine);
+            map.SetBuilding(shrineX, lot.y + 1, BuildingDefs.HomeShrine);
         }
 
         void PlaceShops(Map map)
@@ -538,7 +543,7 @@ namespace OSistema.World
                 if (b == BuildingDefs.Wall && FacesAlley(map, x, y))
                 {
                     double r = rng.NextDouble();
-                    if (r < 0.012) map.SetBuilding(x, y, BuildingDefs.Shrine);
+                    if (r < 0.012) map.SetDecor(x, y, MapDecor.Shrine);
                     else if (r < 0.06) map.SetDecor(x, y, MapDecor.WallLamp);
                 }
                 else if (b == null && map.GetTerrain(x, y) == TerrainType.Sidewalk && NextToWall(map, x, y) && !NextToDoor(map, x, y))
