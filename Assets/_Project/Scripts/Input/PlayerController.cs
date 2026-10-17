@@ -50,6 +50,10 @@ namespace OSistema.Input
         Camera cam;
         Hud hud;
         SpriteRenderer preview;
+        SpriteRenderer ghost;
+        Texture2D ghostTex;
+        readonly Color32[] ghostPixels = new Color32[TilePainter.Size * TilePainter.Size];
+        (BuildingDef def, int rot, Vector2Int cell) ghostKey;
 
         bool dragging;
         Vector2Int dragStartCell;
@@ -66,6 +70,30 @@ namespace OSistema.Input
             preview.sharedMaterial = SpriteFactory.UnlitMaterial;
             preview.sortingOrder = 20;
             preview.enabled = false;
+
+            // A see-through copy of the furniture under the cursor, so you can see which way it faces.
+            ghostTex = new Texture2D(TilePainter.Size, TilePainter.Size, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
+            ghost = new GameObject("Build Ghost").AddComponent<SpriteRenderer>();
+            ghost.sprite = Sprite.Create(ghostTex, new Rect(0, 0, TilePainter.Size, TilePainter.Size), Vector2.zero, TilePainter.Size);
+            ghost.sharedMaterial = SpriteFactory.UnlitMaterial;
+            ghost.sortingOrder = 21;
+            ghost.color = new Color(1f, 1f, 1f, 0.8f);
+            ghost.enabled = false;
+        }
+
+        void UpdateGhost(Vector2Int cell, bool show)
+        {
+            show &= CurrentTool == Tool.Build && CurrentDef != null && CurrentDef.PlaceMode == PlaceMode.Single
+                    && CurrentDef != BuildingDefs.Door && game.Map.InBounds(cell.x, cell.y);
+            ghost.enabled = show;
+            if (!show) return;
+            ghost.transform.position = new Vector3(cell.x, cell.y, 0f);
+            var key = (CurrentDef, PlacementRotation, cell);
+            if (key == ghostKey) return;
+            ghostKey = key;
+            TilePainter.PaintPreview(game.Map, CurrentDef, cell.x, cell.y, PlacementRotation, ghostPixels);
+            ghostTex.SetPixels32(ghostPixels);
+            ghostTex.Apply();
         }
 
         /// <summary>Points the controller at a new or loaded game.</summary>
@@ -374,8 +402,10 @@ namespace OSistema.Input
             else
             {
                 preview.enabled = false;
+                UpdateGhost(cell, false);
                 return;
             }
+            UpdateGhost(new Vector2Int(rect.x, rect.y), true);
 
             preview.enabled = true;
             preview.transform.position = new Vector3(rect.x, rect.y, 0f);

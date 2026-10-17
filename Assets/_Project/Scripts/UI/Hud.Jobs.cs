@@ -39,7 +39,8 @@ namespace OSistema.UI
             if (jobsButton != null)
             {
                 int offerCount = game.Contracts.OfferCount;
-                jobsButton.text = offerCount > 0 ? $"Lavoretti ({offerCount})" : "Lavoretti";
+                var label = jobsButton.Q<Label>(className: "tab__label");
+                if (label != null) label.text = offerCount > 0 ? $"LAVORETTI · {offerCount}" : "LAVORETTI";
                 jobsButton.Toggle("btn--on", openWindow == Window.Jobs || offerCount > 0);
             }
             if (openWindow != Window.Jobs) return;

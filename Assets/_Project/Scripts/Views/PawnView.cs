@@ -71,8 +71,8 @@ namespace OSistema.Views
             rig.Update(pawn.Position, lying, Time.deltaTime);
             if (pawn.AimTarget != null && !lying) rig.FaceTowards(pawn.AimTarget.Position);
             rig.SetArmed(pawn.Armed && !pawn.Dead);
-            scooter.enabled = pawn.OnScooter;
-            if (pawn.OnScooter)
+            scooter.enabled = pawn.Riding;
+            if (pawn.Riding)
             {
                 scooter.transform.localRotation = transform.Find("Pivot").localRotation;
                 scooter.transform.localScale = new Vector3(0.36f, 1.15f, 1f);

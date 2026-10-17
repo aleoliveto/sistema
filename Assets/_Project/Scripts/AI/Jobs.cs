@@ -76,8 +76,14 @@ namespace OSistema.AI
                     if (inUse < game.Stock.Scooters) pawn.OnScooter = true;
                 }
             }
+            if (pawn.OnScooter)
+            {
+                var t = game.Map.GetTerrain(pawn.Cell.x, pawn.Cell.y);
+                pawn.Riding = (t == TerrainType.Road || t == TerrainType.Sidewalk || t == TerrainType.Paving)
+                              && game.Map.GetBuilding(pawn.Cell.x, pawn.Cell.y) == null;
+            }
             var status = Tick(pawn.Mover, pawn.SpeedFactor, game);
-            if (status != WalkStatus.Walking) pawn.OnScooter = false;
+            if (status != WalkStatus.Walking) pawn.OnScooter = pawn.Riding = false;
             return status;
         }
 

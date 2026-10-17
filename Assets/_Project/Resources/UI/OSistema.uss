@@ -506,7 +506,7 @@
 /* Layout below the bar */
 .family { top: 46px; right: 8px; width: 290px; padding: 6px 10px; }
 .crew-bar { top: 46px; }
-.feed { top: 128px; width: 290px; }
+.feed { top: 178px; width: 290px; }
 
 /* Dock (v2): icon buttons */
 .tab { flex-direction: row; align-items: center; justify-content: center; min-width: 96px; height: 32px; }

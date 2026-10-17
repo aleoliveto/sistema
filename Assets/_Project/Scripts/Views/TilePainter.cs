@@ -106,6 +106,20 @@ namespace OSistema.Views
 
         static readonly Color32[] Scratch = new Color32[Size * Size];
 
+        /// <summary>Paints a piece of furniture alone on a transparent tile, turned as it will be placed.</summary>
+        public static void PaintPreview(Map map, BuildingDef def, int x, int y, int rot, Color32[] buf)
+        {
+            var clear = new Color32(0, 0, 0, 0);
+            for (int i = 0; i < Size * Size; i++) Scratch[i] = clear;
+            PaintBuilding(map, def, x, y, map.InBounds(x, y) ? map.GetStyle(x, y) : (byte)0, Scratch, Size, 0, 0);
+            for (int py = 0; py < Size; py++)
+            for (int px = 0; px < Size; px++)
+            {
+                var (sx, sy) = Rotate(px, py, rot);
+                buf[sy * Size + sx] = Scratch[py * Size + px];
+            }
+        }
+
         // Quarter turns counter-clockwise inside a 16x16 tile.
         static (int, int) Rotate(int x, int y, int quarterTurns) => quarterTurns switch
         {

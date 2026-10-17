@@ -184,7 +184,8 @@ namespace OSistema.Pawns
         public bool IsPresent => !Dead && !InJail && !InHospital && !Departed;
 
         /// <summary>Injuries slow you down; a scooter speeds you up.</summary>
-        public float SpeedFactor => (1f - Health.Pain * 0.5f) * (OnScooter ? 2.3f : 1f);
+        public bool Riding;              // on the scooter right now: only on streets, never indoors
+        public float SpeedFactor => (1f - Health.Pain * 0.5f) * (Riding ? 2.3f : 1f);
 
         /// <summary>A need bad enough to drop work for.</summary>
         public bool HasUrgentNeed =>
