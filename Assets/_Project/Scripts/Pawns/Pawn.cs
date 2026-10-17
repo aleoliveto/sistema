@@ -173,7 +173,8 @@ namespace OSistema.Pawns
         public bool InJail => JailedUntil > 0;
         public bool InHospital => HospitalUntil > 0;
         public bool IsAggressive(long now) => AggressiveUntil > now;
-        public string DisplayName => IsBoss ? $"Don {FirstName}" : Nickname;
+        public bool Titled;              // a boss is "Don" only once the family is somebody
+        public string DisplayName => IsBoss ? (Titled ? $"Don {FirstName}" : FirstName) : Nickname;
         public bool InMentalBreak(long now) => BreakUntilTick > now;
         public bool IsLyingLow(long now) => LyingLowUntil > now;
 

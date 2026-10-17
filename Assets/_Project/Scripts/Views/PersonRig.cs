@@ -31,10 +31,10 @@ namespace OSistema.Views
             root = parent;
             root.localScale = Vector3.one * scale;
 
-            shadow = Part("Shadow", root, SpriteFactory.Disc, SpriteFactory.UnlitMaterial, sortingOrder - 1);
-            shadow.color = new Color(0f, 0f, 0f, 0.35f);
-            shadow.transform.localPosition = new Vector3(0.08f, -0.1f, 0f);
-            shadow.transform.localScale = new Vector3(0.95f, 0.7f, 1f);
+            shadow = Part("Shadow", root, SpriteFactory.SoftShadow, SpriteFactory.UnlitMaterial, sortingOrder - 1);
+            shadow.color = new Color(0.05f, 0.04f, 0.06f, 0.55f);
+            shadow.transform.localPosition = new Vector3(0.12f, 0.08f, 0f);   // cast towards the north-east, like the buildings'
+            shadow.transform.localScale = new Vector3(1.15f, 0.95f, 1f);
 
             pivot = new GameObject("Pivot").transform;
             pivot.SetParent(root, false);

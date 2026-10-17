@@ -181,6 +181,7 @@ namespace OSistema.Core
             cam.orthographicSize = 9f;
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color32(14, 14, 18, 255);
+            PostFx.Setup(cam);
             return cam;
         }
     }

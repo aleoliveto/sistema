@@ -78,7 +78,12 @@ namespace OSistema.Views
                 buf[(oy + py) * stride + ox + px] = TerrainPixel(map, terrain, x, y, px, py, style);
 
             bool wallLike = building == BuildingDefs.Wall;
-            if (!wallLike) AmbientOcclusion(map, x, y, buf, stride, ox, oy);
+            if (!wallLike)
+            {
+                AmbientOcclusion(map, x, y, buf, stride, ox, oy);
+                if (!Indoor(terrain)) CastShadows(map, x, y, buf, stride, ox, oy);
+            }
+            Weather(terrain, x, y, buf, stride, ox, oy, wallLike);
             if (building == null) return;
 
             int rot = map.GetRotation(x, y);
@@ -199,6 +204,79 @@ namespace OSistema.Views
                     return N(gx, gy, 9) < 0.035f ? new Color32(144, 134, 118, 255) : c;
                 }
             }
+        }
+
+        static bool Indoor(TerrainType t) => t == TerrainType.Floor || t == TerrainType.Marble;
+
+        // Buildings are tall: anything with walls or a roof blocks the sun.
+        static bool Mass(Map map, int x, int y)
+        {
+            if (!map.InBounds(x, y)) return false;
+            var b = map.GetBuilding(x, y);
+            return b == BuildingDefs.Wall || b == BuildingDefs.Door || Indoor(map.GetTerrain(x, y));
+        }
+
+        /// <summary>
+        /// The afternoon sun comes from the south-west, low over the gulf: buildings throw soft shadows
+        /// up and to the right across the street. Sampled per pixel so the edge is soft.
+        /// </summary>
+        static void CastShadows(Map map, int x, int y, Color32[] buf, int stride, int ox, int oy)
+        {
+            // Quick reject: no building mass within reach.
+            bool near = false;
+            for (int dy = -2; dy <= 0 && !near; dy++)
+            for (int dx = -2; dx <= 0 && !near; dx++)
+                if ((dx != 0 || dy != 0) && Mass(map, x + dx, y + dy)) near = true;
+            if (!near) return;
+
+            for (int py = 0; py < Size; py++)
+            for (int px = 0; px < Size; px++)
+            {
+                int gx = x * Size + px, gy = y * Size + py;
+                int hits = 0;
+                for (int s = 1; s <= 4; s++)
+                {
+                    int d = s * 6;
+                    int cx = (gx - d) / Size, cy = (gy - (d * 3) / 4) / Size;
+                    if (Mass(map, cx, cy)) hits++;
+                }
+                if (hits == 0) continue;
+                float f = 1f - 0.11f * hits;    // up to ~45% darker, softer further out
+                int i = (oy + py) * stride + ox + px;
+                var c = buf[i];
+                // Shadows are a little cooler than the sunlit stone.
+                buf[i] = new Color32((byte)(c.r * f * 0.94f), (byte)(c.g * f * 0.97f), (byte)Mathf.Min(255, c.b * f * 1.04f), 255);
+            }
+        }
+
+        /// <summary>Grime, stains and sun-bleaching in big soft patches, so no surface is a flat colour.</summary>
+        static void Weather(TerrainType t, int x, int y, Color32[] buf, int stride, int ox, int oy, bool wall)
+        {
+            float strength = wall ? 0.16f : Indoor(t) ? 0.06f : t == TerrainType.Water ? 0f : 0.12f;
+            if (strength <= 0f) return;
+            for (int py = 0; py < Size; py++)
+            for (int px = 0; px < Size; px++)
+            {
+                int gx = x * Size + px, gy = y * Size + py;
+                // Two octaves of blotchy noise, bilinear so they read as stains rather than pixels.
+                float big = Smooth(gx / 24f, gy / 24f, 31), mid = Smooth(gx / 7f, gy / 7f, 32);
+                float g = (big - 0.5f) * 1.4f + (mid - 0.5f) * 0.6f;
+                float f = 1f + g * strength;
+                int i = (oy + py) * stride + ox + px;
+                var c = buf[i];
+                // Dirt is brownish, not grey.
+                buf[i] = new Color32((byte)Mathf.Clamp(c.r * f, 0, 255), (byte)Mathf.Clamp(c.g * (f * 0.98f + 0.02f), 0, 255), (byte)Mathf.Clamp(c.b * (f * 0.95f + 0.05f) - g * 6f, 0, 255), 255);
+            }
+        }
+
+        static float Smooth(float fx, float fy, int salt)
+        {
+            int ix = Mathf.FloorToInt(fx), iy = Mathf.FloorToInt(fy);
+            float tx = fx - ix, ty = fy - iy;
+            tx = tx * tx * (3f - 2f * tx);
+            ty = ty * ty * (3f - 2f * ty);
+            float a = N(ix, iy, salt), b = N(ix + 1, iy, salt), c = N(ix, iy + 1, salt), d = N(ix + 1, iy + 1, salt);
+            return Mathf.Lerp(Mathf.Lerp(a, b, tx), Mathf.Lerp(c, d, tx), ty);
         }
 
         static bool IsT(Map map, int x, int y, TerrainType t) => map.InBounds(x, y) && map.GetTerrain(x, y) == t;

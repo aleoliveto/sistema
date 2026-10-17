@@ -51,7 +51,7 @@ namespace OSistema.Views
         static Sprite shoulders, headSprite, hairSprite;
 
         /// <summary>Top-down shoulders and arms, white with a dark outline (tinted with the shirt colour).</summary>
-        public static Sprite Shoulders => shoulders != null ? shoulders : shoulders = MakeEllipse(0.36f, 0.22f, outline: true);
+        public static Sprite Shoulders => shoulders != null ? shoulders : shoulders = MakeEllipse(0.36f, 0.22f, outline: true, cloth: true);
 
         /// <summary>A head seen from above (tinted with the skin colour).</summary>
         public static Sprite Head => headSprite != null ? headSprite : headSprite = MakeEllipse(0.2f, 0.2f, outline: true);
@@ -59,7 +59,7 @@ namespace OSistema.Views
         /// <summary>Hair covering the back of the head; the face side (north) stays visible.</summary>
         public static Sprite Hair => hairSprite != null ? hairSprite : hairSprite = MakeHair();
 
-        static Sprite MakeEllipse(float rx, float ry, bool outline)
+        static Sprite MakeEllipse(float rx, float ry, bool outline, bool cloth = false)
         {
             const int size = 64;
             var tex = new Texture2D(size, size, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear };
@@ -70,11 +70,18 @@ namespace OSistema.Views
                 float dx = ((x + 0.5f) / size - 0.5f) / rx, dy = ((y + 0.5f) / size - 0.5f) / ry;
                 float d = dx * dx + dy * dy;
                 if (d > 1f) continue;
-                bool edge = outline && d > 0.8f;
-                // A little top-down shading: lighter towards the top-left.
-                float shade = 1f - 0.12f * (((x + 0.5f) / size - 0.5f) - ((y + 0.5f) / size - 0.5f));
+                // Rounded volume: lit from the top-left, falling off towards the rim, no cartoon line.
+                float rim = Mathf.Sqrt(d);
+                float shade = 1.04f - 0.1f * (((x + 0.5f) / size - 0.5f) - ((y + 0.5f) / size - 0.5f)) * 2f - 0.32f * rim * rim * rim;
+                if (cloth)
+                {
+                    // Folds and creases across the shoulders.
+                    float fold = Mathf.Sin(x * 0.55f + Mathf.Sin(y * 0.3f) * 2f) * 0.035f + (Hash(x, y) - 0.5f) * 0.05f;
+                    shade += fold;
+                }
                 byte v = (byte)Mathf.Clamp(255 * shade, 0, 255);
-                px[y * size + x] = edge ? new Color32(45, 40, 38, 255) : new Color32(v, v, v, 255);
+                byte a = (byte)(outline ? Mathf.Clamp01((1f - d) * 10f) * 255 : 255);   // soft edge instead of an outline
+                px[y * size + x] = new Color32(v, v, v, a);
             }
             tex.SetPixels32(px);
             tex.Apply();
@@ -90,12 +97,55 @@ namespace OSistema.Views
             for (int x = 0; x < size; x++)
             {
                 float dx = (x + 0.5f) / size - 0.5f, dy = (y + 0.5f) / size - 0.5f;
-                if (dx * dx + dy * dy > 0.19f * 0.19f || dy > 0.07f) continue; // leave the face uncovered
-                px[y * size + x] = new Color32(255, 255, 255, 255);
+                float r2 = dx * dx + dy * dy;
+                if (r2 > 0.19f * 0.19f || dy > 0.07f) continue; // leave the face uncovered
+                // Strands radiating from the crown, darker at the roots.
+                float ang = Mathf.Atan2(dy, dx);
+                float strand = 0.85f + 0.15f * Mathf.Sin(ang * 22f + Hash(x / 3, y / 3) * 2f);
+                float v = strand * (1.05f - Mathf.Sqrt(r2) * 1.6f);
+                byte b = (byte)Mathf.Clamp(255 * v, 0, 255);
+                byte a = (byte)(Mathf.Clamp01((0.19f * 0.19f - r2) * 900f) * 255);
+                px[y * size + x] = new Color32(b, b, b, a);
             }
             tex.SetPixels32(px);
             tex.Apply();
             return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
+        }
+
+        static float Hash(int x, int y)
+        {
+            unchecked
+            {
+                uint h = (uint)x * 374761393u + (uint)y * 668265263u;
+                h = (h ^ (h >> 13)) * 1274126177u;
+                return ((h ^ (h >> 16)) & 0xFFFF) / 65535f;
+            }
+        }
+
+        static Sprite softShadow;
+
+        /// <summary>A blurred contact shadow: dark in the middle, fading to nothing.</summary>
+        public static Sprite SoftShadow
+        {
+            get
+            {
+                if (softShadow != null) return softShadow;
+                const int size = 64;
+                var tex = new Texture2D(size, size, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear };
+                var px = new Color32[size * size];
+                for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                {
+                    float dx = (x + 0.5f) / size - 0.5f, dy = (y + 0.5f) / size - 0.5f;
+                    float d = Mathf.Sqrt(dx * dx + dy * dy) / 0.5f;
+                    float a = Mathf.Clamp01(1f - d);
+                    a = a * a * (3f - 2f * a);
+                    px[y * size + x] = new Color32(255, 255, 255, (byte)(a * 255));
+                }
+                tex.SetPixels32(px);
+                tex.Apply();
+                return softShadow = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
+            }
         }
 
         static Material lit;

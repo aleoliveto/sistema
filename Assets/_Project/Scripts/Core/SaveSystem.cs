@@ -241,6 +241,8 @@ namespace OSistema.Core
             if (data.favours != null && data.favours.Neighbours.Count > 0) game.Favours.S = data.favours;
             else game.Favours.Setup(game, game.Rng);
 
+            var loadedBoss = game.Org.Boss(game);
+            if (loadedBoss != null) loadedBoss.Titled = game.Org.Rank >= 1;
             game.Log.Add("Game loaded.", MessageKind.Info);
             return game;
         }

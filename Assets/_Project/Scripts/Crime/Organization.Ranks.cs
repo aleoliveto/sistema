@@ -46,6 +46,9 @@ namespace OSistema.Crime
 
         public void CheckRank(Game game)
         {
+            var head = Boss(game);
+            if (head != null) head.Titled = Rank >= 1;
+
             // Word gets round: the friends from the vicolo call.
             if (Respect >= FriendsRespect && FriendsJoined < Game.FriendCount && !FriendCalling(game) && game.Clock.Hour >= 9 && game.Clock.Hour <= 22
                 && (FriendsJoined == 0 || Respect >= FriendsRespect + 4f))
@@ -68,6 +71,7 @@ namespace OSistema.Crime
                 if (Respect >= RankRespect[r] && CompletedJobs(game) >= RankJobs[r]) rank = r;
             if (rank <= Rank) return;
             Rank = rank;
+            if (head != null) head.Titled = Rank >= 1;
             game.Log.Add($"The family is now a {RankName}. Unlocked: {UnlocksAt(rank)}.", MessageKind.Good);
             game.Events.Raise(EventCards.RankUp(game, rank));
             game.Newspaper.Report(game, 3, "A new power in the old town?", $"Shopkeepers speak, off the record, of a family growing in influence. They call them a {RankName.ToLower()}.");
