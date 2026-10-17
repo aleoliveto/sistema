@@ -681,6 +681,10 @@ namespace OSistema.Input
                 return new Action { Label = $"{what} {b.Name}", Do = () => game.Events.Raise(Story.ShopCards.Owner(shop, game)) };
             }
 
+            // A pizza at the counter, eaten on the spot.
+            if (p.Needs.Food < 0.85f && Near(p, BuildingDefs.PizzeriaCounter, out var pizzeria))
+                return new Action { Label = $"Buy a pizza · €{Prices.Pizza}", Do = () => { p.ForceJob(new EatJob(p, pizzeria, atShop: true), game); } };
+
             if (Near(p, BuildingDefs.Bed, out var bed) && (game.PlayerBase.Contains(bed) || game.Properties.IsOwnedHome(bed)))
                 return new Action { Label = "Sleep", Do = () => { p.LastInputTick = -1000000; p.ForceJob(new SleepJob(p, bed, null), game); } };
             if (game.Stock.Meals > 0 && p.Needs.Food < 0.8f && Near(p, BuildingDefs.Pantry, out var pantry))

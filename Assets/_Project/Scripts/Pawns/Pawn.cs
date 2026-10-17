@@ -275,8 +275,14 @@ namespace OSistema.Pawns
             if ((now + Id * 37) % CheckInterval == 0) PeriodicCheck(game, now);
 
             if (Health.Downed && !(CurrentJob is DownedJob)) ForceJob(new DownedJob(this), game);
-            // The player is steering: nothing happens unless he asked for it.
-            if (CurrentJob == null && Manual(now)) return;
+            // The player is steering: nothing happens unless he asked for it. But a body left alone
+            // for a while still eats when it's starving and sleeps when it can't stand.
+            if (CurrentJob == null && Manual(now))
+            {
+                if (now - LastInputTick < ManualHoldTicks || !HasUrgentNeed) return;
+                CurrentJob = JobGiver.ForNeeds(this, game);
+                if (CurrentJob == null) return;
+            }
             if (CurrentJob == null) CurrentJob = JobGiver.Next(this, game);
             if (CurrentJob.Tick(game))
             {

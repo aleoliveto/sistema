@@ -165,7 +165,14 @@ namespace OSistema.UI
             if (titleShown) return;
             titleShown = true;
             // Developer switch: a file named dev_autoplay in the save folder skips the title (for testing).
-            if (System.IO.File.Exists(System.IO.Path.Combine(Application.persistentDataPath, "dev_autoplay"))) return;
+            var dev = System.IO.Path.Combine(Application.persistentDataPath, "dev_autoplay");
+            if (System.IO.File.Exists(dev))
+            {
+                // "soak" in the file: run at top speed and answer every scene, to shake out errors.
+                devSoak = System.IO.File.ReadAllText(dev).Contains("soak");
+                if (devSoak && game != null) game.Ticks.SetSpeed(5);
+                return;
+            }
             OpenMenu(Menu.Title);
         }
     }

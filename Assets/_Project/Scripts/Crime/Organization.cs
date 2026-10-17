@@ -61,6 +61,12 @@ namespace OSistema.Crime
             if (clock.Hour == 0) OnNewDay(game);
             if (clock.Hour == 8 && PendingOrderUnits > 0 && clock.Day >= PendingOrderDay) DeliverOrder(game);
             if (clock.Hour == 12 && clock.IsPayday && LastPaydayWeek != WeekOf(clock)) Payday(game);
+            // Mammà: whatever her son gets up to, nobody in her basso goes hungry.
+            if (clock.Hour == 13 && Generation == 1 && game.Stock.Meals < 2)
+            {
+                game.Stock.Meals += 3;
+                game.Log.Add("Mammà left a pot of pasta e patate on the stove. \"Mangia, ca si' sicco.\"", MessageKind.Good);
+            }
             ReopenBurnedShops(game);
             game.Police.HourlyCheck(game);
             LeadershipHourly(game);

@@ -111,8 +111,19 @@ namespace OSistema.UI
             gameOverDim.Show(false);
         }
 
+        bool devSoak;
+
         void RefreshModals()
         {
+            if (devSoak)
+            {
+                // Soak test: answer every scene with its last choice, fold every paper, keep the clock running.
+                if (game.Events.Current != null) game.Events.Choose(game.Events.Current.Options.Count - 1, game);
+                if (PaperOpen) ClosePaper();
+                if (game.Ticks.Speed != 5 && !game.Org.GameOver) game.Ticks.SetSpeed(5);
+                foreach (var m in game.Phone.Messages)
+                    if (m.Open(game.Ticks.TicksGame)) game.Phone.Answer(m, game.Rng.Next(m.Choices.Count), game);
+            }
             var current = game.Events.Current;
             if (current != shownEvent)
             {

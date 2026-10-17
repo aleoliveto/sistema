@@ -54,6 +54,9 @@ namespace OSistema.AI
             return best;
         }
 
+        /// <summary>Only what the body needs: wounds, food, sleep. For the player's character left alone.</summary>
+        public static Job ForNeeds(Pawn pawn, Game game) => TryTend(pawn, game) ?? TryEat(pawn, game) ?? TrySleep(pawn, game);
+
         /// <summary>Anything better than standing around, or null. Also used to interrupt idle pawns.</summary>
         public static Job TryNonIdle(Pawn pawn, Game game)
         {
