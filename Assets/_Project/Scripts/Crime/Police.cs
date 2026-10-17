@@ -98,7 +98,7 @@ namespace OSistema.Crime
             var zone = game.Territory.Zones[raid.Square.ZoneId];
             game.Log.Add(late
                 ? $"Police raid on the piazza in {zone.Name}! No lookout saw them coming."
-                : $"Police raid on the piazza in {zone.Name}! {spotter.Nickname} raised the alarm.", MessageKind.Bad);
+                : $"Police raid on the piazza in {zone.Name}! {spotter.Nickname} raised the alarm.", MessageKind.Bad, raid.Square.Cell);
 
             foreach (var pawn in game.Pawns.Crew)
             {

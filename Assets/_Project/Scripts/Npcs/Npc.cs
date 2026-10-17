@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace OSistema.Npcs
 {
-    public enum NpcKind { Customer, Police }
+    public enum NpcKind { Customer, Police, Civilian, Child, Elder, Scooter }
 
     /// <summary>
     /// A lightweight non-crew character driven by a simple state machine. NPCs aren't saved:
@@ -32,7 +32,10 @@ namespace OSistema.Npcs
         public bool HasArrested;
         public Pawn Chasing;
         public bool IsSearch;        // police searching the basso (perquisizione)
+        public bool IsPatrol;        // police walking a beat through a hot zone
         public Vector2Int Target;
+        public int TripsLeft;        // civilians: errands before heading home
+        public bool Panicking;
 
         public Npc(int id, NpcKind kind, Vector2Int cell, float speed, Color32 color)
         {
@@ -92,7 +95,7 @@ namespace OSistema.Npcs
             return npc;
         }
 
-        Npc Spawn(NpcKind kind, Vector2Int cell, float speed, Color32 color)
+        public Npc Spawn(NpcKind kind, Vector2Int cell, float speed, Color32 color)
         {
             var npc = new Npc(nextId++, kind, cell, speed, color);
             npcs.Add(npc);
@@ -105,8 +108,16 @@ namespace OSistema.Npcs
             for (int i = 0; i < npcs.Count; i++)
             {
                 var npc = npcs[i];
-                if (npc.Kind == NpcKind.Customer) CustomerAI.Tick(npc, game);
-                else PoliceAI.Tick(npc, game);
+                switch (npc.Kind)
+                {
+                    case NpcKind.Customer: CustomerAI.Tick(npc, game); break;
+                    case NpcKind.Police:
+                        if (npc.IsPatrol) StreetLife.TickPatrol(npc, game);
+                        else PoliceAI.Tick(npc, game);
+                        break;
+                    case NpcKind.Scooter: StreetLife.TickScooter(npc, game); break;
+                    default: StreetLife.TickCivilian(npc, game); break;
+                }
             }
             npcs.RemoveAll(n => n.Despawned);
         }

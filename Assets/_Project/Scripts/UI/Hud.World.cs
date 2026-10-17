@@ -1,0 +1,147 @@
+using System.Collections.Generic;
+using OSistema.Crime;
+using OSistema.Npcs;
+using OSistema.Pawns;
+using OSistema.Views;
+using UnityEngine;
+using UnityEngine.UIElements;
+
+namespace OSistema.UI
+{
+    /// <summary>
+    /// Labels drawn over the world: names under people, speech bubbles with Neapolitan barks and
+    /// subtitles, shop and piazza names. Only for what the crew can currently see (or remembers).
+    /// </summary>
+    public sealed partial class Hud
+    {
+        readonly List<Label> tags = new List<Label>();
+        readonly List<VisualElement> bubbles = new List<VisualElement>();
+        int tagsUsed, bubblesUsed;
+
+        void ResetWorldLabels()
+        {
+            worldLayer.Clear();
+            tags.Clear();
+            bubbles.Clear();
+        }
+
+        Label NextTag()
+        {
+            if (tagsUsed >= tags.Count) tags.Add(Ui.Text("", worldLayer, "tag"));
+            var t = tags[tagsUsed++];
+            t.style.display = DisplayStyle.Flex;
+            t.ClearClassList();
+            t.AddToClassList("tag");
+            return t;
+        }
+
+        VisualElement NextBubble()
+        {
+            if (bubblesUsed >= bubbles.Count)
+            {
+                var b = Ui.Box("bubble").Into(worldLayer);
+                b.pickingMode = PickingMode.Ignore;
+                Ui.Text("", b, "bubble__nap");
+                Ui.Text("", b, "bubble__en");
+                bubbles.Add(b);
+            }
+            var bubble = bubbles[bubblesUsed++];
+            bubble.style.display = DisplayStyle.Flex;
+            return bubble;
+        }
+
+        void UpdateWorldLabels()
+        {
+            tagsUsed = 0;
+            bubblesUsed = 0;
+            float zoom = cam.orthographicSize;
+            float unitPx = WorldToPanel(Vector2.up).y - WorldToPanel(Vector2.zero).y; // panel pixels per world unit (negative: y is down)
+            float unit = Mathf.Abs(unitPx);
+            bool close = zoom < 16f;
+
+            foreach (var p in game.Pawns.All)
+            {
+                if (p.InJail || p.Departed) continue;
+                bool rival = p.Faction == Faction.Rival;
+                if (rival && !FogOfWar.CanSee(p.Position)) continue;
+                if (rival && p.Dead) continue;
+                if (!OnScreen(p.Position)) continue;
+
+                var pos = WorldToPanel(p.Position);
+                if (close || p.Drafted || rival)
+                {
+                    var tag = NextTag();
+                    string status = p.Dead ? " ✝" : p.Health.Downed ? " (down)" : p.Sleep != SleepState.Awake ? " zZ" : "";
+                    tag.text = (rival ? p.Nickname : p.DisplayName) + status;
+                    if (rival) tag.AddToClassList("tag--rival");
+                    else if (p.IsBoss) tag.AddToClassList("tag--boss");
+                    tag.style.left = pos.x;
+                    tag.style.top = pos.y + unit * 0.42f;
+                }
+
+                if (p.HasBark && !p.Dead && !rival && close)
+                {
+                    var bubble = NextBubble();
+                    ((Label)bubble[0]).text = p.Bark.Neapolitan;
+                    ((Label)bubble[1]).text = p.Bark.English;
+                    bubble.style.left = pos.x;
+                    bubble.style.top = pos.y - unit * 0.55f;
+                }
+            }
+
+            foreach (var npc in game.Npcs.All)
+            {
+                if (npc.Kind != NpcKind.Police || !FogOfWar.CanSee(npc.Mover.Position) || !OnScreen(npc.Mover.Position)) continue;
+                var tag = NextTag();
+                tag.text = npc.IsPatrol ? "Police patrol" : "Police";
+                tag.AddToClassList("tag--police");
+                var pos = WorldToPanel(npc.Mover.Position);
+                tag.style.left = pos.x;
+                tag.style.top = pos.y + unit * 0.42f;
+            }
+
+            if (close)
+            {
+                foreach (var b in game.Org.Businesses)
+                {
+                    if (!FogOfWar.HasExplored(b.Cell)) continue;
+                    var at = new Vector2(b.Cell.x + 0.5f, b.Cell.y + 0.5f);
+                    if (!OnScreen(at)) continue;
+                    var tag = NextTag();
+                    tag.AddToClassList("tag--place");
+                    string state = b.Status == BusinessStatus.Paying ? " · pizzo" : b.Status == BusinessStatus.Refusing ? " · refused" : b.Status == BusinessStatus.Closed ? " · burned" : "";
+                    tag.text = b.Name + state;
+                    var pos = WorldToPanel(at);
+                    tag.style.left = pos.x;
+                    tag.style.top = pos.y - unit * 1.1f;
+                }
+            }
+
+            foreach (var sq in game.Org.Squares) SquareTag(sq, "Piazza", "tag--boss");
+            foreach (var sq in game.Rival.Squares)
+                if (FogOfWar.HasExplored(sq.Cell)) SquareTag(sq, $"{game.Rival.Name} piazza", "tag--rival");
+
+            for (int i = tagsUsed; i < tags.Count; i++) tags[i].style.display = DisplayStyle.None;
+            for (int i = bubblesUsed; i < bubbles.Count; i++) bubbles[i].style.display = DisplayStyle.None;
+
+            void SquareTag(DrugSquare sq, string text, string cls)
+            {
+                var at = new Vector2(sq.Cell.x + 0.5f, sq.Cell.y + 0.5f);
+                if (!OnScreen(at)) return;
+                var zone = game.Territory.Zones[sq.ZoneId];
+                var tag = NextTag();
+                tag.AddToClassList(cls);
+                tag.text = sq.Rival ? text : $"{text} · heat {zone.Heat:0}";
+                var pos = WorldToPanel(at);
+                tag.style.left = pos.x;
+                tag.style.top = pos.y + unit * 0.9f;
+            }
+        }
+
+        bool OnScreen(Vector2 world)
+        {
+            var v = cam.WorldToViewportPoint(new Vector3(world.x, world.y, 0f));
+            return v.x > -0.05f && v.x < 1.05f && v.y > -0.05f && v.y < 1.05f;
+        }
+    }
+}

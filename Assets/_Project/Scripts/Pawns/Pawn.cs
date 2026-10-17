@@ -14,7 +14,7 @@ namespace OSistema.Pawns
     public enum CrewRole { General, Pusher, Lookout, Collector }
 
     /// <summary>What a rival clan member on the map is here to do.</summary>
-    public enum RivalMission { Pusher, Stesa, Hit, Leave }
+    public enum RivalMission { Pusher, Stesa, Hit, Leave, Lookout, Patrol }
 
     /// <summary>A crew member. Pure simulation data; PawnView draws it.</summary>
     public sealed class Pawn
@@ -72,6 +72,24 @@ namespace OSistema.Pawns
         public long BreakUntilTick { get; private set; }
         public long JailedUntil;         // 0 when free
         public long LyingLowUntil;       // stays home after a close call with the police
+
+        Pawn aimTarget;
+        float aimUntil;
+
+        /// <summary>Focus-fire order from the player (crew) or the mission (rivals).</summary>
+        public Pawn ForcedTarget;
+
+        /// <summary>Real time of the last wound, for the hit flash.</summary>
+        public float LastHitTime = -10f;
+
+        /// <summary>Who this pawn is shooting at right now (for facing and effects).</summary>
+        public Pawn AimTarget => aimTarget != null && Time.unscaledTime < aimUntil ? aimTarget : null;
+
+        public void AimAt(Pawn target)
+        {
+            aimTarget = target;
+            aimUntil = Time.unscaledTime + 1.2f;
+        }
 
         public Barks.Line Bark { get; private set; }
         float barkUntil = -1f;

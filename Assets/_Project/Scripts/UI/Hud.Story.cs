@@ -1,120 +1,126 @@
-using System;
-using OSistema.Crime;
-using OSistema.Pawns;
+using System.Linq;
+using OSistema.Core;
 using OSistema.Story;
-using OSistema.World;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace OSistema.UI
 {
-    /// <summary>The family bar, the arms and rival sections, event cards and the game-over screen.</summary>
+    /// <summary>Notification feed, event cards and the game-over screen.</summary>
     public sealed partial class Hud
     {
-        /// <summary>Raised when the player starts over from the game-over screen.</summary>
-        public event Action NewGameRequested;
+        const int FeedTicksVisible = 9000;
+        const int FeedMax = 6;
 
-        void DrawFamilyBar()
+        static readonly Color[] CardBands =
         {
-            var org = game.Org;
-            var boss = org.Boss(game);
-            string bossText = boss == null ? "<color=#ff7a70>No boss</color>" : $"<b>{boss.DisplayName}</b> {boss.LastName}";
-            string state = org.Hiding ? $"  ·  <color=#ffb070>IN LATITANZA (day {game.Clock.Day - org.HidingSinceDay + 1})</color>"
-                : org.WarrantActive ? "  ·  <color=#ff7a70>WARRANT</color>" : "";
-            string pizzini = org.PendingPizzini > 0 ? $"  ·  {org.PendingPizzini} pizzini pending" : "";
-            string rival = game.Rival.Destroyed ? $"{game.Rival.Name}: destroyed"
-                : game.Rival.InTruce(game) ? $"{game.Rival.Name}: truce"
-                : $"{game.Rival.Name} hostility {game.Rival.Hostility:0}";
-            GUI.Label(new Rect(10, 32, Width - 20, 22),
-                $"Generation {org.Generation}  ·  {bossText}  ·  Evidence {org.Evidence:0}/100{state}{pizzini}  ·  {rival}", textStyle);
+            new Color(0.24f, 0.14f, 0.09f), new Color(0.12f, 0.16f, 0.24f), new Color(0.2f, 0.09f, 0.11f), new Color(0.12f, 0.18f, 0.13f),
+        };
+
+        VisualElement feed;
+        int feedVersion = -1;
+        long feedTick = -1;
+
+        VisualElement eventDim, gameOverDim;
+        GameEvent shownEvent;
+
+        void BuildFeed()
+        {
+            feed = Ui.Box("feed").Into(hudLayer);
+            feed.pickingMode = PickingMode.Ignore;
         }
 
-        void DrawArms()
+        void RefreshFeed()
         {
-            GUILayout.Label("Arms", headerStyle);
-            GUILayout.Label($"Pistols in the stash: {game.Stock.Pistols}. Armed crew defend themselves and fight when drafted, but get longer sentences if arrested.", smallStyle);
-            if (GUILayout.Button($"Buy a pistol (€{Prices.Pistol})", GUILayout.Width(200)))
+            long now = game.Ticks.TicksGame;
+            // Rebuild when there's news, or now and then so old toasts drop off.
+            if (game.Log.Version == feedVersion && now - feedTick < 600) return;
+            feedVersion = game.Log.Version;
+            feedTick = now;
+
+            feed.Clear();
+            var recent = game.Log.All.Where(m => now - m.Tick < FeedTicksVisible).Reverse().Take(FeedMax).ToList();
+            foreach (var m in recent)
             {
-                if (game.Stock.Cash < Prices.Pistol) game.Log.Add($"A pistol costs €{Prices.Pistol}.", OSistema.Core.MessageKind.Bad);
-                else
+                var toast = Ui.Text(m.Text, feed, "toast");
+                toast.pickingMode = PickingMode.Position;
+                if (m.Kind == MessageKind.Good) toast.AddToClassList("toast--good");
+                if (m.Kind == MessageKind.Bad) toast.AddToClassList("toast--bad");
+                float age = (now - m.Tick) / (float)FeedTicksVisible;
+                toast.style.opacity = Mathf.Clamp01(1.4f - age * 1.2f);
+                if (m.Location.HasValue)
                 {
-                    game.Stock.Cash -= Prices.Pistol;
-                    game.Stock.Pistols++;
-                    game.Log.Add("A pistol, wrapped in a cloth, now sits in the stash.");
+                    var at = m.Location.Value;
+                    toast.RegisterCallback<ClickEvent>(_ => FocusCamera(new Vector2(at.x + 0.5f, at.y + 0.5f)));
+                    Tip(toast, () => "Click to go there.");
                 }
             }
         }
 
-        void DrawRival()
+        // ---------- Modals ----------
+
+        void BuildModals()
         {
-            var rival = game.Rival;
-            GUILayout.Label(rival.Name, headerStyle);
-            if (rival.Destroyed)
-            {
-                GUILayout.Label("Destroyed. The district is yours.", smallStyle);
-                return;
-            }
-            GUILayout.Label($"Boss: {rival.BossName}  ·  Soldiers: {rival.Soldiers}  ·  Piazze: {rival.Squares.Count}", smallStyle);
-            string mood = rival.InTruce(game) ? $"Truce until day {rival.TruceUntilDay}"
-                : rival.Hostility >= RivalClan.HitHostility ? "<color=#ff7a70>They want blood: ambushes likely</color>"
-                : rival.Hostility >= RivalClan.StesaHostility ? "<color=#ffb070>Angry: expect a stesa</color>"
-                : "Watching you";
-            GUILayout.Label($"Hostility {rival.Hostility:0}/100 · {mood}", smallStyle);
-            GUILayout.Label("Piazze near their territory anger them. Draft armed crew and send them at a rival pusher to take a piazza by force.", smallStyle);
-            if (GUILayout.Button("Send a gift (€500, hostility −25)", GUILayout.Width(240)) && !rival.SendGift(500, 25f, game))
-                game.Log.Add("Not enough cash for a gift.", OSistema.Core.MessageKind.Bad);
+            eventDim = Ui.Box("dim").Into(modalLayer);
+            eventDim.Show(false);
+            gameOverDim = Ui.Box("dim").Into(modalLayer);
+            gameOverDim.Show(false);
         }
 
-        // ---------- Event cards ----------
-
-        void DrawEvent(GameEvent e)
+        void RefreshModals()
         {
-            // Dim the world behind the card.
-            GUI.color = new Color(0f, 0f, 0f, 0.55f);
-            GUI.DrawTexture(new Rect(0, 0, Width, Height), Texture2D.whiteTexture);
-            GUI.color = Color.white;
+            var current = game.Events.Current;
+            if (current != shownEvent)
+            {
+                shownEvent = current;
+                eventDim.Clear();
+                if (current != null) BuildCard(current);
+            }
+            eventDim.Show(current != null && !game.Org.GameOver);
 
-            float w = 560f;
-            float h = 210f + e.Options.Count * 52f;
-            var r = new Rect((Width - w) / 2f, (Height - h) / 2f, w, h);
-            GUI.Box(r, GUIContent.none);
-            GUI.Box(r, GUIContent.none); // double box = more opaque in the default skin
+            if (game.Org.GameOver && gameOverDim.childCount == 0) BuildGameOver();
+            gameOverDim.Show(game.Org.GameOver);
+            if (!game.Org.GameOver && gameOverDim.childCount > 0) gameOverDim.Clear();
+        }
 
-            float x = r.x + 18, y = r.y + 14, cw = w - 36;
-            GUI.Label(new Rect(x, y, cw, 26), $"<size=18><b>{e.Title}</b></size>", titleStyle);
-            y += 34;
-            GUI.Label(new Rect(x, y, cw, 22), $"<i>“{e.Neapolitan}”</i>", barkLeftStyle);
-            y += 20;
-            GUI.Label(new Rect(x, y, cw, 20), $"<i>{e.English}</i>", smallStyle);
-            y += 28;
-            GUI.Label(new Rect(x, y, cw, 70), e.Body, textStyle);
-            y += 78;
+        void BuildCard(GameEvent e)
+        {
+            var card = Ui.Box("panel", "card").Into(eventDim);
+            var band = Ui.Box("card__band").Into(card);
+            band.style.backgroundColor = CardBands[Mathf.Abs(e.Id.GetHashCode()) % CardBands.Length];
+            Ui.Text(e.Title, band, "card__title");
+
+            var body = Ui.Box("card__body").Into(card);
+            Ui.Text($"“{e.Neapolitan}”", body, "card__quote");
+            Ui.Text(e.English, body, "card__sub");
+            Ui.Text(e.Body, body, "card__text");
 
             for (int i = 0; i < e.Options.Count; i++)
             {
+                int index = i;
                 var option = e.Options[i];
                 bool available = game.Events.IsAvailable(option, game);
-                GUI.enabled = available;
-                if (GUI.Button(new Rect(x, y, cw, 28), option.Label)) game.Events.Choose(i, game);
-                GUI.enabled = true;
-                GUI.Label(new Rect(x + 6, y + 28, cw, 18), available ? option.Hint : "<color=#ff7a70>Not possible right now.</color>", smallStyle);
-                y += 52;
+                var b = Ui.Btn("", () =>
+                {
+                    game.Events.Choose(index, game);
+                    RefreshAll();
+                }, body, "option");
+                b.SetEnabled(available);
+                Ui.Text(option.Label, b, "option__label");
+                Ui.Text(available ? option.Hint : "<color=#F07A6E>Not possible right now.</color>", b, "option__hint");
             }
         }
 
-        void DrawGameOver()
+        void BuildGameOver()
         {
-            GUI.color = new Color(0f, 0f, 0f, 0.8f);
-            GUI.DrawTexture(new Rect(0, 0, Width, Height), Texture2D.whiteTexture);
-            GUI.color = Color.white;
-
-            float w = 520f, h = 220f;
-            var r = new Rect((Width - w) / 2f, (Height - h) / 2f, w, h);
-            GUI.Box(r, GUIContent.none);
-            GUI.Label(new Rect(r.x + 18, r.y + 16, w - 36, 30), "<size=22><b>The family is finished</b></size>", titleStyle);
-            GUI.Label(new Rect(r.x + 18, r.y + 56, w - 36, 60), game.Org.GameOverReason, textStyle);
-            GUI.Label(new Rect(r.x + 18, r.y + 120, w - 36, 22),
-                $"Survived {game.Clock.Day} days across {game.Org.Generation} generation(s).", textStyle);
-            if (GUI.Button(new Rect(r.x + 18, r.yMax - 46, 200, 30), "Start a new family")) NewGameRequested?.Invoke();
+            var card = Ui.Box("panel", "card").Into(gameOverDim);
+            var band = Ui.Box("card__band").Into(card);
+            band.style.backgroundColor = new Color(0.12f, 0.05f, 0.05f);
+            Ui.Text("The family is finished", band, "card__title");
+            var body = Ui.Box("card__body").Into(card);
+            Ui.Text(game.Org.GameOverReason, body, "card__text");
+            Ui.Text($"Survived {game.Clock.Day} days across {game.Org.Generation} generation(s).", body, "card__sub");
+            Ui.Btn("Start a new family", () => NewGameRequested?.Invoke(), body, "option");
         }
     }
 }

@@ -34,6 +34,10 @@ namespace OSistema.Story
             "Rione Corallo", "Case Gialle", "Vico Lanterna", "Rione Sette Palazzi", "Borgo 'e Ciucci",
             "Rione Cupa Nera", "Vico Tre Re", "Rione Bellavista", "Parco Aurora", "Rione 'e Pescatori",
             "Case Rosse", "Vico Sant'Aniello", "Rione Fosso", "Lotto Zero", "Rione Pietrabianca",
+            "Vico 'e Cecati", "Rione Lavinaio Nuovo", "Case Celesti", "Vico Fontanella", "Rione Mare Morto",
+            "Borgo San Rocco", "Vico Campanile", "Rione Tre Fontane", "Case Vecchie", "Vico Scassacocchi",
+            "Rione Pozzo Nero", "Lotto Sette", "Vico Malacarne", "Rione Santa Brigida Bassa", "Case 'e Funari",
+            "Vico Lavandaie", "Rione Ponte Rotto", "Borgo Carbonaro", "Vico Bellezze", "Rione Arenella Bassa",
         };
 
         public static readonly string[] Bars = { "Vesuvio", "Sport", "Centrale", "Sole", "Aurora", "Stella", "Gambrinus Piccolo" };

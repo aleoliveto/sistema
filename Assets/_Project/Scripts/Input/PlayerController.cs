@@ -126,6 +126,16 @@ namespace OSistema.Input
                 game.Stock.Cash += 200;
                 game.Log.Add("[Debug] +€200", MessageKind.Good);
             }
+            if (kb.f10Key.wasPressedThisFrame)
+            {
+                game.Rival.DebugHit(game);
+                game.Log.Add("[Debug] A rival hit squad is on its way (needs a crew member outside the basso).");
+            }
+            if (kb.f11Key.wasPressedThisFrame)
+            {
+                if (game.Org.Squares.Count == 0) game.Log.Add("[Debug] A stesa needs one of your piazze to target.");
+                else game.Rival.DebugStesa(game);
+            }
             if (kb.f8Key.wasPressedThisFrame)
             {
                 game.Ticks.Advance(GameClock.TicksPerHour * 6);
@@ -196,6 +206,7 @@ namespace OSistema.Input
             if (mouse.rightButton.wasPressedThisFrame && !overUi)
             {
                 if (CurrentTool != Tool.Select) SetTool(Tool.Select);
+                else if (Selected.Count > 0 && EnemyAt(ScreenToWorld(mousePos)) is Pawn enemy) OrderAttack(enemy);
                 else OrderMove(ScreenToCell(mousePos));
             }
         }
@@ -246,9 +257,43 @@ namespace OSistema.Input
             }
         }
 
+        /// <summary>A visible hostile under the cursor, for focus-fire orders.</summary>
+        Pawn EnemyAt(Vector2 world)
+        {
+            Pawn best = null;
+            float bestDist = 0.8f * 0.8f;
+            foreach (var r in game.Pawns.Rivals)
+            {
+                if (!r.IsPresent || r.Health.Downed || !OSistema.Views.FogOfWar.CanSee(r.Position)) continue;
+                float d = (r.Position - world).sqrMagnitude;
+                if (d < bestDist)
+                {
+                    bestDist = d;
+                    best = r;
+                }
+            }
+            return best;
+        }
+
+        void OrderAttack(Pawn enemy)
+        {
+            long now = game.Ticks.TicksGame;
+            bool any = false;
+            foreach (var pawn in Selected)
+            {
+                if (!pawn.CanAct || pawn.InMentalBreak(now)) continue;
+                pawn.SetDrafted(true, game);
+                pawn.ForcedTarget = enemy;
+                pawn.ForceJob(new EngageJob(pawn, enemy), game);
+                any = true;
+            }
+            if (any) Selected[0].Say("fight");
+        }
+
         void OrderMove(Vector2Int target)
         {
             if (Selected.Count == 0 || !game.Map.InBounds(target)) return;
+            foreach (var p in Selected) p.ForcedTarget = null;
 
             // Spread the group over free cells around the click.
             var destinations = new List<Vector2Int>();

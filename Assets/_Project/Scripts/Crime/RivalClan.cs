@@ -63,6 +63,7 @@ namespace OSistema.Crime
                 var square = new DrugSquare { Cell = cell.Value, ZoneId = zone.Id, Rival = true, OpenHour = 0, CloseHour = 0 };
                 Squares.Add(square);
                 SpawnPusher(square, game);
+                SpawnLookout(square, game);
             }
         }
 
@@ -105,6 +106,31 @@ namespace OSistema.Crime
         {
             var pawn = SpawnSoldier(square.Cell, RivalMission.Pusher, game.Rng.NextDouble() < 0.5, game);
             pawn.MissionSquare = square;
+        }
+
+        void SpawnLookout(DrugSquare square, Game game)
+        {
+            var pawn = SpawnSoldier(LookoutPostFor(square, game), RivalMission.Lookout, false, game);
+            pawn.MissionSquare = square;
+        }
+
+        /// <summary>A spot up the street from a rival piazza where their vedetta stands.</summary>
+        public Vector2Int LookoutPostFor(DrugSquare square, Game game)
+        {
+            var map = game.Map;
+            int index = Squares.IndexOf(square);
+            var dir = new[] { Vector2Int.right, Vector2Int.up, Vector2Int.left, Vector2Int.down }[Mathf.Abs(index) % 4];
+            foreach (var c in GridUtil.CellsAround(square.Cell + dir * 6, 3))
+                if (map.InBounds(c) && map.IsPassable(c) && map.GetBuilding(c) == null && map.GetTerrain(c.x, c.y) != TerrainType.Floor)
+                    return c;
+            return square.Cell;
+        }
+
+        void SpawnPatrol(Game game)
+        {
+            if (Squares.Count == 0) return;
+            var start = Squares[game.Rng.Next(Squares.Count)].Cell;
+            for (int i = 0; i < 2; i++) SpawnSoldier(start, RivalMission.Patrol, true, game);
         }
 
         public Pawn PusherAt(DrugSquare square, Game game)
@@ -172,6 +198,9 @@ namespace OSistema.Crime
                 game.Events.Raise(EventCards.RivalWarning(game));
             }
 
+            bool patrolling = game.Pawns.Rivals.Any(p => p.IsPresent && p.Mission == RivalMission.Patrol);
+            if (!patrolling && Soldiers >= 3 && game.Rng.NextDouble() < 0.25) SpawnPatrol(game);
+
             if (InTruce(game) || OperationActive(game) || game.Org.Squares.Count == 0) return;
             double roll = game.Rng.NextDouble();
             if (Hostility >= HitHostility && roll < 0.05) StartHit(game);
@@ -197,6 +226,8 @@ namespace OSistema.Crime
             {
                 bool staffed = game.Pawns.Rivals.Any(p => p.IsPresent && p.Mission == RivalMission.Pusher && p.MissionSquare == sq);
                 if (!staffed && Soldiers > 1) SpawnPusher(sq, game);
+                bool watched = game.Pawns.Rivals.Any(p => p.IsPresent && p.Mission == RivalMission.Lookout && p.MissionSquare == sq);
+                if (!watched && Soldiers > 1) SpawnLookout(sq, game);
             }
 
             Cash += 300;
@@ -206,6 +237,10 @@ namespace OSistema.Crime
             Squares.Exists(r => (r.Cell - square.Cell).magnitude < NearDistance);
 
         // ---------- Operations ----------
+
+        // Debug shortcuts for testing fights without waiting for hostility to build.
+        public void DebugHit(Game game) => StartHit(game);
+        public void DebugStesa(Game game) => StartStesa(game);
 
         void StartStesa(Game game)
         {
@@ -238,7 +273,7 @@ namespace OSistema.Crime
                 var p = SpawnSoldier(entrance, RivalMission.Hit, true, game);
                 p.MissionTarget = target;
             }
-            game.Log.Add($"Killers of the {Name} have been seen entering the rione. They're after {target.DisplayName}.", MessageKind.Bad);
+            game.Log.Add($"Killers of the {Name} have been seen entering the rione. They're after {target.DisplayName}.", MessageKind.Bad, target.Cell);
         }
 
         DrugSquare PickTargetSquare(Game game)
@@ -277,7 +312,7 @@ namespace OSistema.Crime
             game.Org.Respect = Mathf.Max(0f, game.Org.Respect - 4f);
             game.Territory.AddHeat(square.Cell, 12f);
             var zone = game.Territory.Zones[square.ZoneId];
-            game.Log.Add($"Stesa! The {Name} fired shots over the piazza in {zone.Name}. A warning.", MessageKind.Bad);
+            game.Log.Add($"Stesa! The {Name} fired shots over the piazza in {zone.Name}. A warning.", MessageKind.Bad, square.Cell);
 
             foreach (var p in game.Pawns.Crew)
             {

@@ -48,6 +48,73 @@ namespace OSistema.Views
         /// <summary>Thin white ring used for selection.</summary>
         public static Sprite Ring => ring != null ? ring : ring = MakeCircle(0.4f, 0.5f, -1f);
 
+        static Sprite shoulders, headSprite, hairSprite;
+
+        /// <summary>Top-down shoulders and arms, white with a dark outline (tinted with the shirt colour).</summary>
+        public static Sprite Shoulders => shoulders != null ? shoulders : shoulders = MakeEllipse(0.36f, 0.22f, outline: true);
+
+        /// <summary>A head seen from above (tinted with the skin colour).</summary>
+        public static Sprite Head => headSprite != null ? headSprite : headSprite = MakeEllipse(0.2f, 0.2f, outline: true);
+
+        /// <summary>Hair covering the back of the head; the face side (north) stays visible.</summary>
+        public static Sprite Hair => hairSprite != null ? hairSprite : hairSprite = MakeHair();
+
+        static Sprite MakeEllipse(float rx, float ry, bool outline)
+        {
+            const int size = 64;
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear };
+            var px = new Color32[size * size];
+            for (int y = 0; y < size; y++)
+            for (int x = 0; x < size; x++)
+            {
+                float dx = ((x + 0.5f) / size - 0.5f) / rx, dy = ((y + 0.5f) / size - 0.5f) / ry;
+                float d = dx * dx + dy * dy;
+                if (d > 1f) continue;
+                bool edge = outline && d > 0.8f;
+                // A little top-down shading: lighter towards the top-left.
+                float shade = 1f - 0.12f * (((x + 0.5f) / size - 0.5f) - ((y + 0.5f) / size - 0.5f));
+                byte v = (byte)Mathf.Clamp(255 * shade, 0, 255);
+                px[y * size + x] = edge ? new Color32(45, 40, 38, 255) : new Color32(v, v, v, 255);
+            }
+            tex.SetPixels32(px);
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
+        }
+
+        static Sprite MakeHair()
+        {
+            const int size = 64;
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear };
+            var px = new Color32[size * size];
+            for (int y = 0; y < size; y++)
+            for (int x = 0; x < size; x++)
+            {
+                float dx = (x + 0.5f) / size - 0.5f, dy = (y + 0.5f) / size - 0.5f;
+                if (dx * dx + dy * dy > 0.19f * 0.19f || dy > 0.07f) continue; // leave the face uncovered
+                px[y * size + x] = new Color32(255, 255, 255, 255);
+            }
+            tex.SetPixels32(px);
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
+        }
+
+        static Material lit;
+
+        /// <summary>Sprites lit by URP 2D lights (day/night, street lamps).</summary>
+        public static Material LitMaterial
+        {
+            get
+            {
+                if (lit == null)
+                {
+                    var shader = Shader.Find("Universal Render Pipeline/2D/Sprite-Lit-Default");
+                    if (shader == null) shader = Shader.Find("Sprites/Default");
+                    lit = new Material(shader);
+                }
+                return lit;
+            }
+        }
+
         /// <summary>Sprites that ignore 2D lights. Lighting comes from WorldLight.Tint for now.</summary>
         public static Material UnlitMaterial
         {

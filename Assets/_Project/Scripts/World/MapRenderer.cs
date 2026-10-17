@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using OSistema.Core;
 using OSistema.Views;
 using UnityEngine;
@@ -5,24 +6,36 @@ using UnityEngine;
 namespace OSistema.World
 {
     /// <summary>
-    /// Draws the whole map as one point-filtered texture (1 pixel = 1 cell) plus a blueprint overlay.
-    /// Cheap enough for big maps; real tile art can replace it later without touching the simulation.
+    /// Draws the map as chunks of procedural pixel-art tiles (16 px per cell, 32x32 cells per chunk),
+    /// repainting only the cells that change. A 1-pixel-per-cell overlay shows blueprints and piazze.
     /// </summary>
     public sealed class MapRenderer : MonoBehaviour
     {
+        const int ChunkCells = 32;
+        const int Tile = TilePainter.Size;
+
         static readonly Color32 BuildBlueprint = new Color32(90, 190, 255, 140);
         static readonly Color32 DemolishBlueprint = new Color32(255, 70, 60, 150);
-        static readonly Color32 SquareColor = new Color32(200, 60, 220, 220);
-        static readonly Color32 LookoutColor = new Color32(200, 60, 220, 110);
-        static readonly Color32 RivalSquareColor = new Color32(230, 40, 40, 220);
-        static readonly Color NightTint = new Color(0.32f, 0.36f, 0.55f);
+        static readonly Color32 SquareColor = new Color32(200, 60, 220, 150);
+        static readonly Color32 LookoutColor = new Color32(200, 60, 220, 70);
+        static readonly Color32 RivalSquareColor = new Color32(230, 40, 40, 150);
+
+        sealed class Chunk
+        {
+            public Texture2D Texture;
+            public Color32[] Pixels;
+            public RectInt Cells;
+            public bool Dirty;
+        }
 
         Game game;
         Map map;
-        Texture2D texture, overlayTexture;
-        Color32[] pixels, overlayPixels;
-        SpriteRenderer mapSprite, overlaySprite;
-        bool dirty;
+        Chunk[,] chunks;
+        int chunksX, chunksY;
+        readonly HashSet<Vector2Int> pendingCells = new HashSet<Vector2Int>();
+
+        Texture2D overlayTexture;
+        Color32[] overlayPixels;
         int drawnBlueprintVersion = -1;
         int drawnSquaresVersion = -1;
         int drawnRivalSquares = -1;
@@ -31,23 +44,66 @@ namespace OSistema.World
         {
             game = g;
             map = g.Map;
+            WorldLight.Tint = Color.white; // real 2D lights do day and night now
 
-            texture = CreateTexture();
-            pixels = new Color32[map.CellCount];
-            for (int y = 0; y < map.Height; y++)
-            for (int x = 0; x < map.Width; x++)
-                pixels[map.Index(x, y)] = CellColor(x, y);
-            texture.SetPixels32(pixels);
-            texture.Apply(false);
-            mapSprite = CreateLayer(gameObject, texture, 0);
+            chunksX = (map.Width + ChunkCells - 1) / ChunkCells;
+            chunksY = (map.Height + ChunkCells - 1) / ChunkCells;
+            chunks = new Chunk[chunksX, chunksY];
+            for (int cy = 0; cy < chunksY; cy++)
+            for (int cx = 0; cx < chunksX; cx++)
+                chunks[cx, cy] = CreateChunk(cx, cy);
 
-            overlayTexture = CreateTexture();
+            overlayTexture = new Texture2D(map.Width, map.Height, TextureFormat.RGBA32, false)
+            {
+                filterMode = FilterMode.Point,
+                wrapMode = TextureWrapMode.Clamp,
+            };
             overlayPixels = new Color32[map.CellCount];
-            var overlayGo = new GameObject("Blueprints");
+            var overlayGo = new GameObject("Overlay");
             overlayGo.transform.SetParent(transform, false);
-            overlaySprite = CreateLayer(overlayGo, overlayTexture, 1);
+            var overlay = overlayGo.AddComponent<SpriteRenderer>();
+            overlay.sprite = Sprite.Create(overlayTexture, new Rect(0, 0, map.Width, map.Height), Vector2.zero, 1f, 0, SpriteMeshType.FullRect);
+            overlay.sharedMaterial = SpriteFactory.UnlitMaterial;
+            overlay.sortingOrder = 1;
 
+            gameObject.AddComponent<WorldLighting>().Init(g);
             map.CellChanged += OnCellChanged;
+        }
+
+        Chunk CreateChunk(int cx, int cy)
+        {
+            var cells = new RectInt(cx * ChunkCells, cy * ChunkCells,
+                Mathf.Min(ChunkCells, map.Width - cx * ChunkCells), Mathf.Min(ChunkCells, map.Height - cy * ChunkCells));
+            var chunk = new Chunk
+            {
+                Cells = cells,
+                Pixels = new Color32[cells.width * Tile * cells.height * Tile],
+                Texture = new Texture2D(cells.width * Tile, cells.height * Tile, TextureFormat.RGBA32, false)
+                {
+                    filterMode = FilterMode.Point,
+                    wrapMode = TextureWrapMode.Clamp,
+                },
+            };
+            for (int y = cells.yMin; y < cells.yMax; y++)
+            for (int x = cells.xMin; x < cells.xMax; x++)
+                PaintInto(chunk, x, y);
+            chunk.Texture.SetPixels32(chunk.Pixels);
+            chunk.Texture.Apply(false);
+
+            var go = new GameObject($"Chunk {cx},{cy}");
+            go.transform.SetParent(transform, false);
+            go.transform.localPosition = new Vector3(cells.x, cells.y, 0f);
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = Sprite.Create(chunk.Texture, new Rect(0, 0, chunk.Texture.width, chunk.Texture.height), Vector2.zero, Tile, 0, SpriteMeshType.FullRect);
+            sr.sharedMaterial = SpriteFactory.LitMaterial;
+            sr.sortingOrder = 0;
+            return chunk;
+        }
+
+        void PaintInto(Chunk chunk, int x, int y)
+        {
+            int lx = x - chunk.Cells.x, ly = y - chunk.Cells.y;
+            TilePainter.PaintCell(map, x, y, chunk.Pixels, chunk.Cells.width * Tile, lx * Tile, ly * Tile);
         }
 
         void OnDestroy()
@@ -55,28 +111,38 @@ namespace OSistema.World
             if (map != null) map.CellChanged -= OnCellChanged;
         }
 
+        // Neighbours matter too: walls join up and cast shadows on the cells around them.
         void OnCellChanged(int x, int y)
         {
-            pixels[map.Index(x, y)] = CellColor(x, y);
-            dirty = true;
+            for (int dy = -1; dy <= 1; dy++)
+            for (int dx = -1; dx <= 1; dx++)
+                if (map.InBounds(x + dx, y + dy)) pendingCells.Add(new Vector2Int(x + dx, y + dy));
         }
 
         void LateUpdate()
         {
-            if (game == null || texture == null) return; // state lost to a script reload during Play
+            if (game == null || chunks == null) return; // state lost to a script reload during Play
 
-            if (dirty)
+            if (pendingCells.Count > 0)
             {
-                texture.SetPixels32(pixels);
-                texture.Apply(false);
-                dirty = false;
+                foreach (var c in pendingCells)
+                {
+                    var chunk = chunks[c.x / ChunkCells, c.y / ChunkCells];
+                    PaintInto(chunk, c.x, c.y);
+                    chunk.Dirty = true;
+                }
+                pendingCells.Clear();
+                foreach (var chunk in chunks)
+                {
+                    if (!chunk.Dirty) continue;
+                    chunk.Texture.SetPixels32(chunk.Pixels);
+                    chunk.Texture.Apply(false);
+                    chunk.Dirty = false;
+                }
             }
 
-            if (game.Construction.Version != drawnBlueprintVersion || game.Org.SquaresVersion != drawnSquaresVersion || game.Rival.Squares.Count != drawnRivalSquares) RedrawOverlay();
-
-            var tint = Color.Lerp(NightTint, Color.white, game.Clock.Daylight);
-            WorldLight.Tint = tint;
-            mapSprite.color = tint;
+            if (game.Construction.Version != drawnBlueprintVersion || game.Org.SquaresVersion != drawnSquaresVersion || game.Rival.Squares.Count != drawnRivalSquares)
+                RedrawOverlay();
         }
 
         void RedrawOverlay()
@@ -95,35 +161,6 @@ namespace OSistema.World
                 overlayPixels[map.Index(bp.Cell.x, bp.Cell.y)] = bp.Deconstruct ? DemolishBlueprint : BuildBlueprint;
             overlayTexture.SetPixels32(overlayPixels);
             overlayTexture.Apply(false);
-        }
-
-        Color32 CellColor(int x, int y)
-        {
-            var building = map.GetBuilding(x, y);
-            var terrain = map.GetTerrain(x, y);
-            Color32 c = building != null ? building.Color : TerrainDefs.BaseColor(terrain);
-
-            // Per-cell noise so surfaces don't look flat; sidewalks get a stone checker.
-            uint h = (uint)(x * 73856093) ^ (uint)(y * 19349663);
-            h ^= h >> 13;
-            float n = 0.9f + (h % 1000) / 1000f * 0.12f;
-            if (building == null && terrain == TerrainType.Sidewalk && ((x + y) & 1) == 0) n *= 0.92f;
-            return new Color32((byte)Mathf.Min(255, c.r * n), (byte)Mathf.Min(255, c.g * n), (byte)Mathf.Min(255, c.b * n), 255);
-        }
-
-        Texture2D CreateTexture() => new Texture2D(map.Width, map.Height, TextureFormat.RGBA32, false)
-        {
-            filterMode = FilterMode.Point,
-            wrapMode = TextureWrapMode.Clamp,
-        };
-
-        static SpriteRenderer CreateLayer(GameObject go, Texture2D tex, int order)
-        {
-            var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.zero, 1f, 0, SpriteMeshType.FullRect);
-            sr.sharedMaterial = SpriteFactory.UnlitMaterial;
-            sr.sortingOrder = order;
-            return sr;
         }
     }
 }

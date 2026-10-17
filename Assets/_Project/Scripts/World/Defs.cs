@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace OSistema.World
 {
-    public enum TerrainType : byte { Ground, Road, Sidewalk, Floor }
+    public enum TerrainType : byte { Ground, Road, Sidewalk, Floor, Paving, Marble, Grass }
 
     public enum PlaceMode { Single, Outline, Fill }
 
@@ -13,6 +13,7 @@ namespace OSistema.World
         public static float MoveCost(TerrainType t) => t switch
         {
             TerrainType.Ground => 1.25f, // rubble, dirt, courtyards
+            TerrainType.Grass => 1.15f,
             _ => 1f,
         };
 
@@ -21,6 +22,9 @@ namespace OSistema.World
             TerrainType.Road => new Color32(52, 52, 58, 255),      // asphalt
             TerrainType.Sidewalk => new Color32(84, 84, 92, 255),  // basolato (volcanic stone)
             TerrainType.Floor => new Color32(170, 150, 122, 255),  // ceramic tiles
+            TerrainType.Paving => new Color32(150, 145, 135, 255), // stone slabs of a piazza
+            TerrainType.Marble => new Color32(225, 220, 210, 255), // church floor
+            TerrainType.Grass => new Color32(70, 110, 55, 255),
             _ => new Color32(112, 98, 76, 255),                    // dirt
         };
 
@@ -29,6 +33,9 @@ namespace OSistema.World
             TerrainType.Road => "Road",
             TerrainType.Sidewalk => "Sidewalk",
             TerrainType.Floor => "Floor",
+            TerrainType.Paving => "Paving",
+            TerrainType.Marble => "Marble",
+            TerrainType.Grass => "Grass",
             _ => "Ground",
         };
     }
@@ -47,13 +54,16 @@ namespace OSistema.World
         public Color32 Color;
         public PlaceMode PlaceMode;
         public ShopKind Shop;
+        public bool Cover;        // stops bullets: crouch behind it in a firefight
+        public bool LightSource;  // lit at night
+        public bool Generated;    // street furniture and the like: placed by the map generator only
     }
 
     public static class BuildingDefs
     {
         public static readonly BuildingDef Wall = new BuildingDef
         {
-            Id = "wall", Label = "Wall", Passable = false, WorkToBuild = 300,
+            Id = "wall", Label = "Wall", Passable = false, WorkToBuild = 300, Cover = true,
             Color = new Color32(198, 170, 112, 255), // yellow tuff plaster
             PlaceMode = PlaceMode.Outline,
         };
@@ -74,7 +84,7 @@ namespace OSistema.World
 
         public static readonly BuildingDef Table = new BuildingDef
         {
-            Id = "table", Label = "Table", Passable = false, WorkToBuild = 200,
+            Id = "table", Label = "Table", Passable = false, WorkToBuild = 200, Cover = true,
             Color = new Color32(128, 92, 58, 255),
             PlaceMode = PlaceMode.Fill,
         };
@@ -146,6 +156,30 @@ namespace OSistema.World
             PlaceMode = PlaceMode.Single,
         };
 
+        // ---- The street: generated with the map ----
+        public static readonly BuildingDef Tree = Street("tree", "Tree", new Color32(60, 105, 50, 255), cover: true);
+        public static readonly BuildingDef ParkedCar = Street("parked_car", "Parked car", new Color32(140, 40, 40, 255), cover: true);
+        public static readonly BuildingDef ParkedScooter = Street("parked_scooter", "Scooter", new Color32(200, 200, 205, 255), cover: false);
+        public static readonly BuildingDef Bench = Street("bench", "Bench", new Color32(120, 90, 60, 255), cover: true);
+        public static readonly BuildingDef Bin = Street("bin", "Bin", new Color32(60, 90, 70, 255), cover: true);
+        public static readonly BuildingDef StreetLamp = Street("street_lamp", "Street lamp", new Color32(50, 50, 55, 255), cover: false, light: true);
+        public static readonly BuildingDef MarketStall = Street("market_stall", "Market stall", new Color32(200, 60, 50, 255), cover: true);
+        public static readonly BuildingDef Shrine = Street("shrine", "Edicola votiva", new Color32(70, 110, 190, 255), cover: true, light: true);
+        public static readonly BuildingDef Altar = Street("altar", "Altar", new Color32(230, 220, 190, 255), cover: true);
+        public static readonly BuildingDef Pew = Street("pew", "Pew", new Color32(110, 75, 45, 255), cover: true);
+        public static readonly BuildingDef Fountain = Street("fountain", "Fountain", new Color32(150, 150, 145, 255), cover: true);
+        public static readonly BuildingDef Rubble = new BuildingDef
+        {
+            Id = "rubble", Label = "Rubble", Passable = true, PathCost = 2f, WorkToBuild = 100,
+            Color = new Color32(120, 112, 100, 255), Generated = true,
+        };
+
+        static BuildingDef Street(string id, string label, Color32 color, bool cover, bool light = false) => new BuildingDef
+        {
+            Id = id, Label = label, Passable = false, WorkToBuild = 200, Color = color,
+            Cover = cover, LightSource = light, Generated = true,
+        };
+
         public static readonly BuildingDef[] Buildable = { Wall, Door, Bed, Table, Stove, Pantry, Bunker };
 
         /// <summary>Every def, in a fixed order used by save files. Only ever append to this list.</summary>
@@ -153,6 +187,7 @@ namespace OSistema.World
         {
             Wall, Door, Bed, Table, Stove, Pantry, PizzeriaCounter, SalumeriaCounter, FarmaciaCounter,
             BarCounter, MacelleriaCounter, TabaccheriaCounter, BurnedShop, Bunker,
+            Tree, ParkedCar, ParkedScooter, Bench, Bin, StreetLamp, MarketStall, Shrine, Altar, Pew, Fountain, Rubble,
         };
 
         public static BuildingDef ById(string id)

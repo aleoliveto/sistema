@@ -9,12 +9,14 @@ namespace OSistema.Core
         public readonly string Text;
         public readonly MessageKind Kind;
         public readonly long Tick;
+        public readonly UnityEngine.Vector2Int? Location; // click the notification to go there
 
-        public Message(string text, MessageKind kind, long tick)
+        public Message(string text, MessageKind kind, long tick, UnityEngine.Vector2Int? location)
         {
             Text = text;
             Kind = kind;
             Tick = tick;
+            Location = location;
         }
     }
 
@@ -30,9 +32,12 @@ namespace OSistema.Core
 
         public IReadOnlyList<Message> All => messages;
 
-        public void Add(string text, MessageKind kind = MessageKind.Info)
+        public int Version { get; private set; }
+
+        public void Add(string text, MessageKind kind = MessageKind.Info, UnityEngine.Vector2Int? location = null)
         {
-            messages.Add(new Message(text, kind, ticks.TicksGame));
+            Version++;
+            messages.Add(new Message(text, kind, ticks.TicksGame, location));
             if (messages.Count > MaxMessages) messages.RemoveAt(0);
         }
     }

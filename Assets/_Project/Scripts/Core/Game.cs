@@ -16,8 +16,8 @@ namespace OSistema.Core
     /// </summary>
     public sealed class Game
     {
-        public const int MapWidth = 122;
-        public const int MapHeight = 84;
+        public const int MapWidth = 200;
+        public const int MapHeight = 150;
 
         public readonly int Seed;
         public readonly System.Random Rng;
@@ -36,6 +36,7 @@ namespace OSistema.Core
         public readonly RivalClan Rival = new RivalClan();
         public readonly CombatSystem Combat = new CombatSystem();
         public readonly EventSystem Events = new EventSystem();
+        public StreetLife StreetLife { get; private set; }
 
         /// <summary>Interior of the crew's starting apartment.</summary>
         public readonly RectInt PlayerBase;
@@ -55,6 +56,7 @@ namespace OSistema.Core
             Pawns = new PawnManager();
             Log = new MessageLog(Ticks);
             Territory = new Territory(Map, zones);
+            StreetLife = new StreetLife(this);
             Ticks.OnTick += Tick;
         }
 
@@ -79,6 +81,7 @@ namespace OSistema.Core
         {
             if (Org.GameOver) return;
             Pawns.Tick(this);
+            StreetLife.Tick(this);
             Npcs.Tick(this);
             Combat.Tick(this);
             Police.Tick(this);
@@ -118,6 +121,13 @@ namespace OSistema.Core
                 };
                 pawn.Needs.Food = 0.5f + (float)Rng.NextDouble() * 0.4f;
                 pawn.Needs.Rest = 0.6f + (float)Rng.NextDouble() * 0.35f;
+                // Each of the starting crew already has a bed at the basso.
+                foreach (var bed in Map.PositionsOf(BuildingDefs.Bed))
+                {
+                    if (Pawns.IsBedOwned(bed, pawn)) continue;
+                    pawn.Bed = bed;
+                    break;
+                }
                 Pawns.Add(pawn);
             }
         }

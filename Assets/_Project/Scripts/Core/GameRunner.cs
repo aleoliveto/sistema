@@ -69,6 +69,9 @@ namespace OSistema.Core
             var mapGo = new GameObject("Map");
             mapGo.transform.SetParent(worldRoot, false);
             mapGo.AddComponent<MapRenderer>().Init(game);
+            var fogGo = new GameObject("Fog of war");
+            fogGo.transform.SetParent(worldRoot, false);
+            fogGo.AddComponent<FogOfWar>().Init(game);
 
             foreach (var pawn in game.Pawns.All) CreatePawnView(pawn);
             game.Pawns.Added += CreatePawnView;
@@ -76,6 +79,8 @@ namespace OSistema.Core
             var combatGo = new GameObject("Combat");
             combatGo.transform.SetParent(worldRoot, false);
             combatGo.AddComponent<CombatView>().Init(game.Combat);
+            combatGo.AddComponent<SoundManager>().Init(game);
+            game.Combat.EngagementStarted += OnEngagement;
             game.Npcs.Added += CreateNpcView;
 
             controller.Bind(game);
@@ -89,6 +94,7 @@ namespace OSistema.Core
         {
             if (Game != null)
             {
+                Game.Combat.EngagementStarted -= OnEngagement;
                 Game.Pawns.Added -= CreatePawnView;
                 Game.Npcs.Added -= CreateNpcView;
             }
@@ -137,6 +143,15 @@ namespace OSistema.Core
             go.AddComponent<PawnView>().Init(pawn);
         }
 
+        // Shots fired: drop out of fast-forward so the player can react, and say where.
+        void OnEngagement(Vector2 at)
+        {
+            if (Game.Ticks.Speed > 1) Game.Ticks.SetSpeed(1);
+            var zone = Game.Territory.ZoneAt(Vector2Int.FloorToInt(at));
+            Game.Log.Add($"Sparatoria! Shots fired{(zone != null ? " in " + zone.Name : "")}.", MessageKind.Bad, Vector2Int.FloorToInt(at));
+            hud.FlashAlert("SPARATORIA!");
+        }
+
         void CreateNpcView(Npc npc)
         {
             var go = new GameObject($"{npc.Kind} {npc.Id}");
@@ -153,7 +168,7 @@ namespace OSistema.Core
                 cam.tag = "MainCamera";
             }
             cam.orthographic = true;
-            cam.orthographicSize = 12f;
+            cam.orthographicSize = 9f;
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color32(14, 14, 18, 255);
             return cam;

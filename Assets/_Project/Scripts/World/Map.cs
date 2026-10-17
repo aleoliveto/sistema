@@ -12,6 +12,7 @@ namespace OSistema.World
 
         readonly TerrainType[] terrain;
         readonly BuildingDef[] buildings;
+        readonly byte[] styles; // facade/floor palette per cell, chosen per building by the generator
 
         // Where each building type stands, so jobs can find the nearest stove or pizzeria quickly.
         readonly Dictionary<BuildingDef, HashSet<Vector2Int>> positions = new Dictionary<BuildingDef, HashSet<Vector2Int>>();
@@ -25,7 +26,12 @@ namespace OSistema.World
             Height = height;
             terrain = new TerrainType[width * height];
             buildings = new BuildingDef[width * height];
+            styles = new byte[width * height];
         }
+
+        public byte GetStyle(int x, int y) => styles[Index(x, y)];
+        public void SetStyle(int x, int y, byte style) => styles[Index(x, y)] = style;
+        public byte[] RawStyles => styles;
 
         public int CellCount => Width * Height;
         public bool InBounds(int x, int y) => x >= 0 && y >= 0 && x < Width && y < Height;

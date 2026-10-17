@@ -90,10 +90,15 @@ namespace OSistema.AI
     public sealed class GotoJob : Job
     {
         readonly Walker walker;
+        readonly string label;
 
-        public GotoJob(Pawn pawn, Vector2Int target) : base(pawn) => walker = new Walker(target, adjacent: false);
+        public GotoJob(Pawn pawn, Vector2Int target, string label = "Moving") : base(pawn)
+        {
+            walker = new Walker(target, adjacent: false);
+            this.label = label;
+        }
 
-        public override string Label => "Moving";
+        public override string Label => label;
 
         public override bool Tick(Game game)
         {
@@ -216,6 +221,45 @@ namespace OSistema.AI
         public override void OnEnd(Game game)
         {
             if (blueprint.ClaimedBy == Pawn) blueprint.ClaimedBy = null;
+        }
+    }
+
+    /// <summary>Close in on a focus-fire target until there's a clean shot, then hold and let the guns talk.</summary>
+    public sealed class EngageJob : Job
+    {
+        readonly Pawn target;
+        Walker walker;
+        int retarget;
+
+        public EngageJob(Pawn pawn, Pawn target) : base(pawn) => this.target = target;
+
+        public override string Label => $"Engaging {target.Nickname}";
+
+        public override bool Tick(Game game)
+        {
+            if (!target.IsPresent || target.Health.Downed || Pawn.ForcedTarget != target)
+            {
+                if (Pawn.ForcedTarget == target) Pawn.ForcedTarget = null;
+                return true;
+            }
+
+            float range = Pawn.Armed ? Combat.CombatSystem.PistolRange - 1f : Combat.CombatSystem.MeleeRange - 0.3f;
+            float dist = (target.Position - Pawn.Position).magnitude;
+            bool clear = !Pawn.Armed || Combat.CombatSystem.HasLineOfSight(game.Map, Pawn.Cell, target.Cell);
+            if (dist <= range && clear)
+            {
+                Pawn.StopMoving();
+                walker = null;
+                return false;
+            }
+
+            if (walker == null || --retarget <= 0)
+            {
+                walker = new Walker(target.Cell, adjacent: true);
+                retarget = 45;
+            }
+            if (walker.Tick(Pawn, game) == WalkStatus.Failed) walker = null;
+            return false;
         }
     }
 }

@@ -14,10 +14,44 @@ namespace OSistema.AI
         {
             if (pawn.Dead) return new WaitJob(pawn, 600, "Dead", idle: false);
             if (pawn.Health.Downed) return new DownedJob(pawn);
-            if (pawn.Drafted) return new WaitJob(pawn, 60, "Drafted, awaiting orders", idle: false);
+            if (pawn.Drafted) return DraftedJob(pawn, game);
             if (pawn.InMentalBreak(game.Ticks.TicksGame)) return new SulkJob(pawn);
             if (pawn.IsBoss && game.Org.Hiding) return new HideJob(pawn, game);
             return TryNonIdle(pawn, game) ?? Wander(pawn, game);
+        }
+
+        /// <summary>Drafted crew follow focus-fire orders and get behind cover when someone is shooting at them.</summary>
+        static Job DraftedJob(Pawn pawn, Game game)
+        {
+            var target = pawn.ForcedTarget;
+            if (target != null && (!target.IsPresent || target.Health.Downed)) pawn.ForcedTarget = target = null;
+            if (target != null) return new EngageJob(pawn, target);
+
+            var threat = NearestThreat(pawn, game);
+            if (threat != null && !Combat.CombatSystem.IsInCover(game.Map, pawn.Cell, threat.Position))
+            {
+                var cover = Combat.CombatSystem.FindCover(game.Map, pawn.Cell, threat.Position, 4);
+                if (cover.HasValue && cover.Value != pawn.Cell) return new GotoJob(pawn, cover.Value, "Taking cover");
+            }
+            return new WaitJob(pawn, 60, threat != null ? "Holding position" : "Drafted, awaiting orders", idle: false);
+        }
+
+        static Pawn NearestThreat(Pawn pawn, Game game)
+        {
+            long now = game.Ticks.TicksGame;
+            Pawn best = null;
+            float bestDist = 14f;
+            foreach (var r in game.Pawns.Rivals)
+            {
+                if (!r.CanAct || !r.IsAggressive(now)) continue;
+                float d = (r.Position - pawn.Position).magnitude;
+                if (d < bestDist && Combat.CombatSystem.HasLineOfSight(game.Map, pawn.Cell, r.Cell))
+                {
+                    bestDist = d;
+                    best = r;
+                }
+            }
+            return best;
         }
 
         /// <summary>Anything better than standing around, or null. Also used to interrupt idle pawns.</summary>

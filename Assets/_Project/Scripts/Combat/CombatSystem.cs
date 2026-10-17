@@ -13,13 +13,15 @@ namespace OSistema.Combat
         public readonly Vector2 To;
         public readonly bool Hit;
         public readonly bool Melee;
+        public readonly bool InCover;      // the bullet was stopped by cover
 
-        public ShotEvent(Vector2 from, Vector2 to, bool hit, bool melee)
+        public ShotEvent(Vector2 from, Vector2 to, bool hit, bool melee, bool inCover = false)
         {
             From = from;
             To = to;
             Hit = hit;
             Melee = melee;
+            InCover = inCover;
         }
     }
 
@@ -41,6 +43,23 @@ namespace OSistema.Combat
         };
 
         public event Action<ShotEvent> Shot;
+
+        /// <summary>Raised when shooting starts after a quiet spell: the HUD sounds the alarm.</summary>
+        public event Action<Vector2> EngagementStarted;
+
+        const int QuietTicks = 900;
+        const float CoverFactor = 0.45f;
+
+        /// <summary>Where and when the last shot rang out: civilians run from it.</summary>
+        public Vector2 LastShotPosition { get; private set; }
+        public long LastShotTick { get; private set; } = -100000;
+
+        void Fired(Vector2 at, Game game)
+        {
+            if (game.Ticks.TicksGame - LastShotTick > QuietTicks) EngagementStarted?.Invoke(at);
+            LastShotPosition = at;
+            LastShotTick = game.Ticks.TicksGame;
+        }
 
         public void Tick(Game game)
         {
@@ -69,6 +88,15 @@ namespace OSistema.Combat
         Pawn PickTarget(Pawn attacker, Game game, long now)
         {
             float range = attacker.Armed ? PistolRange : MeleeRange;
+
+            // A focus-fire order wins whenever the target is in range and in sight.
+            var forced = attacker.ForcedTarget;
+            if (forced != null && WantsToFight(attacker, forced, now))
+            {
+                float d = (forced.Position - attacker.Position).magnitude;
+                if (d <= range && (!attacker.Armed || HasLineOfSight(game.Map, attacker.Cell, forced.Cell))) return forced;
+            }
+
             Pawn best = null;
             float bestDist = range;
             foreach (var other in game.Pawns.All)
@@ -91,17 +119,24 @@ namespace OSistema.Combat
                 ? 0.55f + 0.03f * attacker.IntimidationSkill
                 : 0.35f + 0.05f * attacker.ShootingSkill - 0.025f * dist;
             chance *= 1f - attacker.Health.Pain * 0.5f;
+            bool covered = !melee && IsInCover(game.Map, target.Cell, attacker.Position);
+            if (covered) chance *= CoverFactor;
             chance = Mathf.Clamp(chance, 0.05f, 0.9f);
 
             var rng = game.Rng;
+            attacker.AimAt(target);
             attacker.NextAttackTick = now + (melee ? 60 : 75 + rng.Next(0, 30));
             bool hit = rng.NextDouble() < chance;
 
             var to = target.Position;
             if (!hit) to += new Vector2((float)rng.NextDouble() - 0.5f, (float)rng.NextDouble() - 0.5f) * 2.5f;
-            Shot?.Invoke(new ShotEvent(attacker.Position, to, hit, melee));
+            Shot?.Invoke(new ShotEvent(attacker.Position, to, hit, melee, covered && !hit));
 
-            if (!melee) game.Territory.AddHeat(attacker.Cell, 0.8f); // gunfire brings attention
+            if (!melee)
+            {
+                game.Territory.AddHeat(attacker.Cell, 0.8f); // gunfire brings attention
+                Fired(attacker.Position, game);
+            }
             if (attacker.Faction == Faction.Crew && rng.NextDouble() < 0.08) attacker.Say("fight");
 
             OnAttacked(target, attacker, game, now);
@@ -127,6 +162,7 @@ namespace OSistema.Combat
 
         static void Wound(Pawn target, bool melee, Game game)
         {
+            target.LastHitTime = Time.unscaledTime;
             var rng = game.Rng;
             string part = PickPart(rng);
             long now = game.Ticks.TicksGame;
@@ -161,6 +197,49 @@ namespace OSistema.Combat
             return "Torso";
         }
 
+        /// <summary>
+        /// Is something solid between the target and the shooter, right next to the target?
+        /// Walls, cars, trees, benches, stalls… Shooting from point blank ignores cover.
+        /// </summary>
+        public static bool IsInCover(Map map, Vector2Int target, Vector2 shooter)
+        {
+            var toShooter = shooter - Mover.CellCenter(target);
+            if (toShooter.sqrMagnitude < 2.5f) return false;
+            toShooter.Normalize();
+            for (int dy = -1; dy <= 1; dy++)
+            for (int dx = -1; dx <= 1; dx++)
+            {
+                if (dx == 0 && dy == 0) continue;
+                int x = target.x + dx, y = target.y + dy;
+                if (!map.InBounds(x, y)) continue;
+                var b = map.GetBuilding(x, y);
+                if (b == null || !b.Cover) continue;
+                if (Vector2.Dot(new Vector2(dx, dy).normalized, toShooter) > 0.55f) return true;
+            }
+            return false;
+        }
+
+        /// <summary>The nearest free cell within reach that has cover against a threat and still a line of fire.</summary>
+        public static Vector2Int? FindCover(Map map, Vector2Int from, Vector2 threat, int radius)
+        {
+            Vector2Int? best = null;
+            float bestScore = float.MaxValue;
+            var threatCell = new Vector2Int(Mathf.FloorToInt(threat.x), Mathf.FloorToInt(threat.y));
+            foreach (var c in GridUtil.CellsAround(from, radius))
+            {
+                if (!map.InBounds(c) || !map.IsPassable(c)) continue;
+                if (!IsInCover(map, c, threat)) continue;
+                if (!HasLineOfSight(map, c, threatCell)) continue; // cover you can't shoot from is just hiding
+                float score = (c - from).sqrMagnitude;
+                if (score < bestScore)
+                {
+                    bestScore = score;
+                    best = c;
+                }
+            }
+            return best;
+        }
+
         /// <summary>Bresenham line between cells; walls (impassable cells) block the shot.</summary>
         public static bool HasLineOfSight(Map map, Vector2Int a, Vector2Int b)
         {
@@ -186,6 +265,7 @@ namespace OSistema.Combat
             var to = shooter.Position + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * (3f + (float)rng.NextDouble() * 3f);
             Shot?.Invoke(new ShotEvent(shooter.Position, to, false, false));
             game.Territory.AddHeat(shooter.Cell, 0.8f);
+            Fired(shooter.Position, game);
         }
     }
 }
