@@ -13,7 +13,7 @@ namespace OSistema.Crime
     /// The player's clan as a business: the treasury (the crew cash in Stock acts as 'a bacinella),
     /// wages, the supplier, drug squares, pizzo and respect.
     /// </summary>
-    public sealed class Organization
+    public sealed partial class Organization
     {
         public const int MaxSquares = 3;
         public const int MaxCrew = 12;
@@ -22,7 +22,7 @@ namespace OSistema.Crime
         const float RespectPerLostCustomer = 0.25f;
         const int LostWarningCooldown = GameClock.TicksPerHour * 3;
         const float HeatPerSale = 0.35f;
-        const int MaxCustomers = 10;
+        const int MaxCustomers = 16; // shared by your piazze and the rivals'
 
         public float Respect = 10f;
         public readonly List<DrugSquare> Squares = new List<DrugSquare>();
@@ -62,6 +62,7 @@ namespace OSistema.Crime
             if (clock.Hour == 12 && clock.IsPayday && LastPaydayWeek != WeekOf(clock)) Payday(game);
             ReopenBurnedShops(game);
             game.Police.HourlyCheck(game);
+            LeadershipHourly(game);
         }
 
         void OnNewDay(Game game)
@@ -73,8 +74,10 @@ namespace OSistema.Crime
                 sq.RevenueToday = 0;
             }
 
+            LeadershipDaily(game);
+
             // Loyalty drifts with mood: a miserable crew stops believing in you.
-            foreach (var p in game.Pawns.All)
+            foreach (var p in game.Pawns.Crew)
                 if (p.IsPresent) p.Loyalty = Mathf.Clamp(p.Loyalty + (p.Mood.Value - 50f) / 25f, 0f, 100f);
         }
 
@@ -107,7 +110,7 @@ namespace OSistema.Crime
         public int WeeklyWageBill(Game game)
         {
             int total = 0;
-            foreach (var p in game.Pawns.All)
+            foreach (var p in game.Pawns.Crew)
             {
                 if (p.Dead) continue;
                 total += p.InJail ? Prices.JailedFamilySupport : p.Wage;
@@ -122,7 +125,7 @@ namespace OSistema.Crime
             var stock = game.Stock;
             int paidTotal = 0, unpaid = 0;
 
-            foreach (var p in game.Pawns.All)
+            foreach (var p in game.Pawns.Crew)
             {
                 if (p.Dead) continue;
 
@@ -170,7 +173,7 @@ namespace OSistema.Crime
         {
             error = null;
             int crew = 0;
-            foreach (var p in game.Pawns.All) if (!p.Dead) crew++;
+            foreach (var p in game.Pawns.Crew) if (!p.Dead) crew++;
             if (crew >= MaxCrew) error = "The crew is as big as it can get for now.";
             else if (game.Stock.Cash < Prices.RecruitBonus) error = $"Recruiting costs €{Prices.RecruitBonus}.";
             if (error != null) return null;
@@ -199,6 +202,7 @@ namespace OSistema.Crime
                 MedicineSkill = rng.Next(0, 5),
                 IntimidationSkill = rng.Next(1, 9),
                 AwarenessSkill = rng.Next(1, 9),
+                ShootingSkill = rng.Next(1, 9),
                 Wage = 120,
                 Loyalty = 45f + rng.Next(0, 20),
             };
@@ -221,6 +225,11 @@ namespace OSistema.Crime
 
         public bool TryOpenSquare(Vector2Int cell, Game game, out string error)
         {
+            if (game.Rival.Squares.Exists(s => (s.Cell - cell).sqrMagnitude < 64))
+            {
+                error = "That's the rivals' piazza. Take it by force first.";
+                return false;
+            }
             error = null;
             var map = game.Map;
             var zone = game.Territory.ZoneAt(cell);
@@ -274,14 +283,23 @@ namespace OSistema.Crime
         /// <summary>The pusher currently standing on this square, or null.</summary>
         public Pawn PusherAt(DrugSquare square, Game game)
         {
-            foreach (var p in game.Pawns.All)
+            foreach (var p in game.Pawns.Crew)
                 if (p.CanAct && p.CurrentJob is PostJob post && post.Square == square && post.Role == CrewRole.Pusher && post.AtPost)
                     return p;
             return null;
         }
 
+        /// <summary>Whether a square (ours or the rivals') is still operating.</summary>
+        public bool IsActiveSquare(DrugSquare square, Game game) =>
+            Squares.Contains(square) || game.Rival.Squares.Contains(square);
+
         public void Sell(DrugSquare square, Pawn pusher, Game game)
         {
+            if (square.Rival)
+            {
+                game.Rival.Cash += Prices.ProductStreet;
+                return;
+            }
             game.Stock.Product--;
             game.Stock.Cash += Prices.ProductStreet;
             square.SalesToday++;
@@ -306,7 +324,7 @@ namespace OSistema.Crime
 
         void SpawnCustomers(Game game)
         {
-            if (Squares.Count == 0) return;
+            if (Squares.Count == 0 && game.Rival.Squares.Count == 0) return;
             if (game.Npcs.Count(NpcKind.Customer) >= MaxCustomers) return;
             if (game.Territory.Entrances.Count == 0) return;
 
@@ -316,7 +334,15 @@ namespace OSistema.Crime
                 if (!sq.IsOpenAt(hour)) continue;
                 var zone = game.Territory.Zones[sq.ZoneId];
                 float perHour = 1.6f * zone.Demand * (1f - zone.Heat / 150f) * (0.7f + Respect / 250f);
+                if (game.Rival.NearRivalTerritory(sq)) perHour *= 0.7f; // customers have a choice
                 if (game.Rng.NextDouble() < perHour / GameClock.TicksPerHour)
+                    game.Npcs.SpawnCustomer(sq, game);
+            }
+
+            foreach (var sq in game.Rival.Squares)
+            {
+                var zone = game.Territory.Zones[sq.ZoneId];
+                if (game.Rng.NextDouble() < 1.2f * zone.Demand / GameClock.TicksPerHour)
                     game.Npcs.SpawnCustomer(sq, game);
             }
         }
@@ -402,6 +428,7 @@ namespace OSistema.Crime
             b.Status = BusinessStatus.Targeted; // the collector goes back to ask again, nicely
             Respect = Mathf.Min(100f, Respect + 2f);
             game.Territory.AddHeat(b.Cell, 8f);
+            AddEvidence(3f, game);
             pawn.Say("scare");
             game.Log.Add($"{pawn.Nickname} smashed the window of {b.Name}. The owner will think twice now.");
             if (game.Rng.NextDouble() < b.Defiance * 0.5)
@@ -419,6 +446,7 @@ namespace OSistema.Crime
             game.Map.SetBuilding(b.Cell.x, b.Cell.y, BuildingDefs.BurnedShop);
             Respect = Mathf.Min(100f, Respect + 6f);
             game.Territory.AddHeat(b.Cell, 25f);
+            AddEvidence(10f, game);
             pawn.Say("burn");
             game.Log.Add($"{b.Name} burned in the night. The owner's family watches from the street.", MessageKind.Bad);
 
@@ -471,6 +499,7 @@ namespace OSistema.Crime
                 {
                     b.Status = BusinessStatus.Paying;
                     Respect = Mathf.Min(100f, Respect + 2f);
+                    AddEvidence(1f, game);
                     collector.Say("pizzo_ok");
                     game.Log.Add($"{b.Name} agreed to pay €{b.WeeklyPizzo} a week.", MessageKind.Good);
                     Collect(b, week, game);
@@ -484,6 +513,7 @@ namespace OSistema.Crime
                     if (game.Rng.NextDouble() < 0.4 + b.Defiance * 0.5)
                     {
                         game.Territory.AddHeat(b.Cell, 15f);
+                        AddEvidence(4f, game);
                         game.Log.Add($"The owner of {b.Name} went to the Carabinieri. Heat is rising in {game.Territory.ZoneAt(b.Cell)?.Name}.", MessageKind.Bad);
                     }
                 }

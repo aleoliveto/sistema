@@ -16,6 +16,7 @@ namespace OSistema.AI
             if (pawn.Health.Downed) return new DownedJob(pawn);
             if (pawn.Drafted) return new WaitJob(pawn, 60, "Drafted, awaiting orders", idle: false);
             if (pawn.InMentalBreak(game.Ticks.TicksGame)) return new SulkJob(pawn);
+            if (pawn.IsBoss && game.Org.Hiding) return new HideJob(pawn, game);
             return TryNonIdle(pawn, game) ?? Wander(pawn, game);
         }
 
@@ -23,6 +24,7 @@ namespace OSistema.AI
         public static Job TryNonIdle(Pawn pawn, Game game)
         {
             return TryTend(pawn, game)
+                ?? TryCourier(pawn, game)
                 ?? TryEat(pawn, game)
                 ?? TrySleep(pawn, game)
                 ?? TryDuty(pawn, game)
@@ -33,7 +35,7 @@ namespace OSistema.AI
 
         static Job TryTend(Pawn pawn, Game game)
         {
-            foreach (var patient in game.Pawns.All)
+            foreach (var patient in game.Pawns.Crew)
             {
                 if (patient == pawn || !patient.IsPresent || patient.TendedBy != null || !patient.Health.NeedsTending) continue;
                 return new TendJob(pawn, patient, game);
@@ -46,10 +48,20 @@ namespace OSistema.AI
             return null;
         }
 
+        static Job TryCourier(Pawn pawn, Game game)
+        {
+            var org = game.Org;
+            if (!org.Hiding || pawn.IsBoss || org.Courier != null) return null;
+            var boss = org.Boss(game);
+            if (boss == null || !boss.IsPresent) return null;
+            if (boss.Needs.Food > 0.5f || boss.MealsDelivered > 0 || game.Stock.Meals <= 0) return null;
+            return new CourierJob(pawn, boss, game);
+        }
+
         static bool AnyoneElseCanHelp(Pawn pawn, Game game)
         {
             long now = game.Ticks.TicksGame;
-            foreach (var other in game.Pawns.All)
+            foreach (var other in game.Pawns.Crew)
                 if (other != pawn && other.CanAct && !other.Drafted && !other.InMentalBreak(now)) return true;
             return false;
         }
@@ -198,7 +210,7 @@ namespace OSistema.AI
         static int CountPosted(DrugSquare square, CrewRole role, Pawn except, Game game)
         {
             int n = 0;
-            foreach (var p in game.Pawns.All)
+            foreach (var p in game.Pawns.Crew)
                 if (p != except && p.CurrentJob is PostJob post && post.Square == square && post.Role == role) n++;
             return n;
         }
@@ -210,7 +222,7 @@ namespace OSistema.AI
         static Vector2Int? FreePost(DrugSquare square, Pawn pawn, Game game)
         {
             var taken = new HashSet<Vector2Int>();
-            foreach (var p in game.Pawns.All)
+            foreach (var p in game.Pawns.Crew)
                 if (p != pawn && p.CurrentJob is PostJob post && post.Square == square) taken.Add(post.Post);
 
             if (pawn.Role == CrewRole.Pusher)

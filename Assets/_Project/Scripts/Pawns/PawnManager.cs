@@ -6,13 +6,23 @@ using UnityEngine;
 
 namespace OSistema.Pawns
 {
+    public enum Faction { Crew, Rival }
+
     public sealed class PawnManager
     {
         readonly List<Pawn> pawns = new List<Pawn>();
+        readonly List<Pawn> crew = new List<Pawn>();
+        readonly List<Pawn> rivals = new List<Pawn>();
         int nextId = 1;
 
-        /// <summary>Every pawn, including the dead (they stay on the map until burial exists).</summary>
+        /// <summary>Everyone on the books, both factions, including the dead.</summary>
         public IReadOnlyList<Pawn> All => pawns;
+
+        /// <summary>The player's people (including the dead and the jailed).</summary>
+        public IReadOnlyList<Pawn> Crew => crew;
+
+        /// <summary>Rival clan members currently on the map (including their dead).</summary>
+        public IReadOnlyList<Pawn> Rivals => rivals;
 
         public event Action<Pawn> Added;
 
@@ -21,6 +31,7 @@ namespace OSistema.Pawns
         public void Add(Pawn pawn)
         {
             pawns.Add(pawn);
+            (pawn.Faction == Faction.Crew ? crew : rivals).Add(pawn);
             nextId = Mathf.Max(nextId, pawn.Id + 1);
             Added?.Invoke(pawn);
         }
@@ -30,35 +41,51 @@ namespace OSistema.Pawns
             get
             {
                 int n = 0;
-                foreach (var p in pawns) if (!p.Dead) n++;
+                foreach (var p in crew) if (!p.Dead) n++;
                 return n;
             }
         }
 
-        /// <summary>Alive and not in prison: the mouths to feed at the basso.</summary>
+        /// <summary>Crew alive and not in prison: the mouths to feed at the basso.</summary>
         public int PresentCount
         {
             get
             {
                 int n = 0;
-                foreach (var p in pawns) if (p.IsPresent) n++;
+                foreach (var p in crew) if (p.IsPresent) n++;
                 return n;
             }
         }
 
+        public Pawn ById(int id) => pawns.Find(p => p.Id == id);
+
         public void Tick(Game game)
         {
             for (int i = 0; i < pawns.Count; i++) pawns[i].Tick(game);
+
+            // Rivals who left the district are gone for good.
+            if (pawns.Exists(p => p.Departed))
+            {
+                pawns.RemoveAll(p => p.Departed);
+                rivals.RemoveAll(p => p.Departed);
+                crew.RemoveAll(p => p.Departed);
+            }
         }
 
         public void Kill(Pawn pawn, string cause, Game game)
         {
             if (pawn.Dead) return;
             pawn.Die(cause, game);
-            game.Log.Add($"{pawn.FullName} “{pawn.Nickname}” has died of {cause}.", MessageKind.Bad);
 
+            if (pawn.Faction == Faction.Rival)
+            {
+                game.Rival.OnSoldierDied(pawn, game);
+                return;
+            }
+
+            game.Log.Add($"{pawn.FullName} “{pawn.Nickname}” has died of {cause}.", MessageKind.Bad);
             long now = game.Ticks.TicksGame;
-            foreach (var other in pawns)
+            foreach (var other in crew)
             {
                 if (!other.IsPresent) continue;
                 other.Mood.AddMemory($"death_{pawn.Id}", $"{pawn.Nickname} died", -15f, now, GameClock.TicksPerDay * 3);
@@ -68,7 +95,7 @@ namespace OSistema.Pawns
 
         public bool IsBedOwned(Vector2Int bed, Pawn except)
         {
-            foreach (var p in pawns)
+            foreach (var p in crew)
                 if (p != except && !p.Dead && p.Bed == bed) return true;
             return false;
         }

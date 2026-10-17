@@ -37,6 +37,7 @@ namespace OSistema.Core
             controller = gameObject.AddComponent<PlayerController>();
             controller.Init(cam, hud);
             hud.Init(controller, cam);
+            hud.NewGameRequested += () => StartGame(Game.NewGame(UnityEngine.Random.Range(0, int.MaxValue)));
 
             int seed = UnityEngine.Random.Range(0, int.MaxValue);
             Debug.Log($"[O Sistema] New game, seed {seed}");
@@ -72,6 +73,9 @@ namespace OSistema.Core
             foreach (var pawn in game.Pawns.All) CreatePawnView(pawn);
             game.Pawns.Added += CreatePawnView;
             foreach (var npc in game.Npcs.All) CreateNpcView(npc);
+            var combatGo = new GameObject("Combat");
+            combatGo.transform.SetParent(worldRoot, false);
+            combatGo.AddComponent<CombatView>().Init(game.Combat);
             game.Npcs.Added += CreateNpcView;
 
             controller.Bind(game);

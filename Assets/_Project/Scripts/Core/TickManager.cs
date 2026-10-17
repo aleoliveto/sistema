@@ -39,6 +39,7 @@ namespace OSistema.Core
         {
             for (int i = 0; i < ticks; i++)
             {
+                if (Paused) break; // an event card is waiting
                 TicksGame++;
                 OnTick?.Invoke();
             }
@@ -61,7 +62,7 @@ namespace OSistema.Core
 
             accumulator += realDeltaTime * TicksPerSecond * SpeedMultipliers[Speed];
             int done = 0;
-            while (accumulator >= 1d && done < MaxTicksPerFrame)
+            while (accumulator >= 1d && done < MaxTicksPerFrame && !Paused)
             {
                 accumulator -= 1d;
                 TicksGame++;

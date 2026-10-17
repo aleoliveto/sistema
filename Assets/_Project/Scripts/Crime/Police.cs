@@ -77,7 +77,7 @@ namespace OSistema.Crime
 
         void CheckDetection(Raid raid, Game game)
         {
-            foreach (var pawn in game.Pawns.All)
+            foreach (var pawn in game.Pawns.Crew)
             {
                 if (!pawn.CanAct || !(pawn.CurrentJob is PostJob post) || post.Square != raid.Square || !post.AtPost) continue;
                 // Vedette watch the approaches; a pusher only notices when the police are almost on him.
@@ -100,7 +100,7 @@ namespace OSistema.Crime
                 ? $"Police raid on the piazza in {zone.Name}! No lookout saw them coming."
                 : $"Police raid on the piazza in {zone.Name}! {spotter.Nickname} raised the alarm.", MessageKind.Bad);
 
-            foreach (var pawn in game.Pawns.All)
+            foreach (var pawn in game.Pawns.Crew)
             {
                 if (!pawn.CanAct || !(pawn.CurrentJob is PostJob post) || post.Square != raid.Square) continue;
                 // Caught by surprise: anyone the police are already on top of may not get away.
@@ -131,7 +131,7 @@ namespace OSistema.Crime
             foreach (var cop in raid.Cops)
             {
                 if (cop.Despawned || cop.HasArrested) continue;
-                foreach (var pawn in game.Pawns.All)
+                foreach (var pawn in game.Pawns.Crew)
                 {
                     if (!IsExposed(pawn, raid.Square)) continue;
                     if ((cop.Mover.Position - pawn.Position).magnitude > ArrestDistance) continue;
@@ -148,15 +148,24 @@ namespace OSistema.Crime
             int seized = pusher ? Mathf.Min(game.Stock.Product, 15) : 0;
             game.Stock.Product -= seized;
 
-            int days = game.Rng.Next(3, 10);
+            int days = game.Rng.Next(3, 10) + (pawn.Armed ? 5 : 0); // caught with a gun: longer inside
             long now = game.Ticks.TicksGame;
             pawn.SendToJail(now + days * GameClock.TicksPerDay, game);
             game.Org.Respect = Mathf.Max(0f, game.Org.Respect - 4f);
 
             string seizedText = seized > 0 ? $" {seized} units of product were seized." : "";
-            game.Log.Add($"{pawn.Nickname} was arrested at the piazza and taken to Poggioreale for {days} days.{seizedText}", MessageKind.Bad);
+            string gunText = pawn.Armed ? " He was carrying a gun." : "";
+            game.Log.Add($"{pawn.DisplayName} was arrested at the piazza and taken to Poggioreale for {days} days.{seizedText}{gunText}", MessageKind.Bad);
 
-            foreach (var other in game.Pawns.All)
+            // Every arrest is a chance to talk. The disloyal take it.
+            game.Org.AddEvidence(6f, game);
+            if (!pawn.IsBoss && pawn.Loyalty < 30f && game.Rng.NextDouble() < 0.5)
+            {
+                game.Org.AddEvidence(20f, game);
+                game.Log.Add($"Word from the lawyers: {pawn.Nickname} has been talking to the investigators.", MessageKind.Bad);
+            }
+
+            foreach (var other in game.Pawns.Crew)
                 if (other != pawn && other.IsPresent)
                     other.Mood.AddMemory($"arrested_{pawn.Id}", $"{pawn.Nickname} got arrested", -6f, now, GameClock.TicksPerDay * 2);
         }
@@ -174,7 +183,7 @@ namespace OSistema.Crime
         void ReleasePrisoners(Game game)
         {
             long now = game.Ticks.TicksGame;
-            foreach (var pawn in game.Pawns.All)
+            foreach (var pawn in game.Pawns.Crew)
             {
                 if (!pawn.InJail || pawn.Dead || now < pawn.JailedUntil) continue;
                 var home = game.PlayerBase;

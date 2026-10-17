@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using OSistema.AI;
 using OSistema.Core;
+using OSistema.Crime;
 using OSistema.Story;
 using OSistema.World;
 using UnityEngine;
@@ -11,6 +12,9 @@ namespace OSistema.Pawns
 
     /// <summary>The crew member's job in the clan. Hierarchy comes later; for now it's what they do all day.</summary>
     public enum CrewRole { General, Pusher, Lookout, Collector }
+
+    /// <summary>What a rival clan member on the map is here to do.</summary>
+    public enum RivalMission { Pusher, Stesa, Hit, Leave }
 
     /// <summary>A crew member. Pure simulation data; PawnView draws it.</summary>
     public sealed class Pawn
@@ -32,6 +36,20 @@ namespace OSistema.Pawns
         public int MedicineSkill;
         public int IntimidationSkill;
         public int AwarenessSkill;
+        public int ShootingSkill;
+
+        public Faction Faction;          // set before adding to the PawnManager
+        public bool Armed;               // carries a pistol
+        public bool IsBoss;
+        public long AggressiveUntil;     // willing to start shooting until this tick
+        public long NextAttackTick;
+        public bool Departed;            // rival who left the map
+        public int MealsDelivered;       // food brought to a boss in hiding
+
+        // Rival clan members only
+        public RivalMission Mission;
+        public DrugSquare MissionSquare;
+        public Pawn MissionTarget;
 
         public CrewRole Role;
         public int Wage = 150;          // weekly mesata, paid on Sunday
@@ -74,14 +92,16 @@ namespace OSistema.Pawns
         public bool HasBark => Time.unscaledTime < barkUntil;
         public bool HasBed => Bed.HasValue;
         public bool InJail => JailedUntil > 0;
+        public bool IsAggressive(long now) => AggressiveUntil > now;
+        public string DisplayName => IsBoss ? $"Don {FirstName}" : Nickname;
         public bool InMentalBreak(long now) => BreakUntilTick > now;
         public bool IsLyingLow(long now) => LyingLowUntil > now;
 
         /// <summary>On the map, alive and able to stand.</summary>
-        public bool CanAct => !Dead && !InJail && !Health.Downed;
+        public bool CanAct => !Dead && !InJail && !Departed && !Health.Downed;
 
         /// <summary>Alive and on the map (possibly downed).</summary>
-        public bool IsPresent => !Dead && !InJail;
+        public bool IsPresent => !Dead && !InJail && !Departed;
 
         /// <summary>Injuries slow you down.</summary>
         public float SpeedFactor => 1f - Health.Pain * 0.5f;
@@ -96,8 +116,14 @@ namespace OSistema.Pawns
 
         public void Tick(Game game)
         {
-            if (Dead || InJail) return;
+            if (Dead || InJail || Departed) return;
             long now = game.Ticks.TicksGame;
+
+            if (Faction == Faction.Rival)
+            {
+                TickRival(game);
+                return;
+            }
 
             Needs.Tick(this);
             Health.Tick(this);
@@ -116,6 +142,25 @@ namespace OSistema.Pawns
                 bool failed = CurrentJob.Failed;
                 EndCurrentJob(game);
                 // Back off briefly after a failure so an unreachable target isn't re-pathed every tick.
+                if (failed) CurrentJob = new WaitJob(this, 90, "Idle");
+            }
+        }
+
+        // Rivals live off-map: no needs or mood, only wounds and their mission.
+        void TickRival(Game game)
+        {
+            Health.Tick(this);
+            if (Health.IsDeadly)
+            {
+                game.Pawns.Kill(this, "gunshot wounds", game);
+                return;
+            }
+            if (Health.Downed && !(CurrentJob is DownedJob)) ForceJob(new DownedJob(this), game);
+            if (CurrentJob == null) CurrentJob = RivalAI.Next(this, game);
+            if (CurrentJob.Tick(game))
+            {
+                bool failed = CurrentJob.Failed;
+                EndCurrentJob(game);
                 if (failed) CurrentJob = new WaitJob(this, 90, "Idle");
             }
         }
@@ -177,6 +222,7 @@ namespace OSistema.Pawns
         public void SetDrafted(bool drafted, Game game)
         {
             if (Drafted == drafted || !CanAct) return;
+            if (drafted && IsBoss && game.Org.Hiding) return; // stays in the bunker
             Drafted = drafted;
             EndCurrentJob(game);
             Say(drafted ? "drafted" : "undrafted");

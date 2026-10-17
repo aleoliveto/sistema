@@ -27,6 +27,8 @@ namespace OSistema.Story
             "'o Sorcio", "'o Malamente", "Bambulella", "'o Turco", "'o Zingaro", "Sciarpetta",
         };
 
+        public static readonly string[] RivalSurnames = { "Capuozzo", "Tufano", "Pagliuca", "Cennamo", "Starace", "Merolla" };
+
         public static readonly string[] Zones =
         {
             "Rione Corallo", "Case Gialle", "Vico Lanterna", "Rione Sette Palazzi", "Borgo 'e Ciucci",

@@ -214,7 +214,7 @@ namespace OSistema.Input
                     }
                     else
                     {
-                        foreach (var pawn in game.Pawns.All)
+                        foreach (var pawn in game.Pawns.Crew)
                             if (pawn.IsPresent && rect.Contains(pawn.Cell) && !Selected.Contains(pawn)) Selected.Add(pawn);
                     }
                     break;
@@ -304,7 +304,7 @@ namespace OSistema.Input
         {
             Pawn best = null;
             float bestDist = 0.6f * 0.6f;
-            foreach (var pawn in game.Pawns.All)
+            foreach (var pawn in game.Pawns.Crew)
             {
                 if (!pawn.IsPresent) continue;
                 float d = (pawn.Position - world).sqrMagnitude;

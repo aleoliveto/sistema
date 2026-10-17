@@ -42,6 +42,10 @@ namespace OSistema.UI
             GUILayout.Space(8);
             DrawSupplier();
             GUILayout.Space(8);
+            DrawArms();
+            GUILayout.Space(8);
+            DrawRival();
+            GUILayout.Space(8);
             DrawSquares();
             GUILayout.Space(8);
             DrawBusinesses();
@@ -62,16 +66,29 @@ namespace OSistema.UI
         {
             GUILayout.Label("Crew", headerStyle);
             long now = game.Ticks.TicksGame;
-            foreach (var p in game.Pawns.All)
+            foreach (var p in game.Pawns.Crew)
             {
                 if (p.Dead) continue;
                 GUILayout.BeginHorizontal();
-                GUILayout.Label($"<b>{p.Nickname}</b>", textStyle, GUILayout.Width(120));
+                GUILayout.Label($"<b>{p.DisplayName}</b>", textStyle, GUILayout.Width(110));
                 if (GUILayout.Button(RoleLabel(p.Role), smallButtonStyle, GUILayout.Width(120))) CycleRole(p);
                 if (GUILayout.Button("-", smallButtonStyle, GUILayout.Width(20))) p.Wage = Mathf.Max(0, p.Wage - 10);
                 GUILayout.Label($"€{p.Wage}", smallStyle, GUILayout.Width(38));
                 if (GUILayout.Button("+", smallButtonStyle, GUILayout.Width(20))) p.Wage = Mathf.Min(1000, p.Wage + 10);
                 GUILayout.Label($"Loyal {p.Loyalty:0}", smallStyle, GUILayout.Width(56));
+                if (p.Armed)
+                {
+                    if (GUILayout.Button("Disarm", smallButtonStyle, GUILayout.Width(52)))
+                    {
+                        p.Armed = false;
+                        game.Stock.Pistols++;
+                    }
+                }
+                else if (GUILayout.Button("Arm", smallButtonStyle, GUILayout.Width(52)) && game.Stock.Pistols > 0 && p.IsPresent)
+                {
+                    p.Armed = true;
+                    game.Stock.Pistols--;
+                }
                 GUILayout.Label(CrewStatus(p, now), smallStyle);
                 GUILayout.EndHorizontal();
             }
@@ -84,7 +101,7 @@ namespace OSistema.UI
             GUILayout.EndHorizontal();
 
             bool hasCollector = false;
-            foreach (var p in game.Pawns.All) if (p.IsPresent && p.Role == CrewRole.Collector) hasCollector = true;
+            foreach (var p in game.Pawns.Crew) if (p.IsPresent && p.Role == CrewRole.Collector) hasCollector = true;
             if (!hasCollector) GUILayout.Label("<color=#ff7a70>Nobody is collecting pizzo. Give someone the Collector role.</color>", smallStyle);
         }
 
@@ -130,7 +147,7 @@ namespace OSistema.UI
             {
                 var zone = game.Territory.Zones[sq.ZoneId];
                 int pushers = 0, lookouts = 0;
-                foreach (var p in game.Pawns.All)
+                foreach (var p in game.Pawns.Crew)
                 {
                     if (!p.IsPresent) continue;
                     if (p.Role == CrewRole.Pusher) pushers++;
@@ -197,6 +214,12 @@ namespace OSistema.UI
                 var zone = game.Territory.Zones[sq.ZoneId];
                 shopStyle.normal.textColor = new Color(0.9f, 0.5f, 1f);
                 ShadowLabel(new Rect(gui.x - 90, gui.y + unit * 0.5f + 14, 180, 18), $"Piazza · Heat {zone.Heat:0}", shopStyle);
+            }
+            shopStyle.normal.textColor = new Color(1f, 0.4f, 0.35f);
+            foreach (var sq in game.Rival.Squares)
+            {
+                if (!WorldToGui(new Vector2(sq.Cell.x + 0.5f, sq.Cell.y + 0.5f), out var gui)) continue;
+                ShadowLabel(new Rect(gui.x - 100, gui.y + unit * 0.5f + 14, 200, 18), $"{game.Rival.Name} piazza", shopStyle);
             }
             shopStyle.normal.textColor = Gold;
         }

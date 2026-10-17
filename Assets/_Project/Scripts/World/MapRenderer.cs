@@ -14,6 +14,7 @@ namespace OSistema.World
         static readonly Color32 DemolishBlueprint = new Color32(255, 70, 60, 150);
         static readonly Color32 SquareColor = new Color32(200, 60, 220, 220);
         static readonly Color32 LookoutColor = new Color32(200, 60, 220, 110);
+        static readonly Color32 RivalSquareColor = new Color32(230, 40, 40, 220);
         static readonly Color NightTint = new Color(0.32f, 0.36f, 0.55f);
 
         Game game;
@@ -24,6 +25,7 @@ namespace OSistema.World
         bool dirty;
         int drawnBlueprintVersion = -1;
         int drawnSquaresVersion = -1;
+        int drawnRivalSquares = -1;
 
         public void Init(Game g)
         {
@@ -70,7 +72,7 @@ namespace OSistema.World
                 dirty = false;
             }
 
-            if (game.Construction.Version != drawnBlueprintVersion || game.Org.SquaresVersion != drawnSquaresVersion) RedrawOverlay();
+            if (game.Construction.Version != drawnBlueprintVersion || game.Org.SquaresVersion != drawnSquaresVersion || game.Rival.Squares.Count != drawnRivalSquares) RedrawOverlay();
 
             var tint = Color.Lerp(NightTint, Color.white, game.Clock.Daylight);
             WorldLight.Tint = tint;
@@ -81,7 +83,9 @@ namespace OSistema.World
         {
             drawnBlueprintVersion = game.Construction.Version;
             drawnSquaresVersion = game.Org.SquaresVersion;
+            drawnRivalSquares = game.Rival.Squares.Count;
             System.Array.Clear(overlayPixels, 0, overlayPixels.Length);
+            foreach (var sq in game.Rival.Squares) overlayPixels[map.Index(sq.Cell.x, sq.Cell.y)] = RivalSquareColor;
             foreach (var sq in game.Org.Squares)
             {
                 overlayPixels[map.Index(sq.Cell.x, sq.Cell.y)] = SquareColor;

@@ -17,7 +17,7 @@ namespace OSistema.UI
     /// </summary>
     public sealed partial class Hud : MonoBehaviour
     {
-        const float TopBarHeight = 34f;
+        const float TopBarHeight = 56f;
         const float BottomBarHeight = 46f;
         const float PanelWidth = 340f;
         const float PanelHeight = 350f;
@@ -33,7 +33,7 @@ namespace OSistema.UI
         Camera cam;
         bool showHelp = true;
 
-        GUIStyle nameStyle, barkStyle, subtitleStyle, titleStyle, textStyle, smallStyle, shopStyle, smallButtonStyle, headerStyle;
+        GUIStyle nameStyle, barkStyle, subtitleStyle, titleStyle, textStyle, smallStyle, shopStyle, smallButtonStyle, headerStyle, barkLeftStyle;
 
         public void Init(PlayerController pc, Camera c)
         {
@@ -55,6 +55,7 @@ namespace OSistema.UI
 
         public bool IsPointerOver(Vector2 screenPos)
         {
+            if (game != null && (game.Events.Current != null || game.Org.GameOver)) return true; // modal
             var p = new Vector2(screenPos.x / Scale, (Screen.height - screenPos.y) / Scale);
             if (TopBar.Contains(p) || BottomBar.Contains(p)) return true;
             if (controller != null && controller.Selected.Count > 0 && PawnPanel.Contains(p)) return true;
@@ -86,6 +87,9 @@ namespace OSistema.UI
             DrawPawnPanel();
             if (showBusiness) DrawBusinessPanel();
             else if (showHelp) DrawHelp();
+            DrawFamilyBar();
+            if (game.Org.GameOver) DrawGameOver();
+            else if (game.Events.Current != null) DrawEvent(game.Events.Current);
         }
 
         // ---------- Top bar ----------
@@ -281,10 +285,13 @@ namespace OSistema.UI
                     : p.Sleep != SleepState.Awake ? " Zzz"
                     : p.CurrentJob is OSistema.AI.FleeJob ? " (running!)"
                     : "";
-                nameStyle.normal.textColor = p.Dead ? Color.gray : p.Drafted ? BadColor : Color.white;
-                ShadowLabel(new Rect(gui.x - 90, gui.y + unit * 0.45f, 180, 18), p.Nickname + status, nameStyle);
+                bool rival = p.Faction == Faction.Rival;
+                nameStyle.normal.textColor = p.Dead ? Color.gray : rival ? new Color(1f, 0.35f, 0.3f) : p.Drafted ? BadColor : p.IsBoss ? Gold : Color.white;
+                string name = rival ? $"{p.Nickname} ({game.Rival.Name})" : p.DisplayName;
+                if (!rival && p.Armed) name += " (armed)";
+                ShadowLabel(new Rect(gui.x - 110, gui.y + unit * 0.45f, 220, 18), name + status, nameStyle);
 
-                if (p.HasBark && !p.Dead)
+                if (p.HasBark && !p.Dead && !rival)
                 {
                     ShadowLabel(new Rect(gui.x - 140, gui.y - unit * 0.5f - 40, 280, 20), p.Bark.Neapolitan, barkStyle);
                     ShadowLabel(new Rect(gui.x - 140, gui.y - unit * 0.5f - 22, 280, 18), p.Bark.English, subtitleStyle);
@@ -368,6 +375,8 @@ namespace OSistema.UI
             smallButtonStyle = new GUIStyle(GUI.skin.button) { fontSize = 11 };
             headerStyle = new GUIStyle(GUI.skin.label) { fontSize = 14, fontStyle = FontStyle.Bold, richText = true };
             headerStyle.normal.textColor = Gold;
+            barkLeftStyle = new GUIStyle(GUI.skin.label) { fontSize = 15, richText = true };
+            barkLeftStyle.normal.textColor = new Color(1f, 0.92f, 0.7f);
         }
     }
 }

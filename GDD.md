@@ -289,3 +289,49 @@ Third era, modding / Workshop, more districts and businesses, polish.
 - Is there a "clean ending" path (legit businessman) or is the System inescapable by design?
 - Price point and platform (PC first; Steam Deck verified as a goal).
 - A native Neapolitan dialect reviewer: who?
+
+---
+
+## 13. Road to Steam
+
+*Added after Milestone 3.* The systems work. Here is the honest list of what separates a working prototype from a game people pay for. Roughly in priority order: the first two phases decide whether the Steam page gets wishlists.
+
+### Phase A — Make it readable (≈ 2–3 months)
+The game has to explain itself at a glance, and right now it doesn't.
+- **Art direction pass:** 3–4 style frames (a street at noon, a piazza at night, the basso interior, an event card) to lock the look *before* producing assets.
+- **Tiles:** tuff and plaster walls with variation, basolato, asphalt, interiors (tiles, furniture), shopfronts, the bunker. Walls need a top-down "height" read like RimWorld/Prison Architect.
+- **Characters:** a layered sprite system (body, head, hair, clothes, held weapon), 4 directions, simple walk / lie down / shoot poses. Crew, rivals, police and civilians must be readable by silhouette and colour.
+- **Event card illustrations and crew portraits:** the emotional hook of the game.
+- **UI rebuild in UI Toolkit:** replace the IMGUI prototype with a consistent visual language: main menu, pause, settings (resolution, audio, key bindings, UI scale), save slots and autosave, tooltips on everything, an inspector panel for shops and squares, and a notification feed styled as newspaper headlines and wiretap transcripts.
+- **Onboarding:** a guided first week (feed the crew → open a piazza → first pizzo → first raid), plus contextual hints.
+
+### Phase B — Make it feel (≈ 2 months, overlaps A)
+- **Audio:** layered district ambience (scooters, balconies, church bells, fireworks as the piazza's delivery signal), SFX (gunfire, doors, cooking, glass for a scare, fire), UI sounds.
+- **Music:** original score inspired by neomelodic, tammurriata and dark electronica. Commissioned and fully licensed.
+- **Voice:** short recorded Neapolitan barks (you, or local actors) on top of the subtitles. A huge authenticity win for little cost.
+- **VFX and animation:** muzzle flashes, fire and smoke for arson, night lighting with URP 2D lights (street lamps, neon, windows), small animations (scooters, laundry).
+- **Content:** 30–40 event cards, traits (hothead, chatterbox, family man…), relationships between crew, more businesses, a pentito storyline, and a second era.
+
+### Phase C — Make it Steam (≈ 1–2 months, starts early)
+- **Steamworks:** partner account and app fee (you pay this, with your identity and bank details), Steamworks.NET for achievements and cloud saves, builds for Windows, macOS and Linux, Steam Deck controls and UI scale.
+- **Store page:** capsule art, 5+ screenshots, a 60–90 s trailer, a short and long description, tags. Put the "Coming soon" page up **months before launch** to collect wishlists.
+- **Mature content survey:** the game depicts violence, drugs and crime; describe it honestly in Steam's content questionnaire.
+- **Demo for Steam Next Fest:** the first 3–4 in-game weeks, polished, with a wishlist call-to-action at the end.
+- **Playtests:** Steam Playtest or a Discord group from Phase A onwards. Watch new players without helping them.
+
+### Tech and quality, throughout
+- Balance tooling: an in-game debug overlay with live economy and heat graphs, plus a headless "simulate 30 days" test to catch runaway economies.
+- Performance: path caching and a region system before maps grow.
+- Save versioning with migrations (no more "old saves won't load" once players exist).
+- Localization tables (EN / IT / NAP subtitles) instead of strings in code.
+- Crash and error reporting in builds.
+
+### Legal and ethical checklist
+- Every clan, person and business is fictional; a disclaimer at launch.
+- Don't use "Gomorra" or other trademarks in the title or marketing.
+- License every font, sound and track; keep the receipts.
+- Keep pillar 5 (*show the cost*) visible in marketing too: it's what separates the game from glorification.
+
+### Who does what
+- **Claude:** systems and UI code, tools, balancing passes, the event-card writing pipeline, store-page copy drafts, build automation.
+- **You:** the final say on art and tone, Neapolitan dialogue and voice, hiring and briefing artists and a composer, the Steamworks account and payments, playtest recruitment.

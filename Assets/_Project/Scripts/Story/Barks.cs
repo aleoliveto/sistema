@@ -106,6 +106,16 @@ namespace OSistema.Story
                 new Line("Chi nun paga, s'abbrucia.", "Whoever doesn't pay, burns."),
                 new Line("Zitto. Jamme, primma ca vene quaccheduno.", "Quiet. Let's go before someone comes."),
             },
+            ["fight"] = new[]
+            {
+                new Line("Spara! Spara!", "Shoot! Shoot!"),
+                new Line("Stanno lloco! Abbasciate 'a capa!", "They're over there! Heads down!"),
+            },
+            ["new_boss"] = new[]
+            {
+                new Line("Mo' se fa comme dico io.", "Now we do things my way."),
+                new Line("'A famiglia nun more.", "The family doesn't die."),
+            },
             ["work_done"] = new[]
             {
                 new Line("Ecco fatto.", "There, done."),

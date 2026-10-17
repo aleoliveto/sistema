@@ -14,8 +14,8 @@ namespace OSistema.Core
     /// </summary>
     public static class SaveSystem
     {
-        public const int Version = 3;
-        const int OldestReadable = 2;
+        public const int Version = 4;
+        const int OldestReadable = 4; // the rival clan and the boss changed too much to migrate older saves
 
         public static string DefaultPath => Path.Combine(Application.persistentDataPath, "save1.json");
 
@@ -55,7 +55,24 @@ namespace OSistema.Core
                 pendingOrderUnits = game.Org.PendingOrderUnits,
                 pendingOrderDay = game.Org.PendingOrderDay,
                 lastPaydayWeek = game.Org.LastPaydayWeek,
+                pistols = game.Stock.Pistols,
+                evidence = game.Org.Evidence,
+                generation = game.Org.Generation,
+                warrant = game.Org.WarrantActive,
+                hiding = game.Org.Hiding,
+                hidingSinceDay = game.Org.HidingSinceDay,
+                leakRisk = game.Org.LeakRisk,
+                rivalName = game.Rival.Name,
+                rivalBoss = game.Rival.BossName,
+                rivalHostility = game.Rival.Hostility,
+                rivalSoldiers = game.Rival.Soldiers,
+                rivalCash = game.Rival.Cash,
+                rivalTruceUntil = game.Rival.TruceUntilDay,
+                rivalWarned = game.Rival.Warned,
+                rivalDestroyed = game.Rival.Destroyed,
             };
+            foreach (var sq in game.Rival.Squares)
+                data.rivalSquares.Add(new SquareData { x = sq.Cell.x, y = sq.Cell.y, zone = sq.ZoneId });
 
             foreach (var z in game.Territory.Zones)
                 data.zones.Add(new ZoneData { name = z.Name, x = z.Rect.x, y = z.Rect.y, w = z.Rect.width, h = z.Rect.height, heat = z.Heat, demand = z.Demand });
@@ -74,7 +91,11 @@ namespace OSistema.Core
                 data.blueprints.Add(new BlueprintData { x = bp.Cell.x, y = bp.Cell.y, def = bp.Def.Id, deconstruct = bp.Deconstruct, work = bp.WorkLeft });
 
             foreach (var p in game.Pawns.All)
-                data.pawns.Add(ToData(p));
+            {
+                var d = ToData(p);
+                d.missionSquare = p.MissionSquare != null ? game.Rival.Squares.IndexOf(p.MissionSquare) : -1;
+                data.pawns.Add(d);
+            }
 
             File.WriteAllText(path, JsonUtility.ToJson(data));
         }
@@ -107,6 +128,26 @@ namespace OSistema.Core
             game.Org.PendingOrderUnits = data.pendingOrderUnits;
             game.Org.PendingOrderDay = data.pendingOrderDay;
             game.Org.LastPaydayWeek = data.lastPaydayWeek;
+            game.Stock.Pistols = data.pistols;
+            var org = game.Org;
+            org.Evidence = data.evidence;
+            org.Generation = data.generation;
+            org.WarrantActive = data.warrant;
+            org.Hiding = data.hiding;
+            org.HidingSinceDay = data.hidingSinceDay;
+            org.LeakRisk = data.leakRisk;
+            var rival = game.Rival;
+            rival.Name = data.rivalName;
+            rival.BossName = data.rivalBoss;
+            rival.Hostility = data.rivalHostility;
+            rival.Soldiers = data.rivalSoldiers;
+            rival.Cash = data.rivalCash;
+            rival.TruceUntilDay = data.rivalTruceUntil;
+            rival.Warned = data.rivalWarned;
+            rival.Destroyed = data.rivalDestroyed;
+            foreach (var sq in data.rivalSquares)
+                rival.Squares.Add(new DrugSquare { Cell = new Vector2Int(sq.x, sq.y), ZoneId = sq.zone, Rival = true, OpenHour = 0, CloseHour = 0 });
+
             foreach (var sq in data.squares)
             {
                 var square = new DrugSquare { Cell = new Vector2Int(sq.x, sq.y), ZoneId = sq.zone };
@@ -137,7 +178,19 @@ namespace OSistema.Core
             }
 
             foreach (var pd in data.pawns)
-                game.Pawns.Add(FromData(pd));
+            {
+                var pawn = FromData(pd);
+                if (pawn.Faction == Faction.Rival && pd.missionSquare >= 0 && pd.missionSquare < rival.Squares.Count)
+                    pawn.MissionSquare = rival.Squares[pd.missionSquare];
+                game.Pawns.Add(pawn);
+            }
+            // Mission targets point at other pawns: resolve them once everyone exists.
+            foreach (var pd in data.pawns)
+            {
+                if (pd.missionTarget <= 0) continue;
+                var pawn = game.Pawns.ById(pd.id);
+                if (pawn != null) pawn.MissionTarget = game.Pawns.ById(pd.missionTarget);
+            }
 
             game.Log.Add("Game loaded.", MessageKind.Info);
             return game;
@@ -164,6 +217,14 @@ namespace OSistema.Core
                 loyalty = p.Loyalty,
                 jailedUntil = p.JailedUntil,
                 lyingLowUntil = p.LyingLowUntil,
+                faction = (int)p.Faction,
+                shooting = p.ShootingSkill,
+                armed = p.Armed,
+                isBoss = p.IsBoss,
+                aggressiveUntil = p.AggressiveUntil,
+                mealsDelivered = p.MealsDelivered,
+                mission = (int)p.Mission,
+                missionTarget = p.MissionTarget?.Id ?? 0,
                 x = p.Cell.x,
                 y = p.Cell.y,
                 drafted = p.Drafted,
@@ -198,6 +259,13 @@ namespace OSistema.Core
                 Loyalty = d.loyalty,
                 JailedUntil = d.jailedUntil,
                 LyingLowUntil = d.lyingLowUntil,
+                Faction = (Faction)d.faction,
+                ShootingSkill = d.shooting,
+                Armed = d.armed,
+                IsBoss = d.isBoss,
+                AggressiveUntil = d.aggressiveUntil,
+                MealsDelivered = d.mealsDelivered,
+                Mission = (RivalMission)d.mission,
                 Bed = d.hasBed ? new Vector2Int(d.bedX, d.bedY) : (Vector2Int?)null,
             };
             p.RestoreState(d.drafted, d.dead, d.deathCause, d.breakUntil);
@@ -228,6 +296,14 @@ namespace OSistema.Core
             public List<ZoneData> zones = new List<ZoneData>();
             public List<SquareData> squares = new List<SquareData>();
             public List<BusinessData> businesses = new List<BusinessData>();
+            public int pistols, generation, hidingSinceDay;
+            public float evidence, leakRisk;
+            public bool warrant, hiding;
+            public string rivalName, rivalBoss;
+            public float rivalHostility;
+            public int rivalSoldiers, rivalCash, rivalTruceUntil;
+            public bool rivalWarned, rivalDestroyed;
+            public List<SquareData> rivalSquares = new List<SquareData>();
             public List<BlueprintData> blueprints = new List<BlueprintData>();
             public List<PawnData> pawns = new List<PawnData>();
         }
@@ -274,6 +350,9 @@ namespace OSistema.Core
             public int role, wage;
             public float loyalty;
             public long jailedUntil, lyingLowUntil;
+            public int faction, shooting, mealsDelivered, mission, missionTarget, missionSquare = -1;
+            public bool armed, isBoss;
+            public long aggressiveUntil;
             public int x, y;
             public bool drafted, dead;
             public string deathCause;

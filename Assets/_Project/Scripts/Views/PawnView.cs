@@ -38,6 +38,11 @@ namespace OSistema.Views
         void LateUpdate()
         {
             if (pawn == null || body == null) return; // state lost to a script reload during Play
+            if (pawn.Departed)
+            {
+                Destroy(gameObject);
+                return;
+            }
 
             // In prison: not on the map.
             body.enabled = !pawn.InJail;

@@ -138,13 +138,21 @@ namespace OSistema.World
             Color = new Color32(38, 30, 26, 255),
         };
 
-        public static readonly BuildingDef[] Buildable = { Wall, Door, Bed, Table, Stove, Pantry };
+        /// <summary>A hidden room behind a wall: where the boss hides during the latitanza.</summary>
+        public static readonly BuildingDef Bunker = new BuildingDef
+        {
+            Id = "bunker", Label = "Bunker", Passable = true, WorkToBuild = 2500,
+            Color = new Color32(70, 60, 50, 255),
+            PlaceMode = PlaceMode.Single,
+        };
+
+        public static readonly BuildingDef[] Buildable = { Wall, Door, Bed, Table, Stove, Pantry, Bunker };
 
         /// <summary>Every def, in a fixed order used by save files. Only ever append to this list.</summary>
         public static readonly BuildingDef[] All =
         {
             Wall, Door, Bed, Table, Stove, Pantry, PizzeriaCounter, SalumeriaCounter, FarmaciaCounter,
-            BarCounter, MacelleriaCounter, TabaccheriaCounter, BurnedShop,
+            BarCounter, MacelleriaCounter, TabaccheriaCounter, BurnedShop, Bunker,
         };
 
         public static BuildingDef ById(string id)
@@ -165,5 +173,6 @@ namespace OSistema.World
         public const int ProductStreet = 25;    // per unit, at the piazza
         public const int RecruitBonus = 100;
         public const int JailedFamilySupport = 100; // weekly, per crew member inside
+        public const int Pistol = 400;
     }
 }

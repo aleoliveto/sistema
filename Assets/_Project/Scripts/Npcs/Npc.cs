@@ -31,6 +31,8 @@ namespace OSistema.Npcs
         public Vector2Int Exit;
         public bool HasArrested;
         public Pawn Chasing;
+        public bool IsSearch;        // police searching the basso (perquisizione)
+        public Vector2Int Target;
 
         public Npc(int id, NpcKind kind, Vector2Int cell, float speed, Color32 color)
         {
@@ -81,6 +83,15 @@ namespace OSistema.Npcs
             return npc;
         }
 
+        public Npc SpawnSearch(Vector2Int entrance, Vector2Int target, Game game)
+        {
+            var npc = Spawn(NpcKind.Police, entrance, PoliceSpeed, new Color32(30, 50, 130, 255));
+            npc.IsSearch = true;
+            npc.Target = target;
+            npc.Exit = entrance;
+            return npc;
+        }
+
         Npc Spawn(NpcKind kind, Vector2Int cell, float speed, Color32 color)
         {
             var npc = new Npc(nextId++, kind, cell, speed, color);
@@ -112,7 +123,7 @@ namespace OSistema.Npcs
             {
                 case 0: // walking to the piazza
                 {
-                    if (!game.Org.Squares.Contains(npc.Square))
+                    if (!game.Org.IsActiveSquare(npc.Square, game))
                     {
                         Leave(npc);
                         return;
@@ -129,20 +140,21 @@ namespace OSistema.Npcs
                 }
                 case 1: // waiting for the pusher
                 {
-                    if (!game.Org.Squares.Contains(npc.Square))
+                    if (!game.Org.IsActiveSquare(npc.Square, game))
                     {
                         Leave(npc);
                         return;
                     }
-                    var pusher = game.Org.PusherAt(npc.Square, game);
-                    if (pusher != null && game.Stock.Product > 0)
+                    bool rival = npc.Square.Rival;
+                    var pusher = rival ? game.Rival.PusherAt(npc.Square, game) : game.Org.PusherAt(npc.Square, game);
+                    if (pusher != null && (rival || game.Stock.Product > 0))
                     {
                         game.Org.Sell(npc.Square, pusher, game);
                         Leave(npc);
                     }
                     else if (--npc.Timer <= 0)
                     {
-                        game.Org.LoseCustomer(npc.Square, game);
+                        if (!rival) game.Org.LoseCustomer(npc.Square, game);
                         Leave(npc);
                     }
                     return;
@@ -174,9 +186,9 @@ namespace OSistema.Npcs
 
             switch (npc.State)
             {
-                case 0: // heading to the piazza (or chasing)
+                case 0: // heading to the piazza or the basso (or chasing)
                 {
-                    npc.Walker ??= new Walker(npc.Square.Cell, adjacent: true);
+                    npc.Walker ??= new Walker(npc.IsSearch ? npc.Target : npc.Square.Cell, adjacent: !npc.IsSearch);
                     var status = npc.Walker.Tick(npc.Mover, 1f, game);
                     if (status == WalkStatus.Walking) return;
                     if (npc.Chasing != null)
@@ -185,12 +197,13 @@ namespace OSistema.Npcs
                         npc.Walker = new Walker(npc.Square.Cell, adjacent: true);
                         return;
                     }
-                    if (status == WalkStatus.Failed)
+                    if (npc.IsSearch) game.Org.OnSearchArrived(game); // even if blocked at the door
+                    else if (status == WalkStatus.Failed)
                     {
                         Leave(npc);
                         return;
                     }
-                    game.Police.OnPatrolArrived(npc.Raid, game);
+                    else game.Police.OnPatrolArrived(npc.Raid, game);
                     npc.State = 1;
                     npc.Timer = SearchTicks;
                     return;
@@ -215,10 +228,10 @@ namespace OSistema.Npcs
 
         static void LookForTarget(Npc npc, Game game)
         {
-            if (npc.HasArrested) return;
+            if (npc.HasArrested || npc.Square == null) return;
             Pawn best = null;
             float bestDist = ChaseRange;
-            foreach (var p in game.Pawns.All)
+            foreach (var p in game.Pawns.Crew)
             {
                 if (!Police.IsExposed(p, npc.Square)) continue;
                 float d = (p.Position - npc.Mover.Position).magnitude;

@@ -24,6 +24,24 @@ namespace OSistema.Views
             }
         }
 
+        static Sprite centeredPixel;
+
+        /// <summary>1x1 white square with a centred pivot, for tracers and lines.</summary>
+        public static Sprite CenteredPixel
+        {
+            get
+            {
+                if (centeredPixel == null)
+                {
+                    var tex = new Texture2D(1, 1) { filterMode = FilterMode.Point };
+                    tex.SetPixel(0, 0, Color.white);
+                    tex.Apply();
+                    centeredPixel = Sprite.Create(tex, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1f, 0, SpriteMeshType.FullRect);
+                }
+                return centeredPixel;
+            }
+        }
+
         /// <summary>White disc with a dark outline, 1 unit wide, so tinting gives a coloured body.</summary>
         public static Sprite Disc => disc != null ? disc : disc = MakeCircle(0f, 0.5f, 0.42f);
 
