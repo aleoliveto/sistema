@@ -40,6 +40,40 @@ namespace OSistema.Crime
         public float Work;
     }
 
+    /// <summary>Where a job takes you next, and what you do there: used for the objective marker and E.</summary>
+    public static class Contracts
+    {
+        public static Vector2Int StepTarget(Contract c) => c.Stage < 2 && c.From.HasValue ? c.From.Value : c.To;
+
+        public static string StepLabel(Contract c)
+        {
+            bool first = c.Stage < 2 && c.From.HasValue;
+            return c.Kind switch
+            {
+                ContractKind.Delivery => first ? "Pick up the parcel" : "Deliver the parcel",
+                ContractKind.Debt => "Knock on the door",
+                ContractKind.ScooterTheft => first ? "Take the scooter" : "Hand the scooter over",
+                ContractKind.Lookout => "Start your shift on the corner",
+                ContractKind.Smuggling => first ? "Wait for the boat" : "Drop off the cases",
+                _ => first ? "Collect the load" : "Bring it in",
+            };
+        }
+
+        public static string StepGoal(Contract c)
+        {
+            bool first = c.Stage < 2 && c.From.HasValue;
+            return c.Kind switch
+            {
+                ContractKind.Delivery => first ? "Pick up the parcel for Zio Totonno" : "Deliver the parcel",
+                ContractKind.Debt => "Collect the debt for Don Peppe",
+                ContractKind.ScooterTheft => first ? "Steal the scooter" : "Take the scooter to Nanninella",
+                ContractKind.Lookout => "Keep watch on the corner for Don Saverio",
+                ContractKind.Smuggling => first ? "Meet the boat at the lungomare (22:00–04:00)" : "Carry the cases to the basso",
+                _ => first ? "Meet the boat at the port" : "Bring the load home",
+            };
+        }
+    }
+
     /// <summary>The jobs on offer from the neighbourhood's contacts, refreshed through the day.</summary>
     public sealed class ContractBoard
     {

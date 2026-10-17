@@ -315,12 +315,6 @@ namespace OSistema.Input
                             if (p != null) SelectProperty(p);
                         }
                     }
-                    else
-                    {
-                        SelectedProperty = null;
-                        foreach (var pawn in game.Pawns.Crew)
-                            if (pawn.IsPresent && rect.Contains(pawn.Cell) && !Selected.Contains(pawn)) Selected.Add(pawn);
-                    }
                     break;
 
                 case Tool.Build:
@@ -484,6 +478,15 @@ namespace OSistema.Input
             if (p == null || !p.CanAct) return null;
             var contact = ContactInReach(out _);
             if (contact != null) return new Action { Label = $"Talk to {contact.Name}", Do = () => OrderTalk(contact) };
+
+            // A lavoretto in hand: do the next step yourself when you're there.
+            var job = game.Contracts.ActiveFor(p);
+            if (job != null && !(p.CurrentJob is ContractJob))
+            {
+                var at = Contracts.StepTarget(job);
+                if ((Mover.CellCenter(at) - p.Position).sqrMagnitude < 2.4f * 2.4f)
+                    return new Action { Label = Contracts.StepLabel(job), Do = () => { p.LastInputTick = game.Ticks.TicksGame; p.ForceJob(new ContractJob(p, job), game); } };
+            }
 
             if (Near(p, BuildingDefs.BaggingTable, out _))
                 return new Action { Label = "Cut and bag doses", Do = () => hud.OpenBagging() };

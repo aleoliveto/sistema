@@ -140,6 +140,11 @@ namespace OSistema.UI
                 CloseMinigame();
                 return;
             }
+            if (mapOpen)
+            {
+                ToggleMap();
+                return;
+            }
 
             if (openMenu == Menu.Settings) OpenMenu(settingsReturnTo);
             else if (openMenu == Menu.Pause) CloseMenu();

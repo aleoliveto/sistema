@@ -55,17 +55,16 @@ namespace OSistema.UI
             Ui.Btn("✕", () => ToggleWindow(Window.Help), hh, "btn--small");
             var hb = Ui.Box("window__body").Into(helpWindow);
             Ui.Text(
-                "<b>You</b>  WASD to walk, Shift to run · E to talk, shop, work at a table, eat, sleep · F brings the camera back\n" +
-                "<b>Camera</b>  arrow keys or middle-drag to look around · scroll or + / − to zoom\n" +
-                "<b>Fighting</b>  hold the right mouse button to aim, left click to shoot (or punch, unarmed). Cover (walls, cars, trees, benches, stalls) halves the chance of being hit. Bodyguards fight on their own.\n" +
-                "<b>Crew</b>  click a portrait to see someone; give them a job: pusher, lookout, collector, bagger, roller, bodyguard. Leave Gennaro alone for a while and he looks after himself.\n" +
+                "<b>Walk</b>  WASD · Shift to run\n" +
+                "<b>Use</b>  E: talk, shop, work at a table, do the next step of a lavoretto, eat, sleep\n" +
+                "<b>Fight</b>  hold the right mouse button to aim, left click to shoot (or punch, unarmed). Cover halves the chance of being hit. Bodyguards fight on their own.\n" +
+                "<b>Where to go</b>  the line under the minimap says what to do next; the gold marker or arrow shows where. M opens the map: click to set a waypoint.\n" +
+                "<b>Camera</b>  follows you · arrow keys or middle-drag to look around, F to come back · scroll or + / − to zoom\n" +
+                "<b>Screens</b>  B build · Tab famiglia (crew jobs, piazze, pizzo, money) · J taccuino · P phone · M map · H help · Esc menu\n" +
                 "<b>Time</b>  Space pause · 1 2 3 speed · debug: 4 ×30, 5 ×120, F8 skip 6 hours\n" +
-                "<b>Debug</b>  F6 shoot selected · F7 +€200 · F10 rival hit squad · F11 stesa on your piazza\n" +
-                "<b>Build</b>  open the BUILD / FURNISH tabs at the bottom. Walls drag as a room outline.\n" +
-                "<b>Business</b>  B opens the panel: roles, wages, piazze hours, pizzo, supplier, pistols, rivals.\n" +
-                "<b>Phone</b>  P opens the telefonino: neighbours ask favours, contacts pass on gossip. Answer in time.\n" +
+                "<b>Building</b>  B, pick a tab and an item, click to place, Q / E to turn it, right-click to stop\n" +
                 "<b>Save</b>  F5 save · F9 load\n\n" +
-                "<color=#A89F8E>You only see what your crew can see. Gunfire can be heard from anywhere; civilians run from it, and it brings the police.</color>",
+                "<color=#A89F8E>Leave the keys alone for a while and Gennaro looks after himself: he eats, sleeps and gets on with his lavoretto. Your crew work the jobs you give them in Famiglia.</color>",
                 hb, "wrap");
             helpWindow.Show(false);
         }

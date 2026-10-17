@@ -59,12 +59,10 @@ namespace OSistema.UI
             {
                 Def(BuildingDefs.BaggingTable, "Where 'a roba is cut and bagged into half-gram doses. Press E at it, or give someone the Bagger job."),
                 Def(BuildingDefs.RollingTable, "Where ROSSE are rolled and boxed. Press E at it, or give someone the Roller job."),
-                new ToolEntry { Label = "Piazza", Tool = Tool.Square, Swatch = new Color(0.8f, 0.25f, 0.9f), Tip = "Open a drug square on a sidewalk. Then assign pushers and lookouts and order product (B)." },
-                new ToolEntry { Label = "Business", Swatch = new Color(0.91f, 0.76f, 0.42f), Action = () => ToggleWindow(Window.Business), Tip = "The business panel: crew, piazze, pizzo, supplier, arms, rivals (B)." },
+                new ToolEntry { Label = "Piazza", Tool = Tool.Square, Swatch = new Color(0.8f, 0.25f, 0.9f), Tip = "Open a drug square on a sidewalk. Then give crew the pusher and lookout jobs, and keep doses in stock." },
             };
             toolsByTab[DockTab.Orders] = new List<ToolEntry>
             {
-                new ToolEntry { Label = "Select", Tool = Tool.Select, Swatch = new Color(0.9f, 0.9f, 0.9f), Tip = "Select crew. Right-click to move, or to attack a rival (Esc)." },
                 new ToolEntry { Label = "Demolish", Tool = Tool.Deconstruct, Swatch = new Color(0.9f, 0.3f, 0.25f), Tip = "Drag over buildings to tear them down." },
                 new ToolEntry { Label = "Cancel", Tool = Tool.Cancel, Swatch = new Color(0.95f, 0.65f, 0.3f), Tip = "Drag to cancel blueprints or close a piazza." },
             };
@@ -73,22 +71,28 @@ namespace OSistema.UI
             dock.pickingMode = PickingMode.Ignore;
             buildHint = Ui.Text("", dock, "build-hint");
             dockTools = Ui.Box("panel", "dock__tools").Into(dock);
-            var tabs = Ui.Box("panel", "dock__tabs").Into(dock);
+            buildTabs = Ui.Box("panel", "dock__tabs").Into(dock);
+            AddTab(buildTabs, DockTab.Build, "WALLS", IconKind.Build);
+            AddTab(buildTabs, DockTab.Furnish, "FURNISH", IconKind.Furnish);
+            AddTab(buildTabs, DockTab.Crime, "WORK & CRIME", IconKind.Crime);
+            AddTab(buildTabs, DockTab.Orders, "DEMOLISH", IconKind.Orders);
+            buildTabs.style.marginBottom = 4;
 
-            AddTab(tabs, DockTab.Build, "BUILD", IconKind.Build);
-            AddTab(tabs, DockTab.Furnish, "FURNISH", IconKind.Furnish);
-            AddTab(tabs, DockTab.Crime, "CRIME", IconKind.Crime);
-            AddTab(tabs, DockTab.Orders, "ORDERS", IconKind.Orders);
-            Ui.Box("divider").Into(tabs).style.height = 24;
-            jobsButton = IconTab(tabs, "LAVORETTI", IconKind.Jobs, () => ToggleWindow(Window.Jobs));
-            Tip(jobsButton, () => "Jobs from the neighbourhood's contacts (J).");
-            phoneButton = IconTab(tabs, "PHONE", IconKind.Phone, () => ToggleWindow(Window.Phone));
+            // The hotbar: every screen, with its key.
+            var tabs = Ui.Box("panel", "dock__tabs").Into(dock);
+            buildButton = IconTab(tabs, "BUILD", IconKind.Build, ToggleBuildMode, "B");
+            Tip(buildButton, () => "Build and furnish your homes, place work tables, open a piazza (B).");
+            businessButton = IconTab(tabs, "FAMIGLIA", IconKind.Business, () => ToggleWindow(Window.Business), "Tab");
+            Tip(businessButton, () => "Crew and their jobs, piazze, pizzo, property, money, rivals (Tab).");
+            jobsButton = IconTab(tabs, "TACCUINO", IconKind.Jobs, () => ToggleWindow(Window.Jobs), "J");
+            Tip(jobsButton, () => "Who has work for you and where to find them (J).");
+            phoneButton = IconTab(tabs, "PHONE", IconKind.Phone, () => ToggleWindow(Window.Phone), "P");
             Tip(phoneButton, () => "The family phone (P): favours, gossip, warnings.");
-            businessButton = IconTab(tabs, "BUSINESS", IconKind.Business, () => ToggleWindow(Window.Business));
-            Tip(businessButton, () => "Crew, piazze, pizzo, supplies, property, rivals (B).");
-            helpButton = IconTab(tabs, "", IconKind.Help, () => ToggleWindow(Window.Help));
+            mapButton = IconTab(tabs, "MAP", IconKind.House, () => ToggleMap(), "M");
+            Tip(mapButton, () => "The map of the rione (M). Click anywhere on it to set a waypoint.");
+            helpButton = IconTab(tabs, "", IconKind.Help, () => ToggleWindow(Window.Help), "H");
             helpButton.style.minWidth = 36;
-            Tip(helpButton, () => "Help (H)");
+            Tip(helpButton, () => "Controls and help (H)");
 
         }
 
@@ -105,16 +109,33 @@ namespace OSistema.UI
             });
         }
 
-        static Button IconTab(VisualElement parent, string label, IconKind icon, System.Action onClick)
+        static Button IconTab(VisualElement parent, string label, IconKind icon, System.Action onClick, string key = null)
         {
             var b = Ui.Btn("", onClick, parent, "tab");
             new Icon(icon, 16).Into(b);
             if (label.Length > 0) Ui.Text(label, b, "tab__label");
+            if (key != null) Ui.Text(key, b, "tab__key");
             return b;
+        }
+
+        VisualElement buildTabs;
+        Button buildButton, mapButton;
+        bool buildMode;
+
+        void ToggleBuildMode()
+        {
+            buildMode = !buildMode;
+            openTab = buildMode ? DockTab.Furnish : DockTab.None;
+            if (!buildMode) controller.SetTool(Tool.Select);
+            RefreshDock();
         }
 
         void RefreshDock()
         {
+            if (!buildMode && openTab != DockTab.None) buildMode = true;
+            buildTabs.Show(buildMode);
+            buildButton.Toggle("btn--on", buildMode);
+            mapButton.Toggle("btn--on", mapOpen);
             foreach (var kv in tabButtons) kv.Value.Toggle("btn--on", kv.Key == openTab);
             businessButton.Toggle("btn--on", openWindow == Window.Business);
             helpButton.Toggle("btn--on", openWindow == Window.Help);

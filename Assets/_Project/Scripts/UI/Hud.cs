@@ -38,6 +38,7 @@ namespace OSistema.UI
             cam = c;
             BuildDocument();
             BuildTop();
+            BuildMap();
             BuildCrewBar();
             BuildInspector();
             BuildFeed();
@@ -150,10 +151,16 @@ namespace OSistema.UI
             var kb = Keyboard.current;
             if (kb != null)
             {
-                if (kb.hKey.wasPressedThisFrame) ToggleWindow(Window.Help);
-                if (kb.bKey.wasPressedThisFrame) ToggleWindow(Window.Business);
-                if (kb.jKey.wasPressedThisFrame) ToggleWindow(Window.Jobs);
-                if (kb.pKey.wasPressedThisFrame) ToggleWindow(Window.Phone);
+                bool typing = MinigameOpen || openMenu != Menu.None;
+                if (!typing)
+                {
+                    if (kb.hKey.wasPressedThisFrame || kb.f1Key.wasPressedThisFrame) ToggleWindow(Window.Help);
+                    if (kb.tabKey.wasPressedThisFrame) ToggleWindow(Window.Business);
+                    if (kb.bKey.wasPressedThisFrame) ToggleBuildMode();
+                    if (kb.jKey.wasPressedThisFrame) ToggleWindow(Window.Jobs);
+                    if (kb.pKey.wasPressedThisFrame) ToggleWindow(Window.Phone);
+                    if (kb.mKey.wasPressedThisFrame) ToggleMap();
+                }
             }
             if (game == null) return;
 
@@ -190,6 +197,7 @@ namespace OSistema.UI
             HandleEscape();
             if (game == null || root?.panel == null) return;
             UpdateWorldLabels();
+            UpdateMap();
             UpdatePopups();
 
             if (tooltipText != null && Mouse.current != null)
