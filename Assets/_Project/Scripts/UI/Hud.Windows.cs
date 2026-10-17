@@ -11,7 +11,7 @@ namespace OSistema.UI
     /// <summary>The business window (B) with its tabs, and the help window (H).</summary>
     public sealed partial class Hud
     {
-        enum Window { None, Business, Help }
+        enum Window { None, Business, Help, Jobs }
         enum BizTab { Crew, Piazze, Pizzo, Property, Supply, Rivals }
 
         Window openWindow;
@@ -74,12 +74,15 @@ namespace OSistema.UI
             openWindow = openWindow == w ? Window.None : w;
             businessWindow.Show(openWindow == Window.Business);
             helpWindow.Show(openWindow == Window.Help);
+            jobsWindow.Show(openWindow == Window.Jobs);
+            jobsVersion = -1;
             bizDirty = true;
             if (game != null) RefreshWindows();
         }
 
         void RefreshWindows()
         {
+            RefreshJobs();
             if (openWindow != Window.Business) return;
             foreach (var kv in bizTabButtons) kv.Value.Toggle("btn--on", kv.Key == bizTab);
 
@@ -233,7 +236,8 @@ namespace OSistema.UI
             Ui.Text($"Pistols in the stash: <b>{game.Stock.Pistols}</b>. Armed crew defend themselves and fight when drafted, but get longer sentences if arrested.", bizBody, "wrap");
             Ui.Btn($"Buy a pistol (€{Prices.Pistol})", Do(() =>
             {
-                if (game.Stock.Cash < Prices.Pistol) game.Log.Add($"A pistol costs €{Prices.Pistol}.", MessageKind.Bad);
+                if (!game.Org.RequireRank(1, "Buying guns", game, out var rankError)) game.Log.Add(rankError, MessageKind.Bad);
+                else if (game.Stock.Cash < Prices.Pistol) game.Log.Add($"A pistol costs €{Prices.Pistol}.", MessageKind.Bad);
                 else
                 {
                     game.Stock.Cash -= Prices.Pistol;

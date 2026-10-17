@@ -38,7 +38,8 @@ namespace OSistema.AI
         /// Returns the cells to walk through (excluding start), an empty list if already at the goal,
         /// or null if unreachable. With <paramref name="adjacent"/>, the goal is any cell orthogonally next to target.
         /// </summary>
-        /// <param name="roadOnly">Vehicles: only asphalt cells (start and goal excepted).</param>
+        /// <param name="roadOnly">Vehicles: streets only (asphalt, vicoli, piazze), never through buildings,
+        /// courtyards or parks. Start and goal cells excepted.</param>
         public List<Vector2Int> FindPath(Vector2Int start, Vector2Int target, bool adjacent, bool roadOnly = false)
         {
             if (!map.InBounds(start) || !map.InBounds(target)) return null;
@@ -68,7 +69,7 @@ namespace OSistema.AI
                 {
                     int nx = cx + DX[i], ny = cy + DY[i];
                     if (!map.IsPassable(nx, ny)) continue;
-                    if (roadOnly && map.GetTerrain(nx, ny) != TerrainType.Road && !(nx == target.x && ny == target.y)) continue;
+                    if (roadOnly && !IsStreet(map.GetTerrain(nx, ny)) && !(nx == target.x && ny == target.y)) continue;
                     bool diag = i >= 4;
                     if (diag && (!map.IsPassable(nx, cy) || !map.IsPassable(cx, ny))) continue;
 
@@ -86,6 +87,8 @@ namespace OSistema.AI
             }
             return null;
         }
+
+        static bool IsStreet(TerrainType t) => t == TerrainType.Road || t == TerrainType.Sidewalk || t == TerrainType.Paving;
 
         static bool IsGoal(int x, int y, Vector2Int target, bool adjacent)
         {

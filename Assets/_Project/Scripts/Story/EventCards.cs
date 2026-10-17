@@ -289,6 +289,30 @@ namespace OSistema.Story
             });
         }
 
+        public static GameEvent RankUp(Game game, int rank)
+        {
+            var boss = game.Org.Boss(game);
+            string who = boss != null ? boss.DisplayName : "The family";
+            var (title, nap, en, body) = rank switch
+            {
+                1 => ("The paranza grows", "Mo' nun simmo cchiù guagliune.", "We're not kids anymore.",
+                    $"Word has gone round the vicoli: {who}'s boys get things done. Time to stop working for others and open a piazza of your own."),
+                2 => ("A clan is born", "'O nomme nuosto se sape.", "People know our name now.",
+                    $"Shopkeepers lower their eyes when {who} walks past. You can run more piazze, punish those who don't pay, and buy shops to launder the money."),
+                _ => ("Inside the System", "Mo' simmo 'o Sistema.", "Now we are the System.",
+                    $"{who} sits at the table with the men who decide things in this city. Everything is possible now, and everything can be lost."),
+            };
+            return new GameEvent
+            {
+                Id = $"rank_{rank}",
+                Title = title,
+                Neapolitan = nap,
+                English = en,
+                Body = body + $"\n\nUnlocked: {Organization.UnlocksAt(rank)}.",
+            }
+            .Option("Avanti", "", _ => { });
+        }
+
         public static GameEvent Warrant(Game game)
         {
             var boss = game.Org.Boss(game);

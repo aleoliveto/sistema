@@ -58,6 +58,8 @@ namespace OSistema.Core
                 pendingOrderDay = game.Org.PendingOrderDay,
                 lastPaydayWeek = game.Org.LastPaydayWeek,
                 pistols = game.Stock.Pistols,
+                rank = game.Org.Rank,
+                jobsDone = game.Contracts.Completed,
                 evidence = game.Org.Evidence,
                 generation = game.Org.Generation,
                 warrant = game.Org.WarrantActive,
@@ -148,6 +150,8 @@ namespace OSistema.Core
             game.Org.PendingOrderDay = data.pendingOrderDay;
             game.Org.LastPaydayWeek = data.lastPaydayWeek;
             game.Stock.Pistols = data.pistols;
+            game.Org.RestoreRank(data.rank);
+            game.Contracts.Completed = data.jobsDone;
             var org = game.Org;
             org.Evidence = data.evidence;
             org.Generation = data.generation;
@@ -237,6 +241,7 @@ namespace OSistema.Core
                 jailedUntil = p.JailedUntil,
                 lyingLowUntil = p.LyingLowUntil,
                 hospitalUntil = p.HospitalUntil,
+                xp = (float[])p.SkillXp.Clone(),
                 faction = (int)p.Faction,
                 shooting = p.ShootingSkill,
                 armed = p.Armed,
@@ -290,6 +295,7 @@ namespace OSistema.Core
                 Bed = d.hasBed ? new Vector2Int(d.bedX, d.bedY) : (Vector2Int?)null,
             };
             p.RestoreState(d.drafted, d.dead, d.deathCause, d.breakUntil);
+            if (d.xp != null) System.Array.Copy(d.xp, p.SkillXp, Mathf.Min(d.xp.Length, p.SkillXp.Length));
             p.Needs.Food = d.food;
             p.Needs.Rest = d.rest;
             p.Health.BloodLoss = d.bloodLoss;
@@ -318,7 +324,7 @@ namespace OSistema.Core
             public List<ZoneData> zones = new List<ZoneData>();
             public List<SquareData> squares = new List<SquareData>();
             public List<BusinessData> businesses = new List<BusinessData>();
-            public int pistols, generation, hidingSinceDay;
+            public int pistols, generation, hidingSinceDay, rank, jobsDone;
             public float evidence, leakRisk;
             public bool warrant, hiding;
             public string rivalName, rivalBoss;
@@ -380,6 +386,7 @@ namespace OSistema.Core
             public int role, wage;
             public float loyalty;
             public long jailedUntil, lyingLowUntil, hospitalUntil;
+            public float[] xp;
             public int faction, shooting, mealsDelivered, mission, missionTarget, missionSquare = -1;
             public bool armed, isBoss;
             public long aggressiveUntil;

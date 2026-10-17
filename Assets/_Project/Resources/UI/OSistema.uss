@@ -234,7 +234,7 @@
 
 .feed {
     position: absolute;
-    right: 8px; top: 108px;
+    right: 8px; top: 160px;
     width: 270px;
 }
 
@@ -453,3 +453,5 @@
 
 .setting { flex-direction: row; align-items: center; margin: 4px 0; }
 .setting__label { width: 130px; }
+
+.popup { color: #8FD18A; font-size: 13px; }

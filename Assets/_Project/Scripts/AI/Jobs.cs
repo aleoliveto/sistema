@@ -204,6 +204,7 @@ namespace OSistema.AI
             if (blueprint.WorkLeft > 0f) return false;
 
             game.Construction.Complete(blueprint, game);
+            Pawn.Learn(Skill.Construction, 6f, game);
             if (game.Rng.NextDouble() < 0.15) Pawn.Say("work_done");
             MaybeAccident(game);
             return true;

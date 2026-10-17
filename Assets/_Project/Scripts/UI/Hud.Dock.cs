@@ -43,6 +43,16 @@ namespace OSistema.UI
                 Def(BuildingDefs.Table, "Gives cover in a firefight, too."),
                 Def(BuildingDefs.Stove, "Cook groceries into meals."),
                 Def(BuildingDefs.Pantry, "Stores meals and supplies. Needed to cook and shop."),
+                Def(BuildingDefs.Sofa, "Somewhere to collapse after a long day."),
+                Def(BuildingDefs.Armchair, "For the boss."),
+                Def(BuildingDefs.Television, "The crew watches Napoli on it in the afternoon. Good for morale."),
+                Def(BuildingDefs.Wardrobe, "Somewhere to hang the good suit."),
+                Def(BuildingDefs.KitchenCounter, "A proper kitchen."),
+                Def(BuildingDefs.Fridge, "Cold beer, cold water."),
+                Def(BuildingDefs.Plant, "A bit of green."),
+                Def(BuildingDefs.Rug, "A rug from the market."),
+                Def(BuildingDefs.Safe, "Where the money sleeps."),
+                Def(BuildingDefs.HomeShrine, "A little altar to the Madonna. Everyone feels watched over."),
             };
             toolsByTab[DockTab.Crime] = new List<ToolEntry>
             {
@@ -67,6 +77,8 @@ namespace OSistema.UI
             AddTab(tabs, DockTab.Crime, "CRIME");
             AddTab(tabs, DockTab.Orders, "ORDERS");
             Ui.Box().Into(tabs).style.width = 18;
+            jobsButton = Ui.Btn("Lavoretti", () => ToggleWindow(Window.Jobs), tabs, "tab");
+            Tip(jobsButton, () => "Jobs from the neighbourhood's contacts (J).");
             businessButton = Ui.Btn("Business (B)", () => ToggleWindow(Window.Business), tabs, "tab");
             helpButton = Ui.Btn("Help (H)", () => ToggleWindow(Window.Help), tabs, "tab");
         }
@@ -119,7 +131,9 @@ namespace OSistema.UI
             swatch.style.backgroundColor = entry.Swatch;
             swatch.pickingMode = PickingMode.Ignore;
             Ui.Text(entry.Label, b, "tool__label");
-            Tip(b, () => entry.Def != null ? $"{entry.Tip}\nWork: {entry.Def.WorkToBuild}" : entry.Tip);
+            Tip(b, () => entry.Def != null
+                ? $"{entry.Tip}\nCost €{BuildingDef.CostOf(entry.Def)}{(entry.Def.Beauty > 0 ? $" · makes a home nicer (+{entry.Def.Beauty:0.#})" : "")}"
+                : entry.Tip);
             return b;
         }
     }

@@ -36,6 +36,11 @@ namespace OSistema.Core
         public readonly RivalClan Rival = new RivalClan();
         public readonly CombatSystem Combat = new CombatSystem();
         public readonly EventSystem Events = new EventSystem();
+        public readonly ContractBoard Contracts = new ContractBoard();
+
+        /// <summary>Floating text over the world (money earned and the like). Presentation only.</summary>
+        public event System.Action<Vector2, string> Popup;
+        public void PopupAt(Vector2 at, string text) => Popup?.Invoke(at, text);
         public StreetLife StreetLife { get; private set; }
         public readonly PropertyManager Properties;
         public readonly Hospital Hospital;
@@ -88,6 +93,7 @@ namespace OSistema.Core
             Pawns.Tick(this);
             StreetLife.Tick(this);
             Hospital.Tick(this);
+            Contracts.Tick(this);
             Npcs.Tick(this);
             Combat.Tick(this);
             Police.Tick(this);

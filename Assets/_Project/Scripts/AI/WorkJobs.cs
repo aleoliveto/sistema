@@ -42,6 +42,7 @@ namespace OSistema.AI
 
             stock.Meals += 2;
             cooking = false;
+            Pawn.Learn(Skill.Cooking, 12f, game);
             return true;
         }
 

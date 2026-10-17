@@ -63,6 +63,8 @@ namespace OSistema.Crime
             ReopenBurnedShops(game);
             game.Police.HourlyCheck(game);
             LeadershipHourly(game);
+            CheckRank(game);
+            UpdateHomeComfort(game);
             game.Hospital.Discharge(game);
         }
 
@@ -176,7 +178,7 @@ namespace OSistema.Crime
             error = null;
             int crew = 0;
             foreach (var p in game.Pawns.Crew) if (!p.Dead) crew++;
-            if (crew >= MaxCrew) error = "The crew is as big as it can get for now.";
+            if (crew >= MaxCrewForRank) error = $"A {RankName} can't keep more than {MaxCrewForRank} people. Climb higher for a bigger crew.";
             else if (game.Stock.Cash < Prices.RecruitBonus) error = $"Recruiting costs €{Prices.RecruitBonus}.";
             if (error != null) return null;
 
@@ -227,6 +229,12 @@ namespace OSistema.Crime
 
         public bool TryOpenSquare(Vector2Int cell, Game game, out string error)
         {
+            if (!RequireRank(1, "Running your own piazza", game, out error)) return false;
+            if (Squares.Count >= MaxSquaresForRank)
+            {
+                error = $"A {RankName} can run {MaxSquaresForRank} piazza(e). Climb higher for more.";
+                return false;
+            }
             if (game.Rival.Squares.Exists(s => (s.Cell - cell).sqrMagnitude < 64))
             {
                 error = "That's the rivals' piazza. Take it by force first.";
@@ -307,6 +315,7 @@ namespace OSistema.Crime
             square.SalesToday++;
             square.RevenueToday += Prices.ProductStreet;
             game.Territory.AddHeat(square.Cell, HeatPerSale);
+            game.PopupAt(pusher.Position, $"+€{Prices.ProductStreet}");
             if (game.Rng.NextDouble() < 0.1) pusher.Say("sale");
         }
 
@@ -335,7 +344,7 @@ namespace OSistema.Crime
             {
                 if (!sq.IsOpenAt(hour)) continue;
                 var zone = game.Territory.Zones[sq.ZoneId];
-                float perHour = 1.6f * zone.Demand * (1f - zone.Heat / 150f) * (0.7f + Respect / 250f);
+                float perHour = 3f * zone.Demand * (1f - zone.Heat / 150f) * (0.7f + Respect / 250f);
                 if (game.Rival.NearRivalTerritory(sq)) perHour *= 0.7f; // customers have a choice
                 if (game.Rng.NextDouble() < perHour / GameClock.TicksPerHour)
                     game.Npcs.SpawnCustomer(sq, game);
@@ -410,6 +419,11 @@ namespace OSistema.Crime
         public void OrderRetaliation(Business b, Retaliation action, Game game)
         {
             if (b.Status != BusinessStatus.Refusing) return;
+            if (action == Retaliation.Burn && !RequireRank(2, "Burning a shop", game, out var error))
+            {
+                game.Log.Add(error, MessageKind.Bad);
+                return;
+            }
             b.PendingAction = action;
             game.Log.Add(action == Retaliation.Burn
                 ? $"Order given: {b.Name} burns tonight, between {ArsonStartHour:00}:00 and {ArsonEndHour:00}:00."
@@ -537,6 +551,7 @@ namespace OSistema.Crime
         void Collect(Business b, int week, Game game)
         {
             game.Stock.Cash += b.WeeklyPizzo;
+            game.PopupAt(Pawns.Mover.CellCenter(b.Cell), $"+€{b.WeeklyPizzo}");
             b.LastCollectedWeek = week;
             game.Log.Add($"Collected €{b.WeeklyPizzo} pizzo from {b.Name}.", MessageKind.Good);
         }

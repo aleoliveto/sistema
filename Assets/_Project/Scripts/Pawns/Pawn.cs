@@ -13,6 +13,8 @@ namespace OSistema.Pawns
     /// <summary>The crew member's job in the clan. Hierarchy comes later; for now it's what they do all day.</summary>
     public enum CrewRole { General, Pusher, Lookout, Collector }
 
+    public enum Skill { Construction, Cooking, Medicine, Intimidation, Awareness, Shooting }
+
     /// <summary>What a rival clan member on the map is here to do.</summary>
     public enum RivalMission { Pusher, Stesa, Hit, Leave, Lookout, Patrol }
 
@@ -90,6 +92,63 @@ namespace OSistema.Pawns
         {
             aimTarget = target;
             aimUntil = Time.unscaledTime + 1.2f;
+        }
+
+        public const int MaxSkill = 15;
+
+        /// <summary>Experience towards the next level of each skill (indexed by Skill).</summary>
+        public readonly float[] SkillXp = new float[6];
+
+        public int GetSkill(Skill s) => s switch
+        {
+            Skill.Construction => ConstructionSkill,
+            Skill.Cooking => CookingSkill,
+            Skill.Medicine => MedicineSkill,
+            Skill.Intimidation => IntimidationSkill,
+            Skill.Awareness => AwarenessSkill,
+            _ => ShootingSkill,
+        };
+
+        void SetSkill(Skill s, int v)
+        {
+            switch (s)
+            {
+                case Skill.Construction: ConstructionSkill = v; break;
+                case Skill.Cooking: CookingSkill = v; break;
+                case Skill.Medicine: MedicineSkill = v; break;
+                case Skill.Intimidation: IntimidationSkill = v; break;
+                case Skill.Awareness: AwarenessSkill = v; break;
+                default: ShootingSkill = v; break;
+            }
+        }
+
+        public static float XpForNextLevel(int level) => 40f + level * 20f;
+
+        public static string SkillVerb(Skill s) => s switch
+        {
+            Skill.Construction => "building",
+            Skill.Cooking => "cooking",
+            Skill.Medicine => "patching people up",
+            Skill.Intimidation => "putting the fear into people",
+            Skill.Awareness => "keeping their eyes open",
+            _ => "shooting",
+        };
+
+        /// <summary>Practice makes better. Crew members level up their skills by doing things.</summary>
+        public void Learn(Skill s, float xp, Game game)
+        {
+            if (Faction != Faction.Crew) return;
+            int level = GetSkill(s);
+            if (level >= MaxSkill) return;
+            SkillXp[(int)s] += xp;
+            while (level < MaxSkill && SkillXp[(int)s] >= XpForNextLevel(level))
+            {
+                SkillXp[(int)s] -= XpForNextLevel(level);
+                level++;
+                SetSkill(s, level);
+                Mood.AddMemory($"skill_{s}", "Getting good at this", 3f, game.Ticks.TicksGame, GameClock.TicksPerDay / 2);
+                game.Log.Add($"{DisplayName} is getting better at {SkillVerb(s)}: {s} {level}.", MessageKind.Good);
+            }
         }
 
         public Barks.Line Bark { get; private set; }
@@ -197,7 +256,8 @@ namespace OSistema.Pawns
 
         void PeriodicCheck(Game game, long now)
         {
-            if (Bed.HasValue && game.Map.GetBuilding(Bed.Value) != BuildingDefs.Bed) Bed = null;
+            if (Bed.HasValue && (game.Map.GetBuilding(Bed.Value) != BuildingDefs.Bed ||
+                                 (!game.PlayerBase.Contains(Bed.Value) && !game.Properties.IsOwnedHome(Bed.Value)))) Bed = null;
 
             Mood.Recalculate(this, now);
 

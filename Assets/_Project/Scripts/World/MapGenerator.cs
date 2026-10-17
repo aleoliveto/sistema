@@ -180,6 +180,7 @@ namespace OSistema.World
                         var door = new Vector2Int(west ? lot.xMin : lot.xMax - 1, lot.y + rng.Next(1, lot.height - 1));
                         BuildBuilding(map, lot, partitions: lot.width >= 8, door);
                         AddProperty(lot, door, PropertyKind.Home);
+                        Furnish(map, lot);
                         if (lot.width >= 6 && lot.height >= 5) shopLots.Add(lot);
                         if (lot.width >= 8 && lot.height >= 7 && lot.width <= 13 && lot.height <= 11) homeLots.Add(lot);
 
@@ -228,6 +229,44 @@ namespace OSistema.World
                 for (int y = lot.y + 1; y < lot.yMax - 1; y++)
                     map.SetBuilding(wx, y, y == doorY ? BuildingDefs.Door : BuildingDefs.Wall);
             }
+        }
+
+        /// <summary>Somebody lives here: beds, a table, a sofa and the TV, the kitchen, a plant, a rug.</summary>
+        void Furnish(Map map, RectInt lot)
+        {
+            // Only along the inside of the outer walls, never next to a door, so rooms stay walkable.
+            var spots = new List<Vector2Int>();
+            for (int y = lot.y + 1; y < lot.yMax - 1; y++)
+            for (int x = lot.x + 1; x < lot.xMax - 1; x++)
+            {
+                bool againstWall = x == lot.x + 1 || x == lot.xMax - 2 || y == lot.y + 1 || y == lot.yMax - 2;
+                if (!againstWall || map.GetBuilding(x, y) != null) continue;
+                bool nearDoor = false;
+                for (int dy = -1; dy <= 1 && !nearDoor; dy++)
+                for (int dx = -1; dx <= 1; dx++)
+                    if (map.GetBuilding(x + dx, y + dy) == BuildingDefs.Door) { nearDoor = true; break; }
+                if (!nearDoor) spots.Add(new Vector2Int(x, y));
+            }
+            for (int i = spots.Count - 1; i > 0; i--)
+            {
+                int j = rng.Next(i + 1);
+                (spots[i], spots[j]) = (spots[j], spots[i]);
+            }
+
+            var items = new List<BuildingDef> { BuildingDefs.Bed, BuildingDefs.Table, BuildingDefs.Wardrobe };
+            if (rng.NextDouble() < 0.6) items.Add(BuildingDefs.Bed);
+            if (rng.NextDouble() < 0.7) items.Add(BuildingDefs.Sofa);
+            if (rng.NextDouble() < 0.6) items.Add(BuildingDefs.Television);
+            if (rng.NextDouble() < 0.6) { items.Add(BuildingDefs.KitchenCounter); items.Add(BuildingDefs.Fridge); }
+            if (rng.NextDouble() < 0.5) items.Add(BuildingDefs.Plant);
+            if (rng.NextDouble() < 0.4) items.Add(BuildingDefs.HomeShrine);
+            if (rng.NextDouble() < 0.4) items.Add(BuildingDefs.Armchair);
+            int max = Mathf.Min(items.Count, spots.Count / 2); // leave some wall free
+            for (int i = 0; i < max; i++) map.SetBuilding(spots[i].x, spots[i].y, items[i]);
+
+            var mid = Vector2Int.RoundToInt(lot.center);
+            if (rng.NextDouble() < 0.5 && map.GetBuilding(mid) == null && map.GetTerrain(mid.x, mid.y) == TerrainType.Floor)
+                map.SetBuilding(mid.x, mid.y, BuildingDefs.Rug);
         }
 
         void AddProperty(RectInt lot, Vector2Int door, PropertyKind kind)

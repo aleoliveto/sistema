@@ -393,12 +393,35 @@ namespace OSistema.Views
 
             if (b == BuildingDefs.Shrine)
             {
-                // Edicola votiva: a little altar on the wall, Madonna-blue, a candle.
-                Rect(buf, stride, ox, oy, 2, 2, 13, 14, new Color32(214, 206, 190, 255));
-                Rect(buf, stride, ox, oy, 4, 4, 11, 12, new Color32(56, 88, 168, 255));
-                Rect(buf, stride, ox, oy, 4, 12, 11, 12, new Color32(212, 176, 80, 255));
-                Disc(buf, stride, ox, oy, 8f, 8f, 1.8f, new Color32(240, 230, 210, 255));
-                Set(buf, stride, ox, oy, 8, 3, new Color32(255, 200, 90, 255));
+                // Edicola votiva: an arched stone niche, the Madonna in her blue mantle under a gold
+                // halo, red votive candles and flowers at her feet.
+                var stone = new Color32(212, 202, 182, 255);
+                Rect(buf, stride, ox, oy, 2, 1, 13, 12, stone);
+                Rect(buf, stride, ox, oy, 3, 13, 12, 13, stone);
+                Rect(buf, stride, ox, oy, 5, 14, 10, 14, stone);
+                var niche = new Color32(28, 34, 70, 255);
+                Rect(buf, stride, ox, oy, 4, 4, 11, 11, niche);
+                Rect(buf, stride, ox, oy, 5, 12, 10, 12, niche);
+                // Mantle: a robe widening towards the feet.
+                for (int py = 4; py <= 10; py++)
+                {
+                    int half = (11 - py) / 2 + 1;
+                    Rect(buf, stride, ox, oy, 8 - half, py, 7 + half, py, new Color32(58, 98, 196, 255));
+                }
+                Set(buf, stride, ox, oy, 7, 10, new Color32(236, 206, 176, 255)); // face
+                Set(buf, stride, ox, oy, 8, 10, new Color32(236, 206, 176, 255));
+                Rect(buf, stride, ox, oy, 6, 12, 9, 12, new Color32(226, 186, 70, 255)); // halo
+                Set(buf, stride, ox, oy, 5, 11, new Color32(226, 186, 70, 255));
+                Set(buf, stride, ox, oy, 10, 11, new Color32(226, 186, 70, 255));
+                // Candles and flowers on the ledge.
+                Rect(buf, stride, ox, oy, 3, 2, 3, 3, new Color32(190, 30, 30, 255));
+                Rect(buf, stride, ox, oy, 12, 2, 12, 3, new Color32(190, 30, 30, 255));
+                Set(buf, stride, ox, oy, 3, 4, new Color32(255, 214, 110, 255));
+                Set(buf, stride, ox, oy, 12, 4, new Color32(255, 214, 110, 255));
+                Set(buf, stride, ox, oy, 5, 2, new Color32(240, 90, 120, 255));
+                Set(buf, stride, ox, oy, 7, 2, new Color32(250, 250, 240, 255));
+                Set(buf, stride, ox, oy, 9, 2, new Color32(240, 200, 60, 255));
+                Set(buf, stride, ox, oy, 10, 2, new Color32(240, 90, 120, 255));
                 return;
             }
 
@@ -414,6 +437,87 @@ namespace OSistema.Views
                 Disc(buf, stride, ox, oy, 8f, 8f, 7.5f, new Color32(150, 146, 138, 255));
                 Disc(buf, stride, ox, oy, 8f, 8f, 5.8f, new Color32(70, 128, 166, 255), 16, 0.1f);
                 Disc(buf, stride, ox, oy, 8f, 8f, 1.6f, new Color32(170, 166, 158, 255));
+                return;
+            }
+
+            if (b == BuildingDefs.Sofa || b == BuildingDefs.Armchair)
+            {
+                var cloth = b.Color;
+                int x1 = b == BuildingDefs.Sofa ? 15 : 11, x0 = b == BuildingDefs.Sofa ? 0 : 4;
+                Darken(buf, stride, ox, oy, 9f, 6f, 7f, 0.8f);
+                Rect(buf, stride, ox, oy, x0, 3, x1, 12, Shade(cloth, 0.65f));         // frame
+                Rect(buf, stride, ox, oy, x0, 10, x1, 12, Shade(cloth, 0.8f));         // back
+                Rect(buf, stride, ox, oy, x0 + 2, 4, x1 - 2, 9, cloth);                // seat
+                if (b == BuildingDefs.Sofa) Rect(buf, stride, ox, oy, 7, 4, 7, 9, Shade(cloth, 0.75f)); // cushion seam
+                return;
+            }
+
+            if (b == BuildingDefs.Television)
+            {
+                Rect(buf, stride, ox, oy, 2, 6, 13, 9, new Color32(60, 50, 40, 255));   // cabinet
+                Rect(buf, stride, ox, oy, 3, 9, 12, 12, new Color32(20, 20, 24, 255));  // screen
+                Rect(buf, stride, ox, oy, 4, 10, 11, 11, new Color32(40, 90, 170, 255)); // Napoli on
+                return;
+            }
+
+            if (b == BuildingDefs.Wardrobe)
+            {
+                Rect(buf, stride, ox, oy, 1, 2, 14, 14, Shade(b.Color, 0.7f));
+                Rect(buf, stride, ox, oy, 2, 3, 13, 13, b.Color);
+                Rect(buf, stride, ox, oy, 7, 3, 8, 13, Shade(b.Color, 0.65f));
+                Set(buf, stride, ox, oy, 6, 8, new Color32(210, 180, 90, 255));
+                Set(buf, stride, ox, oy, 9, 8, new Color32(210, 180, 90, 255));
+                return;
+            }
+
+            if (b == BuildingDefs.KitchenCounter)
+            {
+                Rect(buf, stride, ox, oy, 0, 2, 15, 13, new Color32(150, 120, 90, 255));
+                Rect(buf, stride, ox, oy, 0, 10, 15, 13, b.Color);
+                Rect(buf, stride, ox, oy, 4, 11, 9, 12, new Color32(170, 175, 180, 255)); // sink
+                return;
+            }
+
+            if (b == BuildingDefs.Fridge)
+            {
+                Rect(buf, stride, ox, oy, 3, 1, 12, 14, new Color32(170, 172, 176, 255));
+                Rect(buf, stride, ox, oy, 4, 2, 11, 13, b.Color);
+                Rect(buf, stride, ox, oy, 4, 9, 11, 9, new Color32(160, 162, 166, 255));
+                Set(buf, stride, ox, oy, 10, 11, new Color32(90, 90, 90, 255));
+                return;
+            }
+
+            if (b == BuildingDefs.Plant)
+            {
+                Disc(buf, stride, ox, oy, 8f, 6f, 3.5f, new Color32(150, 80, 50, 255));
+                Disc(buf, stride, ox, oy, 8f, 9f, 5f, new Color32(60, 120, 60, 255), 31, 0.2f);
+                Disc(buf, stride, ox, oy, 6.5f, 10.5f, 2f, new Color32(90, 150, 80, 255));
+                return;
+            }
+
+            if (b == BuildingDefs.Rug)
+            {
+                Rect(buf, stride, ox, oy, 0, 1, 15, 14, Shade(b.Color, 0.8f));
+                Rect(buf, stride, ox, oy, 2, 3, 13, 12, b.Color);
+                Rect(buf, stride, ox, oy, 5, 6, 10, 9, new Color32(210, 170, 90, 255));
+                return;
+            }
+
+            if (b == BuildingDefs.Safe)
+            {
+                Rect(buf, stride, ox, oy, 3, 3, 12, 12, new Color32(40, 42, 46, 255));
+                Rect(buf, stride, ox, oy, 4, 4, 11, 11, b.Color);
+                Disc(buf, stride, ox, oy, 8f, 8f, 2f, new Color32(190, 190, 195, 255));
+                return;
+            }
+
+            if (b == BuildingDefs.HomeShrine)
+            {
+                Rect(buf, stride, ox, oy, 3, 4, 12, 13, new Color32(110, 76, 46, 255));
+                Rect(buf, stride, ox, oy, 5, 6, 10, 12, new Color32(58, 98, 196, 255));
+                Rect(buf, stride, ox, oy, 6, 11, 9, 11, new Color32(226, 186, 70, 255));
+                Set(buf, stride, ox, oy, 4, 4, new Color32(255, 214, 110, 255));
+                Set(buf, stride, ox, oy, 11, 4, new Color32(255, 214, 110, 255));
                 return;
             }
 

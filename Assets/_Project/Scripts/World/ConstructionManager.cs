@@ -36,6 +36,8 @@ namespace OSistema.World
 
         public IEnumerable<Blueprint> All => byCell.Values;
 
+        public Blueprint At(Vector2Int cell) => byCell.TryGetValue(cell, out var b) ? b : null;
+
         public bool IsValid(Blueprint bp) => byCell.TryGetValue(bp.Cell, out var b) && b == bp;
 
         public bool PlaceBuild(Vector2Int cell, BuildingDef def)

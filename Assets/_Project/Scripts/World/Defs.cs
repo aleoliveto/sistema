@@ -59,6 +59,17 @@ namespace OSistema.World
         public bool Cover;        // stops bullets: crouch behind it in a firefight
         public bool LightSource;  // lit at night
         public bool Generated;    // street furniture and the like: placed by the map generator only
+        public float Beauty;      // how much nicer it makes a home (crew mood)
+        public int Cost;          // euros, paid when the blueprint is placed
+
+        static readonly System.Collections.Generic.Dictionary<string, int> Costs = new System.Collections.Generic.Dictionary<string, int>
+        {
+            ["wall"] = 15, ["door"] = 50, ["bed"] = 150, ["table"] = 100, ["stove"] = 300, ["pantry"] = 150, ["bunker"] = 2000,
+            ["sofa"] = 300, ["armchair"] = 150, ["tv"] = 400, ["wardrobe"] = 200, ["kitchen_counter"] = 250, ["fridge"] = 350,
+            ["plant"] = 40, ["rug"] = 120, ["safe"] = 600, ["home_shrine"] = 100,
+        };
+
+        public static int CostOf(BuildingDef d) => d != null && Costs.TryGetValue(d.Id, out var c) ? c : 0;
     }
 
     public static class BuildingDefs
@@ -79,14 +90,14 @@ namespace OSistema.World
 
         public static readonly BuildingDef Bed = new BuildingDef
         {
-            Id = "bed", Label = "Bed", Passable = true, PathCost = 1.8f, WorkToBuild = 250,
+            Id = "bed", Label = "Bed", Passable = true, PathCost = 1.8f, WorkToBuild = 250, Beauty = 1f,
             Color = new Color32(150, 44, 44, 255),
             PlaceMode = PlaceMode.Fill,
         };
 
         public static readonly BuildingDef Table = new BuildingDef
         {
-            Id = "table", Label = "Table", Passable = false, WorkToBuild = 200, Cover = true,
+            Id = "table", Label = "Table", Passable = false, WorkToBuild = 200, Cover = true, Beauty = 1f,
             Color = new Color32(128, 92, 58, 255),
             PlaceMode = PlaceMode.Fill,
         };
@@ -190,7 +201,29 @@ namespace OSistema.World
             Cover = cover, LightSource = light, Generated = true,
         };
 
-        public static readonly BuildingDef[] Buildable = { Wall, Door, Bed, Table, Stove, Pantry, Bunker };
+        // ---- Furniture: makes a basso a home ----
+        public static readonly BuildingDef Sofa = Furniture("sofa", "Sofa", new Color32(120, 40, 50, 255), 3f, passable: false, cover: true);
+        public static readonly BuildingDef Armchair = Furniture("armchair", "Armchair", new Color32(150, 110, 70, 255), 1.5f, passable: false);
+        public static readonly BuildingDef Television = Furniture("tv", "TV", new Color32(30, 30, 34, 255), 2f, passable: false);
+        public static readonly BuildingDef Wardrobe = Furniture("wardrobe", "Wardrobe", new Color32(110, 76, 46, 255), 1f, passable: false, cover: true);
+        public static readonly BuildingDef KitchenCounter = Furniture("kitchen_counter", "Kitchen counter", new Color32(200, 196, 186, 255), 1f, passable: false, cover: true);
+        public static readonly BuildingDef Fridge = Furniture("fridge", "Fridge", new Color32(225, 228, 230, 255), 1f, passable: false, cover: true);
+        public static readonly BuildingDef Plant = Furniture("plant", "Plant", new Color32(60, 120, 60, 255), 1.5f, passable: false);
+        public static readonly BuildingDef Rug = Furniture("rug", "Rug", new Color32(150, 50, 40, 255), 1f, passable: true);
+        public static readonly BuildingDef Safe = Furniture("safe", "Safe", new Color32(70, 74, 80, 255), 0.5f, passable: false, cover: true);
+        public static readonly BuildingDef HomeShrine = Furniture("home_shrine", "Home shrine", new Color32(70, 110, 190, 255), 2.5f, passable: false);
+
+        static BuildingDef Furniture(string id, string label, Color32 color, float beauty, bool passable, bool cover = false) => new BuildingDef
+        {
+            Id = id, Label = label, Passable = passable, PathCost = passable ? 1f : 1f, WorkToBuild = 250, Color = color,
+            Beauty = beauty, Cover = cover, PlaceMode = PlaceMode.Single,
+        };
+
+        public static readonly BuildingDef[] Buildable =
+        {
+            Wall, Door, Bed, Table, Stove, Pantry, Bunker,
+            Sofa, Armchair, Television, Wardrobe, KitchenCounter, Fridge, Plant, Rug, Safe, HomeShrine,
+        };
 
         /// <summary>Every def, in a fixed order used by save files. Only ever append to this list.</summary>
         public static readonly BuildingDef[] All =
@@ -199,6 +232,7 @@ namespace OSistema.World
             BarCounter, MacelleriaCounter, TabaccheriaCounter, BurnedShop, Bunker,
             Tree, ParkedCar, ParkedScooter, Bench, Bin, StreetLamp, MarketStall, Shrine, Altar, Pew, Fountain, Rubble,
             Railing, HospitalDesk, PlasticChair,
+            Sofa, Armchair, Television, Wardrobe, KitchenCounter, Fridge, Plant, Rug, Safe, HomeShrine,
         };
 
         public static BuildingDef ById(string id)

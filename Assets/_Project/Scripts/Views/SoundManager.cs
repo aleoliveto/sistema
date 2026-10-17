@@ -21,6 +21,7 @@ namespace OSistema.Views
         Camera cam;
         Game game;
         int lastBellHour = -1;
+        float hornTimer = 5f;
         readonly HashSet<int> heardScooters = new HashSet<int>();
 
         public static void PlayAt(AudioClip clip, Vector2 position, float volume = 1f)
@@ -92,9 +93,28 @@ namespace OSistema.Views
         {
             if (game == null) return;
 
-            // The city is livelier by day; zoomed out you hear more of it.
+            // The city is livelier by day, and louder where there are people around you.
             float day = game.Clock.Daylight;
-            ambience.volume = Mathf.Lerp(0.1f, 0.28f, day);
+            int crowd = 0;
+            var view = (Vector2)cam.transform.position;
+            float reach = cam.orthographicSize * 1.2f;
+            foreach (var npc in game.Npcs.All)
+                if ((npc.Mover.Position - view).sqrMagnitude < reach * reach && FogOfWar.CanSee(npc.Mover.Position)) crowd++;
+            ambience.volume = Mathf.Lerp(0.1f, 0.26f, day) + Mathf.Min(0.2f, crowd * 0.006f);
+
+            // Now and then a scooter in view leans on its horn.
+            hornTimer -= Time.unscaledDeltaTime;
+            if (hornTimer <= 0f && !game.Ticks.Paused)
+            {
+                hornTimer = Random.Range(4f, 12f);
+                foreach (var npc in game.Npcs.All)
+                {
+                    if (npc.Kind != NpcKind.Scooter || !FogOfWar.CanSee(npc.Mover.Position)) continue;
+                    if ((npc.Mover.Position - view).sqrMagnitude > reach * reach) continue;
+                    Play(AudioSynth.Horn, npc.Mover.Position, 0.22f);
+                    break;
+                }
+            }
             ambience.pitch = game.Ticks.Paused ? 0.9f : 1f;
 
             // Church bells at noon and at the evening Angelus.

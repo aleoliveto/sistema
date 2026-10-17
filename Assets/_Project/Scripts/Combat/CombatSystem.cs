@@ -125,6 +125,7 @@ namespace OSistema.Combat
 
             var rng = game.Rng;
             attacker.AimAt(target);
+            if (!melee) attacker.Learn(Skill.Shooting, 3f, game);
             attacker.NextAttackTick = now + (melee ? 60 : 75 + rng.Next(0, 30));
             bool hit = rng.NextDouble() < chance;
 

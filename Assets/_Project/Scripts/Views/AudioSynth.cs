@@ -10,7 +10,7 @@ namespace OSistema.Views
     {
         const int Rate = 44100;
 
-        static AudioClip gunshot, gunshotFar, punch, ambience, bell, scooter, click, siren;
+        static AudioClip gunshot, gunshotFar, punch, ambience, bell, scooter, click, siren, horn;
 
         public static AudioClip Gunshot => gunshot != null ? gunshot : gunshot = MakeGunshot("gunshot", 0.5f, 0f);
         public static AudioClip GunshotFar => gunshotFar != null ? gunshotFar : gunshotFar = MakeGunshot("gunshot_far", 0.7f, 0.92f);
@@ -20,6 +20,23 @@ namespace OSistema.Views
         public static AudioClip Scooter => scooter != null ? scooter : scooter = MakeScooter();
         public static AudioClip Click => click != null ? click : click = MakeClick();
         public static AudioClip Siren => siren != null ? siren : siren = MakeSiren();
+        public static AudioClip Horn => horn != null ? horn : horn = MakeHorn();
+
+        // A scooter's thin, impatient beep-beep.
+        static AudioClip MakeHorn()
+        {
+            int n = (int)(Rate * 0.45f);
+            var d = new float[n];
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)Rate;
+                bool on = t < 0.16f || (t > 0.22f && t < 0.4f);
+                if (!on) continue;
+                float a = Mathf.Sin(2f * Mathf.PI * 420f * t) + 0.6f * Mathf.Sin(2f * Mathf.PI * 530f * t);
+                d[i] = Mathf.Clamp(a * 1.6f, -1f, 1f) * 0.6f;
+            }
+            return Clip("horn", d);
+        }
 
         // The Italian two-tone siren: "bitonale".
         static AudioClip MakeSiren()

@@ -116,6 +116,21 @@ namespace OSistema.Story
                 new Line("Mo' se fa comme dico io.", "Now we do things my way."),
                 new Line("'A famiglia nun more.", "The family doesn't die."),
             },
+            ["job_done"] = new[]
+            {
+                new Line("Fatto. Tutto a posto.", "Done. All sorted."),
+                new Line("Facile facile.", "Easy as anything."),
+            },
+            ["debt_paid"] = new[]
+            {
+                new Line("Vedi ca 'e sorde 'e tenive?", "See? You had the money after all."),
+                new Line("'A prossima vota paghe 'a primma vota.", "Next time pay the first time."),
+            },
+            ["tv"] = new[]
+            {
+                new Line("Forza Napoli!", "Come on Napoli!"),
+                new Line("Ma che ffa 'st'arbitro?!", "What is this referee doing?!"),
+            },
             ["work_done"] = new[]
             {
                 new Line("Ecco fatto.", "There, done."),

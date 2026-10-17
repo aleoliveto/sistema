@@ -61,6 +61,7 @@ namespace OSistema.AI
                 ?? TryCourier(pawn, game)
                 ?? TryEat(pawn, game)
                 ?? TrySleep(pawn, game)
+                ?? TryContract(pawn, game)
                 ?? TryDuty(pawn, game)
                 ?? TryCook(pawn, game)
                 ?? TryShop(pawn, game)
@@ -166,6 +167,8 @@ namespace OSistema.AI
             int bestDist = int.MaxValue;
             foreach (var bed in game.Map.PositionsOf(BuildingDefs.Bed))
             {
+                // Only beds in the family's own homes: not the hospital's, not the neighbours'.
+                if (!game.PlayerBase.Contains(bed) && !game.Properties.IsOwnedHome(bed)) continue;
                 if (game.Pawns.IsBedOwned(bed, pawn)) continue;
                 int d = GridUtil.Manhattan(pawn.Cell, bed);
                 if (d < bestDist)
@@ -176,6 +179,18 @@ namespace OSistema.AI
             }
             pawn.Bed = best;
             return best;
+        }
+
+        static Job TryContract(Pawn pawn, Game game)
+        {
+            var c = game.Contracts.ActiveFor(pawn);
+            if (c == null) return null;
+            if (c.Kind == ContractKind.Smuggling && c.Stage <= 1)
+            {
+                int h = game.Clock.Hour;
+                if (!(h >= 21 || h < 4)) return null; // leave at nine for the ten o'clock boat
+            }
+            return new ContractJob(pawn, c);
         }
 
         /// <summary>What the pawn's clan role asks of them right now.</summary>
@@ -327,6 +342,12 @@ namespace OSistema.AI
 
         static Job Wander(Pawn pawn, Game game)
         {
+            // Afternoons and evenings: the TV is on, if the family has one.
+            int hour = game.Clock.Hour;
+            if (hour >= 13 && game.Rng.NextDouble() < 0.3)
+                foreach (var tv in game.Map.PositionsOf(BuildingDefs.Television))
+                    if (game.PlayerBase.Contains(tv) || game.Properties.IsOwnedHome(tv)) return new WatchTvJob(pawn, tv);
+
             // Hang around whichever of the family's homes is nearest.
             var spot = game.Properties.RandomHomeCell(pawn.Cell, game.Rng);
             if (spot.HasValue && spot.Value != pawn.Cell) return new WanderJob(pawn, spot.Value, game.Rng.Next(240, 900));

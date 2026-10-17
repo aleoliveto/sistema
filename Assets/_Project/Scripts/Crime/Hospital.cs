@@ -44,6 +44,18 @@ namespace OSistema.Crime
             return null;
         }
 
+        /// <summary>The nearest cell a vehicle can reach: asphalt, a vicolo or a piazza.</summary>
+        static Vector2Int? NearestStreet(Map map, Vector2Int from, int radius)
+        {
+            foreach (var c in GridUtil.CellsAround(from, radius))
+            {
+                if (!map.InBounds(c) || !map.IsPassable(c)) continue;
+                var t = map.GetTerrain(c.x, c.y);
+                if (t == TerrainType.Road || t == TerrainType.Sidewalk || t == TerrainType.Paving) return c;
+            }
+            return null;
+        }
+
         public void Tick(Game game)
         {
             if (!exists || game.Ticks.TicksGame % CheckInterval != 0) return;
@@ -74,7 +86,7 @@ namespace OSistema.Crime
         {
             if (!exists || called.Contains(patient)) return;
             called.Add(patient);
-            var scene = NearestRoad(game.Map, patient.Cell, 40) ?? patient.Cell;
+            var scene = NearestStreet(game.Map, patient.Cell, 40) ?? patient.Cell;
             game.Npcs.SpawnAmbulance(bay, scene, patient, game);
             if (patient.Faction == Faction.Crew)
                 game.Log.Add(byPasserby

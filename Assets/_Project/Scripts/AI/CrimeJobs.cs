@@ -43,7 +43,8 @@ namespace OSistema.AI
                 AtPost = status == WalkStatus.Arrived;
                 return false;
             }
-            return ++ticksAtPost >= RethinkTicks;
+            if (++ticksAtPost % 600 == 0) Pawn.Learn(Skill.Awareness, Role == CrewRole.Lookout ? 3f : 1f, game);
+            return ticksAtPost >= RethinkTicks;
         }
     }
 
@@ -119,6 +120,7 @@ namespace OSistema.AI
             }
             if (--workLeft > 0f) return false;
             game.Org.ResolvePizzoVisit(business, Pawn, game);
+            Pawn.Learn(Skill.Intimidation, imposing ? 14f : 6f, game);
             return true;
         }
 
@@ -164,6 +166,7 @@ namespace OSistema.AI
             }
             if (--workLeft > 0f) return false;
             game.Org.ResolveRetaliation(business, Pawn, action, game);
+            Pawn.Learn(Skill.Intimidation, 15f, game);
             return true;
         }
 

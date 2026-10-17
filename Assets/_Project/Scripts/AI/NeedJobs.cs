@@ -172,6 +172,7 @@ namespace OSistema.AI
                 injury.TendQuality = quality;
             }
 
+            Pawn.Learn(Skill.Medicine, 15f, game);
             string who = self ? "their own" : $"{patient.Nickname}'s";
             string how = medicine ? "" : " without medicine";
             game.Log.Add($"{Pawn.Nickname} patched up {who} wounds{how} (quality {quality:P0}).", quality > 0.5f ? MessageKind.Good : MessageKind.Info);
@@ -182,6 +183,34 @@ namespace OSistema.AI
         {
             if (patient.TendedBy == Pawn) patient.TendedBy = null;
             if (!self && patient.CurrentJob is WaitJob wait && wait.Label == WaitLabel) patient.EndCurrentJob(game);
+        }
+    }
+
+    /// <summary>Napoli is playing. Everyone in the basso watches.</summary>
+    public sealed class WatchTvJob : Job
+    {
+        readonly Walker walker;
+        int ticks = 1200;
+        bool watching;
+
+        public WatchTvJob(Pawn pawn, Vector2Int tv) : base(pawn) => walker = new Walker(tv, adjacent: true);
+
+        public override string Label => watching ? "Watching Napoli on TV" : "Going to watch TV";
+        public override bool IsIdle => true;
+
+        public override bool Tick(Game game)
+        {
+            if (!watching)
+            {
+                var status = walker.Tick(Pawn, game);
+                if (status == WalkStatus.Failed) return Fail();
+                watching = status == WalkStatus.Arrived;
+                return false;
+            }
+            if (--ticks > 0) return false;
+            Pawn.Mood.AddMemory("tv", "Watched Napoli on the TV", 3f, game.Ticks.TicksGame, GameClock.TicksPerDay / 2);
+            if (game.Rng.NextDouble() < 0.3) Pawn.Say("tv");
+            return true;
         }
     }
 

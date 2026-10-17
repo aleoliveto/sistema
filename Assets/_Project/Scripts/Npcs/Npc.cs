@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace OSistema.Npcs
 {
-    public enum NpcKind { Customer, Police, Civilian, Child, Elder, Scooter, Ambulance }
+    public enum NpcKind { Customer, Police, Civilian, Child, Elder, Scooter, Ambulance, Paramedic }
 
     /// <summary>
     /// A lightweight non-crew character driven by a simple state machine. NPCs aren't saved:
@@ -36,7 +36,12 @@ namespace OSistema.Npcs
         public Vector2Int Target;
         public int TripsLeft;        // civilians: errands before heading home
         public bool Panicking;
-        public Pawn Patient;         // ambulances
+        public Pawn Patient;         // ambulances and paramedics
+        public Npc Vehicle;          // paramedics: their ambulance
+        public bool Carrying;        // paramedics: carrying the patient
+        public bool IsFixture;       // shopkeepers and vendors: stand all day, not counted as passers-by
+        public bool Sitting;         // heading for, or sitting on, a chair
+        public bool Playing;         // kids running around
 
         public Npc(int id, NpcKind kind, Vector2Int cell, float speed, Color32 color)
         {
@@ -127,36 +132,95 @@ namespace OSistema.Npcs
                         break;
                     case NpcKind.Scooter: StreetLife.TickScooter(npc, game); break;
                     case NpcKind.Ambulance: TickAmbulance(npc, game); break;
+                    case NpcKind.Paramedic: TickParamedic(npc, game); break;
                     default: StreetLife.TickCivilian(npc, game); break;
                 }
             }
             npcs.RemoveAll(n => n.Despawned);
         }
 
-        /// <summary>Siren on, to the scene by road; load the patient; back to the Ospedale.</summary>
-        static void TickAmbulance(Npc npc, Game game)
+        /// <summary>
+        /// Siren on, through the streets to the scene; the paramedics go on foot to the patient and
+        /// carry them back; then back to the Ospedale.
+        /// </summary>
+        void TickAmbulance(Npc npc, Game game)
         {
             switch (npc.State)
             {
-                case 0:
+                case 0: // driving to the scene
                 {
                     npc.Walker ??= new Walker(npc.Target, adjacent: false, roadOnly: true);
+                    var status = npc.Walker.Tick(npc.Mover, 1f, game);
+                    if (status == WalkStatus.Walking) return;
+                    npc.State = 1;
+                    for (int i = 0; i < 2; i++)
+                    {
+                        var medic = Spawn(NpcKind.Paramedic, npc.Mover.Cell, 0.07f, new Color32(240, 120, 30, 255));
+                        medic.Patient = npc.Patient;
+                        medic.Vehicle = npc;
+                        medic.Timer = i * 40; // they don't move in lockstep
+                    }
+                    return;
+                }
+                case 1: // waiting while the paramedics work; they set State = 2 when done
+                    return;
+                default: // back to the Ospedale
+                    npc.Walker ??= new Walker(npc.Exit, adjacent: false, roadOnly: true);
+                    if (npc.Walker.Tick(npc.Mover, 1f, game) != WalkStatus.Walking) npc.Despawned = true;
+                    return;
+            }
+        }
+
+        static void TickParamedic(Npc npc, Game game)
+        {
+            var patient = npc.Patient;
+            var van = npc.Vehicle;
+            bool lost = patient == null || patient.Dead || !patient.IsPresent || van == null || van.Despawned;
+
+            switch (npc.State)
+            {
+                case 0: // walking to the patient
+                {
+                    if (lost) { ReturnToVan(npc); return; }
+                    if (npc.Timer > 0) { npc.Timer--; return; }
+                    npc.Walker ??= new Walker(patient.Cell, adjacent: true);
                     var status = npc.Walker.Tick(npc.Mover, 1f, game);
                     if (status == WalkStatus.Walking) return;
                     npc.State = 1;
                     npc.Timer = Hospital.Loading;
                     return;
                 }
-                case 1:
+                case 1: // stabilising the patient on the spot
+                {
+                    if (lost) { ReturnToVan(npc); return; }
                     if (--npc.Timer > 0) return;
-                    if (npc.Patient != null) game.Hospital.Admit(npc.Patient, game);
-                    npc.State = 2;
-                    npc.Walker = new Walker(npc.Exit, adjacent: false, roadOnly: true);
+                    // The first paramedic to finish carries the stretcher; the other walks alongside.
+                    bool someoneCarrying = false;
+                    foreach (var other in game.Npcs.All)
+                        if (other != npc && other.Kind == NpcKind.Paramedic && other.Vehicle == van && other.Carrying) someoneCarrying = true;
+                    npc.Carrying = !someoneCarrying;
+                    ReturnToVan(npc);
                     return;
-                default:
-                    if (npc.Walker.Tick(npc.Mover, 1f, game) != WalkStatus.Walking) npc.Despawned = true;
+                }
+                default: // back to the van, maybe carrying the patient
+                {
+                    if (npc.Carrying && !lost) patient.Teleport(npc.Mover.Cell);
+                    var status = npc.Walker.Tick(npc.Mover, 1f, game);
+                    if (status == WalkStatus.Walking) return;
+                    if (npc.Carrying && !lost) game.Hospital.Admit(patient, game);
+                    if (npc.Carrying || lost)
+                        if (van != null) van.State = 2;
+                    npc.Despawned = true;
                     return;
+                }
             }
+        }
+
+        static void ReturnToVan(Npc npc)
+        {
+            npc.State = 2;
+            var target = npc.Vehicle != null ? npc.Vehicle.Mover.Cell : npc.Mover.Cell;
+            npc.Walker = new Walker(target, adjacent: false, speedMultiplier: npc.Carrying ? 0.8f : 1f);
         }
     }
 

@@ -42,6 +42,7 @@ namespace OSistema.UI
             BuildFeed();
             BuildDock();
             BuildWindows();
+            BuildJobsWindow();
             BuildModals();
             BuildMenus();
 
@@ -55,6 +56,8 @@ namespace OSistema.UI
         {
             game = g;
             ResetWorldLabels();
+            popups.Clear();
+            HookPopups(g);
             RefreshAll();
             ShowTitleOnce();
         }
@@ -144,6 +147,7 @@ namespace OSistema.UI
             {
                 if (kb.hKey.wasPressedThisFrame) ToggleWindow(Window.Help);
                 if (kb.bKey.wasPressedThisFrame) ToggleWindow(Window.Business);
+                if (kb.jKey.wasPressedThisFrame) ToggleWindow(Window.Jobs);
             }
             if (game == null) return;
 
@@ -178,6 +182,7 @@ namespace OSistema.UI
             HandleEscape();
             if (game == null || root?.panel == null) return;
             UpdateWorldLabels();
+            UpdatePopups();
 
             if (tooltipText != null && Mouse.current != null)
             {

@@ -258,12 +258,23 @@ namespace OSistema.Input
                     break;
 
                 case Tool.Build:
-                    if (CurrentDef.PlaceMode == PlaceMode.Single)
-                        game.Construction.PlaceBuild(start, CurrentDef);
-                    else
-                        foreach (var c in GridUtil.Cells(rect, CurrentDef.PlaceMode == PlaceMode.Outline))
-                            game.Construction.PlaceBuild(c, CurrentDef);
+                {
+                    // Materials and furniture cost money, paid up front.
+                    int cost = BuildingDef.CostOf(CurrentDef), spent = 0;
+                    bool broke = false;
+                    var cells = CurrentDef.PlaceMode == PlaceMode.Single ? new List<Vector2Int> { start }
+                        : new List<Vector2Int>(GridUtil.Cells(rect, CurrentDef.PlaceMode == PlaceMode.Outline));
+                    foreach (var c in cells)
+                    {
+                        if (game.Stock.Cash < cost) { broke = true; break; }
+                        if (!game.Construction.PlaceBuild(c, CurrentDef)) continue;
+                        game.Stock.Cash -= cost;
+                        spent += cost;
+                    }
+                    if (spent > 0) game.PopupAt(ScreenToWorld(mousePos), $"-€{spent}");
+                    if (broke) game.Log.Add($"Not enough cash: a {CurrentDef.Label.ToLower()} costs €{cost}.", MessageKind.Bad);
                     break;
+                }
 
                 case Tool.Deconstruct:
                     foreach (var c in GridUtil.Cells(rect, false)) game.Construction.PlaceDeconstruct(c);
@@ -272,6 +283,8 @@ namespace OSistema.Input
                 case Tool.Cancel:
                     foreach (var c in GridUtil.Cells(rect, false))
                     {
+                        var bp = game.Construction.At(c);
+                        if (bp != null && !bp.Deconstruct) game.Stock.Cash += BuildingDef.CostOf(bp.Def); // refund
                         game.Construction.Cancel(c);
                         if (game.Org.CloseSquareAt(c)) game.Log.Add("Closed the piazza.");
                     }

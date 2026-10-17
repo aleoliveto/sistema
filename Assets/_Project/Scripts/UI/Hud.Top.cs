@@ -12,7 +12,7 @@ namespace OSistema.UI
         Label dayLabel, timeLabel, debugSpeed;
         readonly Button[] speedButtons = new Button[4];
         Label cashValue, productValue, foodChip, medicineValue, respectValue;
-        Label familyTitle, familyState;
+        Label familyTitle, familyState, rankLabel;
         VisualElement evidenceFill, hostilityFill;
 
         void BuildTop()
@@ -46,6 +46,7 @@ namespace OSistema.UI
             var fam = Ui.Box("panel", "family").Into(hudLayer);
             familyTitle = Ui.Text("", fam, "bold");
             familyState = Ui.Text("", fam, "small", "muted");
+            rankLabel = Ui.Text("", fam, "small", "wrap");
             var bars = Ui.Row(fam);
             var ev = Ui.Box("col", "grow").Into(bars);
             ev.style.marginRight = 6;
@@ -92,6 +93,8 @@ namespace OSistema.UI
                 (org.Hiding ? $" · <color=#F2B866>latitanza day {clock.Day - org.HidingSinceDay + 1}</color>" :
                  org.WarrantActive ? " · <color=#F07A6E>arrest warrant</color>" : "") +
                 (org.PendingPizzini > 0 ? $" · {org.PendingPizzini} pizzini" : "");
+            string goal = org.NextRankGoal(game);
+            rankLabel.text = $"<color=#E8C26A>{org.RankName}</color>" + (goal != null ? $" <color=#A89F8E>· {goal.Replace("Next: ", "next ")}</color>" : "");
             Ui.SetFill(evidenceFill, org.Evidence / 100f);
             Ui.SetFill(hostilityFill, game.Rival.Destroyed ? 0f : game.Rival.Hostility / 100f);
         }
