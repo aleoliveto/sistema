@@ -299,9 +299,32 @@
 .inspector {
     position: absolute;
     left: 8px; bottom: 8px;
-    width: 300px;
-    max-height: 480px;
+    width: 290px;
+    max-height: 360px;
+    padding: 8px 10px;
 }
+.insp-head { align-items: center; }
+.insp-name { font-size: 14px; -unity-font-style: bold; color: #F1E6CF; }
+.insp-chevron { font-size: 14px; color: #A89F8E; margin-left: 6px; }
+.insp-tabs {
+    margin-top: 6px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(232, 194, 106, 0.18);
+}
+.insp-tab {
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    border-bottom-width: 2px;
+    border-bottom-color: rgba(0, 0, 0, 0);
+    border-radius: 0;
+    font-size: 11px;
+    color: #A89F8E;
+    padding: 3px 8px;
+    margin: 0;
+}
+.insp-tab:hover { color: #F1E6CF; }
+.insp-tab--on { color: #FFF4DA; border-bottom-color: #E8C26A; }
+.insp-page { padding-top: 6px; }
 
 .thought { font-size: 11px; margin: 1px 0; }
 

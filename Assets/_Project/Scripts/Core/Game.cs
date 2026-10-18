@@ -215,9 +215,12 @@ namespace OSistema.Core
             return game;
         }
 
+        public readonly Weather Weather = new Weather();
+
         void Tick()
         {
             if (Org.GameOver) return;
+            Weather.Tick(this);
             Pawns.Tick(this);
             StreetLife.Tick(this);
             Hospital.Tick(this);

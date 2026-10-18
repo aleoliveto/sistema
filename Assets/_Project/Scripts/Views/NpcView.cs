@@ -7,6 +7,12 @@ namespace OSistema.Views
     {
         Npc npc;
         PersonRig rig;
+        void OnDestroy()
+        {
+            if (headlight != null) Destroy(headlight.gameObject);
+        }
+
+        UnityEngine.Rendering.Universal.Light2D headlight;
         SpriteRenderer scooter;
         Exhaust exhaust;
         Vector2 exhaustLast;
@@ -50,6 +56,7 @@ namespace OSistema.Views
                 scooter.sharedMaterial = SpriteFactory.LitMaterial;
                 scooter.sortingOrder = 8;
                 exhaust = new Exhaust(transform.parent != null ? transform.parent : transform);
+                headlight = WorldLighting.Headlight(transform.parent != null ? transform.parent : transform);
                 rig.Seated = true;
                 // Every scooter its own colour: Liberty white, Vespa red, matte black, sky blue…
                 var bodies = new[] { new Color(0.92f, 0.92f, 0.9f), new Color(0.75f, 0.1f, 0.1f), new Color(0.12f, 0.12f, 0.13f),
@@ -144,6 +151,7 @@ namespace OSistema.Views
                 int model = Mathf.Abs(npc.Id * 13) % 10;
                 model = model < 4 ? 0 : model < 7 ? 1 : model < 9 ? 2 : 3;   // most people ride cheap
                 PropArt.DressScooter(scooter, pivot.localEulerAngles.z, model, Mathf.Abs(npc.Id * 7), scooter.color);
+                WorldLighting.AimHeadlight(headlight, visible, npc.Mover.Position, pivot.localEulerAngles.z);
                 float h = pivot.localEulerAngles.z * Mathf.Deg2Rad;
                 var fwd = new Vector2(-Mathf.Sin(h), Mathf.Cos(h));
                 float speed = (npc.Mover.Position - exhaustLast).magnitude / Mathf.Max(Time.deltaTime, 0.0001f);

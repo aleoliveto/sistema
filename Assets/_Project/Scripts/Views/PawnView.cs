@@ -26,6 +26,7 @@ namespace OSistema.Views
         };
 
         int wornNeck = -2, wornHat = -2;
+        UnityEngine.Rendering.Universal.Light2D headlight;
 
         public Pawn Pawn => pawn;
 
@@ -48,6 +49,7 @@ namespace OSistema.Views
             scooter.color = FamilyScooters[Mathf.Abs(p.Id) % FamilyScooters.Length];
             scooter.enabled = false;
             exhaust = new Exhaust(transform.parent != null ? transform.parent : transform);
+            headlight = WorldLighting.Headlight(transform.parent != null ? transform.parent : transform);
 
             var ringGo = new GameObject("Selection");
             ringGo.transform.SetParent(transform, false);
@@ -61,7 +63,11 @@ namespace OSistema.Views
             LateUpdate();
         }
 
-        void OnDestroy() => exhaust?.Clear();
+        void OnDestroy()
+        {
+            exhaust?.Clear();
+            if (headlight != null) Destroy(headlight.gameObject);
+        }
 
         void LateUpdate()
         {
@@ -106,10 +112,15 @@ namespace OSistema.Views
                 PropArt.DressScooter(scooter, heading, pawn.StolenScooter ? 0 : 1, pawn.StolenScooter ? 0 : Mathf.Abs(pawn.Id),
                     pawn.StolenScooter ? new Color(0.92f, 0.92f, 0.9f) : FamilyScooters[Mathf.Abs(pawn.Id) % FamilyScooters.Length]);
                 var fwd = new Vector2(-Mathf.Sin(heading * Mathf.Deg2Rad), Mathf.Cos(heading * Mathf.Deg2Rad));
+                WorldLighting.AimHeadlight(headlight, true, pawn.Position, heading);
                 if (pawn.Controlled && !pawn.AimPoint.HasValue) rig.FaceTowards(pawn.Position + fwd);
                 exhaust.Update(pawn.Position - fwd * 0.75f, Mathf.Clamp01(speed / 10f), speed > lastSpeed + 0.5f, true, Time.deltaTime);
             }
-            else exhaust.Update(pawn.Position, 0f, false, false, Time.deltaTime);
+            else
+            {
+                exhaust.Update(pawn.Position, 0f, false, false, Time.deltaTime);
+                WorldLighting.AimHeadlight(headlight, false, pawn.Position, 0f);
+            }
             lastSpeed = Mathf.Lerp(lastSpeed, speed, 0.2f);
             if (pawn.Pillion && !lying) rig.FaceTowards(pawn.Position + pawn.Forward);
 

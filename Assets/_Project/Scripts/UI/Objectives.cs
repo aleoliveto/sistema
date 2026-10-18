@@ -27,6 +27,19 @@ namespace OSistema.UI
 
             if (org.CarriedDg > 0) return Go("Get the product home without meeting the police", Home(game));
 
+            // Bleeding comes before anything: home with medicine, the pharmacist for a cut, the hospital for a bullet.
+            if (p.Health.BleedRatePerDay > 0.15f && Healing.NeedsCare(p))
+            {
+                if (s.Medicine > 0) return Go("You're bleeding: get home and treat it (E, medicine)", Home(game));
+                if (!Healing.HasGunshot(p))
+                {
+                    var ph = Shop(game, p.Cell, ShopKind.Farmacia, "You're bleeding: the pharmacist can stitch you up");
+                    if (ph.Target.HasValue) return ph;
+                }
+                if (game.Map.TryFindNearest(BuildingDefs.HospitalDesk, p.Cell, out var desk))
+                    return Go("You're bleeding: pronto soccorso at the Ospedale (they report bullets)", Mover.CellCenter(desk));
+            }
+
             // A job in hand comes first, unless the body really can't wait.
             var job = game.Contracts.ActiveFor(p);
             bool critical = p.Needs.Food < 0.08f || p.Needs.Rest < 0.06f;

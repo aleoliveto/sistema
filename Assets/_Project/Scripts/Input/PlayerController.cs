@@ -775,6 +775,10 @@ namespace OSistema.Input
                 return new Action { Label = $"{what} {b.Name}", Do = () => game.Events.Raise(Story.ShopCards.Owner(shop, game)) };
             }
 
+            // The pronto soccorso: walk in hurt, walk out stitched (and maybe reported).
+            if (Healing.NeedsCare(p) && Near(p, BuildingDefs.HospitalDesk, out _))
+                return new Action { Label = "Pronto soccorso: get treated", Do = () => game.Events.Raise(Healing.Hospital(game, p)) };
+
             // A pizza at the counter, eaten on the spot.
             if (p.Needs.Food < 0.85f && Near(p, BuildingDefs.PizzeriaCounter, out var pizzeria))
                 return new Action { Label = $"Buy a pizza · €{Prices.Pizza}", Do = () => { p.ForceJob(new EatJob(p, pizzeria, atShop: true), game); } };
@@ -787,6 +791,8 @@ namespace OSistema.Input
                 if (owner != null && p.Bed != bed) return new Action { Label = $"{owner.Nickname}'s bed (assign beds in Famiglia)", Do = () => { } };
                 return new Action { Label = "Sleep", Do = () => { p.Bed = bed; p.LastInputTick = -1000000; p.ForceJob(new SleepJob(p, bed, null), game); } };
             }
+            if (game.Stock.Medicine > 0 && Healing.NeedsCare(p) && InOwnedHome(p.Cell))
+                return new Action { Label = $"Treat your wounds ({game.Stock.Medicine} medicine)", Do = () => Healing.WithMedicine(game, p) };
             if (game.Stock.Meals > 0 && p.Needs.Food < 0.8f && Near(p, BuildingDefs.Pantry, out var pantry))
                 return new Action { Label = "Eat something", Do = () => { p.LastInputTick = -1000000; p.ForceJob(new EatJob(p, pantry, atShop: false), game); } };
 

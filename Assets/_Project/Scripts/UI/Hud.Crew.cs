@@ -22,9 +22,14 @@ namespace OSistema.UI
         readonly Dictionary<int, CrewCard> cards = new Dictionary<int, CrewCard>();
         string crewSignature = "";
 
-        VisualElement inspector, inspectorDetail, injuriesBox, thoughtsBox, moreBox, propertyPanel;
-        Button moreButton, callButton;
-        bool showMore;
+        VisualElement inspector, inspectorDetail, injuriesBox, thoughtsBox, propertyPanel, inspBody;
+        Button callButton, treatButton;
+        enum InspTab { Needs, Health, Mind, Skills }
+        InspTab inspTab;
+        bool inspCollapsed;
+        readonly Dictionary<InspTab, Button> inspTabButtons = new Dictionary<InspTab, Button>();
+        readonly Dictionary<InspTab, VisualElement> inspTabBodies = new Dictionary<InspTab, VisualElement>();
+        Label inspCollapse;
         VisualElement inspectorAvatar;
         Label inspName, inspSub, inspJob, inspSkills, inspHealth, inspMulti;
         Button roleButton, draftButton, armButton, bedButton;
@@ -238,60 +243,83 @@ namespace OSistema.UI
 
         void BuildInspector()
         {
+            // A compact card: who, what they're doing, a row of actions, then one tab at a time.
+            // Click the header to fold it down to just the name.
             inspector = Ui.Box("panel", "inspector").Into(hudLayer);
 
             inspMulti = Ui.Text("", inspector, "title");
             inspectorDetail = Ui.Box("col").Into(inspector);
 
             var head = Ui.Row(inspectorDetail);
+            head.AddToClassList("insp-head");
+            head.RegisterCallback<ClickEvent>(e => { if (e.target is Button) return; inspCollapsed = !inspCollapsed; RefreshAll(); });
             inspectorAvatar = Ui.Box().Into(head);
             var names = Ui.Box("col", "grow").Into(head);
-            inspName = Ui.Text("", names, "title");
+            inspName = Ui.Text("", names, "insp-name");
             inspSub = Ui.Text("", names, "subtitle");
+            inspJob = Ui.Text("", names, "small", "muted");
+            inspCollapse = Ui.Text("▾", head, "insp-chevron");
+            Tip(head, () => inspCollapsed ? "Click to open" : "Click to fold away");
 
-            var actions = Ui.Row(inspectorDetail);
+            inspBody = Ui.Box("col").Into(inspectorDetail);
+            var actions = Ui.Row(inspBody);
+            actions.style.flexWrap = Wrap.Wrap;
+            actions.style.marginTop = 4;
             roleButton = Ui.Btn("", () => { if (Single(out var p)) ShowRoleMenu(p, roleButton); }, actions, "btn--small");
-            Tip(roleButton, () => "Click to change job: general, pusher, lookout, collector, bagger, roller, bodyguard.");
+            Tip(roleButton, () => "Change job: general, pusher, lookout, collector, bagger, roller, bodyguard.");
+            bedButton = Ui.Btn("", () => { if (Single(out var p)) ShowBedMenu(p, bedButton); }, actions, "btn--small");
+            Tip(bedButton, () => "Which bed is theirs. Pick one to give it to them; whoever had it swaps.");
+            armButton = Ui.Btn("", () => { if (Single(out var p)) ToggleArmed(p); RefreshAll(); }, actions, "btn--small");
+            Tip(armButton, () => $"Give or take back a pistol. Pistols in the stash: {game.Stock.Pistols}.");
             draftButton = Ui.Btn("Call over", () =>
             {
                 var boss = game.Player;
                 if (Single(out var p) && boss != null && !p.Controlled && p.CanAct) p.ForceJob(new OSistema.AI.GotoJob(p, boss.Cell, "Coming over"), game);
                 RefreshAll();
             }, actions, "btn--small");
-            Tip(draftButton, () => "Call him over to where you are.");
-            armButton = Ui.Btn("", () => { if (Single(out var p)) ToggleArmed(p); RefreshAll(); }, actions, "btn--small");
-            Tip(armButton, () => $"Give or take back a pistol. Pistols in the stash: {game.Stock.Pistols}.");
-            bedButton = Ui.Btn("", () => { if (Single(out var p)) ShowBedMenu(p, bedButton); }, actions, "btn--small");
-            Tip(bedButton, () => "Which bed is theirs. Pick one to give it to them; whoever had it swaps.");
+            Tip(draftButton, () => "Call them over to where you are.");
             callButton = Ui.Btn("Call 118", () => { if (Single(out var p)) game.Hospital.Call(p, game, byPasserby: false); RefreshAll(); }, actions, "btn--small", "btn--danger");
             Tip(callButton, () => "Send for an ambulance. The hospital will patch them up, and report any gunshot wound to the police.");
 
-            inspJob = Ui.Text("", inspectorDetail, "small", "wrap");
-            inspJob.style.marginTop = 4;
-            inspJob.style.marginBottom = 4;
+            var tabs = Ui.Row(inspBody);
+            tabs.AddToClassList("insp-tabs");
+            foreach (InspTab t in Enum.GetValues(typeof(InspTab)))
+            {
+                var tt = t;
+                inspTabButtons[t] = Ui.Btn(t.ToString(), () => { inspTab = tt; RefreshAll(); }, tabs, "insp-tab");
+                inspTabBodies[t] = Ui.Box("col", "insp-page").Into(inspBody);
+            }
 
-            (moodValue, moodFill) = Ui.Bar("Mood", Color.green, inspectorDetail);
-            var needs = Ui.Row(inspectorDetail);
+            // Needs
+            var needsPage = inspTabBodies[InspTab.Needs];
+            (moodValue, moodFill) = Ui.Bar("Mood", Color.green, needsPage);
+            var needs = Ui.Row(needsPage);
             var left = Ui.Box("col", "grow").Into(needs);
             left.style.marginRight = 8;
             var right = Ui.Box("col", "grow").Into(needs);
             (foodValue, foodFill) = Ui.Bar("Food", new Color(0.9f, 0.6f, 0.28f), left);
             (restValue, restFill) = Ui.Bar("Rest", new Color(0.42f, 0.56f, 0.92f), right);
-            (loyaltyValue, loyaltyFill) = Ui.Bar("Loyalty", new Color(0.91f, 0.76f, 0.42f), inspectorDetail);
+            (loyaltyValue, loyaltyFill) = Ui.Bar("Loyalty", new Color(0.91f, 0.76f, 0.42f), needsPage);
 
-            Ui.Text("HEALTH", inspectorDetail, "section");
-            inspHealth = Ui.Text("", inspectorDetail, "small", "wrap");
-            injuriesBox = Ui.Box("col").Into(inspectorDetail);
-            moreButton = Ui.Btn("More ▾", () => { showMore = !showMore; RefreshAll(); }, inspectorDetail, "btn--small");
-            moreButton.style.alignSelf = Align.FlexStart;
-            moreBox = Ui.Box("col").Into(inspectorDetail);
-            Ui.Text("THOUGHTS", moreBox, "section");
-            thoughtsBox = Ui.Box("col").Into(moreBox);
-            Ui.Text("SKILLS", moreBox, "section");
-            inspSkills = Ui.Text("", moreBox, "small", "wrap");
+            // Health
+            var healthPage = inspTabBodies[InspTab.Health];
+            inspHealth = Ui.Text("", healthPage, "small", "wrap");
+            injuriesBox = Ui.Box("col").Into(healthPage);
+            treatButton = Ui.Btn("", () => { if (Single(out var p)) TreatWithMedicine(p); RefreshAll(); }, healthPage, "btn--small");
+            treatButton.style.alignSelf = Align.FlexStart;
+            treatButton.style.marginTop = 4;
+            Tip(treatButton, () => "Use a box of medicine from home: stops the bleeding and tends the wounds. The pharmacy sells it; the hospital does it properly, but asks questions about bullets.");
+
+            // Mind
+            thoughtsBox = Ui.Box("col").Into(inspTabBodies[InspTab.Mind]);
+
+            // Skills
+            inspSkills = Ui.Text("", inspTabBodies[InspTab.Skills], "small", "wrap");
 
             propertyPanel = Ui.Box("col").Into(inspector);
         }
+
+        void TreatWithMedicine(Pawn p) => OSistema.Crime.Healing.WithMedicine(game, p);
 
         bool Single(out Pawn pawn)
         {
@@ -356,13 +384,23 @@ namespace OSistema.UI
             bedButton.text = BedLabel(p);
             armButton.Toggle("btn--on", p.Armed);
             callButton.Show(p.Health.Downed && !game.Hospital.IsCalled(p));
-            moreButton.text = showMore ? "Less ▴" : "More ▾";
-            moreBox.Show(showMore);
+            inspBody.Show(!inspCollapsed);
+            inspCollapse.text = inspCollapsed ? "▸" : "▾";
+            bool hurt = !p.Health.Healthy;
+            foreach (var kv in inspTabButtons)
+            {
+                kv.Value.Toggle("insp-tab--on", kv.Key == inspTab);
+                inspTabBodies[kv.Key].Show(kv.Key == inspTab);
+            }
+            inspTabButtons[InspTab.Health].text = hurt ? "Health <color=#F07A6E>●</color>" : "Health";
+            treatButton.text = $"Treat with medicine ({game.Stock.Medicine} at home)";
+            treatButton.Show(hurt);
+            treatButton.SetEnabled(game.Stock.Medicine > 0 && OSistema.Crime.Healing.NeedsCare(p));
 
             string job = p.CurrentJob?.Label ?? "Thinking";
             if (p.Carrying != null) job += $" (carrying {p.Carrying})";
             if (p.InMentalBreak(now)) job += "  <color=#F07A6E>· won't take orders</color>";
-            inspJob.text = $"<color=#A89F8E>Doing:</color> {job}";
+            inspJob.text = job;
 
             moodValue.text = $"{p.Mood.Value:0} · {p.Mood.Description}";
             Ui.SetFill(moodFill, p.Mood.Value / 100f);
@@ -384,20 +422,20 @@ namespace OSistema.UI
             inspHealth.text = string.Join("  ·  ", parts);
 
             injuriesBox.Clear();
-            foreach (var inj in h.Injuries.Take(4))
+            foreach (var inj in h.Injuries.Take(6))
             {
                 string state = inj.IsMalnutrition ? "" : inj.Tended ? $" <color=#8FD18A>tended {inj.TendQuality * 100f:0}%</color>" : " <color=#F07A6E>untended</color>";
                 Ui.Text($"{inj.Label} · {inj.Part} {inj.Severity * 100f:0}%{state}", injuriesBox, "thought");
             }
 
             thoughtsBox.Clear();
-            foreach (var t in p.Mood.AllThoughts.OrderByDescending(t => Mathf.Abs(t.Value)).Take(5))
+            foreach (var t in p.Mood.AllThoughts.OrderByDescending(t => Mathf.Abs(t.Value)).Take(8))
             {
                 string color = t.Value >= 0 ? "#8FD18A" : "#F07A6E";
                 Ui.Text($"<color={color}>{t.Value:+0;-0}</color>  {t.Label}", thoughtsBox, "thought");
             }
 
-            inspSkills.text = $"Build {p.ConstructionSkill} · Cook {p.CookingSkill} · Medic {p.MedicineSkill} · Intimidate {p.IntimidationSkill} · Aware {p.AwarenessSkill} · Shoot {p.ShootingSkill}";
+            inspSkills.text = $"Handiwork  <b>{p.ConstructionSkill}</b>\nCooking  <b>{p.CookingSkill}</b>\nMedicine  <b>{p.MedicineSkill}</b>\nIntimidation  <b>{p.IntimidationSkill}</b>\nAwareness  <b>{p.AwarenessSkill}</b>\nShooting  <b>{p.ShootingSkill}</b>";
         }
     }
 }

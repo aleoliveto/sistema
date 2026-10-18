@@ -83,6 +83,12 @@ namespace OSistema.UI
                 CloseShop();
             }, buttons);
             pay.AddToClassList("btn--on");
+            var me = game.Player;
+            if (shop.Kind == ShopKind.Farmacia && me != null && OSistema.Crime.Healing.NeedsCare(me))
+            {
+                var hurt = Ui.Btn("Ask him to look at your wounds", () => { CloseShop(); game.Events.Raise(OSistema.Crime.Healing.Pharmacist(game, me)); }, buttons, "btn--small");
+                hurt.style.marginLeft = 10;
+            }
             if (ShopCards.PizzoActionable(shop, game))
                 Ui.Btn("Have a word with the owner", () => { CloseShop(); game.Events.Raise(ShopCards.Owner(shop, game)); }, buttons, "btn--small").style.marginLeft = 10;
             Ui.Box("spacer").Into(buttons);

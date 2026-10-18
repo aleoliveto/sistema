@@ -199,8 +199,12 @@ namespace OSistema.UI
             if (System.IO.File.Exists(dev))
             {
                 // "soak" in the file: run at top speed and answer every scene, to shake out errors.
-                devSoak = System.IO.File.ReadAllText(dev).Contains("soak");
+                string text = System.IO.File.ReadAllText(dev);
+                devSoak = text.Contains("soak");
                 if (devSoak && game != null) game.Ticks.SetSpeed(5);
+                // "night" jumps to the evening, "rain" brings the rain: to look at the lighting.
+                if (text.Contains("night") && game != null) game.Ticks.Advance((int)(((21.5f - game.Clock.HourF + 24f) % 24f) * Core.GameClock.TicksPerHour));
+                if (text.Contains("rain") && game != null) game.Weather.ForceRain();
                 return;
             }
             OpenMenu(Menu.Title);

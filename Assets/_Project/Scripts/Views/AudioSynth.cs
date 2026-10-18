@@ -152,6 +152,42 @@ namespace OSistema.Views
             return Clip("ambience", clipped);
         }
 
+        static AudioClip rain;
+
+        /// <summary>Rain on stone and shutters: a soft hiss with drops and gutters, looping.</summary>
+        public static AudioClip Rain => rain != null ? rain : rain = MakeRain();
+
+        static AudioClip MakeRain()
+        {
+            var r = new System.Random(23);
+            int n = Rate * 6;
+            var d = new float[n];
+            float lp = 0f, lp2 = 0f;
+            for (int i = 0; i < n; i++)
+            {
+                lp += (Noise(r) - lp) * 0.35f;
+                lp2 += (lp - lp2) * 0.5f;
+                d[i] = lp2 * 0.6f;
+            }
+            // Drops: tiny clicks with a short ring, hundreds of them.
+            for (int k = 0; k < 900; k++)
+            {
+                int at = r.Next(n - 800);
+                float pitch = 1800f + (float)r.NextDouble() * 2600f, amp = 0.15f + (float)r.NextDouble() * 0.35f;
+                for (int j = 0; j < 700; j++)
+                    d[at + j] += Mathf.Sin(2f * Mathf.PI * pitch * j / Rate) * amp * Mathf.Exp(-j / 90f);
+            }
+            int fade = Rate / 2;
+            for (int i = 0; i < fade; i++)
+            {
+                float k = i / (float)fade;
+                d[i] = d[i] * k + d[n - fade + i] * (1f - k);
+            }
+            var clipped = new float[n - fade];
+            System.Array.Copy(d, 0, clipped, 0, clipped.Length);
+            return Clip("rain", clipped);
+        }
+
         static AudioClip MakeBell()
         {
             int n = Rate * 4;

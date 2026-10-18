@@ -609,7 +609,7 @@ namespace OSistema.World
                 {
                     double r = rng.NextDouble();
                     if (r < 0.012) map.SetDecor(x, y, MapDecor.Shrine);
-                    else if (r < 0.06) map.SetDecor(x, y, MapDecor.WallLamp);
+                    else if (r < 0.085) map.SetDecor(x, y, MapDecor.WallLamp);
                 }
                 else if (b == null && map.GetTerrain(x, y) == TerrainType.Sidewalk && NextToWall(map, x, y) && !NextToDoor(map, x, y))
                 {
