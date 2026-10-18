@@ -15,7 +15,7 @@ namespace OSistema.Views
         static readonly Dictionary<string, string[]> ByDef = new Dictionary<string, string[]>
         {
             ["bed"] = new[] { "Props/home_00" },
-            ["table"] = new[] { "Props/home_04", "Props/home_05" },
+            ["table"] = new[] { "Props/home_04" },
             ["sofa"] = new[] { "Props/home_02" },
             ["armchair"] = new[] { "Props/home_03" },
             ["wardrobe"] = new[] { "Props/home_06" },
@@ -39,6 +39,7 @@ namespace OSistema.Views
             ["macelleria_counter"] = new[] { "Props/shop_07" },
             ["lusso_counter"] = new[] { "Props/shop_09" },
             ["mobili_counter"] = new[] { "Props/shop_11" },
+            ["moto_counter"] = new[] { "Props/shop_11" },
             ["pizza_oven"] = new[] { "Props/shop_00" },
             ["cafe_table"] = new[] { "Props/shop_03" },
             ["clothes_rack"] = new[] { "Props/shop_10" },
@@ -73,6 +74,20 @@ namespace OSistema.Views
             "bicycle" => 0.95f,
             _ => 1.0f,
         };
+
+        /// <summary>
+        /// Scale for a piece covering w x h cells (unturned): fills the cells, but never squashes the
+        /// painting more than a third out of its proportions.
+        /// </summary>
+        public static Vector3 FitScale(Sprite s, Vector2Int cells)
+        {
+            var b = s.bounds.size;   // the longer side is one unit
+            float w = cells.x * 0.96f, h = cells.y * 0.96f;
+            float sx = w / b.x, sy = h / b.y;
+            float lo = Mathf.Min(sx, sy), hi = Mathf.Max(sx, sy);
+            if (hi > lo * 1.35f) hi = lo * 1.35f;
+            return sx >= sy ? new Vector3(hi, lo, 1f) : new Vector3(lo, hi, 1f);
+        }
 
         static readonly Dictionary<string, Sprite> cache = new Dictionary<string, Sprite>();
 
@@ -118,6 +133,9 @@ namespace OSistema.Views
                 sr.transform.localRotation = Quaternion.Euler(0f, 0f, heading + 180f);
                 float len = 1.05f + model * 0.12f;
                 sr.transform.localScale = new Vector3(len, len, 1f);
+                // The rider sits on the seat, behind the middle: so the scooter sits forward of him.
+                var fwd = new Vector2(-Mathf.Sin(heading * Mathf.Deg2Rad), Mathf.Cos(heading * Mathf.Deg2Rad));
+                sr.transform.localPosition = new Vector3(fwd.x, fwd.y, 0f) * len * 0.26f;
             }
             else
             {
@@ -125,6 +143,7 @@ namespace OSistema.Views
                 sr.color = fallbackTint;
                 sr.transform.localRotation = Quaternion.Euler(0f, 0f, heading);
                 sr.transform.localScale = Vector3.one;
+                sr.transform.localPosition = Vector3.zero;
             }
         }
 

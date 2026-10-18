@@ -61,7 +61,7 @@ namespace OSistema.Core
                 lastPaydayWeek = game.Org.LastPaydayWeek,
                 pistols = game.Stock.Pistols,
                 clean = game.Stock.Clean,
-                scooters = game.Stock.Scooters,
+                scooters = game.Stock.Scooters, scooterModel = game.Stock.ScooterModel, scooterColour = game.Stock.ScooterColour,
                 cigarettes = game.Stock.Cigarettes,
                 rank = game.Org.Rank,
                 jobsDone = game.Contracts.Completed,
@@ -170,6 +170,8 @@ namespace OSistema.Core
             game.Stock.Pistols = data.pistols;
             game.Stock.Clean = data.clean;
             game.Stock.Scooters = data.scooters;
+            game.Stock.ScooterModel = data.scooterModel;
+            game.Stock.ScooterColour = data.scooterColour;
             game.Stock.Cigarettes = data.cigarettes;
             game.Org.RestoreRank(data.rank);
             game.Contracts.Completed = data.jobsDone;
@@ -389,7 +391,7 @@ namespace OSistema.Core
             public List<ZoneData> zones = new List<ZoneData>();
             public List<SquareData> squares = new List<SquareData>();
             public List<BusinessData> businesses = new List<BusinessData>();
-            public int pistols, generation, hidingSinceDay, rank, jobsDone, clean, scooters, cigarettes;
+            public int pistols, generation, hidingSinceDay, rank, jobsDone, clean, scooters, cigarettes, scooterModel, scooterColour;
             public float evidence, leakRisk;
             public bool warrant, hiding;
             public string rivalName, rivalBoss;

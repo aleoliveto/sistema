@@ -39,7 +39,7 @@ namespace OSistema.Views
             if (!indoor) CastShadows(map, x, y, buf, stride, ox, oy, Hi);
             Weather(terrain, x, y, buf, stride, ox, oy, false, Hi);
             if (building == null) return;
-            if (PropArt.Has(building)) return;   // drawn as a sprite on top (PropLayer)
+            if (building.Filler || PropArt.Has(building)) return;   // drawn as a sprite on top (PropLayer)
             if (HasHiProp(building))
             {
                 PaintPropHi(map, building, x, y, style, buf, stride, ox, oy);

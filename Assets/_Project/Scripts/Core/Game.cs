@@ -58,6 +58,36 @@ namespace OSistema.Core
         /// Street furniture (lamps, bins, benches, parked cars and scooters, chairs) must never choke a
         /// vicolo: anything that leaves less than two clear cells beside it, across the lane, goes.
         /// </summary>
+        /// <summary>
+        /// Furniture belongs indoors, in a building that's still standing. The map generator cuts squares
+        /// and streets through rows of houses after furnishing them; whatever was left in the open goes.
+        /// Runs on loads too, so older saves are tidied.
+        /// </summary>
+        void RemoveStrayFurniture()
+        {
+            var indoor = new System.Collections.Generic.HashSet<BuildingDef>
+            {
+                BuildingDefs.Bed, BuildingDefs.Table, BuildingDefs.Wardrobe, BuildingDefs.Sofa, BuildingDefs.Television,
+                BuildingDefs.KitchenCounter, BuildingDefs.Fridge, BuildingDefs.Plant, BuildingDefs.HomeShrine, BuildingDefs.Armchair,
+                BuildingDefs.Rug, BuildingDefs.Stove, BuildingDefs.Pantry, BuildingDefs.Safe, BuildingDefs.PizzaOven, BuildingDefs.CafeTable,
+                BuildingDefs.ShopShelf, BuildingDefs.ClothesRack, BuildingDefs.IceCream, BuildingDefs.BaggingTable, BuildingDefs.RollingTable,
+                BuildingDefs.PartSolid, BuildingDefs.PartSoft,
+            };
+            int removed = 0;
+            for (int y = 0; y < Map.Height; y++)
+            for (int x = 0; x < Map.Width; x++)
+            {
+                var b = Map.GetBuilding(x, y);
+                if (b == null || !indoor.Contains(b)) continue;
+                var t = Map.GetTerrain(x, y);
+                var c = new Vector2Int(x, y);
+                if ((t == TerrainType.Floor || t == TerrainType.Marble) && (PlayerBase.Contains(c) || Properties.At(c) != null)) continue;
+                Map.SetBuilding(x, y, null);
+                removed++;
+            }
+            if (removed > 0) Debug.Log($"[O Sistema] Removed {removed} pieces of furniture left in the open.");
+        }
+
         void ClearNarrowLanes()
         {
             var clutter = new[] { BuildingDefs.StreetLamp, BuildingDefs.Bin, BuildingDefs.Bench, BuildingDefs.ParkedCar,
@@ -182,6 +212,7 @@ namespace OSistema.Core
             StreetLife = new StreetLife(this);
             Hospital = new Hospital(this);
             ClearNarrowLanes();
+            RemoveStrayFurniture();
             Contacts.Setup(this);
             Ticks.OnTick += Tick;
         }

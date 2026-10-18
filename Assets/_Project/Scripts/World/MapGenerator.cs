@@ -205,8 +205,11 @@ namespace OSistema.World
 
         void BuildCourtyard(Map map, RectInt lot)
         {
+            // The first and last rows are the walls shared with the buildings either side: leave them standing,
+            // or those homes end up open to the yard with their beds outside.
             foreach (var c in GridUtil.Cells(lot, false))
             {
+                if (c.y == lot.y || c.y == lot.yMax - 1) continue;
                 map.SetBuilding(c.x, c.y, null);
                 map.SetTerrain(c.x, c.y, rng.NextDouble() < 0.6 ? TerrainType.Ground : TerrainType.Grass);
                 if (rng.NextDouble() < 0.04) map.SetBuilding(c.x, c.y, BuildingDefs.Rubble);
@@ -267,11 +270,40 @@ namespace OSistema.World
             if (rng.NextDouble() < 0.4) items.Add(BuildingDefs.HomeShrine);
             if (rng.NextDouble() < 0.4) items.Add(BuildingDefs.Armchair);
             int max = Mathf.Min(items.Count, spots.Count / 2); // leave some wall free
-            for (int i = 0; i < max; i++) map.SetBuilding(spots[i].x, spots[i].y, items[i]);
+            int next = 0;
+            for (int i = 0; i < max; i++)
+            {
+                // Big pieces (a bed is 1x2) try each free spot along the wall, either way round.
+                for (int k = next; k < spots.Count; k++)
+                {
+                    if (!FitsAwayFromDoors(map, items[i], spots[k], k % 2, lot) && !FitsAwayFromDoors(map, items[i], spots[k], (k + 1) % 2, lot)) continue;
+                    int rot = FitsAwayFromDoors(map, items[i], spots[k], k % 2, lot) ? k % 2 : (k + 1) % 2;
+                    Footprint.Place(map, items[i], spots[k], rot);
+                    (spots[k], spots[next]) = (spots[next], spots[k]);
+                    next++;
+                    break;
+                }
+            }
 
             var mid = Vector2Int.RoundToInt(lot.center);
-            if (rng.NextDouble() < 0.5 && map.GetBuilding(mid) == null && map.GetTerrain(mid.x, mid.y) == TerrainType.Floor)
-                map.SetBuilding(mid.x, mid.y, BuildingDefs.Rug);
+            var rugAt = mid - Vector2Int.one;
+            if (rng.NextDouble() < 0.5 && FitsAwayFromDoors(map, BuildingDefs.Rug, rugAt, 0, lot))
+                Footprint.Place(map, BuildingDefs.Rug, rugAt, 0);
+        }
+
+        /// <summary>Fits inside the room, on free floor, and keeps clear of the doors so people can get in.</summary>
+        static bool FitsAwayFromDoors(Map map, BuildingDef d, Vector2Int anchor, int rot, RectInt lot)
+        {
+            var inner = new RectInt(lot.x + 1, lot.y + 1, lot.width - 2, lot.height - 2);
+            if (!Footprint.Fits(map, d, anchor, rot, indoors: true)) return false;
+            foreach (var c in Footprint.Cells(d, anchor, rot))
+            {
+                if (!inner.Contains(c)) return false;
+                for (int dy = -1; dy <= 1; dy++)
+                for (int dx = -1; dx <= 1; dx++)
+                    if (map.InBounds(c.x + dx, c.y + dy) && map.GetBuilding(c.x + dx, c.y + dy) == BuildingDefs.Door) return false;
+            }
+            return true;
         }
 
         void AddProperty(RectInt lot, Vector2Int door, PropertyKind kind)
@@ -439,7 +471,7 @@ namespace OSistema.World
             map.SetBuilding(door.x, door.y, BuildingDefs.Door);
             map.SetBuilding(door.x - 1, door.y, BuildingDefs.Door);
             map.SetBuilding(door.x, door.y + 3, BuildingDefs.HospitalDesk);
-            for (int x = lot.xMin + 2; x < lot.xMax - 2; x += 3) map.SetBuilding(x, lot.yMax - 2, BuildingDefs.Bed);
+            for (int x = lot.xMin + 2; x < lot.xMax - 2; x += 3) Footprint.Place(map, BuildingDefs.Bed, new Vector2Int(x, lot.yMax - 3), 0);
 
             var footprint = new RectInt(lot.x - 1, quarter.y, lot.width + 2, lot.yMax - quarter.y + 1);
             properties.RemoveAll(p => p.Rect.Overlaps(footprint));
@@ -475,8 +507,9 @@ namespace OSistema.World
             BuildBuilding(map, lot, partitions: false, door);
             properties.Add(new Property { Rect = lot, Door = door, Kind = PropertyKind.Home, OwnedByPlayer = true, Name = "The family basso" });
 
+            // Beds against the back wall, heads to the wall.
             for (int i = 0; i < 3 && lot.x + 2 + i * 2 < lot.xMax - 1; i++)
-                map.SetBuilding(lot.x + 2 + i * 2, lot.yMax - 2, BuildingDefs.Bed);
+                Footprint.Place(map, BuildingDefs.Bed, new Vector2Int(lot.x + 2 + i * 2, lot.yMax - 3), 0);
             int kitchenX = door.x == lot.xMin ? lot.xMax - 2 : lot.xMin + 1;
             map.SetBuilding(kitchenX, lot.y + 1, BuildingDefs.Stove);
             map.SetBuilding(kitchenX, lot.y + 2, BuildingDefs.Pantry);
@@ -491,7 +524,7 @@ namespace OSistema.World
             // Every row of blocks gets its own little high street: a bar, a pizzeria, a tabaccaio, a
             // salumeria... and here and there a pharmacy, a butcher, a furniture shop or a jeweller.
             var everyRow = new[] { BuildingDefs.BarCounter, BuildingDefs.PizzeriaCounter, BuildingDefs.TabaccheriaCounter, BuildingDefs.SalumeriaCounter };
-            var sometimes = new[] { BuildingDefs.MacelleriaCounter, BuildingDefs.FarmaciaCounter, BuildingDefs.MobiliCounter, BuildingDefs.LussoCounter, BuildingDefs.BarCounter, BuildingDefs.PizzeriaCounter };
+            var sometimes = new[] { BuildingDefs.MacelleriaCounter, BuildingDefs.FarmaciaCounter, BuildingDefs.MobiliCounter, BuildingDefs.LussoCounter, BuildingDefs.BarCounter, BuildingDefs.PizzeriaCounter, BuildingDefs.MotoCounter };
             var rows = new SortedDictionary<int, List<RectInt>>();
             foreach (var lot in shopLots)
             {
@@ -500,7 +533,7 @@ namespace OSistema.World
                 list.Add(lot);
             }
             int extra = rng.Next(sometimes.Length);
-            bool mobili = false, lusso = false;
+            bool mobili = false, lusso = false, moto = false;
             foreach (var kv in rows)
             {
                 var lots = kv.Value;
@@ -521,11 +554,12 @@ namespace OSistema.World
                         w++;
                         mobili |= def == BuildingDefs.MobiliCounter;
                         lusso |= def == BuildingDefs.LussoCounter;
+                        moto |= def == BuildingDefs.MotoCounter;
                     }
                 }
             }
             // There's always at least one furniture shop and one jeweller in the district.
-            foreach (var (need, def) in new[] { (!mobili, BuildingDefs.MobiliCounter), (!lusso, BuildingDefs.LussoCounter) })
+            foreach (var (need, def) in new[] { (!mobili, BuildingDefs.MobiliCounter), (!lusso, BuildingDefs.LussoCounter), (!moto, BuildingDefs.MotoCounter) })
             {
                 if (!need) continue;
                 foreach (var lot in shopLots)
@@ -541,6 +575,12 @@ namespace OSistema.World
             if (map.GetTerrain(mid.x, mid.y) != TerrainType.Floor || map.GetBuilding(mid.x, mid.y) != null) return false;
             foreach (var c in GridUtil.CellsAround(mid, 1))
                 if (map.GetBuilding(c) == BuildingDefs.Wall) return false;
+            // Out with the family's furniture: this is a shop now.
+            foreach (var c in GridUtil.Cells(prop.Interior, false))
+            {
+                var b = map.GetBuilding(c.x, c.y);
+                if (b != null && b != BuildingDefs.Wall && b != BuildingDefs.Door) map.SetBuilding(c.x, c.y, null);
+            }
             map.SetBuilding(mid.x, mid.y, counter);
             prop.Kind = PropertyKind.Shop;
             FitOut(map, prop, counter, mid);
@@ -558,6 +598,7 @@ namespace OSistema.World
             else if (counter == BuildingDefs.FarmaciaCounter) items = new[] { BuildingDefs.ShopShelf, BuildingDefs.ShopShelf, BuildingDefs.ShopShelf, BuildingDefs.Plant };
             else if (counter == BuildingDefs.MacelleriaCounter) items = new[] { BuildingDefs.Fridge, BuildingDefs.Fridge, BuildingDefs.KitchenCounter, BuildingDefs.KitchenCounter };
             else if (counter == BuildingDefs.MobiliCounter) items = new[] { BuildingDefs.Sofa, BuildingDefs.Armchair, BuildingDefs.Bed, BuildingDefs.Wardrobe, BuildingDefs.Table, BuildingDefs.Rug };
+            else if (counter == BuildingDefs.MotoCounter) items = new[] { BuildingDefs.ParkedScooter, BuildingDefs.ParkedScooter, BuildingDefs.ParkedScooter, BuildingDefs.ParkedScooter, BuildingDefs.Crates };
             else items = new[] { BuildingDefs.Safe, BuildingDefs.Rug, BuildingDefs.ClothesRack, BuildingDefs.Plant, BuildingDefs.Plant, BuildingDefs.Armchair };
 
             var r = prop.Interior;
@@ -577,7 +618,13 @@ namespace OSistema.World
                 var item = items[placed];
                 bool roomItem = item == BuildingDefs.Table || item == BuildingDefs.PlasticChair || item == BuildingDefs.Rug || item == BuildingDefs.CafeTable;
                 if (roomItem == againstWall && r.width > 3 && r.height > 3) continue;
-                map.SetBuilding(x, y, item);
+                if (Footprint.IsBig(item))
+                {
+                    int rot = FitsAwayFromDoors(map, item, c, 0, prop.Rect) ? 0 : FitsAwayFromDoors(map, item, c, 1, prop.Rect) ? 1 : -1;
+                    if (rot < 0) continue;
+                    Footprint.Place(map, item, c, rot);
+                }
+                else map.SetBuilding(x, y, item);
                 placed++;
             }
         }

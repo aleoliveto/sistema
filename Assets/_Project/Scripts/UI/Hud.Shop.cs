@@ -34,9 +34,31 @@ namespace OSistema.UI
                 ShopKind.Tabaccheria => $"At home: {s.TobaccoG} g tobacco, {s.Papers} papers.",
                 ShopKind.Mobili => "Delivered to your storage. Put it down from Build › Home, in any home you own.",
                 ShopKind.Lusso => $"Respect {game.Org.Respect:0}. People judge a man by his wrist.",
+                ShopKind.Moto => $"You ride a {Prices.ScooterNames[Mathf.Clamp(s.ScooterModel, 0, 3)]} · the family has {s.Scooters}. Pick a colour, then the model.",
                 ShopKind.Farmacia => $"At home: {s.Medicine} medicine, {s.Baggies} bags.",
                 _ => $"At home: {s.Baggies} bags, {s.Groceries} groceries, {s.Meals} meals.",
             }, body, "small", "muted", "wrap");
+
+            if (shop.Kind == ShopKind.Moto)
+            {
+                // Four colours per model, as painted: pick one before you buy.
+                var swatches = Ui.Row(body);
+                swatches.style.marginTop = 4;
+                Ui.Text("Colour", swatches, "small").style.width = 60;
+                var picks = new Button[4];
+                for (int c = 0; c < 4; c++)
+                {
+                    int cc = c;
+                    picks[c] = Ui.Btn($"{c + 1}", () =>
+                    {
+                        ShopCards.ChosenColour = cc;
+                        for (int k = 0; k < 4; k++) picks[k].Toggle("btn--on", k == cc);
+                        RefreshScooterPictures();
+                    }, swatches, "btn--small");
+                }
+                picks[ShopCards.ChosenColour % 4].AddToClassList("btn--on");
+            }
+            scooterPictures.Clear();
 
             var total = Ui.Text("", body, "bold");
             Button pay = null;
@@ -53,6 +75,11 @@ namespace OSistema.UI
             {
                 int k = i;
                 var row = Ui.Box("table-row").Into(body);
+                if (items[i].Model >= 0)
+                {
+                    var pic = Ui.Box("shop__pic").Into(row);
+                    scooterPictures.Add((pic, items[i].Model));
+                }
                 var col = Ui.Box("col").Into(row);
                 col.style.width = 260;
                 Ui.Text($"<b>{items[i].Name}</b>", col);
@@ -94,6 +121,18 @@ namespace OSistema.UI
             Ui.Box("spacer").Into(buttons);
             Ui.Btn("Leave  [Esc]", CloseShop, buttons);
             Update();
+            RefreshScooterPictures();
+        }
+
+        readonly List<(VisualElement pic, int model)> scooterPictures = new List<(VisualElement, int)>();
+
+        void RefreshScooterPictures()
+        {
+            foreach (var (pic, model) in scooterPictures)
+            {
+                var sprite = OSistema.Views.PropArt.Scooter(model, ShopCards.ChosenColour);
+                pic.style.backgroundImage = sprite != null ? new StyleBackground(sprite.texture) : new StyleBackground((Texture2D)null);
+            }
         }
 
         public void CloseShop()

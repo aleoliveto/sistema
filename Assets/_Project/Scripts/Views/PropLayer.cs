@@ -63,11 +63,23 @@ namespace OSistema.Views
             sr.sprite = sprite;
             bool vehicle = def == BuildingDefs.ParkedCar || def == BuildingDefs.ParkedScooter;
             sr.sortingOrder = vehicle ? 3 : def == BuildingDefs.Rug ? 1 : 2;
-            float size = PropArt.SizeOf(def);
             var t = sr.transform;
-            t.localScale = new Vector3(size, size, 1f);
-            t.localPosition = new Vector3(x + 0.5f, y + 0.5f, 0f);
-            t.localRotation = Quaternion.Euler(0f, 0f, Angle(def, x, y));
+            if (Footprint.IsBig(def))
+            {
+                // Fill the cells it covers, keeping the painting's proportions within reason.
+                int rot = map.GetRotation(x, y);
+                t.localScale = PropArt.FitScale(sprite, def.Size);
+                var c = Footprint.Center(def, new Vector2Int(x, y), rot);
+                t.localPosition = new Vector3(c.x, c.y, 0f);
+                t.localRotation = Quaternion.Euler(0f, 0f, rot * 90f);
+            }
+            else
+            {
+                float size = PropArt.SizeOf(def);
+                t.localScale = new Vector3(size, size, 1f);
+                t.localPosition = new Vector3(x + 0.5f, y + 0.5f, 0f);
+                t.localRotation = Quaternion.Euler(0f, 0f, Angle(def, x, y));
+            }
             var shadow = t.GetChild(0).GetComponent<SpriteRenderer>();
             shadow.enabled = def != BuildingDefs.Rug;
             shadow.transform.localScale = vehicle ? new Vector3(0.62f, 0.95f, 1f) : new Vector3(0.95f, 0.95f, 1f);

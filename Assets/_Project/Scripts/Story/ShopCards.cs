@@ -24,7 +24,11 @@ namespace OSistema.Story
             public int Price;
             public System.Action<Game> Give;
             public BuildingDef Def;   // furniture: shows how many are in storage
+            public int Model = -1;    // scooters: which one, for the picture
         }
+
+        /// <summary>The colour picked at the scooter dealer (0..3, per model's row on the art sheet).</summary>
+        public static int ChosenColour;
 
         /// <summary>What's on the shelves, for the checkout.</summary>
         public static System.Collections.Generic.List<Item> Items(Business shop)
@@ -39,6 +43,27 @@ namespace OSistema.Story
             {
                 foreach (var (def, note) in Furniture)
                     list.Add(new Item { Name = def.Label, Note = note, Price = BuildingDef.CostOf(def), Def = def, Give = g => g.Stock.Store(def) });
+            }
+            else if (shop.Kind == ShopKind.Moto)
+            {
+                for (int m = 0; m < Prices.ScooterModels.Length; m++)
+                {
+                    int model = m;
+                    list.Add(new Item
+                    {
+                        Name = Prices.ScooterNames[m], Note = Prices.ScooterNotes[m], Price = Prices.ScooterModels[m], Model = m,
+                        Give = g =>
+                        {
+                            g.Stock.Scooters++;
+                            // The best one is yours; the rest go to the crew.
+                            if (model >= g.Stock.ScooterModel || g.Stock.Scooters == 1)
+                            {
+                                g.Stock.ScooterModel = model;
+                                g.Stock.ScooterColour = ChosenColour;
+                            }
+                        },
+                    });
+                }
             }
             else if (shop.Kind == ShopKind.Lusso)
             {

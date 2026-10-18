@@ -126,8 +126,10 @@ namespace OSistema.UI
                 if (p.HasBark && !p.Dead && !rival && close)
                 {
                     var bubble = NextBubble();
-                    ((Label)bubble[0]).text = p.Bark.Neapolitan;
-                    ((Label)bubble[1]).text = p.Bark.English;
+                    // A short shout stays in dialect; anything longer is said in English.
+                    bool nap = OSistema.Story.Dialect.Show(p.Bark.Neapolitan);
+                    ((Label)bubble[0]).text = nap ? p.Bark.Neapolitan : p.Bark.English;
+                    ((Label)bubble[1]).text = nap ? p.Bark.English : "";
                     bubble.style.left = pos.x;
                     bubble.style.top = pos.y - unit * 0.55f;
                 }

@@ -154,7 +154,7 @@ namespace OSistema.Views
             hair.enabled = visible;
             // The painted bodies have their own arms: the hands show to hold a gun or the handlebars,
             // and swing at the sides while walking.
-            bool hands = visible && (!art || aiming || Seated || moving > 0.1f);
+            bool hands = visible && (!art || (aiming && !Seated));
             handL.enabled = hands;
             handR.enabled = hands;
             if (hat != null) hat.enabled = visible && hat.sprite != null;
@@ -214,33 +214,13 @@ namespace OSistema.Views
             float runAmt = Mathf.Clamp01((speed - 3.5f) / 3f);
             if (art)
             {
-                bool walking = moving > 0.1f && !Seated;
-                bool hands = visibleNow && (aiming || Seated || walking) && !lying;
+                // The painted bodies have their own arms: hands only appear holding a gun.
+                bool hands = visibleNow && aiming && !lying && !Seated;
                 handL.enabled = hands;
                 handR.enabled = hands;
-                if (walking && !aiming)
-                {
-                    // Arms swing against the legs: left hand forward with the right foot.
-                    float arm = Mathf.Sin(stride) * (0.16f + 0.1f * runAmt) * moving;
-                    handL.transform.localPosition = new Vector3(-0.38f, 0.02f + arm, 0f);
-                    handR.transform.localPosition = new Vector3(0.38f, 0.02f - arm, 0f);
-                    gun.transform.localPosition = new Vector3(0.38f, 0.16f - arm, 0f);
-                }
-                bool feet = visibleNow && !lying && !Seated && !drawnLegs && moving > 0.05f;
-                footL.enabled = footR.enabled = feet;
-                if (feet)
-                {
-                    float reach = (0.2f + 0.14f * runAmt) * moving;
-                    float s = Mathf.Sin(stride);
-                    // A foot lifts (and shrinks a touch) as it swings through.
-                    footL.transform.localPosition = new Vector3(-0.13f, -s * reach, 0f);
-                    footR.transform.localPosition = new Vector3(0.13f, s * reach, 0f);
-                    float liftL = Mathf.Max(0f, Mathf.Cos(stride)) * 0.08f, liftR = Mathf.Max(0f, -Mathf.Cos(stride)) * 0.08f;
-                    footL.transform.localScale = new Vector3(0.36f - liftL, 0.5f - liftL, 1f);
-                    footR.transform.localScale = new Vector3(0.36f - liftR, 0.5f - liftR, 1f);
-                }
+                footL.enabled = footR.enabled = false;
             }
-            else footL.enabled = footR.enabled = false;
+
             aiming = false;
             if (art && !lying)
             {

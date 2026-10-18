@@ -20,6 +20,8 @@ namespace OSistema.Core
         public int Product;   // 'a roba, stored at the basso
         public int Pistols;   // unassigned guns in the stash
         public int Scooters;  // the crew's own scooters
+        public int ScooterModel;   // the boss's ride: 0 step-through .. 3 maxi (see Prices.ScooterModels)
+        public int ScooterColour;
         public int Cigarettes; // packs of ROSSE, ready to sell
 
         // Production

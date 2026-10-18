@@ -154,8 +154,9 @@ namespace OSistema.UI
             Ui.Text(e.Title, band, "card__title");
 
             var body = Ui.Box("card__body").Into(card);
-            Ui.Text($"“{e.Neapolitan}”", body, "card__quote");
-            Ui.Text(e.English, body, "card__sub");
+            // English first; a short saying in dialect only now and then, as flavour.
+            if (OSistema.Story.Dialect.Show(e.Neapolitan)) Ui.Text($"“{e.Neapolitan}”", body, "card__sub");
+            if (!string.IsNullOrEmpty(e.English)) Ui.Text(OSistema.Story.Dialect.Show(e.Neapolitan) || string.IsNullOrEmpty(e.Neapolitan) ? e.English : $"“{e.English}”", body, "card__quote");
             Ui.Text(e.Body, body, "card__text");
 
             for (int i = 0; i < e.Options.Count; i++)

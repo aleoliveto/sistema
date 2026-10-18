@@ -461,15 +461,7 @@ namespace OSistema.UI
 
             Ui.Text("SCOOTERS", bizBody, "section");
             Ui.Text($"The family has <b>{st.Scooters}</b>. Crew take a free scooter for any long trip: far faster across the city.", bizBody, "small", "wrap");
-            Ui.Btn($"Buy a scooter (€{Prices.Scooter})", Do(() =>
-            {
-                if (!org.Pay(Prices.Scooter, game, out var error)) game.Log.Add(error, MessageKind.Bad);
-                else
-                {
-                    st.Scooters++;
-                    game.Log.Add("A second-hand Liberty, no questions asked. It's parked outside the basso.", MessageKind.Good);
-                }
-            }), bizBody, "btn--small").style.alignSelf = Align.FlexStart;
+            Ui.Text($"Your ride: <b>{Prices.ScooterNames[Mathf.Clamp(st.ScooterModel, 0, 3)]}</b>. Buy more, or a better one, at the scooter dealer (on the map).", bizBody, "small", "muted", "wrap");
 
             Ui.Text("ARMS", bizBody, "section");
             Ui.Text($"Pistols in the stash: <b>{st.Pistols}</b>. Armed crew defend themselves and fight when drafted, but get longer sentences if arrested.", bizBody, "small", "wrap");

@@ -6,7 +6,7 @@ namespace OSistema.World
 
     public enum PlaceMode { Single, Outline, Fill }
 
-    public enum ShopKind { None, Pizzeria, Salumeria, Farmacia, Bar, Macelleria, Tabaccheria, Mobili, Lusso }
+    public enum ShopKind { None, Pizzeria, Salumeria, Farmacia, Bar, Macelleria, Tabaccheria, Mobili, Lusso, Moto }
 
     public static class TerrainDefs
     {
@@ -61,6 +61,8 @@ namespace OSistema.World
         public bool Generated;    // street furniture and the like: placed by the map generator only
         public float Beauty;      // how much nicer it makes a home (crew mood)
         public int Cost;          // euros, paid when the blueprint is placed
+        public Vector2Int Size = Vector2Int.one;   // cells it covers, unturned (a bed is 1x2)
+        public bool Filler;       // marks the other cells of something bigger than one cell (see Footprint)
 
         static readonly System.Collections.Generic.Dictionary<string, int> Costs = new System.Collections.Generic.Dictionary<string, int>
         {
@@ -96,7 +98,7 @@ namespace OSistema.World
         {
             Id = "bed", Label = "Bed", Passable = true, PathCost = 1.8f, WorkToBuild = 250, Beauty = 1f,
             Color = new Color32(150, 44, 44, 255),
-            PlaceMode = PlaceMode.Fill,
+            PlaceMode = PlaceMode.Single, Size = new Vector2Int(1, 2),
         };
 
         public static readonly BuildingDef Table = new BuildingDef
@@ -206,18 +208,34 @@ namespace OSistema.World
         };
 
         // ---- Furniture: makes a basso a home ----
-        public static readonly BuildingDef Sofa = Furniture("sofa", "Sofa", new Color32(120, 40, 50, 255), 3f, passable: false, cover: true);
+        public static readonly BuildingDef Sofa = Sized(Furniture("sofa", "Sofa", new Color32(120, 40, 50, 255), 3f, passable: false, cover: true), 2, 1);
         public static readonly BuildingDef Armchair = Furniture("armchair", "Armchair", new Color32(150, 110, 70, 255), 1.5f, passable: false);
         public static readonly BuildingDef Television = Furniture("tv", "TV", new Color32(30, 30, 34, 255), 2f, passable: false);
-        public static readonly BuildingDef Wardrobe = Furniture("wardrobe", "Wardrobe", new Color32(110, 76, 46, 255), 1f, passable: false, cover: true);
-        public static readonly BuildingDef KitchenCounter = Furniture("kitchen_counter", "Kitchen counter", new Color32(200, 196, 186, 255), 1f, passable: false, cover: true);
+        public static readonly BuildingDef Wardrobe = Sized(Furniture("wardrobe", "Wardrobe", new Color32(110, 76, 46, 255), 1f, passable: false, cover: true), 2, 1);
+        public static readonly BuildingDef KitchenCounter = Sized(Furniture("kitchen_counter", "Kitchen counter", new Color32(200, 196, 186, 255), 1f, passable: false, cover: true), 2, 1);
         public static readonly BuildingDef Fridge = Furniture("fridge", "Fridge", new Color32(225, 228, 230, 255), 1f, passable: false, cover: true);
         public static readonly BuildingDef Plant = Furniture("plant", "Plant", new Color32(60, 120, 60, 255), 1.5f, passable: false);
-        public static readonly BuildingDef Rug = Furniture("rug", "Rug", new Color32(150, 50, 40, 255), 1f, passable: true);
+        public static readonly BuildingDef Rug = Sized(Furniture("rug", "Rug", new Color32(150, 50, 40, 255), 1f, passable: true), 2, 2);
+
+        static BuildingDef Sized(BuildingDef d, int w, int h)
+        {
+            d.Size = new Vector2Int(w, h);
+            return d;
+        }
+
+        // The other cells of a big piece: solid, or walkable (a bed, a rug).
+        public static readonly BuildingDef PartSolid = new BuildingDef { Id = "part_solid", Label = "", Passable = false, Cover = true, Filler = true, Color = new Color32(0, 0, 0, 0) };
+        public static readonly BuildingDef PartSoft = new BuildingDef { Id = "part_soft", Label = "", Passable = true, PathCost = 1.6f, Filler = true, Color = new Color32(0, 0, 0, 0) };
         public static readonly BuildingDef Safe = Furniture("safe", "Safe", new Color32(70, 74, 80, 255), 0.5f, passable: false, cover: true);
         public static readonly BuildingDef HomeShrine = Furniture("home_shrine", "Home shrine", new Color32(70, 110, 190, 255), 2.5f, passable: false);
 
         // ---- More shops ----
+        public static readonly BuildingDef MotoCounter = new BuildingDef
+        {
+            Id = "moto_counter", Label = "Concessionaria", Passable = false, WorkToBuild = 600,
+            Color = new Color32(60, 60, 70, 255), Shop = ShopKind.Moto,
+        };
+
         public static readonly BuildingDef MobiliCounter = new BuildingDef
         {
             Id = "mobili_counter", Label = "Mobilificio", Passable = false, WorkToBuild = 600,
@@ -269,6 +287,7 @@ namespace OSistema.World
             Sofa, Armchair, Television, Wardrobe, KitchenCounter, Fridge, Plant, Rug, Safe, HomeShrine,
             BaggingTable, RollingTable, MobiliCounter, LussoCounter,
             PizzaOven, CafeTable, ShopShelf, ClothesRack, FruitStall, IceCream, BinBags, Bicycle, Crates, PottedPlants,
+            MotoCounter, PartSolid, PartSoft,
         };
 
         public static BuildingDef ById(string id)
@@ -291,6 +310,16 @@ namespace OSistema.World
         public const int JailedFamilySupport = 150; // weekly, per crew member inside
         public const int Pistol = 600;
         public const int Scooter = 900;
+        /// <summary>The four scooters at the dealer, cheap to flash: step-through 50, commuter 125, GT 300, maxi 530.</summary>
+        public static readonly int[] ScooterModels = { 700, 1700, 2800, 7800 };
+        public static readonly string[] ScooterNames = { "Step-through 50", "Commuter 125", "GT 300", "Maxi 530" };
+        public static readonly string[] ScooterNotes =
+        {
+            "Cheap, slow, everybody's first. Nobody looks twice.",
+            "Big wheels and a top box: what every dad in the rione rides.",
+            "Wide seat, windscreen, real speed.",
+            "The boss's ride. Fastest thing in the vicoli; needs clean money.",
+        };
         public const int CigaretteCase = 10;    // wholesale, from the smugglers
         public const int CigaretteStreet = 25;  // per case, sold from the deposito
         public const int BillsPerHome = 40;     // weekly: light, gas, water

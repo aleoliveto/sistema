@@ -100,6 +100,9 @@ namespace OSistema.AI
                 }
                 asleep = true;
                 Pawn.Sleep = bed.HasValue ? SleepState.InBed : SleepState.OnFloor;
+                // Lie down in the middle of the bed, not at its foot.
+                if (bed.HasValue && game.Map.GetBuilding(bed.Value) == World.BuildingDefs.Bed)
+                    Pawn.Mover.Place(World.Footprint.Center(World.BuildingDefs.Bed, bed.Value, game.Map.GetRotation(bed.Value.x, bed.Value.y)));
                 return false;
             }
 

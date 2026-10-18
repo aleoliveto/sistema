@@ -791,6 +791,7 @@
 .icon--macelleria { background-color: #A8343C; }
 .icon--mobili { background-color: #8A5A32; }
 .icon--lusso { background-color: #2FA7B5; }
+.icon--moto { background-color: #3B4A6B; }
 .icon--shop { background-color: #6A6460; }
 .icon--work { background-color: #E8C26A; color: #1A1410; }
 .icon--contact { background-color: #CFC6B4; color: #1A1410; }
@@ -930,3 +931,4 @@
 .nokia__key:hover { background-color: #4A5057; }
 .nokia__digit { font-size: 13px; color: #E6E9EC; -unity-font-style: bold; }
 .nokia__letters { font-size: 7px; color: #9AA0A6; margin-left: 3px; }
+.shop__pic { width: 44px; height: 56px; margin-right: 8px; -unity-background-scale-mode: scale-to-fit; }

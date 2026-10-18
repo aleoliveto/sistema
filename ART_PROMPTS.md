@@ -90,3 +90,11 @@ Re-use the men's prompts with these swaps for more variety:
 
 ## 11. Steam store (later)
 When the game is closer to release: key art of a young man on a scooter in a Neapolitan vicolo at dusk, laundry overhead, Vesuvius in the distance, cinematic; then crop to 460×215, 616×353, 374×448, 600×900 and 3840×1240.
+
+---
+
+## 12. Walking legs (`Art/Characters/sheet_legs_walk.png`) — makes the walk animation real
+The bodies are painted from the shoulders up, so walking can only sway them. A legs layer under the body, in four frames, gives a real stride.
+```text
+Same style as the attached reference. A 4×4 grid of 16 equal square cells, transparent background, no text. Seen from directly above (90 degrees overhead), front pointing DOWN. Each cell shows ONLY a person's hips, legs and shoes as seen from above while walking, no torso, no arms (the torso is drawn separately on top), centred in the cell at the same scale in every cell. Each ROW is one pair of trousers walking through a 4-frame cycle, left to right: (1) left foot forward, right foot back; (2) feet passing, together; (3) right foot forward, left foot back; (4) feet passing, together. Row 1: blue jeans and white trainers. Row 2: black tracksuit trousers with white stripes and black trainers. Row 3: dark grey suit trousers and black leather shoes. Row 4: a woman's dark skirt to the knee with bare legs and flat shoes.
+```

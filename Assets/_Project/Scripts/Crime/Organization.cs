@@ -429,6 +429,7 @@ namespace OSistema.Crime
             ShopKind.Tabaccheria => $"Tabacchi {Names.Pick(Names.Surnames, rng)}",
             ShopKind.Mobili => $"Mobilificio {Names.Pick(Names.Surnames, rng)}",
             ShopKind.Lusso => $"Gioielleria {Names.Pick(Names.Surnames, rng)}",
+            ShopKind.Moto => $"Moto {Names.Pick(Names.Surnames, rng)}",
             _ => "Shop",
         };
 
@@ -441,6 +442,7 @@ namespace OSistema.Crime
             ShopKind.Salumeria => 120,
             ShopKind.Lusso => 300,
             ShopKind.Mobili => 160,
+            ShopKind.Moto => 220,
             _ => 100,
         };
 

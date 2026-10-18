@@ -106,10 +106,19 @@ namespace OSistema.Input
             var art = PropArt.For(CurrentDef, cell.x, cell.y);
             if (art != null)
             {
-                float size = PropArt.SizeOf(CurrentDef);
                 ghost.sprite = art;
-                ghost.transform.position = new Vector3(cell.x + 0.5f, cell.y + 0.5f, 0f);
-                ghost.transform.localScale = new Vector3(size, size, 1f);
+                if (Footprint.IsBig(CurrentDef))
+                {
+                    var center = Footprint.Center(CurrentDef, cell, PlacementRotation);
+                    ghost.transform.position = new Vector3(center.x, center.y, 0f);
+                    ghost.transform.localScale = PropArt.FitScale(art, CurrentDef.Size);
+                }
+                else
+                {
+                    float size = PropArt.SizeOf(CurrentDef);
+                    ghost.transform.position = new Vector3(cell.x + 0.5f, cell.y + 0.5f, 0f);
+                    ghost.transform.localScale = new Vector3(size, size, 1f);
+                }
                 ghost.transform.rotation = Quaternion.Euler(0f, 0f, PlacementRotation * 90f);
             }
             else
@@ -159,11 +168,9 @@ namespace OSistema.Input
             // Changed your mind halfway through a move: it goes back where it was.
             if (carried != null && !(tool == Tool.Build && def == carried))
             {
-                if (game.Map.GetBuilding(carriedFrom.x, carriedFrom.y) == null)
-                {
-                    game.Map.SetRotation(carriedFrom.x, carriedFrom.y, carriedRotation);
-                    game.Map.SetBuilding(carriedFrom.x, carriedFrom.y, carried);
-                }
+                if (Footprint.Fits(game.Map, carried, carriedFrom, carriedRotation, indoors: false))
+                    Footprint.Place(game.Map, carried, carriedFrom, carriedRotation);
+                else game.Stock.Store(carried);   // no room any more: it goes into storage
                 carried = null;
             }
             CurrentTool = tool;
@@ -372,8 +379,7 @@ namespace OSistema.Input
                     if (carried == CurrentDef && carried != null)
                     {
                         // Putting down something you're moving: free.
-                        game.Map.SetRotation(start.x, start.y, (byte)PlacementRotation);
-                        game.Map.SetBuilding(start.x, start.y, CurrentDef);
+                        Footprint.Place(game.Map, CurrentDef, start, PlacementRotation);
                         carried = null;
                         SetTool(Tool.Move);
                         break;
@@ -389,8 +395,7 @@ namespace OSistema.Input
                             break;
                         }
                         game.Stock.Store(CurrentDef, -1);
-                        game.Map.SetRotation(start.x, start.y, (byte)PlacementRotation);
-                        game.Map.SetBuilding(start.x, start.y, CurrentDef);
+                        Footprint.Place(game.Map, CurrentDef, start, PlacementRotation);
                         OSistema.Views.SoundManager.PlayUi(OSistema.Views.AudioSynth.Click, 0.3f);
                         if (game.Stock.StoredOf(CurrentDef) <= 0) SetTool(Tool.Select);
                         break;
@@ -401,8 +406,7 @@ namespace OSistema.Input
                         game.Log.Add(payError, MessageKind.Bad);
                         break;
                     }
-                    game.Map.SetRotation(start.x, start.y, (byte)PlacementRotation);
-                    game.Map.SetBuilding(start.x, start.y, CurrentDef);
+                    Footprint.Place(game.Map, CurrentDef, start, PlacementRotation);
                     game.PopupAt(ScreenToWorld(mousePos), $"-€{cost}");
                     OSistema.Views.SoundManager.PlayUi(OSistema.Views.AudioSynth.Click, 0.3f);
                     break;
@@ -410,11 +414,13 @@ namespace OSistema.Input
 
                 case Tool.Move:
                 {
-                    var b = game.Map.GetBuilding(start.x, start.y);
+                    var anchorCell = Footprint.AnchorOf(game.Map, start);
+                    var b = anchorCell.HasValue ? game.Map.GetBuilding(anchorCell.Value) : null;
                     if (b == null || !InOwnedHome(start) || b == BuildingDefs.Wall || b == BuildingDefs.Door) break;
+                    start = anchorCell.Value;
                     carriedFrom = start;
                     carriedRotation = game.Map.GetRotation(start.x, start.y);
-                    game.Map.SetBuilding(start.x, start.y, null);
+                    Footprint.Remove(game.Map, start, out _, out _);
                     PlacementRotation = carriedRotation;
                     SetTool(Tool.Build, b);
                     carried = b;
@@ -424,9 +430,11 @@ namespace OSistema.Input
                 case Tool.Deconstruct:
                     foreach (var c in GridUtil.Cells(rect, false))
                     {
-                        var b = game.Map.GetBuilding(c.x, c.y);
-                        if (b == null || !InOwnedHome(c) || b == BuildingDefs.Wall || b == BuildingDefs.Door) continue;
-                        game.Map.SetBuilding(c.x, c.y, null);
+                        var cell = game.Map.GetBuilding(c.x, c.y);
+                        if (cell == null || !InOwnedHome(c) || cell == BuildingDefs.Wall || cell == BuildingDefs.Door) continue;
+                        // The whole piece, whichever of its cells you clicked.
+                        var b = Footprint.Remove(game.Map, new Vector2Int(c.x, c.y), out _, out _);
+                        if (b == null) continue;
                         if (BuildingDef.BuiltInPlace(b))
                         {
                             int refund = BuildingDef.CostOf(b) / 2;
@@ -462,16 +470,21 @@ namespace OSistema.Input
         bool InOwnedHome(Vector2Int c) => game.PlayerBase.Contains(c) || game.Properties.IsOwnedHome(c);
 
         /// <summary>Furniture goes on a free floor tile inside a home the family owns.</summary>
-        public bool CanPlace(Vector2Int c, out string why)
+        public bool CanPlace(Vector2Int anchor, out string why)
         {
             why = null;
-            if (CurrentDef == null || !game.Map.InBounds(c)) return false;
-            if (!InOwnedHome(c)) { why = "You can only furnish homes the family owns. Buy a place first (Famiglia, Property)."; return false; }
-            var t = game.Map.GetTerrain(c.x, c.y);
-            if (t != TerrainType.Floor && t != TerrainType.Marble) { why = "Put it indoors."; return false; }
-            if (game.Map.GetBuilding(c.x, c.y) != null) { why = "Something is already there."; return false; }
-            foreach (var p in game.Pawns.All)
-                if (p.IsPresent && p.Cell == c) { why = "Someone is standing there."; return false; }
+            if (CurrentDef == null || !game.Map.InBounds(anchor)) return false;
+            // Every cell it covers: a bed takes two.
+            foreach (var c in Footprint.Cells(CurrentDef, anchor, PlacementRotation))
+            {
+                if (!game.Map.InBounds(c)) return false;
+                if (!InOwnedHome(c)) { why = "You can only furnish homes the family owns. Buy a place first (Famiglia, Property)."; return false; }
+                var t = game.Map.GetTerrain(c.x, c.y);
+                if (t != TerrainType.Floor && t != TerrainType.Marble) { why = "Put it indoors."; return false; }
+                if (game.Map.GetBuilding(c.x, c.y) != null) { why = "Something is already there."; return false; }
+                foreach (var p in game.Pawns.All)
+                    if (p.IsPresent && p.Cell == c) { why = "Someone is standing there."; return false; }
+            }
             return true;
         }
 
@@ -560,7 +573,10 @@ namespace OSistema.Input
             {
                 // Riding: W throttle, S brake (and a slow reverse), A/D lean into the turn.
                 // It needs speed to turn, slides a little in corners, and bangs into walls.
-                float top = Pawn.BaseSpeed * TickManager.TicksPerSecond * 2.6f;
+                // Better scooters are faster: the maxi leaves a step-through standing.
+                p.RideModel = game.Stock.ScooterModel;
+                p.RideColour = game.Stock.ScooterColour;
+                float top = Pawn.BaseSpeed * TickManager.TicksPerSecond * 2.6f * (p.StolenScooter ? 1f : 0.92f + 0.1f * game.Stock.ScooterModel);
                 bool gas = kb.wKey.isPressed, brake = kb.sKey.isPressed;
                 float steer = (kb.aKey.isPressed ? 1f : 0f) - (kb.dKey.isPressed ? 1f : 0f);
                 if (gas) p.ScooterSpeed = Mathf.MoveTowards(p.ScooterSpeed, top, 8f * dt);
@@ -762,7 +778,7 @@ namespace OSistema.Input
             foreach (var c in game.Pawns.Crew) if (c != p && c.OnScooter) inUse++;
             if (game.Stock.Scooters - inUse <= 0)
             {
-                game.Log.Add(game.Stock.Scooters == 0 ? "The family has no scooter. Buy one (Famiglia, Supply)." : "Every scooter is out with the crew.", MessageKind.Info);
+                game.Log.Add(game.Stock.Scooters == 0 ? "The family has no scooter. The scooter dealer is on the map." : "Every scooter is out with the crew.", MessageKind.Info);
                 return;
             }
             var t = game.Map.GetTerrain(p.Cell.x, p.Cell.y);
@@ -857,7 +873,7 @@ namespace OSistema.Input
                 var here = game.Map.GetTerrain(p.Cell.x, p.Cell.y);
                 if (here != TerrainType.Floor && here != TerrainType.Marble) continue;
                 int hour = game.Clock.Hour;
-                bool shopKind = b.Kind == ShopKind.Tabaccheria || b.Kind == ShopKind.Salumeria || b.Kind == ShopKind.Mobili || b.Kind == ShopKind.Lusso || b.Kind == ShopKind.Farmacia || b.Kind == ShopKind.Macelleria;
+                bool shopKind = b.Kind == ShopKind.Tabaccheria || b.Kind == ShopKind.Salumeria || b.Kind == ShopKind.Mobili || b.Kind == ShopKind.Lusso || b.Kind == ShopKind.Farmacia || b.Kind == ShopKind.Macelleria || b.Kind == ShopKind.Moto;
                 if (!shopKind && !Story.ShopCards.PizzoActionable(b, game)) continue;
                 if (hour < 8 || hour >= 21) return new Action { Label = $"{b.Name} is closed", Do = () => { } };
                 var shop = b;
@@ -906,9 +922,12 @@ namespace OSistema.Input
             at = default;
             foreach (var c in GridUtil.CellsAround(p.Cell, 1))
             {
-                if (!game.Map.InBounds(c) || game.Map.GetBuilding(c) != def) continue;
+                if (!game.Map.InBounds(c)) continue;
+                // Next to any part of it counts: the foot of the bed as much as the head.
+                var a = game.Map.GetBuilding(c) is BuildingDef b && b.Filler ? Footprint.AnchorOf(game.Map, c) : c;
+                if (a == null || game.Map.GetBuilding(a.Value) != def) continue;
                 if ((Mover.CellCenter(c) - p.Position).sqrMagnitude > 1.8f * 1.8f) continue;
-                at = c;
+                at = a.Value;
                 return true;
             }
             return false;

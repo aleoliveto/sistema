@@ -99,8 +99,8 @@ namespace OSistema.UI
                 var card = Ui.Box("panel").Into(jobsBody);
                 card.style.marginBottom = 6;
                 Ui.Text($"<b>{c.Title}</b>  <color=#A89F8E>· {c.Giver}</color>", card);
-                Ui.Text($"“{c.Neapolitan}”", card, "gold", "small");
-                Ui.Text(c.English, card, "small", "muted");
+                if (OSistema.Story.Dialect.Show(c.Neapolitan)) Ui.Text($"“{c.Neapolitan}”", card, "gold", "small");
+                Ui.Text($"“{c.English}”", card, "small", "muted");
                 Ui.Text(c.Text, card, "small", "wrap");
                 long hours = (c.ExpiresTick - now) / GameClock.TicksPerHour;
                 Ui.Text($"<color=#8FD18A>€{c.Reward} · respect +{c.RespectReward:0.#}</color>   <color=#F2B866>Risk: {c.Risk}</color>   <color=#A89F8E>expires in {hours}h</color>", card, "small", "wrap");

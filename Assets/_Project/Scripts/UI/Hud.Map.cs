@@ -65,6 +65,7 @@ namespace OSistema.UI
                     ShopKind.Macelleria => ("M", "icon--macelleria", "Macelleria"),
                     ShopKind.Mobili => ("F", "icon--mobili", "Mobilificio (furniture)"),
                     ShopKind.Lusso => ("◆", "icon--lusso", "Gioielleria (luxury)"),
+                    ShopKind.Moto => ("V", "icon--moto", "Scooter dealer"),
                     _ => ("·", "icon--shop", "Shop"),
                 };
                 places.Add(new Place { At = Mover.CellCenter(b.Cell), Glyph = g, Css = css, Name = $"{what} · {b.Name}" });
@@ -144,7 +145,7 @@ namespace OSistema.UI
             {
                 ("C", "icon--home", "Home"), ("P", "icon--pizza", "Pizzeria"), ("B", "icon--bar", "Bar"), ("T", "icon--tabacchi", "Tabaccaio"),
                 ("S", "icon--salumeria", "Salumeria"), ("+", "icon--farmacia", "Farmacia"), ("M", "icon--macelleria", "Macelleria"),
-                ("F", "icon--mobili", "Furniture shop"), ("◆", "icon--lusso", "Jeweller"),
+                ("F", "icon--mobili", "Furniture shop"), ("◆", "icon--lusso", "Jeweller"), ("V", "icon--moto", "Scooter dealer"),
                 ("H", "icon--hospital", "Hospital"), ("†", "icon--church", "Church"), ("A", "icon--work", "Someone with work for you"),
                 ("A", "icon--contact", "Someone you know"),
             })

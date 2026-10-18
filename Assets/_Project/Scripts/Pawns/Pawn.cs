@@ -93,6 +93,7 @@ namespace OSistema.Pawns
         public int Ammo = MagazineSize;
         public float ReloadUntil = -1f;     // real seconds (Time.unscaledTime)
         public float Bloom;                 // extra spread in degrees, from firing fast; settles back down
+        public int RideModel = 1, RideColour = -1;   // which scooter they ride (the boss: the one bought at the dealer)
 
         /// <summary>Who this pawn is shooting at right now (for facing and effects).</summary>
         public Pawn AimTarget => aimTarget != null && Time.unscaledTime < aimUntil ? aimTarget : null;

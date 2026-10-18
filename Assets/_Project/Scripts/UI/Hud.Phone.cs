@@ -220,7 +220,7 @@ namespace OSistema.UI
                     var m = phoneMsg;
                     if (m == null) { phoneScreen = PhoneScreen.Inbox; RenderPhone(); return; }
                     LcdText($"{m.From}  {Phone.TimeOf(m)}", "lcd__title");
-                    if (!string.IsNullOrEmpty(m.Neapolitan)) LcdText($"“{m.Neapolitan}”", "lcd__nap");
+                    if (OSistema.Story.Dialect.Show(m.Neapolitan)) LcdText($"“{m.Neapolitan}”", "lcd__nap");
                     if (!string.IsNullOrEmpty(m.English)) LcdText(m.English);
                     if (!string.IsNullOrEmpty(m.Body)) LcdText(m.Body, "lcd__small");
                     if (m.Open(now))
@@ -281,7 +281,7 @@ namespace OSistema.UI
                     LcdText(call != null && call.Answered ? "IN CALL" : "CALLING…", "lcd__title");
                     if (call != null)
                     {
-                        if (!string.IsNullOrEmpty(call.Neapolitan)) LcdText($"“{call.Neapolitan}”", "lcd__nap");
+                        if (OSistema.Story.Dialect.Show(call.Neapolitan)) LcdText($"“{call.Neapolitan}”", "lcd__nap");
                         if (!string.IsNullOrEmpty(call.English)) LcdText(call.English);
                         for (int i = 0; i < call.Options.Count; i++)
                         {
