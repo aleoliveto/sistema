@@ -276,6 +276,9 @@ namespace OSistema.Views
             // Lying figures read flatter and slightly offset, standing ones bob very slightly when moving.
             pivot.localPosition = lying ? new Vector3(0f, -0.1f, 0f) : Vector3.zero;
             shadow.transform.localScale = lying ? new Vector3(1.2f, 0.55f, 1f) : new Vector3(0.95f, 0.7f, 1f);
+            // A contact shadow always, thrown longer by the sun in the morning and evening.
+            shadow.transform.localPosition = (Vector3)(Sun.Offset * (lying ? 0.12f : 0.32f));
+            shadow.color = new Color(0.05f, 0.04f, 0.06f, 0.3f + 0.28f * Sun.Strength);
         }
 
         // ---------- Appearance helpers ----------

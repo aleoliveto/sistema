@@ -131,7 +131,9 @@ namespace OSistema.Views
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = sprite;
             sr.sharedMaterial = SpriteFactory.LitMaterial;
-            sr.sortingOrder = 7;   // over roofs' edges, under people's heads
+            sr.sortingOrder = Overhead.Order;   // above the street: people pass under it
+            HeightShadow.Add(sr, 2.2f, 0.3f);
+            Overhead.Register(new Rect(at.x - 0.45f, at.y - 0.45f, 0.9f, 0.9f), sr);
         }
 
         Lamp Add(Vector2 at, Kind kind, System.Random rng)
@@ -189,6 +191,7 @@ namespace OSistema.Views
             float day = game.Clock.Daylight;
             float hour = game.Clock.HourF;
             float rain = game.Weather.Rain;
+            Sun.Update(hour, day, rain);
             bool evening = hour > 16f && hour < 22f;
             var tint = day > 0.5f
                 ? Color.Lerp(evening ? DuskColor : DayColor, DayColor, (day - 0.5f) * 2f)

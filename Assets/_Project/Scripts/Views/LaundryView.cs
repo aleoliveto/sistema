@@ -17,6 +17,9 @@ namespace OSistema.Views
             new Color(0.4f, 0.65f, 0.4f),
         };
 
+        /// <summary>How high the lines are strung, in cells: two floors up.</summary>
+        const float Height = 2.6f;
+
         readonly List<(Transform t, float phase)> swaying = new List<(Transform, float)>();
 
         public void Init(Map map)
@@ -42,15 +45,20 @@ namespace OSistema.Views
         void Line(int x0, int x1, int y, System.Random rng)
         {
             float yPos = y + 0.6f;
-            var line = Part(new Vector2((x0 + x1) / 2f, yPos), new Vector2(x1 - x0 + 0.4f, 0.04f), new Color(0.2f, 0.2f, 0.2f, 0.9f), 24);
+            var line = Part(new Vector2((x0 + x1) / 2f, yPos), new Vector2(x1 - x0 + 0.4f, 0.04f), new Color(0.2f, 0.2f, 0.2f, 0.9f), Overhead.Order);
+            HeightShadow.Add(line, Height, 0.22f);
+            var parts = new List<SpriteRenderer> { line };
 
             for (float x = x0 + 0.25f; x < x1 - 0.1f; x += 0.35f + (float)rng.NextDouble() * 0.3f)
             {
                 var color = Clothes[rng.Next(Clothes.Length)];
                 var size = new Vector2(0.18f + (float)rng.NextDouble() * 0.16f, 0.22f + (float)rng.NextDouble() * 0.2f);
-                var garment = Part(new Vector2(x, yPos - size.y / 2f), size, color, 25);
+                var garment = Part(new Vector2(x, yPos - size.y / 2f), size, color, Overhead.Order + 1);
                 swaying.Add((garment.transform, (float)rng.NextDouble() * 6.28f));
+                HeightShadow.Add(garment, Height - 0.3f);
+                parts.Add(garment);
             }
+            Overhead.Register(new Rect(x0, yPos - 0.6f, x1 - x0, 0.7f), parts.ToArray());
         }
 
         SpriteRenderer Part(Vector2 at, Vector2 scale, Color color, int order)

@@ -14,6 +14,9 @@ namespace OSistema.Views
         readonly Dictionary<int, SpriteRenderer> props = new Dictionary<int, SpriteRenderer>();
         readonly Stack<SpriteRenderer> spare = new Stack<SpriteRenderer>();
         readonly HashSet<int> pending = new HashSet<int>();
+        readonly Dictionary<int, float> heights = new Dictionary<int, float>();
+        Vector2 sunDrawn;
+        float sunStrengthDrawn = -1f;
 
         public void Init(Map m)
         {
@@ -33,9 +36,36 @@ namespace OSistema.Views
 
         void LateUpdate()
         {
-            if (map == null || pending.Count == 0) return;
-            foreach (int i in pending) Refresh(i % map.Width, i / map.Width);
-            pending.Clear();
+            if (map == null) return;
+            if (pending.Count > 0)
+            {
+                foreach (int i in pending) Refresh(i % map.Width, i / map.Width);
+                pending.Clear();
+            }
+            // The sun has moved enough to notice: every shadow follows.
+            if ((Sun.Offset - sunDrawn).sqrMagnitude > 0.0004f || Mathf.Abs(Sun.Strength - sunStrengthDrawn) > 0.02f)
+            {
+                sunDrawn = Sun.Offset;
+                sunStrengthDrawn = Sun.Strength;
+                foreach (var kv in props) PlaceShadow(kv.Value, heights[kv.Key]);
+            }
+        }
+
+        /// <summary>How tall a thing stands, in cells, for the length of its shadow.</summary>
+        static float HeightOf(BuildingDef def) => def.Id switch
+        {
+            "parked_car" or "market_stall" or "wardrobe" or "fridge" or "fountain" => 0.45f,
+            "parked_scooter" or "bicycle" or "bin" or "potted_plants" or "plant" => 0.3f,
+            "rug" => 0f,
+            _ => 0.2f,
+        };
+
+        void PlaceShadow(SpriteRenderer sr, float h)
+        {
+            var sh = sr.transform.GetChild(0);
+            // A little contact shadow even with no sun, so things never float.
+            sh.position = sr.transform.position + (Vector3)(new Vector2(0.04f, -0.04f) + Sun.Offset * h);
+            sh.GetComponent<SpriteRenderer>().color = new Color(0f, 0f, 0f, 0.22f + 0.2f * Sun.Strength);
         }
 
         void Refresh(int x, int y)
@@ -82,6 +112,8 @@ namespace OSistema.Views
             }
             var shadow = t.GetChild(0).GetComponent<SpriteRenderer>();
             shadow.enabled = def != BuildingDefs.Rug;
+            heights[i] = HeightOf(def);
+            PlaceShadow(sr, heights[i]);
             shadow.transform.localScale = vehicle ? new Vector3(0.62f, 0.95f, 1f) : new Vector3(0.95f, 0.95f, 1f);
         }
 

@@ -78,6 +78,7 @@ namespace OSistema.Core
             CurrentMap = game.Map;
 
             worldRoot = new GameObject("World").transform;
+            Overhead.Init(game, worldRoot);
             var mapGo = new GameObject("Map");
             mapGo.transform.SetParent(worldRoot, false);
             mapGo.AddComponent<MapRenderer>().Init(game);
