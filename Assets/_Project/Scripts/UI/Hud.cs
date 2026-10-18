@@ -162,6 +162,7 @@ namespace OSistema.UI
                     if (kb.jKey.wasPressedThisFrame) ToggleWindow(Window.Jobs);
                     if (kb.pKey.wasPressedThisFrame) ToggleWindow(Window.Phone);
                     if (kb.mKey.wasPressedThisFrame) ToggleMap();
+                    PhoneKeys(kb);
                 }
             }
             if (game == null) return;

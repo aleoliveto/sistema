@@ -205,6 +205,7 @@ namespace OSistema.UI
                 // "night" jumps to the evening, "rain" brings the rain: to look at the lighting.
                 if (text.Contains("night") && game != null) game.Ticks.Advance((int)(((21.5f - game.Clock.HourF + 24f) % 24f) * Core.GameClock.TicksPerHour));
                 if (text.Contains("rain") && game != null) game.Weather.ForceRain();
+                if (text.Contains("phone") && game != null) ToggleWindow(Window.Phone);
                 return;
             }
             OpenMenu(Menu.Title);

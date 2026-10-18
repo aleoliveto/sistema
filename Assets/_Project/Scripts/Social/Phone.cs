@@ -145,10 +145,24 @@ namespace OSistema.Social
             }
         }
 
+        // Orders placed over the phone, on their way. Not saved: a load cancels what was in transit (and refunds it).
+        readonly List<(long due, string what, Action<Game> give)> deliveries = new List<(long, string, Action<Game>)>();
+
+        public void Deliver(long due, string what, Action<Game> give) => deliveries.Add((due, what, give));
+
+        public int InTransit => deliveries.Count;
+
         /// <summary>Hourly: questions nobody answered in time count as a "no".</summary>
         public void Hourly(Game game)
         {
             long now = game.Ticks.TicksGame;
+            for (int i = deliveries.Count - 1; i >= 0; i--)
+            {
+                if (now < deliveries[i].due) continue;
+                deliveries[i].give(game);
+                game.Log.Add($"Delivered to the basso: {deliveries[i].what}.", MessageKind.Good);
+                deliveries.RemoveAt(i);
+            }
             foreach (var m in S.Messages)
             {
                 if (m.Answer >= 0 || m.Expires == 0 || now < m.Expires || m.Choices.Count == 0) continue;

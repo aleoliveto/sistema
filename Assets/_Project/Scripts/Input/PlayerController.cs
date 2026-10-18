@@ -206,11 +206,15 @@ namespace OSistema.Input
         void HandleKeys(Keyboard kb)
         {
             if (kb.spaceKey.wasPressedThisFrame) game.Ticks.TogglePause();
-            if (kb.digit1Key.wasPressedThisFrame) game.Ticks.SetSpeed(1);
-            if (kb.digit2Key.wasPressedThisFrame) game.Ticks.SetSpeed(2);
-            if (kb.digit3Key.wasPressedThisFrame) game.Ticks.SetSpeed(3);
-            if (kb.digit4Key.wasPressedThisFrame) game.Ticks.SetSpeed(4); // debug ×30
-            if (kb.digit5Key.wasPressedThisFrame) game.Ticks.SetSpeed(5); // debug ×120
+            // With the phone out, the number keys dial (see Hud.PhoneKeys).
+            if (!hud.PhoneOpen)
+            {
+                if (kb.digit1Key.wasPressedThisFrame) game.Ticks.SetSpeed(1);
+                if (kb.digit2Key.wasPressedThisFrame) game.Ticks.SetSpeed(2);
+                if (kb.digit3Key.wasPressedThisFrame) game.Ticks.SetSpeed(3);
+                if (kb.digit4Key.wasPressedThisFrame) game.Ticks.SetSpeed(4); // debug ×30
+                if (kb.digit5Key.wasPressedThisFrame) game.Ticks.SetSpeed(5); // debug ×120
+            }
             if (kb.eKey.wasPressedThisFrame && CurrentTool != Tool.Build) Interaction()?.Act();
             if (kb.fKey.wasPressedThisFrame) follow = game.Player;
             if (CurrentTool == Tool.Build && kb.qKey.wasPressedThisFrame) PlacementRotation = (PlacementRotation + 1) % 4;
