@@ -35,10 +35,10 @@ namespace OSistema.Views
             switch (n.Kind)
             {
                 case NpcKind.Police: rig.ApplyLook(OSistema.Pawns.Look.Police(n.Id)); break;
-                case NpcKind.Elder: rig.ApplyLook(OSistema.Pawns.Look.Old(n.Id)); break;
+                case NpcKind.Elder: rig.ApplyLook(n.Id % 2 == 0 ? OSistema.Pawns.Look.Woman(n.Id, old: true) : OSistema.Pawns.Look.Old(n.Id)); break;
                 case NpcKind.Child:
                 case NpcKind.Paramedic: break;
-                default: rig.ApplyLook(OSistema.Pawns.Look.Young(n.Id + 5000)); break;
+                default: rig.ApplyLook(OSistema.Pawns.Look.Passerby(n.Id + 5000)); break;
             }
 
             if (n.Kind == NpcKind.Scooter)
@@ -127,7 +127,10 @@ namespace OSistema.Views
             if (!contactDressed && npc.ContactName != null && npc.ContactName != "visitor")
             {
                 contactDressed = true;
-                rig.ApplyLook(OSistema.Pawns.Look.Old(npc.ContactName.GetHashCode()));
+                var look = npc.ContactName == OSistema.Crime.ContactBook.Nanninella
+                    ? new OSistema.Pawns.Look { Body = OSistema.Pawns.Look.Women + 7, Head = 3, Hair = OSistema.Pawns.Look.Women + 8, Face = OSistema.Pawns.Look.Women + 4 }
+                    : OSistema.Pawns.Look.Old(npc.ContactName.GetHashCode());
+                rig.ApplyLook(look);
             }
             bool visible = FogOfWar.CanSee(npc.Mover.Position);
             rig.SetVisible(visible);
@@ -138,8 +141,9 @@ namespace OSistema.Views
             {
                 // The scooter sits under the rider, pointing the way they're heading.
                 var pivot = rig.Root.Find("Pivot");
-                scooter.transform.localRotation = pivot.localRotation;
-                scooter.transform.localScale = Vector3.one;
+                int model = Mathf.Abs(npc.Id * 13) % 10;
+                model = model < 4 ? 0 : model < 7 ? 1 : model < 9 ? 2 : 3;   // most people ride cheap
+                PropArt.DressScooter(scooter, pivot.localEulerAngles.z, model, Mathf.Abs(npc.Id * 7), scooter.color);
                 float h = pivot.localEulerAngles.z * Mathf.Deg2Rad;
                 var fwd = new Vector2(-Mathf.Sin(h), Mathf.Cos(h));
                 float speed = (npc.Mover.Position - exhaustLast).magnitude / Mathf.Max(Time.deltaTime, 0.0001f);

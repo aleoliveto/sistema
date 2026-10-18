@@ -54,6 +54,7 @@ namespace OSistema.Input
         SpriteRenderer ghost;
         LineRenderer aimLine;
         Texture2D ghostTex;
+        Sprite ghostSprite;
         readonly Color32[] ghostPixels = new Color32[TilePainter.Hi * TilePainter.Hi];
         (BuildingDef def, int rot, Vector2Int cell) ghostKey;
 
@@ -88,7 +89,8 @@ namespace OSistema.Input
             // A see-through copy of the furniture under the cursor, so you can see which way it faces.
             ghostTex = new Texture2D(TilePainter.Hi, TilePainter.Hi, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
             ghost = new GameObject("Build Ghost").AddComponent<SpriteRenderer>();
-            ghost.sprite = Sprite.Create(ghostTex, new Rect(0, 0, TilePainter.Hi, TilePainter.Hi), Vector2.zero, TilePainter.Hi);
+            ghostSprite = Sprite.Create(ghostTex, new Rect(0, 0, TilePainter.Hi, TilePainter.Hi), Vector2.zero, TilePainter.Hi);
+            ghost.sprite = ghostSprite;
             ghost.sharedMaterial = SpriteFactory.UnlitMaterial;
             ghost.sortingOrder = 21;
             ghost.color = new Color(1f, 1f, 1f, 0.8f);
@@ -101,10 +103,25 @@ namespace OSistema.Input
                     && CurrentDef != BuildingDefs.Door && game.Map.InBounds(cell.x, cell.y);
             ghost.enabled = show;
             if (!show) return;
-            ghost.transform.position = new Vector3(cell.x, cell.y, 0f);
+            var art = PropArt.For(CurrentDef, cell.x, cell.y);
+            if (art != null)
+            {
+                float size = PropArt.SizeOf(CurrentDef);
+                ghost.sprite = art;
+                ghost.transform.position = new Vector3(cell.x + 0.5f, cell.y + 0.5f, 0f);
+                ghost.transform.localScale = new Vector3(size, size, 1f);
+                ghost.transform.rotation = Quaternion.Euler(0f, 0f, PlacementRotation * 90f);
+            }
+            else
+            {
+                ghost.sprite = ghostSprite;
+                ghost.transform.position = new Vector3(cell.x, cell.y, 0f);
+                ghost.transform.localScale = Vector3.one;
+                ghost.transform.rotation = Quaternion.identity;
+            }
             ghost.color = CanPlace(cell, out _) ? new Color(1f, 1f, 1f, 0.85f) : new Color(1f, 0.35f, 0.3f, 0.6f);
             var key = (CurrentDef, PlacementRotation, cell);
-            if (key == ghostKey) return;
+            if (key == ghostKey || art != null) return;
             ghostKey = key;
             TilePainter.PaintPreviewHi(game.Map, CurrentDef, cell.x, cell.y, PlacementRotation, ghostPixels);
             ghostTex.SetPixels32(ghostPixels);

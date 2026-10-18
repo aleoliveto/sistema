@@ -551,14 +551,14 @@ namespace OSistema.World
         void FitOut(Map map, Property prop, BuildingDef counter, Vector2Int mid)
         {
             BuildingDef[] items;
-            if (counter == BuildingDefs.PizzeriaCounter) items = new[] { BuildingDefs.Stove, BuildingDefs.Table, BuildingDefs.Table, BuildingDefs.Table, BuildingDefs.PlasticChair, BuildingDefs.PlasticChair };
-            else if (counter == BuildingDefs.BarCounter) items = new[] { BuildingDefs.Fridge, BuildingDefs.Table, BuildingDefs.Table, BuildingDefs.PlasticChair, BuildingDefs.PlasticChair, BuildingDefs.Television };
-            else if (counter == BuildingDefs.SalumeriaCounter) items = new[] { BuildingDefs.Pantry, BuildingDefs.Pantry, BuildingDefs.Pantry, BuildingDefs.Fridge, BuildingDefs.KitchenCounter };
-            else if (counter == BuildingDefs.TabaccheriaCounter) items = new[] { BuildingDefs.Pantry, BuildingDefs.Pantry, BuildingDefs.Wardrobe, BuildingDefs.Plant };
-            else if (counter == BuildingDefs.FarmaciaCounter) items = new[] { BuildingDefs.Pantry, BuildingDefs.Pantry, BuildingDefs.Pantry, BuildingDefs.Plant };
+            if (counter == BuildingDefs.PizzeriaCounter) items = new[] { BuildingDefs.PizzaOven, BuildingDefs.CafeTable, BuildingDefs.CafeTable, BuildingDefs.CafeTable, BuildingDefs.CafeTable, BuildingDefs.Fridge };
+            else if (counter == BuildingDefs.BarCounter) items = new[] { BuildingDefs.IceCream, BuildingDefs.CafeTable, BuildingDefs.CafeTable, BuildingDefs.CafeTable, BuildingDefs.Television, BuildingDefs.ShopShelf };
+            else if (counter == BuildingDefs.SalumeriaCounter) items = new[] { BuildingDefs.ShopShelf, BuildingDefs.ShopShelf, BuildingDefs.Pantry, BuildingDefs.FruitStall, BuildingDefs.Fridge };
+            else if (counter == BuildingDefs.TabaccheriaCounter) items = new[] { BuildingDefs.ShopShelf, BuildingDefs.ShopShelf, BuildingDefs.Plant };
+            else if (counter == BuildingDefs.FarmaciaCounter) items = new[] { BuildingDefs.ShopShelf, BuildingDefs.ShopShelf, BuildingDefs.ShopShelf, BuildingDefs.Plant };
             else if (counter == BuildingDefs.MacelleriaCounter) items = new[] { BuildingDefs.Fridge, BuildingDefs.Fridge, BuildingDefs.KitchenCounter, BuildingDefs.KitchenCounter };
             else if (counter == BuildingDefs.MobiliCounter) items = new[] { BuildingDefs.Sofa, BuildingDefs.Armchair, BuildingDefs.Bed, BuildingDefs.Wardrobe, BuildingDefs.Table, BuildingDefs.Rug };
-            else items = new[] { BuildingDefs.Safe, BuildingDefs.Rug, BuildingDefs.Plant, BuildingDefs.Plant, BuildingDefs.Armchair };
+            else items = new[] { BuildingDefs.Safe, BuildingDefs.Rug, BuildingDefs.ClothesRack, BuildingDefs.Plant, BuildingDefs.Plant, BuildingDefs.Armchair };
 
             var r = prop.Interior;
             int placed = 0;
@@ -575,7 +575,7 @@ namespace OSistema.World
                 // Tables and chairs in the room; shelves and fridges against the walls.
                 bool againstWall = x == r.xMin || x == r.xMax - 1 || y == r.yMin || y == r.yMax - 1;
                 var item = items[placed];
-                bool roomItem = item == BuildingDefs.Table || item == BuildingDefs.PlasticChair || item == BuildingDefs.Rug;
+                bool roomItem = item == BuildingDefs.Table || item == BuildingDefs.PlasticChair || item == BuildingDefs.Rug || item == BuildingDefs.CafeTable;
                 if (roomItem == againstWall && r.width > 3 && r.height > 3) continue;
                 map.SetBuilding(x, y, item);
                 placed++;
@@ -616,6 +616,10 @@ namespace OSistema.World
                     double r = rng.NextDouble();
                     if (r < 0.012) map.SetBuilding(x, y, BuildingDefs.ParkedScooter);
                     else if (r < 0.02) map.SetBuilding(x, y, BuildingDefs.Bin);
+                    else if (r < 0.026) map.SetBuilding(x, y, BuildingDefs.BinBags);
+                    else if (r < 0.031) map.SetBuilding(x, y, BuildingDefs.PottedPlants);
+                    else if (r < 0.034) map.SetBuilding(x, y, BuildingDefs.Bicycle);
+                    else if (r < 0.037) map.SetBuilding(x, y, BuildingDefs.Crates);
                 }
             }
 

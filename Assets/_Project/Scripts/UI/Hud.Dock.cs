@@ -128,6 +128,8 @@ namespace OSistema.UI
         Texture2D PreviewOf(BuildingDef def)
         {
             if (previews.TryGetValue(def, out var tex) && tex != null) return tex;
+            var art = PropArt.For(def, 0, 0);
+            if (art != null) return previews[def] = art.texture;
             var px = new Color32[TilePainter.Hi * TilePainter.Hi];
             TilePainter.PaintPreviewHi(game.Map, def, 0, 0, 0, px);
             tex = new Texture2D(TilePainter.Hi, TilePainter.Hi, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point };

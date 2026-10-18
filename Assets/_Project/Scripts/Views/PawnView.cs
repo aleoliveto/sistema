@@ -103,9 +103,8 @@ namespace OSistema.Views
             if (onScooter)
             {
                 float heading = pawn.Controlled ? pawn.Heading : transform.Find("Pivot").localEulerAngles.z;
-                scooter.transform.localRotation = Quaternion.Euler(0f, 0f, heading);
-                scooter.transform.localScale = Vector3.one;
-                scooter.color = pawn.StolenScooter ? new Color(0.92f, 0.92f, 0.9f) : FamilyScooters[Mathf.Abs(pawn.Id) % FamilyScooters.Length];
+                PropArt.DressScooter(scooter, heading, pawn.StolenScooter ? 0 : 1, pawn.StolenScooter ? 0 : Mathf.Abs(pawn.Id),
+                    pawn.StolenScooter ? new Color(0.92f, 0.92f, 0.9f) : FamilyScooters[Mathf.Abs(pawn.Id) % FamilyScooters.Length]);
                 var fwd = new Vector2(-Mathf.Sin(heading * Mathf.Deg2Rad), Mathf.Cos(heading * Mathf.Deg2Rad));
                 if (pawn.Controlled && !pawn.AimPoint.HasValue) rig.FaceTowards(pawn.Position + fwd);
                 exhaust.Update(pawn.Position - fwd * 0.75f, Mathf.Clamp01(speed / 10f), speed > lastSpeed + 0.5f, true, Time.deltaTime);

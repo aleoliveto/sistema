@@ -53,10 +53,72 @@ namespace OSistema.Pawns
             return new Look { Body = Pick(TracksuitBodies, rng), Head = rng.Next(16), Hair = Pick(ShortHair, rng), Hat = rng.NextDouble() < 0.35 ? 0 : -1, Neck = rng.NextDouble() < 0.4 ? 0 : -1 };
         }
 
-        public static Look Police(int seed)
+        // Indexes into the later sheets (see CharacterArt): women 1xx, police 2xx, street people 3xx.
+        public const int Women = 100, Uniforms = 200, Street = 300;
+
+        /// <summary>Which force: 0 police, 1 carabinieri, 2 finanza, 3 plain clothes, 4 riot.</summary>
+        public static Look Police(int seed, int force = -1)
         {
             var rng = new Random(seed * 271 + 9);
-            return new Look { Body = 15, Head = rng.Next(16), Hair = Pick(ShortHair, rng) };
+            if (force < 0) force = rng.NextDouble() < 0.55 ? 0 : rng.NextDouble() < 0.6 ? 1 : 2;
+            int body = force switch
+            {
+                3 => 12 + rng.Next(2),
+                4 => 14 + rng.Next(2),
+                _ => force * 4 + rng.Next(4),
+            };
+            int hat = force switch
+            {
+                3 => -1,
+                4 => Uniforms + 12 + rng.Next(2),
+                _ => Uniforms + force * 4 + rng.Next(4),
+            };
+            var faces = new[] { 4, 7, 9, 12, 13, 14, 15, 11 };
+            return new Look { Body = Uniforms + body, Head = rng.Next(16), Hair = Pick(ShortHair, rng), Hat = hat, Face = Uniforms + faces[rng.Next(faces.Length)] };
+        }
+
+        static readonly int[] YoungWomenBodies = { 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 14, 15 };
+        static readonly int[] OldWomenBodies = { 0, 1, 8, 13 };
+        static readonly int[] YoungWomenHair = { 0, 1, 2, 3, 6, 7, 8, 9, 10, 12, 13, 14, 15 };
+        static readonly int[] OldWomenHair = { 4, 5, 11 };
+        static readonly int[] YoungWomenFaces = { 0, 2, 6, 8, 10 };
+        static readonly int[] OldWomenFaces = { 1, 3, 5, 11, 12, 13, 14 };
+
+        public static Look Woman(int seed, bool old = false)
+        {
+            var rng = new Random(seed * 6151 + 29);
+            return new Look
+            {
+                Body = Women + Pick(old ? OldWomenBodies : YoungWomenBodies, rng),
+                Head = rng.Next(16),
+                Hair = Women + Pick(old ? OldWomenHair : YoungWomenHair, rng),
+                Face = Women + Pick(old ? OldWomenFaces : YoungWomenFaces, rng),
+            };
+        }
+
+        /// <summary>Someone at work in the street: a rider, a fishmonger, a waiter, a priest...</summary>
+        public static Look Worker(int seed)
+        {
+            var rng = new Random(seed * 919 + 41);
+            int body = rng.Next(16);
+            bool woman = body == 13;
+            return new Look
+            {
+                Body = Street + body,
+                Head = rng.Next(16),
+                Hair = woman ? Women + Pick(OldWomenHair, rng) : body == 6 ? Pick(OldHair, rng) : Pick(YoungHair, rng),
+                Face = woman ? Women + Pick(OldWomenFaces, rng) : Pick(YoungFaces, rng),
+            };
+        }
+
+        /// <summary>A passer-by: men and women, young and old, some in work clothes.</summary>
+        public static Look Passerby(int seed)
+        {
+            var rng = new Random(seed * 3571 + 11);
+            double r = rng.NextDouble();
+            if (r < 0.4) return Woman(seed, rng.NextDouble() < 0.3);
+            if (r < 0.6) return Worker(seed);
+            return Young(seed);
         }
     }
 }

@@ -1,0 +1,535 @@
+fileFormatVersion: 2
+guid: 559aa91014a6f41e3b225ca5a8526a40
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -4661239152370971474
+    second: sheet_map_icons_0
+  - first:
+      213: -3718515197628074816
+    second: sheet_map_icons_1
+  - first:
+      213: 5389610158296219953
+    second: sheet_map_icons_2
+  - first:
+      213: -1299364376566424113
+    second: sheet_map_icons_3
+  - first:
+      213: -4115893806093406701
+    second: sheet_map_icons_4
+  - first:
+      213: -43233457124678351
+    second: sheet_map_icons_5
+  - first:
+      213: -5370343464972579076
+    second: sheet_map_icons_6
+  - first:
+      213: 6188395597768339933
+    second: sheet_map_icons_7
+  - first:
+      213: 6073639441173387154
+    second: sheet_map_icons_8
+  - first:
+      213: 2271801448581545861
+    second: sheet_map_icons_9
+  - first:
+      213: 1393942615552082065
+    second: sheet_map_icons_10
+  - first:
+      213: -2806393035373988684
+    second: sheet_map_icons_11
+  - first:
+      213: 6579722469795008939
+    second: sheet_map_icons_12
+  - first:
+      213: 6384104837088575334
+    second: sheet_map_icons_13
+  - first:
+      213: -977148716331722733
+    second: sheet_map_icons_14
+  - first:
+      213: 5224732268081301792
+    second: sheet_map_icons_15
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: sheet_map_icons_0
+      rect:
+        serializedVersion: 2
+        x: 30
+        y: 942
+        width: 278
+        height: 275
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eac09cdefa3ff4fb0800000000000000
+      internalID: -4661239152370971474
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_map_icons_1
+      rect:
+        serializedVersion: 2
+        x: 332
+        y: 942
+        width: 278
+        height: 276
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c4bc79112e256cc0800000000000000
+      internalID: -3718515197628074816
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_map_icons_2
+      rect:
+        serializedVersion: 2
+        x: 636
+        y: 941
+        width: 281
+        height: 280
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 131451332edbbca40800000000000000
+      internalID: 5389610158296219953
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_map_icons_3
+      rect:
+        serializedVersion: 2
+        x: 936
+        y: 941
+        width: 283
+        height: 278
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fcd16fcdbfab7fde0800000000000000
+      internalID: -1299364376566424113
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_map_icons_4
+      rect:
+        serializedVersion: 2
+        x: 30
+        y: 644
+        width: 276
+        height: 279
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 31e629ae36861e6c0800000000000000
+      internalID: -4115893806093406701
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_map_icons_5
+      rect:
+        serializedVersion: 2
+        x: 332
+        y: 645
+        width: 276
+        height: 277
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 135eba95667666ff0800000000000000
+      internalID: -43233457124678351
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_map_icons_6
+      rect:
+        serializedVersion: 2
+        x: 639
+        y: 646
+        width: 277
+        height: 276
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cfe08786215b875b0800000000000000
+      internalID: -5370343464972579076
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_map_icons_7
+      rect:
+        serializedVersion: 2
+        x: 945
+        y: 644
+        width: 276
+        height: 279
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dd1b296320991e550800000000000000
+      internalID: 6188395597768339933
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_map_icons_8
+      rect:
+        serializedVersion: 2
+        x: 31
+        y: 348
+        width: 277
+        height: 275
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 29711f864e6e94450800000000000000
+      internalID: 6073639441173387154
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_map_icons_9
+      rect:
+        serializedVersion: 2
+        x: 331
+        y: 346
+        width: 278
+        height: 276
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 58fbbe6816f078f10800000000000000
+      internalID: 2271801448581545861
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_map_icons_10
+      rect:
+        serializedVersion: 2
+        x: 639
+        y: 343
+        width: 278
+        height: 280
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 190c2456c67485310800000000000000
+      internalID: 1393942615552082065
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_map_icons_11
+      rect:
+        serializedVersion: 2
+        x: 945
+        y: 345
+        width: 278
+        height: 278
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4b4376a3760bd09d0800000000000000
+      internalID: -2806393035373988684
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_map_icons_12
+      rect:
+        serializedVersion: 2
+        x: 30
+        y: 47
+        width: 280
+        height: 284
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ba199c4b9bedf4b50800000000000000
+      internalID: 6579722469795008939
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_map_icons_13
+      rect:
+        serializedVersion: 2
+        x: 329
+        y: 47
+        width: 281
+        height: 285
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 66f748f5685e89850800000000000000
+      internalID: 6384104837088575334
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_map_icons_14
+      rect:
+        serializedVersion: 2
+        x: 636
+        y: 47
+        width: 282
+        height: 284
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 318915e6b687072f0800000000000000
+      internalID: -977148716331722733
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_map_icons_15
+      rect:
+        serializedVersion: 2
+        x: 937
+        y: 39
+        width: 287
+        height: 293
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 029c185e05af18840800000000000000
+      internalID: 5224732268081301792
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      sheet_map_icons_0: -4661239152370971474
+      sheet_map_icons_1: -3718515197628074816
+      sheet_map_icons_10: 1393942615552082065
+      sheet_map_icons_11: -2806393035373988684
+      sheet_map_icons_12: 6579722469795008939
+      sheet_map_icons_13: 6384104837088575334
+      sheet_map_icons_14: -977148716331722733
+      sheet_map_icons_15: 5224732268081301792
+      sheet_map_icons_2: 5389610158296219953
+      sheet_map_icons_3: -1299364376566424113
+      sheet_map_icons_4: -4115893806093406701
+      sheet_map_icons_5: -43233457124678351
+      sheet_map_icons_6: -5370343464972579076
+      sheet_map_icons_7: 6188395597768339933
+      sheet_map_icons_8: 6073639441173387154
+      sheet_map_icons_9: 2271801448581545861
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

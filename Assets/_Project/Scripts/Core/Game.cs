@@ -61,7 +61,8 @@ namespace OSistema.Core
         void ClearNarrowLanes()
         {
             var clutter = new[] { BuildingDefs.StreetLamp, BuildingDefs.Bin, BuildingDefs.Bench, BuildingDefs.ParkedCar,
-                BuildingDefs.ParkedScooter, BuildingDefs.PlasticChair, BuildingDefs.MarketStall };
+                BuildingDefs.ParkedScooter, BuildingDefs.PlasticChair, BuildingDefs.MarketStall,
+                BuildingDefs.BinBags, BuildingDefs.Bicycle, BuildingDefs.Crates, BuildingDefs.PottedPlants, BuildingDefs.FruitStall };
             int Span(int x, int y, int dx, int dy)
             {
                 int n = 0;

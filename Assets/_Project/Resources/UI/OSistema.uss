@@ -838,3 +838,8 @@
 .attention:hover { background-color: rgba(255, 255, 255, 0.09); }
 .attention--bad { border-left-color: #F07A6E; }
 .attention--warn { border-left-color: #F2B866; }
+
+/* Painted map icons: the picture is the whole icon. */
+.map-icon--art { background-color: rgba(0, 0, 0, 0); border-width: 0; -unity-background-scale-mode: scale-to-fit; width: 18px; height: 18px; margin-left: -9px; margin-top: -9px; }
+.map-icon--big.map-icon--art { width: 24px; height: 24px; margin-left: -12px; margin-top: -12px; }
+.map-icon--legend.map-icon--art { width: 22px; height: 22px; margin: 0 8px 0 0; }

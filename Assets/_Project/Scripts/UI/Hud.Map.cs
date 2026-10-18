@@ -153,6 +153,7 @@ namespace OSistema.UI
                 row.style.alignItems = Align.Center;
                 row.style.marginBottom = 3;
                 var ic = Ui.Text(glyph, row, "map-icon", "map-icon--legend", cls);
+                ArtIcon(ic, cls);
                 Ui.Text(text, row, "small");
             }
             foreach (var (cls, text) in new[] { ("dot--you", "You"), ("dot--goal", "Objective"), ("dot--pin", "Your pin"), ("dot--crew", "Your crew"), ("dot--piazza", "Piazza"), ("dot--police", "Police in sight") })
@@ -275,6 +276,7 @@ namespace OSistema.UI
                 ic.AddToClassList("map-icon");
                 ic.AddToClassList(pl.Css);
                 ic.text = pl.Glyph;
+                ArtIcon(ic, pl.Css);
                 ic.style.left = pos.x;
                 ic.style.top = pos.y;
             }
@@ -381,6 +383,7 @@ namespace OSistema.UI
                 ic.AddToClassList("map-icon--big");
                 ic.AddToClassList(pl.Css);
                 ic.text = pl.Glyph;
+                ArtIcon(ic, pl.Css);
                 ic.style.left = pl.At.x * bigScale;
                 ic.style.top = (map.Height - pl.At.y) * bigScale;
                 ic.userData = pl.Name;
@@ -410,6 +413,39 @@ namespace OSistema.UI
             var e = pool[used++];
             e.style.display = DisplayStyle.Flex;
             return e;
+        }
+
+        /// <summary>The painted map icons (Resources/UI/Icons), by the icon's style class; letters if missing.</summary>
+        static int IconIndex(string css) => css switch
+        {
+            "icon--pizza" => 0,
+            "icon--bar" => 1,
+            "icon--tabacchi" => 2,
+            "icon--salumeria" => 3,
+            "icon--farmacia" => 4,
+            "icon--macelleria" => 5,
+            "icon--hospital" => 6,
+            "icon--church" => 7,
+            "icon--home" => 8,
+            "icon--contact" => 9,
+            "icon--work" => 10,
+            "icon--mobili" => 11,
+            "icon--lusso" => 12,
+            _ => -1,
+        };
+
+        static void ArtIcon(Label ic, string css)
+        {
+            int i = IconIndex(css);
+            var tex = i >= 0 ? PropArt.Icon(i) : null;
+            if (tex == null)
+            {
+                ic.style.backgroundImage = StyleKeyword.Null;
+                return;
+            }
+            ic.text = "";
+            ic.style.backgroundImage = new StyleBackground(tex);
+            ic.AddToClassList("map-icon--art");
         }
     }
 }

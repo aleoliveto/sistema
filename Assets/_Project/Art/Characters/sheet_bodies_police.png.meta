@@ -1,0 +1,405 @@
+fileFormatVersion: 2
+guid: 330598c9ceee947ff816f6d9c84cfa4d
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 3074253044527379205
+    second: sheet_bodies_police_0
+  - first:
+      213: 4453795280018853694
+    second: sheet_bodies_police_1
+  - first:
+      213: 2533483504762120663
+    second: sheet_bodies_police_2
+  - first:
+      213: -4653546477733323525
+    second: sheet_bodies_police_3
+  - first:
+      213: -4162104994316392906
+    second: sheet_bodies_police_4
+  - first:
+      213: 4030284929669379995
+    second: sheet_bodies_police_5
+  - first:
+      213: -5826736522556362978
+    second: sheet_bodies_police_6
+  - first:
+      213: -5905570348302864154
+    second: sheet_bodies_police_7
+  - first:
+      213: 8957956834304743588
+    second: sheet_bodies_police_8
+  - first:
+      213: -4725786802296545410
+    second: sheet_bodies_police_9
+  - first:
+      213: 5974638896625019377
+    second: sheet_bodies_police_10
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: sheet_bodies_police_0
+      rect:
+        serializedVersion: 2
+        x: 15
+        y: 958
+        width: 611
+        height: 265
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 503b7bc1bd0f9aa20800000000000000
+      internalID: 3074253044527379205
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_bodies_police_1
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 964
+        width: 294
+        height: 259
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e3fc5dfb53f0fcd30800000000000000
+      internalID: 4453795280018853694
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_bodies_police_2
+      rect:
+        serializedVersion: 2
+        x: 947
+        y: 951
+        width: 294
+        height: 280
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7d968a913ddb82320800000000000000
+      internalID: 2533483504762120663
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_bodies_police_3
+      rect:
+        serializedVersion: 2
+        x: 14
+        y: 646
+        width: 615
+        height: 307
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bfc5fe052284b6fb0800000000000000
+      internalID: -4653546477733323525
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_bodies_police_4
+      rect:
+        serializedVersion: 2
+        x: 638
+        y: 656
+        width: 299
+        height: 285
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 63664e73f8b3d36c0800000000000000
+      internalID: -4162104994316392906
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_bodies_police_5
+      rect:
+        serializedVersion: 2
+        x: 942
+        y: 657
+        width: 302
+        height: 285
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b97bd884ac27ee730800000000000000
+      internalID: 4030284929669379995
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_bodies_police_6
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 345
+        width: 936
+        height: 294
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e1fab3d0106432fa0800000000000000
+      internalID: -5826736522556362978
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_bodies_police_7
+      rect:
+        serializedVersion: 2
+        x: 930
+        y: 587
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6e0f359ae033b0ea0800000000000000
+      internalID: -5905570348302864154
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_bodies_police_8
+      rect:
+        serializedVersion: 2
+        x: 944
+        y: 357
+        width: 299
+        height: 282
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4a8540e874e015c70800000000000000
+      internalID: 8957956834304743588
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_bodies_police_9
+      rect:
+        serializedVersion: 2
+        x: 86
+        y: 347
+        width: 10
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e7f92ec01f1aa6eb0800000000000000
+      internalID: -4725786802296545410
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_bodies_police_10
+      rect:
+        serializedVersion: 2
+        x: 13
+        y: 31
+        width: 1241
+        height: 309
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1f9e096eb6e2ae250800000000000000
+      internalID: 5974638896625019377
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      sheet_bodies_police_0: 3074253044527379205
+      sheet_bodies_police_1: 4453795280018853694
+      sheet_bodies_police_10: 5974638896625019377
+      sheet_bodies_police_2: 2533483504762120663
+      sheet_bodies_police_3: -4653546477733323525
+      sheet_bodies_police_4: -4162104994316392906
+      sheet_bodies_police_5: 4030284929669379995
+      sheet_bodies_police_6: -5826736522556362978
+      sheet_bodies_police_7: -5905570348302864154
+      sheet_bodies_police_8: 8957956834304743588
+      sheet_bodies_police_9: -4725786802296545410
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

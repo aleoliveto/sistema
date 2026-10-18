@@ -48,7 +48,7 @@ namespace OSistema.Crime
 
         static readonly System.Collections.Generic.Dictionary<string, int> Faces = new System.Collections.Generic.Dictionary<string, int>
         {
-            [Totonno] = 11, [Saverio] = 3, [Peppe] = 15, [Marenaro] = 12, [Supplier] = 2,
+            [Totonno] = 11, [Saverio] = 3, [Peppe] = 15, [Marenaro] = 12, [Supplier] = 2, [Nanninella] = Pawns.Look.Women + 4,
         };
 
         public void Setup(Game game)

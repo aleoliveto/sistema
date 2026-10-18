@@ -1,0 +1,821 @@
+fileFormatVersion: 2
+guid: 574f1fc41d7cb4b6e9df417805c60f2d
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 5687567332865925273
+    second: sheet_hats_police_0
+  - first:
+      213: -884324161363789479
+    second: sheet_hats_police_1
+  - first:
+      213: 4488081642700411514
+    second: sheet_hats_police_2
+  - first:
+      213: 1699826664118405265
+    second: sheet_hats_police_3
+  - first:
+      213: 3442690760172745151
+    second: sheet_hats_police_4
+  - first:
+      213: 5747565175678081853
+    second: sheet_hats_police_5
+  - first:
+      213: -1146809973841228919
+    second: sheet_hats_police_6
+  - first:
+      213: -7307934446468133589
+    second: sheet_hats_police_7
+  - first:
+      213: 3043797818464387596
+    second: sheet_hats_police_8
+  - first:
+      213: 8508666571374891391
+    second: sheet_hats_police_9
+  - first:
+      213: 5752501458672002031
+    second: sheet_hats_police_10
+  - first:
+      213: -5790345493726456616
+    second: sheet_hats_police_11
+  - first:
+      213: -1534142227919486289
+    second: sheet_hats_police_12
+  - first:
+      213: 2227678502095428895
+    second: sheet_hats_police_13
+  - first:
+      213: -7390503713145677988
+    second: sheet_hats_police_14
+  - first:
+      213: 9179546763317339012
+    second: sheet_hats_police_15
+  - first:
+      213: 5270073960469951935
+    second: sheet_hats_police_16
+  - first:
+      213: -3898320453567528519
+    second: sheet_hats_police_17
+  - first:
+      213: -1393464684528436161
+    second: sheet_hats_police_18
+  - first:
+      213: 4424533386057196802
+    second: sheet_hats_police_19
+  - first:
+      213: -7480106264495953171
+    second: sheet_hats_police_20
+  - first:
+      213: -3496815139366262967
+    second: sheet_hats_police_21
+  - first:
+      213: -8864502816658358264
+    second: sheet_hats_police_22
+  - first:
+      213: -3638490884673120452
+    second: sheet_hats_police_23
+  - first:
+      213: 3061809524968120614
+    second: sheet_hats_police_24
+  - first:
+      213: -4584057099264165370
+    second: sheet_hats_police_25
+  - first:
+      213: -236551149428243916
+    second: sheet_hats_police_26
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: sheet_hats_police_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 925
+        width: 307
+        height: 285
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 990e69fea5c4eee40800000000000000
+      internalID: 5687567332865925273
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hats_police_1
+      rect:
+        serializedVersion: 2
+        x: 317
+        y: 923
+        width: 305
+        height: 301
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 959bd9f4cdf3ab3f0800000000000000
+      internalID: -884324161363789479
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hats_police_2
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 1008
+        width: 25
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a721c14a97ed84e30800000000000000
+      internalID: 4488081642700411514
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hats_police_3
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 925
+        width: 288
+        height: 295
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 198c38e485ff69710800000000000000
+      internalID: 1699826664118405265
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hats_police_4
+      rect:
+        serializedVersion: 2
+        x: 946
+        y: 935
+        width: 295
+        height: 318
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fb1bd979105e6cf20800000000000000
+      internalID: 3442690760172745151
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hats_police_5
+      rect:
+        serializedVersion: 2
+        x: 303
+        y: 951
+        width: 10
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d3b92bb431473cf40800000000000000
+      internalID: 5747565175678081853
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hats_police_6
+      rect:
+        serializedVersion: 2
+        x: 323
+        y: 943
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 98b8154a766b510f0800000000000000
+      internalID: -1146809973841228919
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hats_police_7
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 619
+        width: 307
+        height: 297
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b2d0d6c0750059a90800000000000000
+      internalID: -7307934446468133589
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hats_police_8
+      rect:
+        serializedVersion: 2
+        x: 319
+        y: 630
+        width: 309
+        height: 290
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c02cda93dfdbd3a20800000000000000
+      internalID: 3043797818464387596
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hats_police_9
+      rect:
+        serializedVersion: 2
+        x: 323
+        y: 738
+        width: 14
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f719a037a2bd41670800000000000000
+      internalID: 8508666571374891391
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hats_police_10
+      rect:
+        serializedVersion: 2
+        x: 635
+        y: 616
+        width: 295
+        height: 301
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fe3af0e399df4df40800000000000000
+      internalID: 5752501458672002031
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hats_police_11
+      rect:
+        serializedVersion: 2
+        x: 940
+        y: 618
+        width: 297
+        height: 298
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8d496a7b37f84afa0800000000000000
+      internalID: -5790345493726456616
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hats_police_12
+      rect:
+        serializedVersion: 2
+        x: 944
+        y: 742
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fa2ceed95c1a5bae0800000000000000
+      internalID: -1534142227919486289
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hats_police_13
+      rect:
+        serializedVersion: 2
+        x: 946
+        y: 712
+        width: 6
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f1d1c2f7bcd4aee10800000000000000
+      internalID: 2227678502095428895
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hats_police_14
+      rect:
+        serializedVersion: 2
+        x: 26
+        y: 348
+        width: 295
+        height: 275
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c571fba8708af6990800000000000000
+      internalID: -7390503713145677988
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hats_police_15
+      rect:
+        serializedVersion: 2
+        x: 337
+        y: 346
+        width: 275
+        height: 273
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 483ed9a552d446f70800000000000000
+      internalID: 9179546763317339012
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hats_police_16
+      rect:
+        serializedVersion: 2
+        x: 946
+        y: 618
+        width: 10
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fb5f8d15850132940800000000000000
+      internalID: 5270073960469951935
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hats_police_17
+      rect:
+        serializedVersion: 2
+        x: 948
+        y: 335
+        width: 291
+        height: 284
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9b1c770a33266e9c0800000000000000
+      internalID: -3898320453567528519
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hats_police_18
+      rect:
+        serializedVersion: 2
+        x: 1157
+        y: 618
+        width: 18
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f3c71a7904b69ace0800000000000000
+      internalID: -1393464684528436161
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hats_police_19
+      rect:
+        serializedVersion: 2
+        x: 313
+        y: 562
+        width: 10
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 205abc42ca9176d30800000000000000
+      internalID: 4424533386057196802
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hats_police_20
+      rect:
+        serializedVersion: 2
+        x: 615
+        y: 328
+        width: 329
+        height: 286
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dea6b86dbf2513890800000000000000
+      internalID: -7480106264495953171
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hats_police_21
+      rect:
+        serializedVersion: 2
+        x: 34
+        y: 45
+        width: 272
+        height: 289
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 947addc5821d87fc0800000000000000
+      internalID: -3496815139366262967
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hats_police_22
+      rect:
+        serializedVersion: 2
+        x: 303
+        y: 316
+        width: 12
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 80001a687a5faf480800000000000000
+      internalID: -8864502816658358264
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hats_police_23
+      rect:
+        serializedVersion: 2
+        x: 338
+        y: 45
+        width: 284
+        height: 292
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c37df8461db718dc0800000000000000
+      internalID: -3638490884673120452
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hats_police_24
+      rect:
+        serializedVersion: 2
+        x: 656
+        y: 35
+        width: 261
+        height: 313
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 621e1a17a8bbd7a20800000000000000
+      internalID: 3061809524968120614
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hats_police_25
+      rect:
+        serializedVersion: 2
+        x: 940
+        y: 35
+        width: 287
+        height: 305
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 60a70480b582260c0800000000000000
+      internalID: -4584057099264165370
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_hats_police_26
+      rect:
+        serializedVersion: 2
+        x: 311
+        y: 0
+        width: 24
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4328e1f9bf997bcf0800000000000000
+      internalID: -236551149428243916
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      sheet_hats_police_0: 5687567332865925273
+      sheet_hats_police_1: -884324161363789479
+      sheet_hats_police_10: 5752501458672002031
+      sheet_hats_police_11: -5790345493726456616
+      sheet_hats_police_12: -1534142227919486289
+      sheet_hats_police_13: 2227678502095428895
+      sheet_hats_police_14: -7390503713145677988
+      sheet_hats_police_15: 9179546763317339012
+      sheet_hats_police_16: 5270073960469951935
+      sheet_hats_police_17: -3898320453567528519
+      sheet_hats_police_18: -1393464684528436161
+      sheet_hats_police_19: 4424533386057196802
+      sheet_hats_police_2: 4488081642700411514
+      sheet_hats_police_20: -7480106264495953171
+      sheet_hats_police_21: -3496815139366262967
+      sheet_hats_police_22: -8864502816658358264
+      sheet_hats_police_23: -3638490884673120452
+      sheet_hats_police_24: 3061809524968120614
+      sheet_hats_police_25: -4584057099264165370
+      sheet_hats_police_26: -236551149428243916
+      sheet_hats_police_3: 1699826664118405265
+      sheet_hats_police_4: 3442690760172745151
+      sheet_hats_police_5: 5747565175678081853
+      sheet_hats_police_6: -1146809973841228919
+      sheet_hats_police_7: -7307934446468133589
+      sheet_hats_police_8: 3043797818464387596
+      sheet_hats_police_9: 8508666571374891391
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

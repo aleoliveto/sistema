@@ -234,6 +234,18 @@ namespace OSistema.World
         public static readonly BuildingDef BaggingTable = Furniture("bagging_table", "Bagging table", new Color32(176, 170, 160, 255), 0f, passable: false, cover: true);
         public static readonly BuildingDef RollingTable = Furniture("rolling_table", "Rolling table", new Color32(150, 110, 70, 255), 0f, passable: false, cover: true);
 
+        // ---- Shop fittings and street clutter (painted art) ----
+        public static readonly BuildingDef PizzaOven = Furniture("pizza_oven", "Wood-fired oven", new Color32(170, 80, 50, 255), 0f, passable: false, cover: true);
+        public static readonly BuildingDef CafeTable = Furniture("cafe_table", "Café table", new Color32(200, 196, 186, 255), 0.3f, passable: false, cover: true);
+        public static readonly BuildingDef ShopShelf = Furniture("shop_shelf", "Shelves", new Color32(150, 110, 70, 255), 0f, passable: false, cover: true);
+        public static readonly BuildingDef ClothesRack = Furniture("clothes_rack", "Clothes rack", new Color32(90, 90, 120, 255), 0f, passable: false);
+        public static readonly BuildingDef FruitStall = Street("fruit_stall", "Fruit and veg", new Color32(150, 120, 60, 255), cover: true);
+        public static readonly BuildingDef IceCream = Furniture("ice_cream", "Ice-cream freezer", new Color32(200, 220, 230, 255), 0f, passable: false, cover: true);
+        public static readonly BuildingDef BinBags = Street("bin_bags", "Bin bags", new Color32(30, 30, 32, 255), cover: false);
+        public static readonly BuildingDef Bicycle = Street("bicycle", "Bicycle", new Color32(60, 80, 60, 255), cover: false);
+        public static readonly BuildingDef Crates = Street("crates", "Crates", new Color32(160, 120, 70, 255), cover: true);
+        public static readonly BuildingDef PottedPlants = Street("potted_plants", "Potted plants", new Color32(70, 120, 60, 255), cover: false);
+
         static BuildingDef Furniture(string id, string label, Color32 color, float beauty, bool passable, bool cover = false) => new BuildingDef
         {
             Id = id, Label = label, Passable = passable, PathCost = passable ? 1f : 1f, WorkToBuild = 250, Color = color,
@@ -256,6 +268,7 @@ namespace OSistema.World
             Railing, HospitalDesk, PlasticChair,
             Sofa, Armchair, Television, Wardrobe, KitchenCounter, Fridge, Plant, Rug, Safe, HomeShrine,
             BaggingTable, RollingTable, MobiliCounter, LussoCounter,
+            PizzaOven, CafeTable, ShopShelf, ClothesRack, FruitStall, IceCream, BinBags, Bicycle, Crates, PottedPlants,
         };
 
         public static BuildingDef ById(string id)

@@ -1,0 +1,1809 @@
+fileFormatVersion: 2
+guid: ea1f80e6ea3b54de1bfd3a7e17fee0ac
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 6952745878844129881
+    second: sheet_street_0
+  - first:
+      213: -1369114610789820746
+    second: sheet_street_1
+  - first:
+      213: 4762040244411007655
+    second: sheet_street_2
+  - first:
+      213: 6002396751025971592
+    second: sheet_street_3
+  - first:
+      213: -8504348827407586694
+    second: sheet_street_4
+  - first:
+      213: 9172885371839737027
+    second: sheet_street_5
+  - first:
+      213: -7775632729300716621
+    second: sheet_street_6
+  - first:
+      213: 6591063243989630324
+    second: sheet_street_7
+  - first:
+      213: 4546646181608555666
+    second: sheet_street_8
+  - first:
+      213: -249306650069591705
+    second: sheet_street_9
+  - first:
+      213: 5914780934411487492
+    second: sheet_street_10
+  - first:
+      213: -1724951791499319577
+    second: sheet_street_11
+  - first:
+      213: -5074111538377742665
+    second: sheet_street_12
+  - first:
+      213: -5865579528580673204
+    second: sheet_street_13
+  - first:
+      213: -1364981133105654631
+    second: sheet_street_14
+  - first:
+      213: 2335301337544000875
+    second: sheet_street_15
+  - first:
+      213: -8613814502934853115
+    second: sheet_street_16
+  - first:
+      213: -1204556112859918302
+    second: sheet_street_17
+  - first:
+      213: -2786273907158233904
+    second: sheet_street_18
+  - first:
+      213: 2587718446809946859
+    second: sheet_street_19
+  - first:
+      213: -6074075737556111610
+    second: sheet_street_20
+  - first:
+      213: 6567269923421537400
+    second: sheet_street_21
+  - first:
+      213: 2728660241757839309
+    second: sheet_street_22
+  - first:
+      213: -6116657090067983907
+    second: sheet_street_23
+  - first:
+      213: -4721138496733846620
+    second: sheet_street_24
+  - first:
+      213: 1540349562909493428
+    second: sheet_street_25
+  - first:
+      213: 7158783416686372451
+    second: sheet_street_26
+  - first:
+      213: -8207929359913145973
+    second: sheet_street_27
+  - first:
+      213: 3113350157022185666
+    second: sheet_street_28
+  - first:
+      213: 5754724706970226727
+    second: sheet_street_29
+  - first:
+      213: 4032051881538606599
+    second: sheet_street_30
+  - first:
+      213: -4456401541939643253
+    second: sheet_street_31
+  - first:
+      213: -5002499240660591527
+    second: sheet_street_32
+  - first:
+      213: 7251384972784631480
+    second: sheet_street_33
+  - first:
+      213: -603893638598029648
+    second: sheet_street_34
+  - first:
+      213: -4163950548076779871
+    second: sheet_street_35
+  - first:
+      213: -6777736401509594167
+    second: sheet_street_36
+  - first:
+      213: -5112547345617912017
+    second: sheet_street_37
+  - first:
+      213: -5923787236425709576
+    second: sheet_street_38
+  - first:
+      213: 6512430565332522957
+    second: sheet_street_39
+  - first:
+      213: 4554168774367547943
+    second: sheet_street_40
+  - first:
+      213: -4554338255013204727
+    second: sheet_street_41
+  - first:
+      213: 654634594175609159
+    second: sheet_street_42
+  - first:
+      213: 5844913099865390723
+    second: sheet_street_43
+  - first:
+      213: 8137925337757506146
+    second: sheet_street_44
+  - first:
+      213: -2530239814113478
+    second: sheet_street_45
+  - first:
+      213: 6820063544904913334
+    second: sheet_street_46
+  - first:
+      213: -8488880836462288218
+    second: sheet_street_47
+  - first:
+      213: -7673530056601545563
+    second: sheet_street_48
+  - first:
+      213: 1372577402755248416
+    second: sheet_street_49
+  - first:
+      213: 4067113183843730891
+    second: sheet_street_50
+  - first:
+      213: 3685197096398390723
+    second: sheet_street_51
+  - first:
+      213: 1301492816580503748
+    second: sheet_street_52
+  - first:
+      213: -7771669777535505522
+    second: sheet_street_53
+  - first:
+      213: 7422520426176707438
+    second: sheet_street_54
+  - first:
+      213: -4860524613722311821
+    second: sheet_street_55
+  - first:
+      213: 5085560314115436897
+    second: sheet_street_56
+  - first:
+      213: 3387913061717916520
+    second: sheet_street_57
+  - first:
+      213: -3541600441510098093
+    second: sheet_street_58
+  - first:
+      213: -8784177688851409081
+    second: sheet_street_59
+  - first:
+      213: -1338866604439145222
+    second: sheet_street_60
+  - first:
+      213: 7333914371262936133
+    second: sheet_street_61
+  - first:
+      213: 8475118585952959840
+    second: sheet_street_62
+  - first:
+      213: 9129339197636997709
+    second: sheet_street_63
+  - first:
+      213: 9193978265066492325
+    second: sheet_street_64
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: sheet_street_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 921
+        width: 312
+        height: 332
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 952c0122a8d1d7060800000000000000
+      internalID: 6952745878844129881
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_1
+      rect:
+        serializedVersion: 2
+        x: 308
+        y: 333
+        width: 314
+        height: 913
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6b6531fe38deffce0800000000000000
+      internalID: -1369114610789820746
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_2
+      rect:
+        serializedVersion: 2
+        x: 615
+        y: 931
+        width: 321
+        height: 285
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7a28b363f5a261240800000000000000
+      internalID: 4762040244411007655
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_3
+      rect:
+        serializedVersion: 2
+        x: 1027
+        y: 1175
+        width: 85
+        height: 53
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 881acd10b0ccc4350800000000000000
+      internalID: 6002396751025971592
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_4
+      rect:
+        serializedVersion: 2
+        x: 1190
+        y: 1195
+        width: 35
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a7a6c58accb7af980800000000000000
+      internalID: -8504348827407586694
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_5
+      rect:
+        serializedVersion: 2
+        x: 1206
+        y: 1164
+        width: 15
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3cc62e945a2ac4f70800000000000000
+      internalID: 9172885371839737027
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_6
+      rect:
+        serializedVersion: 2
+        x: 1220
+        y: 1163
+        width: 9
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3b33122da37671490800000000000000
+      internalID: -7775632729300716621
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_7
+      rect:
+        serializedVersion: 2
+        x: 311
+        y: 1128
+        width: 10
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 47db2267919287b50800000000000000
+      internalID: 6591063243989630324
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_8
+      rect:
+        serializedVersion: 2
+        x: 317
+        y: 1138
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2940a2eec9ee81f30800000000000000
+      internalID: 4546646181608555666
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_9
+      rect:
+        serializedVersion: 2
+        x: 318
+        y: 1130
+        width: 15
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 76995723ce84a8cf0800000000000000
+      internalID: -249306650069591705
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_10
+      rect:
+        serializedVersion: 2
+        x: 327
+        y: 1131
+        width: 12
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 40989d70ce5851250800000000000000
+      internalID: 5914780934411487492
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_11
+      rect:
+        serializedVersion: 2
+        x: 940
+        y: 921
+        width: 299
+        height: 228
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7e6620d1c7dbf08e0800000000000000
+      internalID: -1724951791499319577
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_12
+      rect:
+        serializedVersion: 2
+        x: 910
+        y: 1063
+        width: 9
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7b6a84c80722599b0800000000000000
+      internalID: -5074111538377742665
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_13
+      rect:
+        serializedVersion: 2
+        x: 918
+        y: 1070
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c415525fe76499ea0800000000000000
+      internalID: -5865579528580673204
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_14
+      rect:
+        serializedVersion: 2
+        x: 934
+        y: 1004
+        width: 14
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 994902434ec9e0de0800000000000000
+      internalID: -1364981133105654631
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_15
+      rect:
+        serializedVersion: 2
+        x: 92
+        y: 942
+        width: 16
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b650ecb8138a86020800000000000000
+      internalID: 2335301337544000875
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_16
+      rect:
+        serializedVersion: 2
+        x: 269
+        y: 917
+        width: 56
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 50ac577f855957880800000000000000
+      internalID: -8613814502934853115
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_17
+      rect:
+        serializedVersion: 2
+        x: 956
+        y: 964
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 22095fce89e884fe0800000000000000
+      internalID: -1204556112859918302
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_18
+      rect:
+        serializedVersion: 2
+        x: 18
+        y: 937
+        width: 19
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0dcc4ecc4aa2559d0800000000000000
+      internalID: -2786273907158233904
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_19
+      rect:
+        serializedVersion: 2
+        x: 249
+        y: 932
+        width: 7
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bea15d0973c69e320800000000000000
+      internalID: 2587718446809946859
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_20
+      rect:
+        serializedVersion: 2
+        x: 322
+        y: 941
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 60f262c6c4c84bba0800000000000000
+      internalID: -6074075737556111610
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_21
+      rect:
+        serializedVersion: 2
+        x: 1153
+        y: 915
+        width: 20
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 874c5a15331a32b50800000000000000
+      internalID: 6567269923421537400
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_22
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 630
+        width: 325
+        height: 298
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dcf15b668062ed520800000000000000
+      internalID: 2728660241757839309
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_23
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 905
+        width: 6
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dd19f95b8c44d1ba0800000000000000
+      internalID: -6116657090067983907
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_24
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 907
+        width: 7
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4a3e1c60d852b7eb0800000000000000
+      internalID: -4721138496733846620
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_25
+      rect:
+        serializedVersion: 2
+        x: 18
+        y: 905
+        width: 13
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4b8062f24cb606510800000000000000
+      internalID: 1540349562909493428
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_26
+      rect:
+        serializedVersion: 2
+        x: 317
+        y: 897
+        width: 36
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3666c8fa69b195360800000000000000
+      internalID: 7158783416686372451
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_27
+      rect:
+        serializedVersion: 2
+        x: 613
+        y: 570
+        width: 325
+        height: 367
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b89a0e01cb3971e80800000000000000
+      internalID: -8207929359913145973
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_28
+      rect:
+        serializedVersion: 2
+        x: 961
+        y: 604
+        width: 265
+        height: 312
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2c8c6baf877d43b20800000000000000
+      internalID: 3113350157022185666
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_29
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 889
+        width: 5
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 720df1391a3ecdf40800000000000000
+      internalID: 5754724706970226727
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_30
+      rect:
+        serializedVersion: 2
+        x: 329
+        y: 789
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 706dd03d2d9b4f730800000000000000
+      internalID: 4032051881538606599
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_31
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 296
+        width: 311
+        height: 335
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b8c3f2c986ea722c0800000000000000
+      internalID: -4456401541939643253
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_32
+      rect:
+        serializedVersion: 2
+        x: 88
+        y: 628
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 95c934be17d839ab0800000000000000
+      internalID: -5002499240660591527
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_33
+      rect:
+        serializedVersion: 2
+        x: 1151
+        y: 595
+        width: 22
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8befe68963812a460800000000000000
+      internalID: 7251384972784631480
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_34
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 570
+        width: 7
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0be0f3d6fe98e97f0800000000000000
+      internalID: -603893638598029648
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_35
+      rect:
+        serializedVersion: 2
+        x: 615
+        y: 568
+        width: 9
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1a6279fb90da636c0800000000000000
+      internalID: -4163950548076779871
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_36
+      rect:
+        serializedVersion: 2
+        x: 683
+        y: 335
+        width: 255
+        height: 244
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9cb49ce17a4a0f1a0800000000000000
+      internalID: -6777736401509594167
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_37
+      rect:
+        serializedVersion: 2
+        x: 954
+        y: 323
+        width: 277
+        height: 269
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f2ff31fc6459c09b0800000000000000
+      internalID: -5112547345617912017
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_38
+      rect:
+        serializedVersion: 2
+        x: 954
+        y: 547
+        width: 36
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8f74adfd4ea7acda0800000000000000
+      internalID: -5923787236425709576
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_39
+      rect:
+        serializedVersion: 2
+        x: 623
+        y: 540
+        width: 55
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dc79a07481dc06a50800000000000000
+      internalID: 6512430565332522957
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_40
+      rect:
+        serializedVersion: 2
+        x: 967
+        y: 431
+        width: 31
+        height: 77
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7229a5b0f58a33f30800000000000000
+      internalID: 4554168774367547943
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_41
+      rect:
+        serializedVersion: 2
+        x: 627
+        y: 367
+        width: 35
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 90d27faac7dbbc0c0800000000000000
+      internalID: -4554338255013204727
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_42
+      rect:
+        serializedVersion: 2
+        x: 874
+        y: 359
+        width: 25
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 749e48be1bab51900800000000000000
+      internalID: 654634594175609159
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_43
+      rect:
+        serializedVersion: 2
+        x: 30
+        y: 326
+        width: 11
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 38ef0842f7d4d1150800000000000000
+      internalID: 5844913099865390723
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_44
+      rect:
+        serializedVersion: 2
+        x: 311
+        y: 0
+        width: 641
+        height: 334
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 26adfa56af7bfe070800000000000000
+      internalID: 8137925337757506146
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_45
+      rect:
+        serializedVersion: 2
+        x: 920
+        y: 304
+        width: 26
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a37eea2a2c207fff0800000000000000
+      internalID: -2530239814113478
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_46
+      rect:
+        serializedVersion: 2
+        x: 30
+        y: 0
+        width: 264
+        height: 309
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6b116abe8abb5ae50800000000000000
+      internalID: 6820063544904913334
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_47
+      rect:
+        serializedVersion: 2
+        x: 945
+        y: 292
+        width: 17
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a26b02fadf613a80800000000000000
+      internalID: -8488880836462288218
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_48
+      rect:
+        serializedVersion: 2
+        x: 956
+        y: 34
+        width: 272
+        height: 275
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5a45bf2d115228590800000000000000
+      internalID: -7673530056601545563
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_49
+      rect:
+        serializedVersion: 2
+        x: 954
+        y: 280
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 02174f520ef5c0310800000000000000
+      internalID: 1372577402755248416
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_50
+      rect:
+        serializedVersion: 2
+        x: 309
+        y: 91
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bc5405864e9417830800000000000000
+      internalID: 4067113183843730891
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_51
+      rect:
+        serializedVersion: 2
+        x: 313
+        y: 95
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3c58022fb33742330800000000000000
+      internalID: 3685197096398390723
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_52
+      rect:
+        serializedVersion: 2
+        x: 313
+        y: 89
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4c8e00232d4df0210800000000000000
+      internalID: 1301492816580503748
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_53
+      rect:
+        serializedVersion: 2
+        x: 287
+        y: 67
+        width: 9
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e8b6b5e638b752490800000000000000
+      internalID: -7771669777535505522
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_54
+      rect:
+        serializedVersion: 2
+        x: 291
+        y: 47
+        width: 21
+        height: 35
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e6bf75c5007120760800000000000000
+      internalID: 7422520426176707438
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_55
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 41
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 373f901bd92fb8cb0800000000000000
+      internalID: -4860524613722311821
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_56
+      rect:
+        serializedVersion: 2
+        x: 247
+        y: 33
+        width: 13
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 161bca6492a839640800000000000000
+      internalID: 5085560314115436897
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_57
+      rect:
+        serializedVersion: 2
+        x: 311
+        y: 47
+        width: 22
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 86b3a9dcaf8440f20800000000000000
+      internalID: 3387913061717916520
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_58
+      rect:
+        serializedVersion: 2
+        x: 464
+        y: 19
+        width: 48
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 35b8c63a925b9dec0800000000000000
+      internalID: -3541600441510098093
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_59
+      rect:
+        serializedVersion: 2
+        x: 528
+        y: 39
+        width: 12
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 747991cbee4581680800000000000000
+      internalID: -8784177688851409081
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_60
+      rect:
+        serializedVersion: 2
+        x: 498
+        y: 27
+        width: 20
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: af475c8bae36b6de0800000000000000
+      internalID: -1338866604439145222
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_61
+      rect:
+        serializedVersion: 2
+        x: 510
+        y: 25
+        width: 15
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5447240934c47c560800000000000000
+      internalID: 7333914371262936133
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_62
+      rect:
+        serializedVersion: 2
+        x: 522
+        y: 31
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 06d7909637bad9570800000000000000
+      internalID: 8475118585952959840
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_63
+      rect:
+        serializedVersion: 2
+        x: 525
+        y: 29
+        width: 17
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d42f33581ade1be70800000000000000
+      internalID: 9129339197636997709
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_street_64
+      rect:
+        serializedVersion: 2
+        x: 520
+        y: 17
+        width: 12
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5a153f13582979f70800000000000000
+      internalID: 9193978265066492325
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      sheet_street_0: 6952745878844129881
+      sheet_street_1: -1369114610789820746
+      sheet_street_10: 5914780934411487492
+      sheet_street_11: -1724951791499319577
+      sheet_street_12: -5074111538377742665
+      sheet_street_13: -5865579528580673204
+      sheet_street_14: -1364981133105654631
+      sheet_street_15: 2335301337544000875
+      sheet_street_16: -8613814502934853115
+      sheet_street_17: -1204556112859918302
+      sheet_street_18: -2786273907158233904
+      sheet_street_19: 2587718446809946859
+      sheet_street_2: 4762040244411007655
+      sheet_street_20: -6074075737556111610
+      sheet_street_21: 6567269923421537400
+      sheet_street_22: 2728660241757839309
+      sheet_street_23: -6116657090067983907
+      sheet_street_24: -4721138496733846620
+      sheet_street_25: 1540349562909493428
+      sheet_street_26: 7158783416686372451
+      sheet_street_27: -8207929359913145973
+      sheet_street_28: 3113350157022185666
+      sheet_street_29: 5754724706970226727
+      sheet_street_3: 6002396751025971592
+      sheet_street_30: 4032051881538606599
+      sheet_street_31: -4456401541939643253
+      sheet_street_32: -5002499240660591527
+      sheet_street_33: 7251384972784631480
+      sheet_street_34: -603893638598029648
+      sheet_street_35: -4163950548076779871
+      sheet_street_36: -6777736401509594167
+      sheet_street_37: -5112547345617912017
+      sheet_street_38: -5923787236425709576
+      sheet_street_39: 6512430565332522957
+      sheet_street_4: -8504348827407586694
+      sheet_street_40: 4554168774367547943
+      sheet_street_41: -4554338255013204727
+      sheet_street_42: 654634594175609159
+      sheet_street_43: 5844913099865390723
+      sheet_street_44: 8137925337757506146
+      sheet_street_45: -2530239814113478
+      sheet_street_46: 6820063544904913334
+      sheet_street_47: -8488880836462288218
+      sheet_street_48: -7673530056601545563
+      sheet_street_49: 1372577402755248416
+      sheet_street_5: 9172885371839737027
+      sheet_street_50: 4067113183843730891
+      sheet_street_51: 3685197096398390723
+      sheet_street_52: 1301492816580503748
+      sheet_street_53: -7771669777535505522
+      sheet_street_54: 7422520426176707438
+      sheet_street_55: -4860524613722311821
+      sheet_street_56: 5085560314115436897
+      sheet_street_57: 3387913061717916520
+      sheet_street_58: -3541600441510098093
+      sheet_street_59: -8784177688851409081
+      sheet_street_6: -7775632729300716621
+      sheet_street_60: -1338866604439145222
+      sheet_street_61: 7333914371262936133
+      sheet_street_62: 8475118585952959840
+      sheet_street_63: 9129339197636997709
+      sheet_street_64: 9193978265066492325
+      sheet_street_7: 6591063243989630324
+      sheet_street_8: 4546646181608555666
+      sheet_street_9: -249306650069591705
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -67,6 +67,7 @@ namespace OSistema.World
             overlay.sortingOrder = 1;
 
             gameObject.AddComponent<WorldLighting>().Init(g);
+            new GameObject("Props").AddComponent<PropLayer>().Init(map);
             map.CellChanged += OnCellChanged;
         }
 
