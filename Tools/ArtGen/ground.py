@@ -193,10 +193,89 @@ def slabs():
     return light(col, z, 0.1 + 0.3 * worn, joint * 0.2)
 
 
+def coppi():
+    """Curved terracotta tiles in columns down the slope: caps and channels, lichen, soot."""
+    cols = 46
+    pw = P / cols
+    k = np.floor(xx / pw)
+    fu = xx / pw - k
+    cap = (k % 2 == 0)
+    prof = np.where(cap, np.sin(fu * np.pi), -0.5 * np.sin(fu * np.pi))
+    rows = 26
+    off = hsh(k % cols, 0, 31) * 0.5
+    v = yy / (P / rows) + off
+    fv = v - np.floor(v)
+    row = np.floor(v) % rows
+    z = 6 + prof * 5 + (1 - fv) * 2.4
+    tone = 0.82 + 0.28 * hsh(k % cols, row, 32)
+    col = C(182, 96, 62) * tone[..., None]
+    col = np.where(cap[..., None], col, col * 0.8)
+    col = np.where((hsh(k % cols, row, 35) < 0.04)[..., None], col * 1.18, col)            # a newer tile
+    lichen = smooth(0.66, 0.78, fbm(xx, yy, 32, 4, 33)) * 0.55
+    col = col * (1 - lichen)[..., None] + C(178, 172, 128) * lichen[..., None]
+    soot = smooth(0.55, 0.85, fbm(xx, yy, 8, 3, 34)) * 0.25
+    col = col * (1 - soot)[..., None]
+    lip = (fv > 0.93) * 0.35
+    return light(col, z, 0.1, lip)
+
+
+def tar():
+    """Bitumen sheeting on a flat terrace: strips with lapped seams, patches of silver paint."""
+    strip = P / 8
+    k = np.floor(yy / strip)
+    fy = yy - k * strip
+    seam = smooth(strip - 8, strip - 2, fy)
+    base = C(98, 96, 98) * (0.85 + 0.2 * fbm(xx, yy, 16, 4, 61))[..., None] * (0.93 + 0.12 * hsh(k, 0, 62))[..., None]
+    grit = (tnoise(xx, yy, 512, 63) > 0.75) * 0.12
+    col = base * (1 + grit)[..., None]
+    silver = smooth(0.7, 0.73, fbm(xx, yy, 16, 4, 64)) * 0.8
+    col = col * (1 - silver)[..., None] + C(150, 150, 146) * (0.85 + 0.2 * fbm(xx, yy, 64, 2, 65))[..., None] * silver[..., None]
+    bubble = smooth(0.78, 0.84, fbm(xx, yy, 32, 3, 66))
+    z = seam * 1.2 + bubble * 1.5 + grit
+    return light(col, z, 0.15 + 0.2 * silver, seam * 0.15)
+
+
+def cotto():
+    n = 42
+    s = P / n
+    tx, ty = np.floor(xx / s), np.floor(yy / s)
+    lx, ly = xx - tx * s, yy - ty * s
+    tx, ty = tx % n, ty % n
+    d = np.minimum(np.minimum(lx, s - lx), np.minimum(ly, s - ly))
+    base = C(190, 118, 84) * (0.84 + 0.26 * hsh(tx, ty, 71))[..., None]
+    base = np.where((hsh(tx, ty, 72) < 0.05)[..., None], C(150, 86, 62), base)
+    bleach = smooth(0.4, 0.85, fbm(xx, yy, 8, 3, 73)) * 0.22
+    base = base * (1 - bleach)[..., None] + C(222, 200, 176) * bleach[..., None]
+    col = base * (1 + (fbm(xx, yy, 256, 2, 74) - 0.5) * 0.16)[..., None]
+    grout = 1 - smooth(0.4, 1.4, d)
+    col = col * (1 - grout)[..., None] + C(150, 138, 122) * grout[..., None]
+    z = 1.4 * smooth(0, 2.5, d)
+    return light(col, z, 0.06, grout * 0.2)
+
+
+def cement():
+    """Grey cement-and-grit tiles (marmette), stained and chipped."""
+    n = 32
+    s = P / n
+    tx, ty = np.floor(xx / s), np.floor(yy / s)
+    lx, ly = xx - tx * s, yy - ty * s
+    tx, ty = tx % n, ty % n
+    d = np.minimum(np.minimum(lx, s - lx), np.minimum(ly, s - ly))
+    base = C(176, 172, 164) * (0.86 + 0.2 * hsh(tx, ty, 81))[..., None]
+    chips = (tnoise(xx, yy, 512, 82) > 0.72) * 0.18 - (tnoise(xx, yy, 512, 83) > 0.8) * 0.15
+    stain = smooth(0.55, 0.85, fbm(xx, yy, 8, 4, 84)) * 0.25
+    col = base * (1 + chips - stain)[..., None]
+    grout = 1 - smooth(0.4, 1.4, d)
+    col = col * (1 - 0.4 * grout)[..., None]
+    z = 1.2 * smooth(0, 2.5, d)
+    return light(col, z, 0.05, grout * 0.2)
+
+
 if __name__ == "__main__":
     out = sys.argv[1]
     os.makedirs(out, exist_ok=True)
     for name, fn in (("basoli", basoli), ("asphalt", asphalt), ("kerb_h", lambda: kerb(True)),
-                     ("kerb_v", lambda: kerb(False)), ("slabs", slabs)):
+                     ("kerb_v", lambda: kerb(False)), ("slabs", slabs), ("coppi", coppi), ("tar", tar),
+                     ("cotto", cotto), ("cement", cement)):
         save(fn(), os.path.join(out, f"ground_{name}.png"))
         print(name)

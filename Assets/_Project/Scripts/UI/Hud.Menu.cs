@@ -232,6 +232,12 @@ namespace OSistema.UI
                 // "night" jumps to the evening, "rain" brings the rain: to look at the lighting.
                 if (text.Contains("night") && game != null) game.Ticks.Advance((int)(((21.5f - game.Clock.HourF + 24f) % 24f) * Core.GameClock.TicksPerHour));
                 if (text.Contains("rain") && game != null) game.Weather.ForceRain();
+                // "noon": midday under a clear sky, to look at the city in full light.
+                if (text.Contains("noon") && game != null)
+                {
+                    game.Ticks.Advance((int)(((12f - game.Clock.HourF + 24f) % 24f) * Core.GameClock.TicksPerHour));
+                    game.Weather.ForceSun();
+                }
                 if (text.Contains("phone") && game != null) ToggleWindow(Window.Phone);
                 // "travel": ride to the port straight away (and test saving two districts, with "roundtrip").
                 if (text.Contains("travel") && game != null)

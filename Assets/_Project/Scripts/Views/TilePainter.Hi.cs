@@ -98,9 +98,10 @@ namespace OSistema.Views
 
         // Baked ground materials (Resources/Ground, drawn by OSistema/MapLit): the pixel carries only
         // light (grey 128 = as lit) and, in alpha, which material goes under it.
-        const byte GroundAsphalt = 1, GroundBasoli = 2, GroundKerbH = 3, GroundKerbV = 4, GroundSlabs = 5;
+        public const byte GroundAsphalt = 1, GroundBasoli = 2, GroundKerbH = 3, GroundKerbV = 4, GroundSlabs = 5,
+            GroundCoppi = 6, GroundTar = 7, GroundCotto = 8, GroundCement = 9;
 
-        static Color32 Ground(byte id, float light)
+        public static Color32 Ground(byte id, float light)
         {
             byte v = (byte)Mathf.Clamp(128f * light, 0f, 255f);
             return new Color32(v, v, v, (byte)(255 - id));

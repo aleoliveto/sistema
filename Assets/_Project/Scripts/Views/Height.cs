@@ -64,8 +64,7 @@ namespace OSistema.Views
             transform.position = t.position + (Vector3)(Sun.Offset * height);
             transform.rotation = t.rotation;
             transform.localScale = t.localScale;
-            // The washing's own fade doesn't lighten its shadow: the cloth is still there.
-            shadow.color = new Color(0.02f, 0.02f, 0.05f, alpha * Sun.Strength);
+            shadow.color = new Color(0.02f, 0.02f, 0.05f, alpha * Sun.Strength * source.color.a);
         }
     }
 

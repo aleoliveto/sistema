@@ -23,6 +23,13 @@ namespace OSistema.Core
             nextChangeHour = int.MaxValue;
         }
 
+        /// <summary>For testing: clear skies for the rest of the day.</summary>
+        public void ForceSun()
+        {
+            target = Rain = 0f;
+            nextChangeHour = int.MaxValue;
+        }
+
         public void Tick(Game game)
         {
             int hour = game.Clock.Day * 24 + game.Clock.Hour;

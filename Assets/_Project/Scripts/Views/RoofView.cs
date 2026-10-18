@@ -21,6 +21,7 @@ namespace OSistema.Views
             public RectInt Bounds;
             public bool[] Mask;            // which cells of Bounds this roof covers (null = all)
             public SpriteRenderer Sprite;
+            public List<SpriteRenderer> Items = new List<SpriteRenderer>();
             public float Alpha = 1f;
             public bool Open;
         }
@@ -36,7 +37,8 @@ namespace OSistema.Views
             {
                 var interior = p.Interior;
                 if (interior.width < 1 || interior.height < 1) continue;
-                roofs.Add(new Roof { Property = p, Bounds = interior, Sprite = CreateRoof(p, interior) });
+                var sprite = CreateRoof(p, interior, out var things);
+                roofs.Add(new Roof { Property = p, Bounds = interior, Sprite = sprite, Items = things });
             }
             AddLeftoverRoofs(g);
             UpdateOpen();
@@ -47,12 +49,14 @@ namespace OSistema.Views
             }
         }
 
-        SpriteRenderer CreateRoof(Property p, RectInt interior)
+        SpriteRenderer CreateRoof(Property p, RectInt interior, out List<SpriteRenderer> things)
         {
             int w = interior.width * Tile, h = interior.height * Tile;
-            var tex = new Texture2D(w, h, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp };
+            // Point-sampled: alpha tags the baked material per pixel, and must not blend.
+            var tex = new Texture2D(w, h, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
             var px = new Color32[w * h];
-            Paint(px, w, h, p.Id, p.Kind, p.Name);
+            var items = new List<(string, Vector2, int)>();
+            Paint(px, w, h, p.Id, p.Kind, p.Name, items);
             tex.SetPixels32(px);
             tex.Apply(false);
 
@@ -61,8 +65,9 @@ namespace OSistema.Views
             go.transform.position = new Vector3(interior.x, interior.y, 0f);
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = Sprite.Create(tex, new Rect(0, 0, w, h), Vector2.zero, Tile, 0, SpriteMeshType.FullRect);
-            sr.sharedMaterial = SpriteFactory.LitMaterial;
+            sr.sharedMaterial = SpriteFactory.MapMaterial;
             sr.sortingOrder = 6; // above floors and furniture, below people
+            things = Furnish(go.transform, items, interior, null);
             return sr;
         }
 
@@ -115,16 +120,18 @@ namespace OSistema.Views
                 var bounds = new RectInt(minX, minY, maxX - minX + 1, maxY - minY + 1);
                 var mask = new bool[bounds.width * bounds.height];
                 foreach (var c in cells) mask[(c.y - minY) * bounds.width + (c.x - minX)] = true;
-                roofs.Add(new Roof { Bounds = bounds, Mask = mask, Sprite = CreateMaskedRoof(bounds, mask, salt++) });
+                var sprite = CreateMaskedRoof(bounds, mask, salt++, out var things);
+                roofs.Add(new Roof { Bounds = bounds, Mask = mask, Sprite = sprite, Items = things });
             }
         }
 
-        SpriteRenderer CreateMaskedRoof(RectInt bounds, bool[] mask, int salt)
+        SpriteRenderer CreateMaskedRoof(RectInt bounds, bool[] mask, int salt, out List<SpriteRenderer> things)
         {
             int w = bounds.width * Tile, h = bounds.height * Tile;
-            var tex = new Texture2D(w, h, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp };
+            var tex = new Texture2D(w, h, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
             var px = new Color32[w * h];
-            Paint(px, w, h, salt, PropertyKind.Home, null);
+            var items = new List<(string, Vector2, int)>();
+            Paint(px, w, h, salt, PropertyKind.Home, null, items);
             for (int y = 0; y < h; y++)
             for (int x = 0; x < w; x++)
                 if (!mask[(y / Tile) * bounds.width + x / Tile]) px[y * w + x] = new Color32(0, 0, 0, 0);
@@ -136,8 +143,9 @@ namespace OSistema.Views
             go.transform.position = new Vector3(bounds.x, bounds.y, 0f);
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = Sprite.Create(tex, new Rect(0, 0, w, h), Vector2.zero, Tile, 0, SpriteMeshType.FullRect);
-            sr.sharedMaterial = SpriteFactory.LitMaterial;
+            sr.sharedMaterial = SpriteFactory.MapMaterial;
             sr.sortingOrder = 6;
+            things = Furnish(go.transform, items, bounds, mask);
             return sr;
         }
 
@@ -155,8 +163,9 @@ namespace OSistema.Views
 
         static float N(int a, int b, int salt) => (Hash(a, b, salt) & 0xFFFF) / 65535f;
 
+        // Both keep alpha: on a roof surface it tags the baked material (TilePainter.Ground).
         static Color32 Shade(Color32 c, float f) =>
-            new Color32((byte)Mathf.Clamp(c.r * f, 0, 255), (byte)Mathf.Clamp(c.g * f, 0, 255), (byte)Mathf.Clamp(c.b * f, 0, 255), 255);
+            new Color32((byte)Mathf.Clamp(c.r * f, 0, 255), (byte)Mathf.Clamp(c.g * f, 0, 255), (byte)Mathf.Clamp(c.b * f, 0, 255), c.a);
 
         static float Smooth(float fx, float fy, int salt)
         {
@@ -169,7 +178,10 @@ namespace OSistema.Views
         }
 
         static Color32 Mix(Color32 a, Color32 b, float t) =>
-            new Color32((byte)(a.r + (b.r - a.r) * t), (byte)(a.g + (b.g - a.g) * t), (byte)(a.b + (b.b - a.b) * t), 255);
+            new Color32((byte)(a.r + (b.r - a.r) * t), (byte)(a.g + (b.g - a.g) * t), (byte)(a.b + (b.b - a.b) * t), a.a);
+
+        // Pixels already in a shadow (so overlapping shadows don't stack), for the roof being painted.
+        static bool[] shaded = new bool[0];
 
         // The sun is low in the south-west: everything throws its shadow up and to the right.
         const int ShadowDx = 5, ShadowDy = 4;
@@ -178,7 +190,7 @@ namespace OSistema.Views
         {
             if (x < 0 || y < 0 || x >= w || y >= h) return;
             var c = px[y * w + x];
-            px[y * w + x] = new Color32((byte)(c.r * f * 0.95f), (byte)(c.g * f * 0.97f), (byte)Mathf.Min(255, c.b * f * 1.03f), 255);
+            px[y * w + x] = new Color32((byte)(c.r * f * 0.95f), (byte)(c.g * f * 0.97f), (byte)Mathf.Min(255, c.b * f * 1.03f), c.a);
         }
 
         static void ShadowBox(Color32[] px, int w, int h, int x0, int y0, int bw, int bh, int len, float f = 0.62f)
@@ -192,11 +204,9 @@ namespace OSistema.Views
                 {
                     if (x < 0 || y < 0 || x >= w || y >= h) continue;
                     if (x >= x0 && x < x0 + bw && y >= y0 && y < y0 + bh) continue;
-                    if (px[y * w + x].a == 254) continue;
+                    if (shaded[y * w + x]) continue;
                     Darken(px, w, h, x, y, f);
-                    var c = px[y * w + x];
-                    c.a = 254;
-                    px[y * w + x] = c;
+                    shaded[y * w + x] = true;
                 }
             }
         }
@@ -213,23 +223,24 @@ namespace OSistema.Views
                     if (dx * dx + dy * dy > r * r) continue;
                     float ox = x + 0.5f - cx, oy = y + 0.5f - cy;
                     if (ox * ox + oy * oy <= r * r) continue;   // not under the object itself
-                    if (x < 0 || y < 0 || x >= w || y >= h || px[y * w + x].a == 254) continue;
+                    if (x < 0 || y < 0 || x >= w || y >= h || shaded[y * w + x]) continue;
                     Darken(px, w, h, x, y, f);
-                    var c = px[y * w + x];
-                    c.a = 254;
-                    px[y * w + x] = c;
+                    shaded[y * w + x] = true;
                 }
             }
         }
 
-        static void Paint(Color32[] px, int w, int h, int id, PropertyKind kind, string name)
+        static void Paint(Color32[] px, int w, int h, int id, PropertyKind kind, string name, List<(string art, Vector2 at, int rot)> items)
         {
             var rng = new System.Random(id * 7919 + 13);
+            shaded = new bool[w * h];
             bool church = name == "The parish church";
             bool hospital = name == "Ospedale";
 
             // 0: coppi, the old curved terracotta tiles. 1: a tarred lastrico solare. 2: cotto pavers.
-            int surface = church ? 0 : hospital ? 1 : rng.NextDouble() < 0.33 ? 0 : rng.NextDouble() < 0.6 ? 1 : 2;
+            // 3: grey cement tiles. The surfaces are baked materials; here only the light on them.
+            int surface = church ? 0 : hospital ? 1 : rng.NextDouble() < 0.3 ? 0 : rng.NextDouble() < 0.45 ? 1 : rng.NextDouble() < 0.6 ? 2 : 3;
+            byte material = surface switch { 0 => TilePainter.GroundCoppi, 1 => TilePainter.GroundTar, 2 => TilePainter.GroundCotto, _ => TilePainter.GroundCement };
             var terracotta = new Color32(184, 104, 70, 255);
             var tar = new Color32(118, 114, 108, 255);
             var cotto = new Color32(170, 112, 82, 255);
@@ -239,38 +250,13 @@ namespace OSistema.Views
             for (int x = 0; x < w; x++)
             {
                 float big = Smooth(x / 40f, y / 40f, id), mid = Smooth(x / 9f, y / 9f, id + 3);
-                Color32 c;
-                if (surface == 0)
+                Color32 c = TilePainter.Ground(material, 0.94f + 0.12f * mid);
+                if (surface == 1)
                 {
-                    // Columns of tiles running down the slope; every other column is a channel.
-                    const int col = 10, row = 14;
-                    int cx = x / col, cy = (y + (cx % 2) * 5) / row;
-                    float t = (x % col + 0.5f) / col;
-                    bool cap = cx % 2 == 0;
-                    float profile = Mathf.Sin(t * Mathf.PI);
-                    float light = cap ? 0.78f + 0.3f * profile - 0.12f * t : 0.62f + 0.12f * profile;
-                    float tileVar = 0.86f + 0.26f * N(cx, cy, id + 1);
-                    c = Shade(terracotta, light * tileVar * (0.92f + 0.16f * mid));
-                    int ry = (y + (cx % 2) * 5) % row;
-                    if (ry < 2) c = Shade(c, 0.7f);                       // the lip of the tile above
-                    if (N(cx, cy, id + 9) < 0.05f) c = Shade(c, 1.18f);    // a newer replacement tile
-                    float l = Smooth(x / 14f, y / 14f, id + 5);
-                    if (l > 0.66f) c = Mix(c, lichen, Mathf.Clamp01((l - 0.66f) * 3f) * 0.6f);
-                }
-                else if (surface == 1)
-                {
-                    c = Shade(tar, 0.86f + 0.2f * big + 0.08f * mid + 0.05f * N(x, y, id + 4));
                     // Rain leaves darker tide marks where water stood.
                     float puddle = Smooth(x / 22f, y / 22f, id + 7);
                     if (puddle > 0.68f) c = Shade(c, 0.86f);
                     if (puddle > 0.68f && puddle < 0.7f) c = Shade(c, 0.9f);
-                }
-                else
-                {
-                    const int sz = 16;
-                    int px0 = x / sz, py0 = (y + (px0 % 2) * 8) / sz;
-                    bool grout = x % sz == 0 || (y + (px0 % 2) * 8) % sz == 0;
-                    c = grout ? new Color32(150, 140, 128, 255) : Shade(cotto, (0.85f + 0.25f * N(px0, py0, id + 1)) * (0.9f + 0.14f * mid));
                 }
                 // Grime and sun-bleaching in big patches.
                 c = Shade(c, 0.88f + 0.22f * big);
@@ -354,118 +340,73 @@ namespace OSistema.Views
                 return;
             }
 
-            // The stairwell hut: every terrace has one.
-            if (w >= 96 && h >= 96)
+            // Things on the terrace, as sprites standing on it (see Furnish): the stairwell hut first.
+            var taken = new List<Rect>();
+            void Place(string art, float pw_, float ph_, int rot)
             {
-                int bw = 44 + rng.Next(16), bh = 38 + rng.Next(14);
-                int hx = rng.Next(pw + 2, w - bw - pw - 2), hy = rng.Next(pw + 2, h - bh - pw - 2);
-                ShadowBox(px, w, h, hx, hy, bw, bh, 12, 0.55f);
-                Box(px, w, h, hx, hy, bw, bh, new Color32(176, 168, 152, 255));
-                for (int y = hy + 2; y < hy + bh - 2; y++)
-                for (int x = hx + 2; x < hx + bw - 2; x++)
-                    Set(px, w, h, x, y, Shade(new Color32(132, 128, 120, 255), 0.9f + 0.15f * Smooth(x / 8f, y / 8f, id + 21)));
-                Box(px, w, h, hx + 10, hy - 1, 14, 4, new Color32(92, 64, 44, 255)); // the door, at the foot
-            }
-
-            int items = 3 + rng.Next(5);
-            for (int i = 0; i < items; i++)
-            {
-                int x = rng.Next(pw + 8, Mathf.Max(pw + 9, w - 34)), y = rng.Next(pw + 8, Mathf.Max(pw + 9, h - 30));
-                switch (rng.Next(8))
+                if (rot % 180 != 0) (pw_, ph_) = (ph_, pw_);
+                for (int tries = 0; tries < 14; tries++)
                 {
-                    case 0:
-                    case 1: // the black plastic water tank on every Neapolitan roof
-                    {
-                        float r = 9f + rng.Next(3);
-                        ShadowDisc(px, w, h, x + r, y + r, r, 9f);
-                        for (int yy = (int)(y); yy <= y + 2 * r; yy++)
-                        for (int xx = (int)(x); xx <= x + 2 * r; xx++)
-                        {
-                            float dx = xx + 0.5f - (x + r), dy = yy + 0.5f - (y + r), d = Mathf.Sqrt(dx * dx + dy * dy) / r;
-                            if (d > 1f) continue;
-                            float l = 0.9f + 0.6f * Mathf.Clamp01(-(dx - dy) / (2f * r)) - 0.3f * d;
-                            Set(px, w, h, xx, yy, Shade(new Color32(40, 40, 44, 255), l));
-                        }
-                        Disc(px, w, h, x + r, y + r, r * 0.38f, new Color32(58, 58, 62, 255), id);
-                        break;
-                    }
-                    case 2: // TV antenna on a mast
-                    {
-                        for (int k = 0; k < 18; k++)
-                        {
-                            Darken(px, w, h, x + k + 3, y + 10 + 3, 0.7f);
-                            Set(px, w, h, x + k, y + 10, new Color32(70, 70, 72, 255));
-                            if (k % 4 == 0)
-                                for (int j = 3; j < 18; j++)
-                                {
-                                    Darken(px, w, h, x + k + 3, y + j + 3, 0.78f);
-                                    Set(px, w, h, x + k, y + j, new Color32(96, 96, 98, 255));
-                                }
-                        }
-                        break;
-                    }
-                    case 3: // potted lemon tree and geraniums
-                    {
-                        ShadowDisc(px, w, h, x + 8, y + 8, 8f, 8f, 0.65f);
-                        Disc(px, w, h, x + 8, y + 8, 5f, new Color32(150, 82, 54, 255), id);
-                        for (int k = 0; k < 5; k++)
-                            Disc(px, w, h, x + 5 + rng.Next(7), y + 5 + rng.Next(7), 4f + (float)rng.NextDouble() * 2f, new Color32(56, (byte)(96 + rng.Next(30)), 50, 255), id + k);
-                        for (int k = 0; k < 3; k++) Disc(px, w, h, x + 4 + rng.Next(9), y + 4 + rng.Next(9), 1.4f, new Color32(226, 196, 60, 255), id);
-                        break;
-                    }
-                    case 4: // washing on a line between two poles
-                    {
-                        int len = 26 + rng.Next(12);
-                        for (int k = 0; k < len; k++)
-                        {
-                            Set(px, w, h, x + k, y + 8, new Color32(70, 70, 70, 255));
-                            Darken(px, w, h, x + k + 3, y + 11, 0.85f);
-                        }
-                        var cloths = new[] { new Color32(232, 232, 226, 255), new Color32(170, 62, 60, 255), new Color32(70, 98, 150, 255), new Color32(210, 180, 90, 255), new Color32(140, 150, 160, 255) };
-                        for (int k = 2; k < len - 4; k += 5 + rng.Next(3))
-                        {
-                            var cl = cloths[rng.Next(cloths.Length)];
-                            ShadowBox(px, w, h, x + k, y + 3, 4, 6, 3, 0.75f);
-                            Box(px, w, h, x + k, y + 3, 4, 6, cl);
-                            Box(px, w, h, x + k, y + 3, 4, 1, Shade(cl, 0.8f));
-                        }
-                        break;
-                    }
-                    case 5: // solar water heater: panel and tank
-                    {
-                        ShadowBox(px, w, h, x, y, 24, 16, 8, 0.6f);
-                        Box(px, w, h, x, y, 24, 12, new Color32(40, 52, 70, 255));
-                        for (int k = 0; k < 24; k += 4) Box(px, w, h, x + k, y, 1, 12, new Color32(120, 130, 140, 255));
-                        Box(px, w, h, x, y + 12, 24, 5, new Color32(206, 206, 200, 255));
-                        Box(px, w, h, x, y + 16, 24, 1, new Color32(160, 160, 156, 255));
-                        break;
-                    }
-                    case 6: // satellite dish
-                    {
-                        ShadowDisc(px, w, h, x + 6, y + 6, 6f, 6f, 0.65f);
-                        for (int yy = y; yy <= y + 12; yy++)
-                        for (int xx = x; xx <= x + 12; xx++)
-                        {
-                            float dx = xx + 0.5f - (x + 6), dy = yy + 0.5f - (y + 6), d = Mathf.Sqrt(dx * dx + dy * dy) / 6f;
-                            if (d > 1f) continue;
-                            Set(px, w, h, xx, yy, Shade(new Color32(214, 214, 210, 255), 0.8f + 0.25f * d));
-                        }
-                        Box(px, w, h, x + 5, y + 5, 3, 3, new Color32(60, 60, 60, 255));
-                        break;
-                    }
-                    default: // plastic chairs round a table, for summer evenings
-                    {
-                        ShadowDisc(px, w, h, x + 10, y + 10, 6f, 5f, 0.7f);
-                        Disc(px, w, h, x + 10, y + 10, 6f, new Color32(222, 220, 212, 255), id);
-                        foreach (var (ax, ay) in new[] { (0, 8), (16, 8), (8, 0), (8, 17) })
-                        {
-                            ShadowBox(px, w, h, x + ax, y + ay, 5, 5, 3, 0.75f);
-                            Box(px, w, h, x + ax, y + ay, 5, 5, new Color32(206, 204, 196, 255));
-                        }
-                        break;
-                    }
+                    int hiX = (int)(w - pw - 2 - pw_), hiY = (int)(h - pw - 2 - ph_);
+                    if (hiX <= pw + 2 || hiY <= pw + 2) return;
+                    float x = rng.Next(pw + 2, hiX), y = rng.Next(pw + 2, hiY);
+                    var r = new Rect(x - 3, y - 3, pw_ + 6, ph_ + 6);
+                    if (taken.Exists(t => t.Overlaps(r))) continue;
+                    taken.Add(r);
+                    items.Add((art, new Vector2(x + pw_ / 2f, y + ph_ / 2f), rot));
+                    return;
                 }
             }
+            if (w >= 96 && h >= 96) Place("torrino", 46, 38, 0);
+            int count = 3 + rng.Next(5);
+            for (int i = 0; i < count; i++)
+            {
+                int rot = rng.Next(2) * 90;
+                switch (rng.Next(10))
+                {
+                    case 0:
+                    case 1: Place(rng.NextDouble() < 0.75 ? "tank_black" : "tank_white", 19, 19, 0); break;   // on every Neapolitan roof
+                    case 2: Place("antenna", 22, 22, 0); break;
+                    case 3: Place(rng.NextDouble() < 0.5 ? "lemon_pot" : "geraniums", 21, 21, 0); break;
+                    case 4: Place("rack", 33, 17, rot); break;
+                    case 5: Place("solar", 26, 19, 0); break;
+                    case 6: Place("dish", 15, 15, 0); break;
+                    case 7: Place("table", 29, 29, 0); break;
+                    default: Place("ac_unit", 17, 12, rot); break;
+                }
+            }
+        }
+
+        static float HeightOf(string art) => art switch
+        {
+            "torrino" => 0.9f, "antenna" => 1.2f, "tank_black" or "tank_white" => 0.5f, "dish" => 0.45f,
+            "solar" => 0.35f, "rack" => 0.35f, _ => 0.25f,
+        };
+
+        /// <summary>Puts the terrace's things on the roof: painted sprites with shadows, fading with it.</summary>
+        static List<SpriteRenderer> Furnish(Transform roof, List<(string art, Vector2 at, int rot)> items, RectInt bounds, bool[] mask)
+        {
+            var list = new List<SpriteRenderer>();
+            foreach (var (art, at, rot) in items)
+            {
+                var cell = new Vector2Int((int)(at.x / Tile), (int)(at.y / Tile));
+                if (mask != null && (cell.x >= bounds.width || cell.y >= bounds.height || !mask[cell.y * bounds.width + cell.x])) continue;
+                var sprite = PropArt.Load("Roof/roof_" + art);
+                if (sprite == null) continue;
+                var go = new GameObject(art);
+                go.transform.SetParent(roof, false);
+                go.transform.localPosition = new Vector3(at.x / Tile, at.y / Tile, 0f);
+                go.transform.localRotation = Quaternion.Euler(0f, 0f, rot);
+                float size = Mathf.Max(sprite.texture.width, sprite.texture.height) / 128f;   // drawn at 128 px a cell
+                go.transform.localScale = new Vector3(size, size, 1f);
+                var sr = go.AddComponent<SpriteRenderer>();
+                sr.sprite = sprite;
+                sr.sharedMaterial = SpriteFactory.LitMaterial;
+                sr.sortingOrder = 8;
+                HeightShadow.Add(sr, HeightOf(art), 0.4f, 7);
+                list.Add(sr);
+            }
+            return list;
         }
 
         static void Set(Color32[] px, int w, int h, int x, int y, Color32 c)
@@ -520,10 +461,16 @@ namespace OSistema.Views
 
         void Apply(Roof r)
         {
-            r.Sprite.enabled = r.Alpha > 0.01f;
+            bool on = r.Alpha > 0.01f;
             var c = Color.white;
             c.a = r.Alpha;
+            r.Sprite.enabled = on;
             r.Sprite.color = c;
+            foreach (var item in r.Items)
+            {
+                item.enabled = on;
+                item.color = c;
+            }
         }
 
         void LateUpdate()

@@ -11,6 +11,10 @@ Shader "OSistema/MapLit"
         _Mat3("Kerb east-west", 2D) = "grey" {}
         _Mat4("Kerb north-south", 2D) = "grey" {}
         _Mat5("Slabs", 2D) = "grey" {}
+        _Mat6("Coppi", 2D) = "grey" {}
+        _Mat7("Tar", 2D) = "grey" {}
+        _Mat8("Cotto", 2D) = "grey" {}
+        _Mat9("Cement tiles", 2D) = "grey" {}
         _Period("Cells per repeat", Float) = 8
         [HideInInspector] _Color("Tint", Color) = (1,1,1,1)
     }
@@ -56,6 +60,10 @@ Shader "OSistema/MapLit"
             TEXTURE2D(_Mat3);
             TEXTURE2D(_Mat4);
             TEXTURE2D(_Mat5);
+            TEXTURE2D(_Mat6);
+            TEXTURE2D(_Mat7);
+            TEXTURE2D(_Mat8);
+            TEXTURE2D(_Mat9);
 
             CBUFFER_START(UnityPerMaterial)
                 half4 _Color;
@@ -81,7 +89,11 @@ Shader "OSistema/MapLit"
                 if (id == 2) return SAMPLE_TEXTURE2D(_Mat2, sampler_Mat1, uv).rgb;
                 if (id == 3) return SAMPLE_TEXTURE2D(_Mat3, sampler_Mat1, uv).rgb;
                 if (id == 4) return SAMPLE_TEXTURE2D(_Mat4, sampler_Mat1, uv).rgb;
-                return SAMPLE_TEXTURE2D(_Mat5, sampler_Mat1, uv).rgb;
+                if (id == 5) return SAMPLE_TEXTURE2D(_Mat5, sampler_Mat1, uv).rgb;
+                if (id == 6) return SAMPLE_TEXTURE2D(_Mat6, sampler_Mat1, uv).rgb;
+                if (id == 7) return SAMPLE_TEXTURE2D(_Mat7, sampler_Mat1, uv).rgb;
+                if (id == 8) return SAMPLE_TEXTURE2D(_Mat8, sampler_Mat1, uv).rgb;
+                return SAMPLE_TEXTURE2D(_Mat9, sampler_Mat1, uv).rgb;
             }
 
             half4 Frag(Varyings i) : SV_Target
@@ -90,7 +102,13 @@ Shader "OSistema/MapLit"
                 int id = (int)round((1.0 - c.a) * 255.0);
                 if (id > 0 && id < 16)
                 {
+                    // The light was written as sRGB grey (128 = as lit); in a linear project it
+                    // arrives converted, so divide by what 128 becomes, not by a half.
+                    #ifdef UNITY_COLORSPACE_GAMMA
                     c.rgb = Ground(id, i.world) * c.rgb * 2.0;
+                    #else
+                    c.rgb = Ground(id, i.world) * c.rgb / 0.21586;
+                    #endif
                     c.a = 1.0;
                 }
                 c *= i.color;
