@@ -120,6 +120,29 @@ namespace OSistema.UI
             if (n == 0) Ui.Text("No beds yet. Buy one at the furniture shop and place it at home.", list, "small", "muted");
         }
 
+        /// <summary>A grid of the 24 hours under a button; pick one.</summary>
+        void ShowHourMenu(VisualElement anchor, Action<int> pick)
+        {
+            if (roleMenu == null)
+            {
+                roleMenu = Ui.Box("layer").Into(modalLayer);
+                roleMenu.RegisterCallback<PointerDownEvent>(e => { if (e.target == roleMenu) roleMenu.Show(false); });
+            }
+            roleMenu.Clear();
+            roleMenu.Show(true);
+            roleMenu.pickingMode = PickingMode.Position;
+            var list = Ui.Box("panel", "role-menu", "hour-menu").Into(roleMenu);
+            var r = anchor.worldBound;
+            var local = roleMenu.WorldToLocal(new Vector2(r.xMin, r.yMax));
+            list.style.left = local.x;
+            list.style.top = local.y + 2;
+            for (int h = 0; h < 24; h++)
+            {
+                int hour = h;
+                Ui.Btn($"{h:00}:00", () => { roleMenu.Show(false); pick(hour); }, list, "btn--small", "hour-menu__item");
+            }
+        }
+
         string BedLabel(Pawn p)
         {
             if (!p.Bed.HasValue) return "Bed: none ▾";

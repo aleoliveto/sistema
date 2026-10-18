@@ -144,7 +144,7 @@ namespace OSistema.Combat
                 float off = ((float)rng.NextDouble() + (float)rng.NextDouble() - 1f) * spread * Mathf.Deg2Rad;
                 dir = new Vector2(dir.x * Mathf.Cos(off) - dir.y * Mathf.Sin(off), dir.x * Mathf.Sin(off) + dir.y * Mathf.Cos(off));
             }
-            shooter.NextAttackTick = now + (melee ? 50 : 22);
+            shooter.NextAttackTick = now + (melee ? 35 : 11);   // a semi-automatic: as fast as you can pull the trigger
 
             // Walk the line: who's on it first, and where does a wall stop it?
             float wallAt = range;
@@ -279,7 +279,7 @@ namespace OSistema.Combat
             var rng = game.Rng;
             attacker.AimAt(target);
             if (!melee) attacker.Learn(Skill.Shooting, 3f, game);
-            attacker.NextAttackTick = now + (melee ? 60 : 75 + rng.Next(0, 30));
+            attacker.NextAttackTick = now + (melee ? 45 : 38 + rng.Next(0, 25));
             bool hit = rng.NextDouble() < chance;
 
             var to = target.Position;

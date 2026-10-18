@@ -942,3 +942,7 @@
 .unity-scroller .unity-base-slider__tracker { background-color: rgba(255, 255, 255, 0.04); border-width: 0; border-radius: 3px; }
 .unity-scroller .unity-base-slider__dragger { background-color: rgba(232, 194, 106, 0.45); border-width: 0; border-radius: 3px; width: 6px; left: 0; margin: 0; }
 .unity-scroller .unity-base-slider__dragger:hover { background-color: rgba(232, 194, 106, 0.75); }
+.hour-menu { flex-direction: row; flex-wrap: wrap; width: 264px; }
+.hour-menu__item { width: 60px; margin: 1px; }
+.bigmap__view { width: 860px; height: 600px; overflow: hidden; position: relative; background-color: rgb(18, 17, 16); border-radius: 4px; }
+.bigmap__view .bigmap__image { position: absolute; }

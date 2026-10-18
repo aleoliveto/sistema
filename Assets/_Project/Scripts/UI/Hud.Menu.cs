@@ -206,6 +206,7 @@ namespace OSistema.UI
                 if (text.Contains("night") && game != null) game.Ticks.Advance((int)(((21.5f - game.Clock.HourF + 24f) % 24f) * Core.GameClock.TicksPerHour));
                 if (text.Contains("rain") && game != null) game.Weather.ForceRain();
                 if (text.Contains("phone") && game != null) ToggleWindow(Window.Phone);
+                if (text.Contains("map") && game != null) { OSistema.Views.FogOfWar.RevealAllForTesting(); ToggleMap(); }
                 return;
             }
             OpenMenu(Menu.Title);

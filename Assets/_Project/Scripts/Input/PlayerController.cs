@@ -633,7 +633,7 @@ namespace OSistema.Input
             Aiming = mouse.rightButton.isPressed && !overUi && CurrentTool == Tool.Select;
             p.AimPoint = Aiming ? (Vector2)ScreenToWorld(mousePos) : (Vector2?)null;
             aimLine.enabled = Aiming;
-            p.Bloom = Mathf.MoveTowards(p.Bloom, 0f, 9f * dt);
+            p.Bloom = Mathf.MoveTowards(p.Bloom, 0f, 12f * dt);
             bool reloading = p.ReloadUntil > Time.unscaledTime;
             if (!reloading && p.ReloadUntil > 0f)
             {
@@ -688,7 +688,7 @@ namespace OSistema.Input
                     {
                         p.Ammo--;
                         game.Combat.PlayerAttack(p, ScreenToWorld(mousePos), game, spread);
-                        p.Bloom = Mathf.Min(p.Bloom + 4.5f, 14f);
+                        p.Bloom = Mathf.Min(p.Bloom + 3.2f, 12f);
                         if (p.Ammo == 0) StartReload(p);
                     }
                 }
@@ -699,7 +699,7 @@ namespace OSistema.Input
 
         void StartReload(Pawn p)
         {
-            p.ReloadUntil = Time.unscaledTime + Mathf.Lerp(1.8f, 1.1f, p.ShootingSkill / 10f);
+            p.ReloadUntil = Time.unscaledTime + Mathf.Lerp(1.3f, 0.8f, p.ShootingSkill / 10f);
             OSistema.Views.SoundManager.PlayUi(OSistema.Views.AudioSynth.Click, 0.35f);
             game.PopupAt(p.Position + Vector2.up * 0.8f, "reloading");
         }

@@ -48,13 +48,15 @@ namespace OSistema.UI
                 if (!pr.Rect.Overlaps(game.PlayerBase)) places.Add(new Place { At = pr.Rect.center, Glyph = "C", Css = "icon--home", Name = pr.Name });
             foreach (var pr in game.Properties.All)
             {
-                if (!FogOfWar.HasExplored(pr.Door)) continue;
+                // The hospital and the church: everyone knows where they are.
                 if (pr.Name == "Ospedale") places.Add(new Place { At = pr.Rect.center, Glyph = "H", Css = "icon--hospital", Name = "Ospedale" });
                 else if (pr.Name == "The parish church") places.Add(new Place { At = pr.Rect.center, Glyph = "†", Css = "icon--church", Name = "Church" });
             }
             foreach (var b in game.Org.Businesses)
             {
-                if (!FogOfWar.HasExplored(b.Cell) || b.Status == BusinessStatus.Closed) continue;
+                // The furniture shop, the scooter dealer and the jeweller are known to everyone: always on the map.
+                bool landmark = b.Kind == ShopKind.Mobili || b.Kind == ShopKind.Moto || b.Kind == ShopKind.Lusso;
+                if ((!landmark && !FogOfWar.HasExplored(b.Cell)) || b.Status == BusinessStatus.Closed) continue;
                 var (g, css, what) = b.Kind switch
                 {
                     ShopKind.Pizzeria => ("P", "icon--pizza", "Pizzeria"),
@@ -130,12 +132,13 @@ namespace OSistema.UI
             var panel = Ui.Box("panel", "bigmap").Into(mapDim);
             var head = Ui.Row(panel);
             Ui.Text("THE RIONE", head, "title", "gold");
-            Ui.Text("   click to set a waypoint · click it again to clear", head, "small", "muted");
+            Ui.Text("   scroll to zoom · drag to move · click to set a waypoint, again to clear", head, "small", "muted");
             Ui.Box("spacer").Into(head);
             Ui.Btn("Close  [M]", ToggleMap, head, "btn--small");
             var mapBody = Ui.Row(panel);
             mapBody.style.alignItems = Align.FlexStart;
-            bigImage = Ui.Box("bigmap__image").Into(mapBody);
+            bigView = Ui.Box("bigmap__view").Into(mapBody);
+            bigImage = Ui.Box("bigmap__image").Into(bigView);
             bigLayer = Ui.Box("layer").Into(bigImage);
             bigLayer.pickingMode = PickingMode.Ignore;
             // The legend: what each icon means. Hover an icon on the map for its name.
@@ -169,9 +172,40 @@ namespace OSistema.UI
                 Ui.Text(text, row, "small");
             }
             Ui.Text("Hover an icon for its name and hours. Click the map to drop a pin.", legend, "tiny").style.marginTop = 6;
-            bigImage.RegisterCallback<PointerDownEvent>(e =>
+            // Scroll to zoom around the pointer; drag to move; a click without dragging drops a pin.
+            bigView.RegisterCallback<WheelEvent>(e =>
             {
-                var local = (Vector2)e.localPosition;
+                float old = bigScale;
+                bigZoom = Mathf.Clamp(bigZoom * (e.delta.y < 0 ? 1.25f : 0.8f), 1f, 7f);
+                float baseScale = Mathf.Min(BigW / game.Map.Width, BigH / game.Map.Height);
+                float scale = baseScale * bigZoom;
+                var at = (Vector2)e.localMousePosition;
+                var worldPx = (at - bigPan) / old;
+                bigPan = at - worldPx * scale;
+                e.StopPropagation();
+            });
+            bigView.RegisterCallback<PointerDownEvent>(e =>
+            {
+                bigDragging = true;
+                bigMoved = false;
+                bigDragStart = e.localPosition;
+                bigPanStart = bigPan;
+                bigView.CapturePointer(e.pointerId);
+            });
+            bigView.RegisterCallback<PointerMoveEvent>(e =>
+            {
+                if (!bigDragging) return;
+                var delta = (Vector2)e.localPosition - bigDragStart;
+                if (delta.sqrMagnitude > 16f) bigMoved = true;
+                if (bigMoved) bigPan = bigPanStart + delta;
+            });
+            bigView.RegisterCallback<PointerUpEvent>(e =>
+            {
+                if (!bigDragging) return;
+                bigDragging = false;
+                bigView.ReleasePointer(e.pointerId);
+                if (bigMoved) return;
+                var local = (Vector2)e.localPosition - bigPan;
                 var cell = new Vector2(local.x / bigScale, game.Map.Height - local.y / bigScale);
                 waypoint = waypoint.HasValue && (waypoint.Value - cell).magnitude < 4f ? (Vector2?)null : cell;
             });
@@ -183,7 +217,21 @@ namespace OSistema.UI
             mapOpen = !mapOpen;
             mapDim.Show(mapOpen);
             mapTexTimer = 99f;
+            // Open on where you are, close enough to read.
+            if (mapOpen && game != null)
+            {
+                float baseScale = Mathf.Min(BigW / game.Map.Width, BigH / game.Map.Height);
+                bigZoom = 2.5f;
+                var at = game.Player != null ? game.Player.Position : (Vector2)cam.transform.position;
+                bigPan = new Vector2(BigW / 2f - at.x * baseScale * bigZoom, BigH / 2f - (game.Map.Height - at.y) * baseScale * bigZoom);
+            }
         }
+
+        const float BigW = 860f, BigH = 600f;
+        VisualElement bigView;
+        float bigZoom = 2.5f;
+        Vector2 bigPan, bigDragStart, bigPanStart;
+        bool bigDragging, bigMoved;
 
         // ---------- The map texture ----------
 
@@ -195,12 +243,31 @@ namespace OSistema.UI
                 mapTex = new Texture2D(map.Width, map.Height, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
                 mapPixels = new Color32[map.Width * map.Height];
             }
+            // A building you've walked past shows as a shape (its roof), even though you haven't seen inside.
+            var seenBuildings = new HashSet<OSistema.World.Property>();
+            foreach (var pr in game.Properties.All)
+            {
+                var r = pr.Rect;
+                if (FogOfWar.HasExplored(pr.Door) || FogOfWar.HasExplored(new Vector2Int(r.xMin, r.yMin)) || FogOfWar.HasExplored(new Vector2Int(r.xMax - 1, r.yMax - 1)) ||
+                    FogOfWar.HasExplored(new Vector2Int(r.xMin, r.yMax - 1)) || FogOfWar.HasExplored(new Vector2Int(r.xMax - 1, r.yMin)))
+                    seenBuildings.Add(pr);
+            }
             for (int y = 0; y < map.Height; y++)
             for (int x = 0; x < map.Width; x++)
             {
                 Color32 c;
                 var cell = new Vector2Int(x, y);
-                if (!FogOfWar.HasExplored(cell)) c = new Color32(18, 17, 16, 255);
+                bool explored = FogOfWar.HasExplored(cell);
+                var building = explored ? null : game.Properties.At(cell);
+                if (!explored && building != null && seenBuildings.Contains(building))
+                    c = map.GetBuilding(x, y) == BuildingDefs.Wall ? new Color32(120, 100, 82, 255)
+                        : building.OwnedByPlayer ? new Color32(96, 140, 92, 255) : new Color32(112, 76, 60, 255);
+                else if (!explored)
+                {
+                    // Walls seen from the street outline the block even when the rest is unknown.
+                    bool wallSeen = map.GetBuilding(x, y) == BuildingDefs.Wall && NeighbourExplored(cell);
+                    c = wallSeen ? new Color32(120, 100, 82, 255) : new Color32(18, 17, 16, 255);
+                }
                 else
                 {
                     var b = map.GetBuilding(x, y);
@@ -223,6 +290,14 @@ namespace OSistema.UI
             mapTex.Apply(false);
             miniImage.style.backgroundImage = new StyleBackground(mapTex);
             bigImage.style.backgroundImage = new StyleBackground(mapTex);
+        }
+
+        static bool NeighbourExplored(Vector2Int c)
+        {
+            for (int dy = -1; dy <= 1; dy++)
+            for (int dx = -1; dx <= 1; dx++)
+                if (FogOfWar.HasExplored(c + new Vector2Int(dx, dy))) return true;
+            return false;
         }
 
         // ---------- Every frame ----------
@@ -345,9 +420,15 @@ namespace OSistema.UI
         void UpdateBigMap(Pawn player)
         {
             var map = game.Map;
-            bigScale = Mathf.Min(820f / map.Width, 560f / map.Height);
-            bigImage.style.width = map.Width * bigScale;
-            bigImage.style.height = map.Height * bigScale;
+            bigScale = Mathf.Min(BigW / map.Width, BigH / map.Height) * bigZoom;
+            float w = map.Width * bigScale, h = map.Height * bigScale;
+            // Keep the map inside the frame.
+            bigPan.x = w <= BigW ? (BigW - w) / 2f : Mathf.Clamp(bigPan.x, BigW - w, 0f);
+            bigPan.y = h <= BigH ? (BigH - h) / 2f : Mathf.Clamp(bigPan.y, BigH - h, 0f);
+            bigImage.style.width = w;
+            bigImage.style.height = h;
+            bigImage.style.left = bigPan.x;
+            bigImage.style.top = bigPan.y;
             bigDotsUsed = 0;
             void BigDot(Vector2 w, string cls, bool _)
             {

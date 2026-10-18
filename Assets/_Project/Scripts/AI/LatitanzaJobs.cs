@@ -11,6 +11,7 @@ namespace OSistema.AI
         readonly Walker walker;
         readonly Vector2Int spot;
         bool hidden;
+        int walkTicks;
 
         public HideJob(Pawn pawn, Game game) : base(pawn)
         {
@@ -39,7 +40,13 @@ namespace OSistema.AI
 
             if (!hidden)
             {
-                hidden = walker.Tick(Pawn, game) != WalkStatus.Walking;
+                var status = walker.Tick(Pawn, game);
+                if (status == WalkStatus.Walking && ++walkTicks < GameClock.TicksPerHour) return false;
+                // Arrived, or the way was blocked, or it's taking too long: he slips in through the back.
+                // Never left standing in the street.
+                if (Pawn.Cell != spot) Pawn.Teleport(spot);
+                Pawn.StopMoving();
+                hidden = true;
                 return false;
             }
 

@@ -133,25 +133,66 @@ namespace OSistema.World
 
         void BuildQuartieri(Map map, RectInt area)
         {
-            // Long north-south vicoli every 8-12 cells, east-west crossings every 13-20.
-            var cols = Cuts(area.x, area.xMax, 8, 12);
-            var rows = Cuts(area.y, area.yMax, 13, 20);
-            foreach (int x in cols) Fill(map, new RectInt(x, area.y, VicoloWidth, area.height), TerrainType.Sidewalk);
-            foreach (int y in rows) Fill(map, new RectInt(area.x, y, area.width, VicoloWidth), TerrainType.Sidewalk);
-
-            var xStarts = new List<int> { area.x };
-            foreach (int x in cols) xStarts.Add(x + VicoloWidth);
-            var xEnds = new List<int>(cols) { area.xMax };
-            var yStarts = new List<int> { area.y };
-            foreach (int y in rows) yStarts.Add(y + VicoloWidth);
-            var yEnds = new List<int>(rows) { area.yMax };
-
-            for (int i = 0; i < xStarts.Count; i++)
-            for (int j = 0; j < yStarts.Count; j++)
+            // North-south lanes of different widths: mostly 2-cell vicoli, some 3, now and then a 4-cell
+            // street with a road down the middle for scooters and the odd car.
+            var cols = new List<(int x, int w)>();
+            int pos = area.x + rng.Next(7, 13);
+            while (pos < area.xMax - 7)
             {
-                var block = new RectInt(xStarts[i], yStarts[j], xEnds[i] - xStarts[i], yEnds[j] - yStarts[j]);
-                if (block.width >= 4 && block.height >= 4) BuildTerrace(map, block);
+                double r = rng.NextDouble();
+                int w = r < 0.12 ? 4 : r < 0.42 ? 3 : 2;
+                if (pos + w >= area.xMax - 4) break;
+                cols.Add((pos, w));
+                pos += w + rng.Next(7, 15);
             }
+            foreach (var (x, w) in cols)
+            {
+                Fill(map, new RectInt(x, area.y, w, area.height), TerrainType.Sidewalk);
+                if (w == 4) Fill(map, new RectInt(x + 1, area.y, 2, area.height), TerrainType.Road);
+            }
+
+            // Strips between the lanes. Each strip gets its own crossings, at its own heights: they
+            // don't line up from strip to strip, so the grid breaks into T-junctions and long blocks.
+            var xStarts = new List<int> { area.x };
+            var xEnds = new List<int>();
+            foreach (var (x, w) in cols) { xEnds.Add(x); xStarts.Add(x + w); }
+            xEnds.Add(area.xMax);
+            for (int i = 0; i < xStarts.Count; i++)
+            {
+                int x0 = xStarts[i], x1 = xEnds[i];
+                if (x1 - x0 < 4) continue;
+                var cuts = new List<int>();
+                int y = area.y + rng.Next(9, 20);
+                while (y < area.yMax - 8)
+                {
+                    cuts.Add(y);
+                    y += VicoloWidth + rng.Next(9, 22);
+                }
+                int yStart = area.y;
+                foreach (int cut in cuts)
+                {
+                    // The crossing runs across this strip and into the lanes either side.
+                    Fill(map, new RectInt(x0, cut, x1 - x0, VicoloWidth), TerrainType.Sidewalk);
+                    Block(map, new RectInt(x0, yStart, x1 - x0, cut - yStart));
+                    yStart = cut + VicoloWidth;
+                }
+                Block(map, new RectInt(x0, yStart, x1 - x0, area.yMax - yStart));
+            }
+        }
+
+        /// <summary>A block of houses; once in a while a little square instead, with a fountain or a tree.</summary>
+        void Block(Map map, RectInt block)
+        {
+            if (block.width < 4 || block.height < 4) return;
+            if (block.width >= 7 && block.height >= 7 && rng.NextDouble() < 0.07)
+            {
+                Fill(map, block, TerrainType.Paving);
+                var mid = Vector2Int.RoundToInt(block.center);
+                map.SetBuilding(mid.x, mid.y, rng.NextDouble() < 0.5 ? BuildingDefs.Fountain : BuildingDefs.Tree);
+                if (rng.NextDouble() < 0.6) map.SetBuilding(block.xMin + 1, block.yMin + 1, BuildingDefs.Bench);
+                return;
+            }
+            BuildTerrace(map, block);
         }
 
         List<int> Cuts(int start, int end, int min, int max)

@@ -278,41 +278,7 @@ namespace OSistema.UI
             Ui.Text($"Dirty cash <b>€{game.Stock.Cash}</b> · weekly mesata and family support <b>€{org.WeeklyWageBill(game)}</b>, paid Sunday at 12:00", bizBody, "wrap");
             long now = game.Ticks.TicksGame;
 
-            // The shifts: paint each person's day, hour by hour, like a timetable.
-            var brushes = Ui.Row(bizBody);
-            brushes.style.marginTop = 6;
-            Ui.Text("SHIFTS  ", brushes, "section");
-            foreach (var (shift, label) in new[] { (Pawn.Shift.Work, "Work"), (Pawn.Shift.Sleep, "Sleep"), (Pawn.Shift.Free, "Free time") })
-            {
-                var sh = shift;
-                var b = Ui.Btn(label, Do(() => shiftBrush = sh), brushes, "btn--small", ShiftClass(shift));
-                b.Toggle("btn--on", shiftBrush == shift);
-            }
-            Ui.Text("  pick a brush, then click or drag across the hours", brushes, "small", "muted");
-            var hours = Ui.Row(bizBody);
-            Ui.Box().Into(hours).style.width = 182;
-            for (int h = 0; h < 24; h++) Ui.Text(h % 3 == 0 ? h.ToString() : "", hours, "tiny", "shift-hour");
-            foreach (var p in game.Pawns.Crew.Where(p => !p.Dead && !p.Controlled))
-            {
-                var trow = Ui.Row(bizBody);
-                Ui.Text(p.DisplayName, trow, "small").style.width = 182;
-                var pawn = p;
-                for (int h = 0; h < 24; h++)
-                {
-                    int hour = h;
-                    var cell = Ui.Box("shift-cell", ShiftClass(p.Schedule[h])).Into(trow);
-                    if (h == game.Clock.Hour) cell.AddToClassList("shift-cell--now");
-                    void Paint()
-                    {
-                        pawn.Schedule[hour] = shiftBrush;
-                        cell.ClearClassList();
-                        cell.AddToClassList("shift-cell");
-                        cell.AddToClassList(ShiftClass(shiftBrush));
-                    }
-                    cell.RegisterCallback<PointerDownEvent>(_ => { paintingShifts = true; Paint(); });
-                    cell.RegisterCallback<PointerEnterEvent>(_ => { if (paintingShifts && UnityEngine.InputSystem.Mouse.current.leftButton.isPressed) Paint(); });
-                }
-            }
+            Ui.Text("Each guaglione works the hours you set (Work ▾ … ▾) and sleeps after. Pushers and lookouts can follow their piazza's hours.", bizBody, "small", "muted", "wrap");
             Ui.Text("CREW", bizBody, "section");
             foreach (var p in game.Pawns.Crew.Where(p => !p.Dead))
             {
@@ -334,6 +300,24 @@ namespace OSistema.UI
                 Ui.Text($"€{p.Wage}", row).style.width = 44;
                 Ui.Btn("+", Do(() => pawn.Wage = Mathf.Min(1000, pawn.Wage + 10)), row, "btn--small");
                 Ui.Text($"Loyalty {p.Loyalty:0}", row, "small", p.Loyalty < 30 ? "bad" : "muted").style.width = 80;
+                if (!p.Controlled)
+                {
+                    // The working hours: from ▾ to ▾.
+                    var (from, to) = p.WorkHours;
+                    var hoursRow = Ui.Row(bizBody);
+                    hoursRow.style.marginLeft = 48;
+                    hoursRow.style.marginBottom = 4;
+                    Ui.Text("Works", hoursRow, "small", "muted").style.width = 40;
+                    Button fromBtn = null, toBtn = null;
+                    fromBtn = Ui.Btn($"{from:00}:00 ▾", () => ShowHourMenu(fromBtn, h => { pawn.SetWorkHours(h, pawn.WorkHours.to); bizDirty = true; RefreshWindows(); }), hoursRow, "btn--small");
+                    Ui.Text("to", hoursRow, "small", "muted").style.marginLeft = 4;
+                    toBtn = Ui.Btn($"{to:00}:00 ▾", () => ShowHourMenu(toBtn, h => { pawn.SetWorkHours(pawn.WorkHours.from, h); bizDirty = true; RefreshWindows(); }), hoursRow, "btn--small");
+                    var square = (p.Role == CrewRole.Pusher || p.Role == CrewRole.Lookout) && org.Squares.Count > 0 ? org.Squares[0] : null;
+                    if (square != null)
+                        Ui.Btn($"Piazza hours ({square.OpenHour:00}–{square.CloseHour:00})", Do(() => pawn.SetWorkHours(square.OpenHour, square.CloseHour)), hoursRow, "btn--small").style.marginLeft = 8;
+                    var (sf, st) = SleepHours(p);
+                    Ui.Text(sf >= 0 ? $"  sleeps {sf:00}–{st:00}" : "", hoursRow, "tiny");
+                }
                 Ui.Btn(p.Armed ? "Disarm" : "Arm", Do(() => ToggleArmed(pawn)), row, "btn--small", p.Armed ? "btn--on" : "x");
             }
             var r = Ui.Row(bizBody);
@@ -346,8 +330,19 @@ namespace OSistema.UI
                 Ui.Text("Nobody is collecting pizzo. Give someone the Collector role.", bizBody, "bad", "small");
         }
 
-        Pawn.Shift shiftBrush = Pawn.Shift.Work;
         bool paintingShifts;
+
+        static (int, int) SleepHours(Pawn p)
+        {
+            for (int h = 0; h < 24; h++)
+                if (p.Schedule[h] == Pawn.Shift.Sleep && p.Schedule[(h + 23) % 24] != Pawn.Shift.Sleep)
+                {
+                    int end = h;
+                    while (p.Schedule[end % 24] == Pawn.Shift.Sleep && end < h + 24) end++;
+                    return (h, end % 24);
+                }
+            return (-1, -1);
+        }
 
         static string ShiftClass(Pawn.Shift s) => s == Pawn.Shift.Work ? "shift--work" : s == Pawn.Shift.Sleep ? "shift--sleep" : "shift--free";
 
@@ -392,32 +387,54 @@ namespace OSistema.UI
             var org = game.Org;
             int weekly = org.Businesses.Where(b => b.Status == BusinessStatus.Paying).Sum(b => b.WeeklyPizzo);
             Ui.Text($"Paying businesses bring in <b>€{weekly}</b> a week. You can only squeeze the shops on your own turf ({string.Join(", ", org.Turf(game).Select(z => z.Name))}); the rest pay someone else, or nobody yet.", bizBody, "wrap");
-            foreach (var b in org.Businesses)
+            // One heading per rione: your turf first and open, the rest folded.
+            var turf = new System.Collections.Generic.HashSet<Crime.Zone>(org.Turf(game));
+            var groups = org.Businesses.GroupBy(x => game.Territory.ZoneAt(x.Cell))
+                .OrderByDescending(g => g.Key != null && turf.Contains(g.Key))
+                .ThenBy(g => g.Key?.Name);
+            foreach (var group in groups)
             {
-                var row = Ui.Box("table-row").Into(bizBody);
-                var zone = game.Territory.ZoneAt(b.Cell);
-                var col = Ui.Box("col").Into(row);
-                col.style.width = 250;
-                Ui.Text($"<b>{b.Name}</b>", col);
-                Ui.Text(zone?.Name ?? "", col, "small", "muted");
-                string status = b.Status == BusinessStatus.Closed
-                    ? $"Burned · reopens in {(b.ClosedUntil - game.Ticks.TicksGame) / GameClock.TicksPerDay + 1}d"
-                    : b.StatusLabel;
-                Ui.Text(status, row, "small", b.Status == BusinessStatus.Paying ? "good" : b.Status == BusinessStatus.Refusing ? "bad" : "muted").style.width = 170;
-                var biz = b;
-                string blocker = b.Status == BusinessStatus.Free ? org.PizzoBlocker(b, game) : null;
-                if (blocker != null) Ui.Text(blocker, row, "small", "muted");
-                else if (b.Status == BusinessStatus.Free) Ui.Btn($"Impose €{b.WeeklyPizzo}", Do(() => org.Target(biz, game)), row, "btn--small");
-                if (b.Status == BusinessStatus.Refusing)
+                var zoneName = group.Key?.Name ?? "Elsewhere";
+                bool mine = group.Key != null && turf.Contains(group.Key);
+                if (!pizzoOpen.ContainsKey(zoneName)) pizzoOpen[zoneName] = mine;
+                bool open = pizzoOpen[zoneName];
+                int paying = group.Count(x => x.Status == BusinessStatus.Paying);
+                int income = group.Where(x => x.Status == BusinessStatus.Paying).Sum(x => x.WeeklyPizzo);
+                var head = Ui.Box("attention", mine ? "attention--warn" : "x").Into(bizBody);
+                head.style.marginTop = 6;
+                Ui.Text($"{(open ? "▾" : "▸")}  <b>{zoneName}</b>{(mine ? "  <color=#E8C26A>your turf</color>" : "")}", head, "grow").pickingMode = PickingMode.Ignore;
+                Ui.Text($"{group.Count()} shops · {paying} paying · €{income}/week", head, "small", "muted").pickingMode = PickingMode.Ignore;
+                var zn = zoneName;
+                head.RegisterCallback<ClickEvent>(_ => { pizzoOpen[zn] = !pizzoOpen[zn]; bizDirty = true; RefreshWindows(); });
+                if (!open) continue;
+                foreach (var b in group)
                 {
-                    Ui.Btn("Ask again", Do(() => org.Target(biz, game)), row, "btn--small");
-                    Ui.Btn("Scare", Do(() => org.OrderRetaliation(biz, Retaliation.Scare, game)), row, "btn--small", "btn--danger");
-                    Ui.Btn("Burn", Do(() => org.OrderRetaliation(biz, Retaliation.Burn, game)), row, "btn--small", "btn--danger");
+                    var row = Ui.Box("table-row").Into(bizBody);
+                    row.style.paddingLeft = 14;
+                    var col = Ui.Box("col").Into(row);
+                    col.style.width = 236;
+                    Ui.Text($"<b>{b.Name}</b>", col);
+                    string status = b.Status == BusinessStatus.Closed
+                        ? $"Burned · reopens in {(b.ClosedUntil - game.Ticks.TicksGame) / GameClock.TicksPerDay + 1}d"
+                        : b.StatusLabel;
+                    Ui.Text(status, row, "small", b.Status == BusinessStatus.Paying ? "good" : b.Status == BusinessStatus.Refusing ? "bad" : "muted").style.width = 170;
+                    var biz = b;
+                    string blocker = b.Status == BusinessStatus.Free ? org.PizzoBlocker(b, game) : null;
+                    if (blocker != null) Ui.Text(blocker, row, "small", "muted");
+                    else if (b.Status == BusinessStatus.Free) Ui.Btn($"Impose €{b.WeeklyPizzo}", Do(() => org.Target(biz, game)), row, "btn--small");
+                    if (b.Status == BusinessStatus.Refusing)
+                    {
+                        Ui.Btn("Ask again", Do(() => org.Target(biz, game)), row, "btn--small");
+                        Ui.Btn("Scare", Do(() => org.OrderRetaliation(biz, Retaliation.Scare, game)), row, "btn--small", "btn--danger");
+                        Ui.Btn("Burn", Do(() => org.OrderRetaliation(biz, Retaliation.Burn, game)), row, "btn--small", "btn--danger");
+                    }
+                    Ui.Box("spacer").Into(row);
+                    Ui.Btn("Show", () => FocusCamera(Mover.CellCenter(biz.Cell)), row, "btn--small");
                 }
-                Ui.Box("spacer").Into(row);
-                Ui.Btn("Show", () => FocusCamera(Mover.CellCenter(biz.Cell)), row, "btn--small");
             }
         }
+
+        readonly System.Collections.Generic.Dictionary<string, bool> pizzoOpen = new System.Collections.Generic.Dictionary<string, bool>();
 
         void SupplyTab()
         {

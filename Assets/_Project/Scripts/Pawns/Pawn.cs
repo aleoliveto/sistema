@@ -211,6 +211,36 @@ namespace OSistema.Pawns
             return s;
         }
 
+        /// <summary>The working hours as one block: from (inclusive) to (exclusive), wrapping past midnight.</summary>
+        public (int from, int to) WorkHours
+        {
+            get
+            {
+                for (int h = 0; h < 24; h++)
+                    if (Schedule[h] == Shift.Work && Schedule[(h + 23) % 24] != Shift.Work)
+                    {
+                        int end = h;
+                        while (Schedule[end % 24] == Shift.Work && end < h + 24) end++;
+                        return (h, end % 24);
+                    }
+                return (9, 21);
+            }
+        }
+
+        /// <summary>Works from one hour to another; sleeps eight hours starting two after work ends; free otherwise.</summary>
+        public void SetWorkHours(int from, int to)
+        {
+            int len = ((to - from) % 24 + 24) % 24;
+            if (len == 0) len = 24;
+            for (int h = 0; h < 24; h++) Schedule[h] = Shift.Free;
+            for (int i = 0; i < len; i++) Schedule[(from + i) % 24] = Shift.Work;
+            for (int i = 0; i < 8; i++)
+            {
+                int h = (to + 2 + i) % 24;
+                if (Schedule[h] != Shift.Work) Schedule[h] = Shift.Sleep;
+            }
+        }
+
         public string ScheduleString
         {
             get

@@ -33,6 +33,13 @@ namespace OSistema.Views
             return instance.IsVisible(new Vector2Int(Mathf.FloorToInt(position.x), Mathf.FloorToInt(position.y)));
         }
 
+        /// <summary>For testing (the dev switch): the whole map counts as explored.</summary>
+        public static void RevealAllForTesting()
+        {
+            if (instance == null || instance.state == null) return;
+            for (int i = 0; i < instance.state.Length; i++) if (instance.state[i] == Unseen) instance.state[i] = Explored;
+        }
+
         public static bool HasExplored(Vector2Int cell) =>
             instance == null || instance.map == null || (instance.map.InBounds(cell) && instance.state[instance.map.Index(cell.x, cell.y)] != Unseen);
 
