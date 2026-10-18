@@ -162,6 +162,94 @@ namespace OSistema.Crime
             game.Log.Add($"The {Name} is finished. Their piazze are yours for the taking.", MessageKind.Good);
         }
 
+        // ---------- Under fire ----------
+
+        long lastReinforcementTick = -100000;
+        readonly Dictionary<DrugSquare, int> emptyFor = new Dictionary<DrugSquare, int>();
+
+        /// <summary>
+        /// One of theirs was attacked. The armed ones take cover and shoot back at whoever did it,
+        /// the unarmed run, everyone nearby joins in, and the clan sends shooters on scooters.
+        /// </summary>
+        public void OnRivalAttacked(Pawn victim, Pawn attacker, Game game)
+        {
+            if (Destroyed || attacker == null) return;
+            long now = game.Ticks.TicksGame;
+            foreach (var p in game.Pawns.Rivals)
+            {
+                if (!p.CanAct || (p.Position - victim.Position).sqrMagnitude > 12f * 12f) continue;
+                if (p.Mission == RivalMission.Hit || p.Mission == RivalMission.Stesa || p.Mission == RivalMission.Leave) continue;
+                if (p.Armed)
+                {
+                    p.Mission = RivalMission.Hit;
+                    p.MissionTarget = attacker;
+                    p.AggressiveUntil = long.MaxValue;
+                    p.ForceJob(new HitJob(p), game);
+                    if (game.Rng.NextDouble() < 0.5) p.Say("fight");
+                }
+                else
+                {
+                    p.Mission = RivalMission.Leave;
+                    p.ForceJob(new LeaveMapJob(p, game), game);
+                }
+            }
+
+            // Reinforcements: at most once every couple of hours, while they have men to send.
+            if (now - lastReinforcementTick > GameClock.TicksPerHour * 2 && Soldiers >= 3)
+            {
+                lastReinforcementTick = now;
+                var entrance = NearestEntrance(victim.Cell, game);
+                int count = Soldiers >= 6 ? 3 : 2;
+                for (int i = 0; i < count; i++)
+                {
+                    var s = SpawnSoldier(entrance, RivalMission.Hit, true, game);
+                    s.MissionTarget = attacker;
+                }
+                game.Log.Add($"Scooters are coming fast from the {Name}'s side. They're sending people.", MessageKind.Bad, entrance);
+            }
+        }
+
+        /// <summary>
+        /// A rival piazza with nobody of theirs left on it, and your people standing on it, becomes yours
+        /// after a minute or two. Killing everyone isn't enough: you have to hold the corner.
+        /// </summary>
+        void CheckCaptures(Game game)
+        {
+            for (int i = Squares.Count - 1; i >= 0; i--)
+            {
+                var sq = Squares[i];
+                int defenders = 0, ours = 0;
+                foreach (var p in game.Pawns.Rivals)
+                    if (p.CanAct && p.Mission != RivalMission.Leave && (p.Position - Mover.CellCenter(sq.Cell)).sqrMagnitude < 9f * 9f) defenders++;
+                foreach (var p in game.Pawns.Crew)
+                    if (p.CanAct && (p.Position - Mover.CellCenter(sq.Cell)).sqrMagnitude < 5f * 5f) ours++;
+                if (defenders > 0 || ours == 0)
+                {
+                    emptyFor.Remove(sq);
+                    continue;
+                }
+                emptyFor.TryGetValue(sq, out int held);
+                held += 120;
+                emptyFor[sq] = held;
+                if (held == 120)
+                    game.Log.Add("Nobody of theirs is left on the corner. Hold it.", MessageKind.Info, sq.Cell);
+                if (held < 1800) continue;
+
+                emptyFor.Remove(sq);
+                Squares.RemoveAt(i);
+                Hostility = Mathf.Min(100f, Hostility + 20f);
+                game.Org.Respect = Mathf.Min(100f, game.Org.Respect + 8f);
+                var zone = game.Territory.ZoneAt(sq.Cell);
+                if (game.Org.TakeSquare(sq, game))
+                    game.Log.Add($"The piazza in {zone?.Name ?? "the rione"} is yours now. Put a pusher and a lookout on it.", MessageKind.Good, sq.Cell);
+                else
+                    game.Log.Add($"You chased the {Name} out of {zone?.Name ?? "the rione"}, but you can't run another piazza yet: the corner stays empty.", MessageKind.Info, sq.Cell);
+                game.Newspaper.Report(game, 4, $"Shooting and a change of hands in {zone?.Name ?? "the old town"}",
+                    "Residents speak of gunfire in the afternoon. By evening, different young men were standing on the corner.");
+                if (Squares.Count == 0 && Soldiers <= 2) Collapse(game);
+            }
+        }
+
         public void OnCrewAttacked(Game game)
         {
             if (Destroyed) return;
@@ -179,6 +267,7 @@ namespace OSistema.Crime
         public void Tick(Game game)
         {
             if (Destroyed) return;
+            if (game.Ticks.TicksGame % 120 == 0) CheckCaptures(game);
             int absoluteHour = game.Clock.Day * 24 + game.Clock.Hour;
             if (lastAbsoluteHour < 0) lastAbsoluteHour = absoluteHour;
             else if (absoluteHour != lastAbsoluteHour)

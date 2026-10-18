@@ -98,18 +98,42 @@ namespace OSistema.Combat
         /// along the line, if the shot is good; walls stop it. Shooting a passer-by or a policeman
         /// is the worst thing you can do.
         /// </summary>
-        public void PlayerAttack(Pawn shooter, Vector2 point, Game game)
+        public const float PlayerPistolRange = 12f;
+
+        /// <summary>
+        /// How wide the player's shots scatter, in degrees either side of the aim: steady hands and
+        /// skill keep it tight; walking, running, pain and firing fast open it up.
+        /// </summary>
+        public static float SpreadFor(Pawn p, bool moving, bool running)
+        {
+            float s = Mathf.Max(1.2f, 6.5f - 0.5f * p.ShootingSkill);
+            if (moving) s += running ? 9f : 3.5f;
+            if (p.Riding) s += 6f;
+            s += p.Health.Pain * 10f + p.Bloom;
+            return Mathf.Min(s, 25f);
+        }
+
+        /// <summary>The last shot of the player's that drew blood: the HUD flashes a hit marker.</summary>
+        public event Action<Vector2, bool> PlayerHit;
+
+        public void PlayerAttack(Pawn shooter, Vector2 point, Game game, float spread = 0f)
         {
             long now = game.Ticks.TicksGame;
             if (!shooter.CanAct || now < shooter.NextAttackTick) return;
             bool melee = !shooter.Armed;
-            float range = melee ? MeleeRange : PistolRange;
+            float range = melee ? MeleeRange : PlayerPistolRange;
             var from = shooter.Position;
             var dir = point - from;
             if (dir.sqrMagnitude < 0.0001f) return;
             dir.Normalize();
-            shooter.NextAttackTick = now + (melee ? 50 : 55);
             var rng = game.Rng;
+            if (!melee && spread > 0f)
+            {
+                // Where the bullet actually goes: somewhere in the cone, more often near the middle.
+                float off = ((float)rng.NextDouble() + (float)rng.NextDouble() - 1f) * spread * Mathf.Deg2Rad;
+                dir = new Vector2(dir.x * Mathf.Cos(off) - dir.y * Mathf.Sin(off), dir.x * Mathf.Sin(off) + dir.y * Mathf.Cos(off));
+            }
+            shooter.NextAttackTick = now + (melee ? 50 : 22);
 
             // Walk the line: who's on it first, and where does a wall stop it?
             float wallAt = range;
@@ -133,11 +157,19 @@ namespace OSistema.Combat
             }
 
             var to = from + dir * best;
-            float chance = melee ? 0.6f + 0.03f * shooter.IntimidationSkill : 0.5f + 0.04f * shooter.ShootingSkill - 0.025f * best;
-            chance *= 1f - shooter.Health.Pain * 0.5f;
+            bool hit;
             bool covered = hitPawn != null && !melee && IsInCover(game.Map, hitPawn.Cell, from);
-            if (covered) chance *= CoverFactor;
-            bool hit = (hitPawn != null || hitNpc != null) && rng.NextDouble() < Mathf.Clamp(chance, 0.05f, 0.92f);
+            if (melee)
+            {
+                float chance = (0.6f + 0.03f * shooter.IntimidationSkill) * (1f - shooter.Health.Pain * 0.5f);
+                hit = (hitPawn != null || hitNpc != null) && rng.NextDouble() < Mathf.Clamp(chance, 0.05f, 0.92f);
+            }
+            else
+            {
+                // The aim decides: whoever the bullet's line crosses is hit, unless cover takes it.
+                hit = hitPawn != null || hitNpc != null;
+                if (hit && covered && rng.NextDouble() < 0.55) hit = false;
+            }
             if (!hit && (hitPawn != null || hitNpc != null)) to += new Vector2((float)rng.NextDouble() - 0.5f, (float)rng.NextDouble() - 0.5f) * 1.5f;
 
             Shot?.Invoke(new ShotEvent(from, to, hit, melee, covered && !hit));
@@ -152,7 +184,11 @@ namespace OSistema.Combat
             if (hitPawn != null)
             {
                 OnAttacked(hitPawn, shooter, game, now);
-                if (hit) Wound(hitPawn, melee, game);
+                if (hit)
+                {
+                    Wound(hitPawn, melee, game, dir);
+                    PlayerHit?.Invoke(hitPawn.Position, hitPawn.Health.Downed);
+                }
                 if (hit && hitPawn.Faction == Faction.Crew)
                 {
                     hitPawn.Loyalty = Mathf.Max(0f, hitPawn.Loyalty - 25f);
@@ -247,17 +283,21 @@ namespace OSistema.Combat
             if (attacker.Faction == Faction.Crew && rng.NextDouble() < 0.08) attacker.Say("fight");
 
             OnAttacked(target, attacker, game, now);
-            if (hit) Wound(target, melee, game);
+            if (hit) Wound(target, melee, game, (target.Position - attacker.Position).normalized);
         }
 
         static void OnAttacked(Pawn target, Pawn attacker, Game game, long now)
         {
             target.AggressiveUntil = Math.Max(target.AggressiveUntil, now + AggroTicks);
-            if (attacker.Faction == Faction.Crew && target.Faction == Faction.Rival) game.Rival.OnCrewAttacked(game);
-
-            if (target.Faction == Faction.Rival && !target.Armed && target.CanAct && target.Mission == RivalMission.Pusher)
+            if (attacker.Faction == Faction.Crew && target.Faction == Faction.Rival)
             {
-                // An unarmed rival pusher runs for it.
+                game.Rival.OnCrewAttacked(game);
+                game.Rival.OnRivalAttacked(target, attacker, game);
+            }
+
+            if (target.Faction == Faction.Rival && target.CanAct && (target.Health.Pain > 0.45f || target.Health.BloodLoss > 0.3f))
+            {
+                // Hurt badly enough: they've had enough, and limp away.
                 target.Mission = RivalMission.Leave;
                 target.EndCurrentJob(game);
             }
@@ -267,12 +307,18 @@ namespace OSistema.Combat
             }
         }
 
-        static void Wound(Pawn target, bool melee, Game game)
+        static void Wound(Pawn target, bool melee, Game game, Vector2 dir)
         {
             target.LastHitTime = Time.unscaledTime;
+            target.LastHitDir = dir;
             var rng = game.Rng;
             string part = PickPart(rng);
             long now = game.Ticks.TicksGame;
+            // Hit: a stumble, a moment before they can shoot back, and a step back from the impact.
+            target.StaggerUntil = now + (melee ? 25 : 45);
+            target.NextAttackTick = System.Math.Max(target.NextAttackTick, now + (melee ? 20 : 40));
+            if (!target.Controlled && !target.Riding) target.Mover.Slide(dir * (melee ? 0.25f : 0.35f), game.Map);
+            if (target.Faction == Faction.Rival && target.CanAct && rng.NextDouble() < 0.6) target.Say("hurt");
 
             if (melee)
             {

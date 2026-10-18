@@ -152,6 +152,23 @@ namespace OSistema.Views
             return Clip("ambience", clipped);
         }
 
+        static AudioClip hitMarker;
+
+        /// <summary>The sharp tick when your shot lands.</summary>
+        public static AudioClip HitMarker => hitMarker != null ? hitMarker : hitMarker = MakeHitMarker();
+
+        static AudioClip MakeHitMarker()
+        {
+            int n = Rate / 12;
+            var d = new float[n];
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)Rate;
+                d[i] = (Mathf.Sin(2f * Mathf.PI * 2400f * t) * 0.6f + Mathf.Sin(2f * Mathf.PI * 3600f * t) * 0.4f) * Mathf.Exp(-t * 60f);
+            }
+            return Clip("hitmarker", d);
+        }
+
         static AudioClip rain;
 
         /// <summary>Rain on stone and shutters: a soft hiss with drops and gutters, looping.</summary>

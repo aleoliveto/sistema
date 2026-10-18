@@ -41,6 +41,7 @@ namespace OSistema.Views
         {
             combat = system;
             combat.Shot += OnShot;
+            combat.PlayerHit += OnPlayerHit;
             var cam = Camera.main;
             if (cam != null)
             {
@@ -52,7 +53,11 @@ namespace OSistema.Views
 
         void OnDestroy()
         {
-            if (combat != null) combat.Shot -= OnShot;
+            if (combat != null)
+            {
+                combat.Shot -= OnShot;
+                combat.PlayerHit -= OnPlayerHit;
+            }
             if (Instance == this) Instance = null;
         }
 
@@ -83,6 +88,23 @@ namespace OSistema.Views
                 Decal(shot.To + Random.insideUnitCircle * 0.25f, 0.35f + Random.value * 0.3f);
             }
             else Burst(shot.To, DustColor, shot.InCover ? 7 : 4, 1.8f, 0.3f);
+        }
+
+        /// <summary>Your bullet landed: a white X on them (red if they went down), and a tick.</summary>
+        void OnPlayerHit(Vector2 at, bool downed)
+        {
+            SoundManager.PlayUi(AudioSynth.HitMarker, downed ? 0.6f : 0.4f);
+            var c = downed ? new Color(1f, 0.25f, 0.2f, 1f) : new Color(1f, 1f, 1f, 1f);
+            for (int k = 0; k < 2; k++)
+            {
+                var sr = Get();
+                sr.transform.position = at + new Vector2(0f, 0.15f);
+                sr.transform.rotation = Quaternion.Euler(0f, 0f, k == 0 ? 45f : -45f);
+                sr.transform.localScale = new Vector3(0.55f, 0.06f, 1f);
+                sr.color = c;
+                active.Add(new Fx { Sprite = sr, Born = Time.unscaledTime, Life = 0.28f, Color = c, Fade = true });
+            }
+            if (shake != null) shake.Kick(at, downed ? 0.2f : 0.08f);
         }
 
         void Tracer(Vector2 from, Vector2 to)

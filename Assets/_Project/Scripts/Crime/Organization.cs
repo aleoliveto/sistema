@@ -283,6 +283,17 @@ namespace OSistema.Crime
             return true;
         }
 
+        /// <summary>A rival piazza taken by force: same corner, now ours. False if the rank can't run another.</summary>
+        public bool TakeSquare(DrugSquare rival, Game game)
+        {
+            if (Squares.Count >= MaxSquaresForRank || Squares.Count >= MaxSquares) return false;
+            var square = new DrugSquare { Cell = rival.Cell, ZoneId = rival.ZoneId };
+            ComputeLookoutPosts(square, game.Map);
+            Squares.Add(square);
+            SquaresVersion++;
+            return true;
+        }
+
         public void RestoreSquare(DrugSquare square, Map map)
         {
             ComputeLookoutPosts(square, map);

@@ -85,6 +85,14 @@ namespace OSistema.Pawns
 
         /// <summary>Real time of the last wound, for the hit flash.</summary>
         public float LastHitTime = -10f;
+        public Vector2 LastHitDir;          // which way the last bullet or punch was going: the body jerks that way
+        public long StaggerUntil;           // just hit: slowed, and can't fire straight away
+
+        // The pistol (player): rounds in the magazine, reloading, and how far recoil has thrown the aim.
+        public const int MagazineSize = 8;
+        public int Ammo = MagazineSize;
+        public float ReloadUntil = -1f;     // real seconds (Time.unscaledTime)
+        public float Bloom;                 // extra spread in degrees, from firing fast; settles back down
 
         /// <summary>Who this pawn is shooting at right now (for facing and effects).</summary>
         public Pawn AimTarget => aimTarget != null && Time.unscaledTime < aimUntil ? aimTarget : null;
@@ -234,7 +242,9 @@ namespace OSistema.Pawns
 
         /// <summary>Injuries slow you down; a scooter speeds you up.</summary>
         public bool Riding;              // on the scooter right now: only on streets, never indoors
-        public float SpeedFactor => (1f - Health.Pain * 0.5f) * (Riding ? 2.3f : 1f);
+        public float SpeedFactor => (1f - Health.Pain * 0.5f) * (Riding ? 2.3f : 1f) * (staggered ? 0.45f : 1f);
+        bool staggered;
+        public void UpdateStagger(long now) => staggered = now < StaggerUntil;
 
         /// <summary>A need bad enough to drop work for.</summary>
         public bool HasUrgentNeed =>
@@ -248,6 +258,7 @@ namespace OSistema.Pawns
         {
             if (Dead || InJail || Departed) return;
             long now = game.Ticks.TicksGame;
+            UpdateStagger(now);
 
             if (InHospital)
             {

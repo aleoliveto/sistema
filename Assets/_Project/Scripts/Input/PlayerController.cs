@@ -550,7 +550,7 @@ namespace OSistema.Input
             if (kb.zKey.wasPressedThisFrame) hud.ToggleAutoMovement();
 
             // R: get on or off your scooter.
-            if (kb.rKey.wasPressedThisFrame && live) ToggleScooter(p);
+            if (kb.rKey.wasPressedThisFrame && live && !mouse.rightButton.isPressed) ToggleScooter(p);
 
             if (p.Riding && live)
             {
@@ -583,8 +583,10 @@ namespace OSistema.Input
                 float step = Pawn.BaseSpeed * p.SpeedFactor * TickManager.TicksPerSecond * dt;
                 // Tired or hungry legs are slower.
                 if (p.Needs.Rest < Needs.ExhaustedBelow * 2f || p.Needs.Food < Needs.RavenousBelow) step *= 0.8f;
-                running = kb.leftShiftKey.isPressed && !p.Winded;
+                running = kb.leftShiftKey.isPressed && !p.Winded && !Aiming;
                 if (running) step *= 1.5f;
+                if (Aiming) step *= 0.6f;                         // careful steps with the gun up
+                if (game.Ticks.TicksGame < p.StaggerUntil) step *= 0.45f;
                 p.Mover.Slide(dir.normalized * step, game.Map);
                 p.Heading = Mathf.Atan2(-dir.x, dir.y) * Mathf.Rad2Deg;   // so a scooter starts off the way you were walking
                 follow = p;
@@ -595,27 +597,77 @@ namespace OSistema.Input
             if (p.Stamina <= 0.001f) p.Winded = true;
             else if (p.Winded && p.Stamina >= 0.35f) p.Winded = false;
 
-            // Hold the right button to aim, click the left to shoot (or punch, unarmed).
+            // Hold the right button to aim, click the left to shoot (or punch, unarmed). R while aiming reloads.
             Aiming = mouse.rightButton.isPressed && !overUi && CurrentTool == Tool.Select;
             p.AimPoint = Aiming ? (Vector2)ScreenToWorld(mousePos) : (Vector2?)null;
             aimLine.enabled = Aiming;
+            p.Bloom = Mathf.MoveTowards(p.Bloom, 0f, 9f * dt);
+            bool reloading = p.ReloadUntil > Time.unscaledTime;
+            if (!reloading && p.ReloadUntil > 0f)
+            {
+                p.ReloadUntil = -1f;
+                p.Ammo = Pawn.MagazineSize;
+            }
+            float spread = Combat.CombatSystem.SpreadFor(p, dir != Vector2.zero, running);
             if (Aiming)
             {
                 var to = (Vector2)ScreenToWorld(mousePos);
                 var aim = to - p.Position;
-                float range = p.Armed ? Combat.CombatSystem.PistolRange : Combat.CombatSystem.MeleeRange;
+                float range = p.Armed ? Combat.CombatSystem.PlayerPistolRange : Combat.CombatSystem.MeleeRange;
                 if (aim.magnitude > range) to = p.Position + aim.normalized * range;
-                var col = p.Armed ? new Color(1f, 0.25f, 0.2f, 0.75f) : new Color(1f, 0.9f, 0.6f, 0.6f);
+                var col = !p.Armed ? new Color(1f, 0.9f, 0.6f, 0.6f) : reloading || p.Ammo == 0 ? new Color(0.6f, 0.6f, 0.6f, 0.5f) : new Color(1f, 0.25f, 0.2f, 0.75f);
                 aimLine.startColor = col;
-                aimLine.endColor = new Color(col.r, col.g, col.b, 0.1f);
-                aimLine.SetPosition(0, new Vector3(p.Position.x, p.Position.y, 0f));
-                aimLine.SetPosition(1, new Vector3(to.x, to.y, 0f));
+                aimLine.endColor = new Color(col.r, col.g, col.b, 0.12f);
+                // Armed: a cone showing where the bullet can go. It tightens when you stand still.
+                var origin = p.Position;
+                var d = (to - origin).normalized;
+                float len = (to - origin).magnitude;
+                if (p.Armed)
+                {
+                    float a = spread * Mathf.Deg2Rad;
+                    var left = new Vector2(d.x * Mathf.Cos(a) - d.y * Mathf.Sin(a), d.x * Mathf.Sin(a) + d.y * Mathf.Cos(a));
+                    var right = new Vector2(d.x * Mathf.Cos(-a) - d.y * Mathf.Sin(-a), d.x * Mathf.Sin(-a) + d.y * Mathf.Cos(-a));
+                    aimLine.positionCount = 3;
+                    aimLine.SetPosition(0, origin + left * len);
+                    aimLine.SetPosition(1, origin);
+                    aimLine.SetPosition(2, origin + right * len);
+                }
+                else
+                {
+                    aimLine.positionCount = 2;
+                    aimLine.SetPosition(0, origin);
+                    aimLine.SetPosition(1, to);
+                }
             }
             if (Aiming)
             {
                 p.LastInputTick = now;
-                if (mouse.leftButton.wasPressedThisFrame && game.Ticks.Speed > 0) game.Combat.PlayerAttack(p, ScreenToWorld(mousePos), game);
+                if (p.Armed && kb.rKey.wasPressedThisFrame && !reloading && p.Ammo < Pawn.MagazineSize) StartReload(p);
+                if (mouse.leftButton.wasPressedThisFrame && game.Ticks.Speed > 0)
+                {
+                    if (!p.Armed) game.Combat.PlayerAttack(p, ScreenToWorld(mousePos), game);
+                    else if (reloading) { }
+                    else if (p.Ammo <= 0)
+                    {
+                        OSistema.Views.SoundManager.PlayUi(OSistema.Views.AudioSynth.Click, 0.5f);   // dry click
+                        StartReload(p);
+                    }
+                    else if (now >= p.NextAttackTick)
+                    {
+                        p.Ammo--;
+                        game.Combat.PlayerAttack(p, ScreenToWorld(mousePos), game, spread);
+                        p.Bloom = Mathf.Min(p.Bloom + 4.5f, 14f);
+                        if (p.Ammo == 0) StartReload(p);
+                    }
+                }
             }
+        }
+
+        void StartReload(Pawn p)
+        {
+            p.ReloadUntil = Time.unscaledTime + Mathf.Lerp(1.8f, 1.1f, p.ShootingSkill / 10f);
+            OSistema.Views.SoundManager.PlayUi(OSistema.Views.AudioSynth.Click, 0.35f);
+            game.PopupAt(p.Position + Vector2.up * 0.8f, "reloading");
         }
 
         /// <summary>

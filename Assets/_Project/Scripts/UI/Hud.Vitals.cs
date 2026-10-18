@@ -15,7 +15,7 @@ namespace OSistema.UI
         Label vitalsName, vitalsState, statusTitle, statusText;
         Button statusButton, statusButton2;
 
-        Label vHealth, vFood, vRest, vBreath;
+        Label vHealth, vFood, vRest, vBreath, vAmmo;
 
         void BuildVitals()
         {
@@ -27,6 +27,7 @@ namespace OSistema.UI
             vFood = VitalChip(vitals, "FAME", "#F2B866");
             vRest = VitalChip(vitals, "SONNO", "#8FB4F0");
             vBreath = VitalChip(vitals, "FIATO", "#D8D4C8");
+            vAmmo = VitalChip(vitals, "COLPI", "#E8C26A");
             vitalsState = Ui.Text("", vitals, "tiny");
             Tip(vitals, () =>
             {
@@ -88,6 +89,9 @@ namespace OSistema.UI
             vFood.text = Pct(p.Needs.Food);
             vRest.text = Pct(p.Needs.Rest);
             vBreath.text = p.Winded ? "<color=#F07A6E>out of breath</color>" : Pct(p.Stamina);
+            vAmmo.parent.Show(p.Armed);
+            vAmmo.text = p.ReloadUntil > Time.unscaledTime ? "<color=#A89F8E>reloading</color>"
+                : p.Ammo == 0 ? "<color=#F07A6E>empty · R</color>" : $"{p.Ammo}/{Pawn.MagazineSize}";
 
             wanted.Show(game.Pursuit.Active);
             if (game.Pursuit.Active) Ui.SetFill(wantedFill, game.Pursuit.EscapeProgress);
