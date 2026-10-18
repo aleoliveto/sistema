@@ -72,6 +72,9 @@ namespace OSistema.UI
                 };
                 places.Add(new Place { At = Mover.CellCenter(b.Cell), Glyph = g, Css = css, Name = $"{what} · {b.Name}" });
             }
+            // Roads out of the district.
+            foreach (var gate in game.District.Gates)
+                places.Add(new Place { At = Mover.CellCenter(gate.Cell), Glyph = "→", Css = gate.To == Core.District.PortId ? "icon--to-port" : "icon--to-home", Name = $"Road to {Core.District.NameOf(gate.To)}" });
             foreach (var c in game.Contacts.All)
                 if (game.Contacts.Visible(c, game))
                     places.Add(new Place { At = c.Position, Glyph = Initial(c.Name),
@@ -131,7 +134,7 @@ namespace OSistema.UI
             mapDim = Ui.Box("dim").Into(modalLayer);
             var panel = Ui.Box("panel", "bigmap").Into(mapDim);
             var head = Ui.Row(panel);
-            Ui.Text("THE RIONE", head, "title", "gold");
+            mapTitle = Ui.Text("THE RIONE", head, "title", "gold");
             Ui.Text("   scroll to zoom · drag to move · click to set a waypoint, again to clear", head, "small", "muted");
             Ui.Box("spacer").Into(head);
             territoryButton = Ui.Btn("Territory", () => { territoryOn = !territoryOn; territoryButton.Toggle("btn--on", territoryOn); }, head, "btn--small");
@@ -218,6 +221,7 @@ namespace OSistema.UI
         {
             mapOpen = !mapOpen;
             mapDim.Show(mapOpen);
+            if (game != null) mapTitle.text = game.District.Name.ToUpper();
             mapTexTimer = 99f;
             // Open on where you are, close enough to read.
             if (mapOpen && game != null)
@@ -230,6 +234,7 @@ namespace OSistema.UI
         }
 
         const float BigW = 860f, BigH = 600f;
+        Label mapTitle;
         Button territoryButton;
         bool territoryOn;
         readonly List<(VisualElement box, Label label)> territoryBoxes = new List<(VisualElement, Label)>();
@@ -555,6 +560,8 @@ namespace OSistema.UI
             "icon--work" => 10,
             "icon--mobili" => 11,
             "icon--lusso" => 12,
+            "icon--to-port" => 13,
+            "icon--to-home" => 8,
             _ => -1,
         };
 

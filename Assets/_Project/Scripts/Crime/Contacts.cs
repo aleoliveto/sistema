@@ -108,6 +108,15 @@ namespace OSistema.Crime
                 return c;
             }
 
+            // At the port, only the people who work the docks.
+            if (game.District.Id == Core.District.PortId)
+            {
+                Add(Marenaro, "Has a boat, and friends on other boats. Works when the sea is dark.",
+                    Landing(map) ?? StreetSpot(10, 120, 53), 18, 4, new Color32(60, 80, 100, 255),
+                    "'O mare stanotte è calmo. Buono pe' fatica'.", "The sea's calm tonight. Good for work.",
+                    "Stanotte nun esce nisciuna varca.", "No boats going out tonight.");
+                return;
+            }
             Add(Totonno, "Runs the bar on the corner. Knows everyone, owes nobody. Always has an errand.",
                 ShopFront(ShopKind.Bar, 3, 60) ?? StreetSpot(6, 25, 11), 7, 22, new Color32(120, 90, 70, 255),
                 "Guagliò, viene ccà. Tengo 'na cosa pe' te.", "Come here, kid. I've got something for you.",

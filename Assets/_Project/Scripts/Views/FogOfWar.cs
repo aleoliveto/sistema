@@ -50,7 +50,10 @@ namespace OSistema.Views
             instance = this;
             game = g;
             map = g.Map;
-            state = new byte[map.CellCount];
+            // What's been explored belongs to the district: it's all still known when you come back.
+            bool first = g.District.Explored == null || g.District.Explored.Length != map.CellCount;
+            if (first) g.District.Explored = new byte[map.CellCount];
+            state = g.District.Explored;
             alpha = new float[map.CellCount];
             for (int i = 0; i < alpha.Length; i++) alpha[i] = 1f;
             pixels = new Color32[map.CellCount];
@@ -65,8 +68,9 @@ namespace OSistema.Views
             sr.sharedMaterial = SpriteFactory.UnlitMaterial;
             sr.sortingOrder = 50;
 
-            // The crew knows the streets around their own basso from day one.
-            var home = Vector2Int.RoundToInt(g.PlayerBase.center);
+            // The crew knows the streets around their own basso from day one; in a new district, around where you arrive.
+            var home = g.PlayerBase.width > 0 ? Vector2Int.RoundToInt(g.PlayerBase.center) : (g.Player != null ? g.Player.Cell : new Vector2Int(map.Width / 2, map.Height / 2));
+            if (!first) home = new Vector2Int(-1000, -1000);
             for (int dy = -22; dy <= 22; dy++)
             for (int dx = -22; dx <= 22; dx++)
             {

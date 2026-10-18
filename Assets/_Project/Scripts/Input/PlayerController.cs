@@ -846,6 +846,14 @@ namespace OSistema.Input
                                  : new Action { Label = "Roll a pack of ROSSE", Do = () => hud.OpenRolling() };
             }
 
+            // The road out of the district.
+            foreach (var gate in game.District.Gates)
+                if ((gate.Cell - p.Cell).sqrMagnitude <= 25)
+                {
+                    var to = gate.To;
+                    return new Action { Label = $"Ride to {District.NameOf(to)}", Do = () => game.Events.Raise(Story.TravelCards.Leave(to, game)) };
+                }
+
             // A locked door next to you: break in. Inside a place you've broken into: turn it over.
             foreach (var c in GridUtil.CellsAround(p.Cell, 1))
             {

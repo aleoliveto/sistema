@@ -271,8 +271,126 @@ namespace OSistema.Core
         {
             District = district;
             Org.District = district;
+            if (!Districts.Contains(district)) Districts.Add(district);
+            district.FindGates();
             district.StreetLife = new StreetLife(this);
             district.Hospital = new Hospital(this);
+        }
+
+        /// <summary>Every district the family has been to. The live one is <see cref="District"/>.</summary>
+        public readonly List<District> Districts = new List<District>();
+
+        /// <summary>Raised after travelling: the views rebuild for the new map.</summary>
+        public event System.Action DistrictChanged;
+
+        public District DistrictById(string id) => Districts.Find(d => d.Id == id);
+
+        /// <summary>
+        /// Rides to another district. The player and whoever comes along go; everyone else (crew on
+        /// their posts, the clans' men, the clans' piazze) stays behind, parked in the district they're
+        /// in, and the ledger keeps it ticking. The trip takes half an hour or so.
+        /// </summary>
+        public void TravelTo(string id, List<Pawn> companions)
+        {
+            var from = District;
+            if (from.Id == id) return;
+            var player = Player;
+
+            // Park everyone who isn't coming.
+            Pursuit.Release(this);
+            Org.StopDealing(this, quiet: true);
+            foreach (var p in new List<Pawn>(Pawns.All))
+            {
+                if (p == player || (companions != null && companions.Contains(p))) continue;
+                if (p.Faction == Faction.Crew && (p.Dead || p.InJail || p.InHospital)) continue;   // the dead and the jailed stay on the books
+                p.EndCurrentJob(this);
+                Pawns.Remove(p);
+                from.Dormant.Add(p);
+            }
+            foreach (var c in Clans)
+            {
+                foreach (var sq in c.Squares) { sq.Clan = c.Id; from.DormantClanSquares.Add(sq); }
+                c.Squares.Clear();
+            }
+            Npcs.Clear();
+
+            // The other side: made the first time anyone goes there.
+            var to = DistrictById(id) ?? CreateDistrict(id);
+            Enter(to);
+            foreach (var p in to.Dormant) Pawns.Add(p);
+            to.Dormant.Clear();
+            foreach (var sq in to.DormantClanSquares)
+                if (sq.Clan >= 0 && sq.Clan < Clans.Count) Clans[sq.Clan].Squares.Add(sq);
+            to.DormantClanSquares.Clear();
+            Contacts.Setup(this);
+            ClaimPending();
+
+            var arrive = to.ArrivalFrom(from.Id);
+            if (player != null) { player.Teleport(arrive); player.EndCurrentJob(this); }
+            if (companions != null)
+                foreach (var p in companions) { p.Teleport(arrive); p.EndCurrentJob(this); }
+
+            Ticks.Advance(GameClock.TicksPerHour / 2);
+            Log.Add($"You ride into {to.Name}.", MessageKind.Info, arrive);
+            DistrictChanged?.Invoke();
+        }
+
+        /// <summary>A district nobody has been to yet: generated from its own seed, with a clan already in it.</summary>
+        District CreateDistrict(string id)
+        {
+            int seed = unchecked(Seed * 31 + id.GetHashCode());
+            var generator = new MapGenerator(seed);
+            var rng = new System.Random(seed);
+            if (id == District.PortId)
+            {
+                var map = generator.GeneratePort(MapGenerator.PortWidth, MapGenerator.PortHeight, out var zoneRects, out var properties);
+                var d = new District(id, District.NameOf(id), seed, map, new RectInt(0, 0, 0, 0), Territory.FromBlocks(zoneRects, rng, MapGenerator.PortZoneNames), properties);
+                PrepareNewDistrict(d, rng);
+                return d;
+            }
+            throw new System.ArgumentException($"Unknown district {id}");
+        }
+
+        /// <summary>First visit: shops and their owners, names and prices, and a clan holding the docks.</summary>
+        void PrepareNewDistrict(District d, System.Random rng)
+        {
+            var previous = District;
+            District = d;
+            Org.District = d;
+            Org.BuildBusinesses(d.Map, rng);
+            NameProperties();
+            // The same tidying a loaded district gets, so it looks the same saved and reloaded.
+            ClearNarrowLanes();
+            RemoveStrayFurniture();
+            District = previous;
+            Org.District = previous;
+            // The strongest clan has a foothold at the port: two rioni, waiting.
+            RivalClan holder = null;
+            foreach (var c in Clans) if (!c.Destroyed && (holder == null || c.Soldiers > holder.Soldiers)) holder = c;
+            if (holder != null)
+            {
+                d.Dormant.Clear();
+                pendingClaims.Add((d, holder));
+            }
+        }
+
+        // Clans claiming rioni in a new district: done on arrival, when its map is live.
+        readonly List<(District d, RivalClan clan)> pendingClaims = new List<(District, RivalClan)>();
+
+        void ClaimPending()
+        {
+            for (int i = pendingClaims.Count - 1; i >= 0; i--)
+            {
+                var (d, clan) = pendingClaims[i];
+                if (d != District) continue;
+                pendingClaims.RemoveAt(i);
+                int claimed = 0;
+                foreach (var z in d.Territory.Zones)
+                {
+                    if (z.Name == "Il Molo" || claimed >= 2) continue;
+                    if (clan.ClaimZone(z, this)) claimed++;
+                }
+            }
         }
 
         public static Game NewGame(int seed, CharacterSetup setup = null)
@@ -378,6 +496,7 @@ namespace OSistema.Core
             socialHour = hour;
             if (first) return;
             Phone.Hourly(this);
+            foreach (var d in Districts) if (d != District) d.LedgerHour(this);
             Favours.Hourly(this);
             Informants.Hourly(this);
             Newspaper.Hourly(this);

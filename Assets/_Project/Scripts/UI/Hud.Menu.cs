@@ -233,6 +233,16 @@ namespace OSistema.UI
                 if (text.Contains("night") && game != null) game.Ticks.Advance((int)(((21.5f - game.Clock.HourF + 24f) % 24f) * Core.GameClock.TicksPerHour));
                 if (text.Contains("rain") && game != null) game.Weather.ForceRain();
                 if (text.Contains("phone") && game != null) ToggleWindow(Window.Phone);
+                // "travel": ride to the port straight away (and test saving two districts, with "roundtrip").
+                if (text.Contains("travel") && game != null)
+                {
+                    try
+                    {
+                        game.TravelTo(Core.District.PortId, new System.Collections.Generic.List<OSistema.Pawns.Pawn>());
+                        Debug.Log($"[O Sistema] TRAVEL now in {game.District.Name}: {game.Map.Width}x{game.Map.Height}, rioni {game.Territory.Zones.Count}, shops {game.Org.Businesses.Count}, clan piazze {System.Linq.Enumerable.Count(game.RivalSquares)}, contacts {game.Contacts.All.Count}, gates {game.District.Gates.Count}, pawns here {game.Pawns.All.Count}, parked at home {game.Districts[0].Dormant.Count}");
+                    }
+                    catch (Exception e) { Debug.LogError("[O Sistema] TRAVEL FAILED " + e); }
+                }
                 if (text.Contains("roundtrip") && game != null)
                 {
                     try { Debug.Log("[O Sistema] " + Core.SaveSystem.DevRoundTrip(game)); }

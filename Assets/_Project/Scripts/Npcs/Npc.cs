@@ -67,6 +67,9 @@ namespace OSistema.Npcs
 
         public event Action<Npc> Added;
 
+        /// <summary>Everyone in the street goes: a new district is loading.</summary>
+        public void Clear() => npcs.Clear();
+
         public int Count(NpcKind kind)
         {
             int n = 0;

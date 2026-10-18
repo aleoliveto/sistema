@@ -36,23 +36,42 @@ namespace OSistema.Core
             var data = Collect(game);
             // The district's ground goes in its own file; the rest is the family's.
             var district = SplitDistrict(data, game.District);
+            district.explored = game.District.Explored != null ? Convert.ToBase64String(game.District.Explored) : null;
             Directory.CreateDirectory(folder);
             File.WriteAllText(DistrictFile(folder, district.id), JsonUtility.ToJson(district));
+            // The districts the family isn't in: their ground, and whoever was left there.
+            foreach (var other in game.Districts)
+            {
+                if (other == game.District) continue;
+                var od = Parked(other);
+                File.WriteAllText(DistrictFile(folder, od.id), JsonUtility.ToJson(od));
+                data.districts.Add(new DistrictEntry { id = other.Id, name = other.Name, seed = other.Seed });
+            }
             File.WriteAllText(FamilyFile(folder), JsonUtility.ToJson(data));
         }
 
         public static Game Load(string folder)
         {
             SaveData data;
+            DistrictData live = null;
             if (File.Exists(FamilyFile(folder)))
             {
                 data = JsonUtility.FromJson<SaveData>(File.ReadAllText(FamilyFile(folder)));
                 string id = string.IsNullOrEmpty(data?.current) ? District.HomeId : data.current;
-                var district = JsonUtility.FromJson<DistrictData>(File.ReadAllText(DistrictFile(folder, id)));
-                MergeDistrict(data, district);
+                live = JsonUtility.FromJson<DistrictData>(File.ReadAllText(DistrictFile(folder, id)));
+                MergeDistrict(data, live);
             }
             else data = JsonUtility.FromJson<SaveData>(File.ReadAllText(LegacyFile(folder)));
-            return Restore(data);
+            var game = Restore(data);
+            if (live != null && !string.IsNullOrEmpty(live.explored)) game.District.Explored = Convert.FromBase64String(live.explored);
+            // The other districts, as they were left.
+            foreach (var entry in data.districts)
+            {
+                if (entry.id == game.District.Id || !File.Exists(DistrictFile(folder, entry.id))) continue;
+                var od = JsonUtility.FromJson<DistrictData>(File.ReadAllText(DistrictFile(folder, entry.id)));
+                game.Districts.Add(Unpark(od, game));
+            }
+            return game;
         }
 
         /// <summary>
@@ -248,6 +267,124 @@ namespace OSistema.Core
             }
 
             return data;
+        }
+
+        // ---------- Districts the family isn't in ----------
+
+        static string EncodeMap(Map map, out string buildings)
+        {
+            var t = new byte[map.CellCount];
+            var b = new byte[map.CellCount];
+            for (int i = 0; i < map.CellCount; i++)
+            {
+                t[i] = (byte)map.GetTerrainAt(i);
+                var def = map.GetBuildingAt(i);
+                b[i] = def == null ? (byte)0 : (byte)(Array.IndexOf(BuildingDefs.All, def) + 1);
+            }
+            buildings = Convert.ToBase64String(b);
+            return Convert.ToBase64String(t);
+        }
+
+        static Map DecodeMap(int width, int height, string terrainB64, string buildingsB64, string styles, string decor, string rotation)
+        {
+            var map = new Map(width, height);
+            var terrain = Convert.FromBase64String(terrainB64);
+            var buildings = Convert.FromBase64String(buildingsB64);
+            for (int y = 0; y < map.Height; y++)
+            for (int x = 0; x < map.Width; x++)
+            {
+                int i = map.Index(x, y);
+                map.SetTerrain(x, y, (TerrainType)terrain[i]);
+                if (buildings[i] > 0) map.SetBuilding(x, y, BuildingDefs.All[buildings[i] - 1]);
+            }
+            System.Array.Copy(Convert.FromBase64String(styles), map.RawStyles, map.CellCount);
+            System.Array.Copy(Convert.FromBase64String(decor), map.RawDecor, map.CellCount);
+            if (!string.IsNullOrEmpty(rotation)) System.Array.Copy(Convert.FromBase64String(rotation), map.RawRotation, map.CellCount);
+            return map;
+        }
+
+        /// <summary>A district the family isn't in, as it stands: map, buildings, piazze, and who's parked there.</summary>
+        static DistrictData Parked(District d)
+        {
+            var map = d.Map;
+            var od = new DistrictData
+            {
+                version = Version, id = d.Id, name = d.Name, seed = d.Seed, width = map.Width, height = map.Height,
+                styles = Convert.ToBase64String(map.RawStyles), decor = Convert.ToBase64String(map.RawDecor), rotation = Convert.ToBase64String(map.RawRotation),
+                baseX = d.PlayerBase.x, baseY = d.PlayerBase.y, baseW = d.PlayerBase.width, baseH = d.PlayerBase.height,
+                explored = d.Explored != null ? Convert.ToBase64String(d.Explored) : null,
+            };
+            od.terrain = EncodeMap(map, out od.buildings);
+            foreach (var p in d.Properties.All)
+                od.properties.Add(new PropertyData
+                {
+                    x = p.Rect.x, y = p.Rect.y, w = p.Rect.width, h = p.Rect.height, doorX = p.Door.x, doorY = p.Door.y,
+                    kind = (int)p.Kind, name = p.Name, owned = p.OwnedByPlayer, price = p.Price, operation = (int)p.Operation, manager = p.Manager?.Id ?? 0,
+                });
+            foreach (var z in d.Territory.Zones)
+                od.zones.Add(new ZoneData { name = z.Name, x = z.Rect.x, y = z.Rect.y, w = z.Rect.width, h = z.Rect.height, heat = z.Heat, demand = z.Demand });
+            foreach (var sq in d.Squares)
+                od.squares.Add(new SquareData { x = sq.Cell.x, y = sq.Cell.y, zone = sq.ZoneId, open = sq.OpenHour, close = sq.CloseHour });
+            foreach (var b in d.Businesses)
+                od.businesses.Add(new BusinessData
+                {
+                    x = b.Cell.x, y = b.Cell.y, name = b.Name, kind = (int)b.Kind, status = (int)b.Status, pizzo = b.WeeklyPizzo, defiance = b.Defiance,
+                    lastWeek = b.LastCollectedWeek, action = (int)b.PendingAction, closedUntil = b.ClosedUntil, counterDef = b.CounterDefId,
+                });
+            foreach (var bp in d.Construction.All)
+                od.blueprints.Add(new BlueprintData { x = bp.Cell.x, y = bp.Cell.y, def = bp.Def.Id, deconstruct = bp.Deconstruct, work = bp.WorkLeft });
+            foreach (var sq in d.DormantClanSquares)
+                od.clanSquares.Add(new SquareData { x = sq.Cell.x, y = sq.Cell.y, zone = sq.ZoneId, clan = sq.Clan });
+            foreach (var p in d.Dormant)
+            {
+                var pd = ToData(p);
+                pd.missionSquare = p.MissionSquare != null ? d.DormantClanSquares.IndexOf(p.MissionSquare) : -1;
+                od.pawns.Add(pd);
+            }
+            return od;
+        }
+
+        /// <summary>Brings back a district the family isn't in, with the people parked there.</summary>
+        static District Unpark(DistrictData od, Game game)
+        {
+            var map = DecodeMap(od.width, od.height, od.terrain, od.buildings, od.styles, od.decor, od.rotation);
+            var properties = new List<Property>();
+            foreach (var p in od.properties)
+                properties.Add(new Property
+                {
+                    Rect = new RectInt(p.x, p.y, p.w, p.h), Door = new Vector2Int(p.doorX, p.doorY), Kind = (PropertyKind)p.kind,
+                    Name = p.name, OwnedByPlayer = p.owned, Price = p.price, Operation = (Operation)p.operation,
+                });
+            for (int i = 0; i < properties.Count; i++) properties[i].Id = i;
+            var zones = new List<Zone>();
+            foreach (var z in od.zones)
+                zones.Add(new Zone { Name = z.name, Rect = new RectInt(z.x, z.y, z.w, z.h), Heat = z.heat, Demand = z.demand });
+            var d = new District(od.id, od.name, od.seed, map, new RectInt(od.baseX, od.baseY, od.baseW, od.baseH), zones, properties);
+            foreach (var sq in od.squares)
+                d.Squares.Add(new DrugSquare { Cell = new Vector2Int(sq.x, sq.y), ZoneId = sq.zone, OpenHour = sq.open, CloseHour = sq.close });
+            foreach (var b in od.businesses)
+                d.Businesses.Add(new Business
+                {
+                    Cell = new Vector2Int(b.x, b.y), Name = b.name, Kind = (ShopKind)b.kind, Status = (BusinessStatus)b.status,
+                    WeeklyPizzo = b.pizzo, Defiance = b.defiance, LastCollectedWeek = b.lastWeek,
+                    PendingAction = (Retaliation)b.action, ClosedUntil = b.closedUntil, CounterDefId = b.counterDef,
+                });
+            foreach (var bp in od.blueprints)
+            {
+                var def = BuildingDefs.ById(bp.def);
+                if (def != null) d.Construction.Restore(new Vector2Int(bp.x, bp.y), def, bp.deconstruct, bp.work);
+            }
+            foreach (var sq in od.clanSquares)
+                d.DormantClanSquares.Add(new DrugSquare { Cell = new Vector2Int(sq.x, sq.y), ZoneId = sq.zone, Rival = true, OpenHour = 0, CloseHour = 0, Clan = sq.clan });
+            foreach (var pd in od.pawns)
+            {
+                var pawn = FromData(pd);
+                if (pd.missionSquare >= 0 && pd.missionSquare < d.DormantClanSquares.Count) pawn.MissionSquare = d.DormantClanSquares[pd.missionSquare];
+                d.Dormant.Add(pawn);
+                game.Pawns.Reserve(pawn.Id);
+            }
+            if (!string.IsNullOrEmpty(od.explored)) d.Explored = Convert.FromBase64String(od.explored);
+            return d;
         }
 
         static Game Restore(SaveData data)
@@ -572,6 +709,8 @@ namespace OSistema.Core
             public List<BusinessData> businesses = new List<BusinessData>();
             public List<BlueprintData> blueprints = new List<BlueprintData>();
             public List<SquareData> clanSquares = new List<SquareData>();
+            public string explored;                                  // the fog of war, what's been seen
+            public List<PawnData> pawns = new List<PawnData>();      // people parked here while the family is elsewhere
         }
 
         [Serializable]

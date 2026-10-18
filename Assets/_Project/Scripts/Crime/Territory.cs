@@ -57,13 +57,14 @@ namespace OSistema.Crime
             if (map.GetTerrain(x, y) == TerrainType.Road && map.IsPassable(x, y)) Entrances.Add(new Vector2Int(x, y));
         }
 
-        public static List<Zone> FromBlocks(List<RectInt> blocks, System.Random rng)
+        public static List<Zone> FromBlocks(List<RectInt> blocks, System.Random rng, string[] names = null)
         {
+            names ??= Names.Zones;
             var zones = new List<Zone>();
             for (int i = 0; i < blocks.Count; i++)
             {
-                string name = Names.Zones[i % Names.Zones.Length];
-                if (i >= Names.Zones.Length) name += " II";
+                string name = names[i % names.Length];
+                if (i >= names.Length) name += " II";
                 zones.Add(new Zone { Name = name, Rect = blocks[i], Demand = 0.6f + (float)rng.NextDouble() * 0.8f });
             }
             return zones;

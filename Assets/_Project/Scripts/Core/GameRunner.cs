@@ -63,6 +63,12 @@ namespace OSistema.Core
                 if (kb.f9Key.wasPressedThisFrame) LoadGame();
             }
             Game.Ticks.Update(Time.unscaledDeltaTime);
+            if (districtChanged)
+            {
+                districtChanged = false;
+                var g = Game;
+                StartGame(g);
+            }
         }
 
         void StartGame(Game game)
@@ -97,11 +103,13 @@ namespace OSistema.Core
             game.Combat.EngagementStarted += OnEngagement;
             game.Response.Sirens += OnSirens;
             game.Npcs.Added += CreateNpcView;
+            game.DistrictChanged += OnDistrictChanged;
 
             controller.Bind(game);
             hud.Bind(game);
 
-            var c = game.PlayerBase.center;
+            var c = game.Player != null && game.PlayerBase.width == 0 ? game.Player.Position : game.PlayerBase.center;
+            if (game.Player != null && !game.PlayerBase.Contains(game.Player.Cell)) c = game.Player.Position;
             cam.transform.position = new Vector3(c.x, c.y, -10f);
         }
 
@@ -113,11 +121,17 @@ namespace OSistema.Core
                 Game.Response.Sirens -= OnSirens;
                 Game.Pawns.Added -= CreatePawnView;
                 Game.Npcs.Added -= CreateNpcView;
+                Game.DistrictChanged -= OnDistrictChanged;
             }
             if (worldRoot != null) Destroy(worldRoot.gameObject);
             worldRoot = null;
             Game = null;
         }
+
+        bool districtChanged;
+
+        // The family rode into another district: rebuild every view for its map (next frame, not mid-click).
+        void OnDistrictChanged() => districtChanged = true;
 
         void SaveGame()
         {

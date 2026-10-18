@@ -31,7 +31,7 @@ namespace OSistema.World
     /// market, one is a quarter of brutalist housing blocks on wasteland. Along the bottom: the
     /// lungomare and the sea.
     /// </summary>
-    public sealed class MapGenerator
+    public sealed partial class MapGenerator
     {
         enum QuarterKind { Quartieri, Borgo, Vele }
 

@@ -198,7 +198,7 @@ namespace OSistema.Crime
             Release(game);
         }
 
-        void Release(Game game)
+        public void Release(Game game)
         {
             foreach (var cop in cops)
             {

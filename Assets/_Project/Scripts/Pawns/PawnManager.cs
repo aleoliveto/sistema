@@ -28,12 +28,23 @@ namespace OSistema.Pawns
 
         public int NextId() => nextId++;
 
+        /// <summary>An id in use by someone not on this map (parked in another district): never hand it out again.</summary>
+        public void Reserve(int id) => nextId = Mathf.Max(nextId, id + 1);
+
         public void Add(Pawn pawn)
         {
             pawns.Add(pawn);
             (pawn.Faction == Faction.Crew ? crew : rivals).Add(pawn);
             nextId = Mathf.Max(nextId, pawn.Id + 1);
             Added?.Invoke(pawn);
+        }
+
+        /// <summary>Takes someone off this map (they stay behind in another district).</summary>
+        public void Remove(Pawn pawn)
+        {
+            pawns.Remove(pawn);
+            crew.Remove(pawn);
+            rivals.Remove(pawn);
         }
 
         public int LivingCount
