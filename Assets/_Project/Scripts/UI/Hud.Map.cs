@@ -28,6 +28,76 @@ namespace OSistema.UI
         readonly List<VisualElement> miniDots = new List<VisualElement>();
         int miniDotsUsed;
 
+        readonly List<Label> miniIcons = new List<Label>(), bigIcons = new List<Label>();
+        int miniIconsUsed, bigIconsUsed;
+
+        /// <summary>A place worth a map icon: a letter in a coloured disc, like GTA's blips.</summary>
+        struct Place
+        {
+            public Vector2 At;
+            public string Glyph, Css, Name;
+        }
+
+        readonly List<Place> places = new List<Place>();
+
+        void CollectPlaces()
+        {
+            places.Clear();
+            places.Add(new Place { At = game.PlayerBase.center, Glyph = "C", Css = "icon--home", Name = "Mamma's basso" });
+            foreach (var pr in game.Properties.Owned)
+                if (!pr.Rect.Overlaps(game.PlayerBase)) places.Add(new Place { At = pr.Rect.center, Glyph = "C", Css = "icon--home", Name = pr.Name });
+            foreach (var pr in game.Properties.All)
+            {
+                if (!FogOfWar.HasExplored(pr.Door)) continue;
+                if (pr.Name == "Ospedale") places.Add(new Place { At = pr.Rect.center, Glyph = "H", Css = "icon--hospital", Name = "Ospedale" });
+                else if (pr.Name == "The parish church") places.Add(new Place { At = pr.Rect.center, Glyph = "†", Css = "icon--church", Name = "Church" });
+            }
+            foreach (var b in game.Org.Businesses)
+            {
+                if (!FogOfWar.HasExplored(b.Cell) || b.Status == BusinessStatus.Closed) continue;
+                var (g, css, what) = b.Kind switch
+                {
+                    ShopKind.Pizzeria => ("P", "icon--pizza", "Pizzeria"),
+                    ShopKind.Bar => ("B", "icon--bar", "Bar"),
+                    ShopKind.Tabaccheria => ("T", "icon--tabacchi", "Tabaccaio"),
+                    ShopKind.Salumeria => ("S", "icon--salumeria", "Salumeria"),
+                    ShopKind.Farmacia => ("+", "icon--farmacia", "Farmacia"),
+                    ShopKind.Macelleria => ("M", "icon--macelleria", "Macelleria"),
+                    _ => ("·", "icon--shop", "Shop"),
+                };
+                places.Add(new Place { At = Mover.CellCenter(b.Cell), Glyph = g, Css = css, Name = $"{what} · {b.Name}" });
+            }
+            foreach (var c in game.Contacts.All)
+                if (game.Contacts.Visible(c, game))
+                    places.Add(new Place { At = c.Position, Glyph = Initial(c.Name),
+                        Css = game.Contacts.HasWork(c, game) ? "icon--work" : "icon--contact", Name = $"{c.Name} · {c.Hours}" });
+        }
+
+        // "Don Peppe 'o Strozzino" -> P, "'O Zio Totonno" -> T
+        static string Initial(string name)
+        {
+            foreach (var w in name.Split(' '))
+            {
+                string t = w.Trim('\'');
+                if (t.Length == 0 || t == "O" || t == "o" || t == "Don" || t == "Zì" || t == "Zio") continue;
+                return t.Substring(0, 1).ToUpper();
+            }
+            return "?";
+        }
+
+        static Label NextIcon(List<Label> pool, ref int used, VisualElement parent)
+        {
+            if (used >= pool.Count)
+            {
+                var l = Ui.Text("", parent, "map-icon");
+                l.pickingMode = PickingMode.Ignore;
+                pool.Add(l);
+            }
+            var e = pool[used++];
+            e.style.display = DisplayStyle.Flex;
+            return e;
+        }
+
         bool mapOpen;
         VisualElement mapDim, bigImage, bigLayer;
         readonly List<VisualElement> bigDots = new List<VisualElement>();
@@ -142,8 +212,9 @@ namespace OSistema.UI
             }
 
             goal = Objectives.Current(game, null);
+            if (Time.frameCount % 15 == 0 || places.Count == 0) CollectPlaces();
             // A pin you reach is done.
-            if (waypoint.HasValue && game.Player != null && (game.Player.Position - waypoint.Value).sqrMagnitude < 4f) waypoint = null;
+            if (waypoint.HasValue && game.Player != null && (game.Player.Position - waypoint.Value).sqrMagnitude < 1.2f * 1.2f) waypoint = null;
             var player = game.Player;
             Vector2 centre = player != null ? player.Position : (Vector2)cam.transform.position;
 
@@ -169,6 +240,20 @@ namespace OSistema.UI
                 d.style.top = pos.y;
             }
             Markers(MiniDot);
+            miniIconsUsed = 0;
+            foreach (var pl in places)
+            {
+                var pos = Mini(pl.At);
+                if (pos.x < 6 || pos.y < 6 || pos.x > MiniW - 6 || pos.y > MiniH - 6) continue;
+                var ic = NextIcon(miniIcons, ref miniIconsUsed, miniLayer);
+                ic.ClearClassList();
+                ic.AddToClassList("map-icon");
+                ic.AddToClassList(pl.Css);
+                ic.text = pl.Glyph;
+                ic.style.left = pos.x;
+                ic.style.top = pos.y;
+            }
+            for (int i = miniIconsUsed; i < miniIcons.Count; i++) miniIcons[i].style.display = DisplayStyle.None;
             if (waypoint.HasValue) MiniDot(waypoint.Value, "dot--pin", clamp: true);
             if (goal.Target.HasValue) MiniDot(goal.Target.Value, "dot--goal", clamp: true);
             if (player != null) MiniDot(player.Position, "dot--you");
@@ -188,12 +273,8 @@ namespace OSistema.UI
 
         void Markers(System.Action<Vector2, string, bool> dot)
         {
-            dot(game.PlayerBase.center, "dot--home", false);
-            foreach (var pr in game.Properties.Owned) dot(pr.Rect.center, "dot--home", false);
             foreach (var p in game.Pawns.Crew)
                 if (p.IsPresent && !p.Controlled) dot(p.Position, "dot--crew", false);
-            foreach (var c in game.Contacts.All)
-                if (game.Contacts.Visible(c, game)) dot(c.Position, game.Contacts.HasWork(c, game) ? "dot--work" : "dot--contact", false);
             foreach (var sq in game.Org.Squares) dot(Mover.CellCenter(sq.Cell), "dot--piazza", false);
             foreach (var n in game.Npcs.All)
                 if (n.Kind == NpcKind.Police && !n.Despawned && FogOfWar.CanSee(n.Mover.Position)) dot(n.Mover.Position, "dot--police", false);
@@ -265,17 +346,21 @@ namespace OSistema.UI
                 label.style.left = w.x * bigScale + 6;
                 label.style.top = (map.Height - w.y) * bigScale - 7;
             }
-            // Everyone you know, and where they stand, so you never have to go looking.
-            foreach (var c in game.Contacts.All)
-                if (game.Contacts.Visible(c, game)) BigLabel(c.Position, $"{c.Name} · {c.Hours}");
-            BigLabel(game.PlayerBase.center, "Mamma's basso");
-            foreach (var b in game.Org.Businesses)
+            // Every place you know, with its icon and name: people, shops, home.
+            bigIconsUsed = 0;
+            foreach (var pl in places)
             {
-                if (b.Kind != ShopKind.Tabaccheria && b.Kind != ShopKind.Salumeria) continue;
-                if (!FogOfWar.HasExplored(b.Cell)) continue;
-                BigDot(Mover.CellCenter(b.Cell), "dot--shop", false);
-                BigLabel(Mover.CellCenter(b.Cell), b.Kind == ShopKind.Tabaccheria ? "Tabaccaio" : "Salumeria");
+                var ic = NextIcon(bigIcons, ref bigIconsUsed, bigLayer);
+                ic.ClearClassList();
+                ic.AddToClassList("map-icon");
+                ic.AddToClassList("map-icon--big");
+                ic.AddToClassList(pl.Css);
+                ic.text = pl.Glyph;
+                ic.style.left = pl.At.x * bigScale;
+                ic.style.top = (map.Height - pl.At.y) * bigScale;
+                BigLabel(pl.At + new Vector2(0.8f, 0f), pl.Name);
             }
+            for (int i = bigIconsUsed; i < bigIcons.Count; i++) bigIcons[i].style.display = DisplayStyle.None;
             if (waypoint.HasValue) BigDot(waypoint.Value, "dot--pin", false);
             if (goal.Target.HasValue) BigDot(goal.Target.Value, "dot--goal", false);
             if (player != null) BigDot(player.Position, "dot--you", false);

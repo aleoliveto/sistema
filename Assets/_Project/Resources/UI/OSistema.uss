@@ -741,3 +741,34 @@
 .creator__portrait { width: 170px; height: 170px; margin-right: 12px; border-radius: 4px; border-width: 2px; border-color: rgba(232,194,106,0.5); -unity-background-scale-mode: scale-and-crop; background-color: #111; }
 .creator__preview { width: 170px; height: 170px; border-radius: 4px; background-color: rgb(78, 76, 82); margin-bottom: 8px; }
 .creator__layer { position: absolute; left: 0; top: 0; right: 0; bottom: 0; -unity-background-scale-mode: scale-to-fit; }
+
+.namefield { flex-grow: 1; height: 24px; padding: 2px 8px; margin: 2px 0; background-color: #15120F; border-width: 1px; border-color: rgba(232,194,106,0.25); border-radius: 3px; justify-content: center; }
+.namefield--on { border-color: #E8C26A; background-color: #211B14; }
+
+/* ---------- Action cues ---------- */
+.action { position: absolute; translate: -50% -100%; align-items: center; background-color: rgba(10,8,6,0.82); border-radius: 3px; padding: 2px 6px; }
+.action__label { font-size: 10px; color: #F3E9D2; white-space: nowrap; }
+.action__bar { width: 70px; height: 4px; margin-top: 2px; background-color: rgba(255,255,255,0.15); border-radius: 2px; overflow: hidden; }
+.action__fill { height: 100%; background-color: #E8C26A; }
+.tag--sleep { color: #A9C6FF; font-size: 13px; -unity-font-style: bold; background-color: rgba(0,0,0,0); }
+
+.shop { width: 560px; }
+
+/* ---------- Map icons ---------- */
+.map-icon { position: absolute; width: 14px; height: 14px; margin-left: -7px; margin-top: -7px; border-radius: 7px; font-size: 9px; -unity-font-style: bold; -unity-text-align: middle-center; color: #FFFFFF; border-width: 1px; border-color: rgba(0,0,0,0.8); padding: 0; }
+.map-icon--big { width: 18px; height: 18px; margin-left: -9px; margin-top: -9px; border-radius: 9px; font-size: 11px; }
+.icon--home { background-color: #4E9A4A; }
+.icon--hospital { background-color: #D23C34; }
+.icon--church { background-color: #8A7D6A; }
+.icon--pizza { background-color: #E07A2E; }
+.icon--bar { background-color: #8A56B8; }
+.icon--tabacchi { background-color: #3C6FB8; }
+.icon--salumeria { background-color: #C4A23A; }
+.icon--farmacia { background-color: #3AA36A; }
+.icon--macelleria { background-color: #A8343C; }
+.icon--shop { background-color: #6A6460; }
+.icon--work { background-color: #E8C26A; color: #1A1410; }
+.icon--contact { background-color: #CFC6B4; color: #1A1410; }
+
+.role-menu { position: absolute; padding: 4px; min-width: 200px; }
+.role-menu__item { margin: 1px 0; -unity-text-align: middle-left; }

@@ -89,13 +89,20 @@ namespace OSistema.Views
             body.sprite = b;
             head.sprite = h;
             hair.sprite = hr;
+            // The painted parts face the viewer (south); the figure faces north before it's turned.
+            var back = Quaternion.Euler(0f, 0f, 180f);
             body.transform.localPosition = Vector3.zero;
             head.transform.localPosition = Vector3.zero;
             hair.transform.localPosition = Vector3.zero;
+            body.transform.localRotation = back;
+            head.transform.localRotation = back;
+            hair.transform.localRotation = back;
             if (neck == null) neck = Part("Chain", pivot, null, SpriteFactory.LitMaterial, head.sortingOrder - 1);
             if (hat == null) hat = Part("Hat", pivot, null, SpriteFactory.LitMaterial, hair.sortingOrder + 1);
             neck.sprite = CharacterArt.Sprite("neck", look.Neck);
             hat.sprite = CharacterArt.Sprite("hat", look.Hat);
+            neck.transform.localRotation = back;
+            hat.transform.localRotation = back;
             SetVisible(visibleNow);
             SetColors(Color.white, Color.white, Color.white);
             return true;

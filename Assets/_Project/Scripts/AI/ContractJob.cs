@@ -23,6 +23,17 @@ namespace OSistema.AI
 
         public override bool IsWork => true;
 
+        int workStart;
+        public override float Progress
+        {
+            get
+            {
+                if (contract.Stage != AtPickup && contract.Stage != AtDrop) return -1f;
+                if (contract.Work > workStart) workStart = (int)contract.Work;
+                return workStart > 0 ? 1f - contract.Work / workStart : -1f;
+            }
+        }
+
         public override string Label => contract.Kind switch
         {
             ContractKind.Delivery => contract.Stage < GoingToDrop ? "Picking up a parcel" : "Delivering a parcel",
@@ -89,6 +100,21 @@ namespace OSistema.AI
                     if (--c.Work > 0) return false;
                     Deliver(game);
                     return true;
+            }
+        }
+
+        /// <summary>The player is standing at the spot and pressed E: start the step there and then.</summary>
+        public static void ArriveNow(Contract c)
+        {
+            if (c.Stage == GoingToPickup && c.From.HasValue)
+            {
+                c.Stage = AtPickup;
+                c.Work = c.Kind == ContractKind.Lookout ? GameClock.TicksPerHour * 3 : c.Kind == ContractKind.ScooterTheft ? 240 : c.AtNight ? 700 : 90;
+            }
+            else if (c.Stage == GoingToDrop || (c.Stage == GoingToPickup && !c.From.HasValue))
+            {
+                c.Stage = AtDrop;
+                c.Work = c.Kind == ContractKind.Debt ? 300 : 60;
             }
         }
 

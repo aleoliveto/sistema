@@ -62,6 +62,7 @@ namespace OSistema.UI
             };
             toolsByTab[DockTab.Orders] = new List<ToolEntry>
             {
+                new ToolEntry { Label = "Move", Tool = Tool.Move, Swatch = new Color(0.6f, 0.8f, 0.95f), Tip = "Click a piece of furniture in your home to pick it up, then click where it goes (Q / E to turn it). Free." },
                 new ToolEntry { Label = "Sell furniture", Tool = Tool.Deconstruct, Swatch = new Color(0.9f, 0.3f, 0.25f), Tip = "Click or drag over furniture in your homes to sell it back for half what you paid." },
                 new ToolEntry { Label = "Close piazza", Tool = Tool.Cancel, Swatch = new Color(0.95f, 0.65f, 0.3f), Tip = "Click a piazza of yours to close it." },
             };
@@ -76,7 +77,7 @@ namespace OSistema.UI
             AddTab(buildTabs, DockTab.Furnish, "HOME", IconKind.Furnish);
             AddTab(buildTabs, DockTab.Crime, "WORK", IconKind.Crime);
             AddTab(buildTabs, DockTab.Build, "PIAZZA", IconKind.Product);
-            AddTab(buildTabs, DockTab.Orders, "SELL", IconKind.Orders);
+            AddTab(buildTabs, DockTab.Orders, "MOVE & SELL", IconKind.Orders);
             buildTabs.style.marginBottom = 4;
 
             // The hotbar: every screen, with its key.
@@ -157,7 +158,7 @@ namespace OSistema.UI
                 DockTab.Furnish => "Furnish homes you own · click a free floor tile · Q / E turn · right-click to stop",
                 DockTab.Crime => "Tables where the goods are made · E to work at one, or give someone the job",
                 DockTab.Build => "Open a piazza on a pavement in your turf",
-                DockTab.Orders => "Sell furniture back for half · close a piazza",
+                DockTab.Orders => "Move furniture (pick up, put down) · sell it back for half · close a piazza",
                 _ => "",
             };
             businessButton.Toggle("btn--on", openWindow == Window.Business);

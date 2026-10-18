@@ -115,7 +115,7 @@ namespace OSistema.Crime
             Add(Saverio, "Runs the corner for the people above him. Pays lookouts by the night, and watches who's reliable.",
                 StreetSpot(8, 30, 23), 15, 2, new Color32(40, 40, 46, 255),
                 "Tu si 'o figlio d''a signora Iaccarino? Sient'a me.", "You're Mrs Iaccarino's son? Listen to me.",
-                "Stasera nun me serve nisciuno. Vattenne a casa.", "I don't need anyone tonight. Go home.");
+                "Mo' nun me serve nisciuno. Torna 'o pomeriggio, verso 'e tre.", "I don't need anyone right now. Come back in the afternoon, around three.");
             Add(Peppe, "Lends money at rates the banks would blush at. Needs young legs to collect.",
                 ShopFront(ShopKind.Tabaccheria, 6, 70) ?? ShopFront(ShopKind.Salumeria, 6, 70) ?? StreetSpot(10, 40, 37), 9, 20, new Color32(90, 70, 110, 255),
                 "'E sorde nun cadono d''o cielo, guagliò.", "Money doesn't fall from the sky, kid.",

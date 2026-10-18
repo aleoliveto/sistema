@@ -42,6 +42,39 @@ namespace OSistema.UI
             _ => "General",
         };
 
+        VisualElement roleMenu;
+
+        /// <summary>A dropdown of jobs, opened under the button that was clicked.</summary>
+        void ShowRoleMenu(Pawn p, VisualElement anchor)
+        {
+            if (roleMenu == null)
+            {
+                roleMenu = Ui.Box("layer").Into(modalLayer);
+                roleMenu.RegisterCallback<PointerDownEvent>(e => { if (e.target == roleMenu) roleMenu.Show(false); });
+            }
+            roleMenu.Clear();
+            roleMenu.Show(true);
+            roleMenu.pickingMode = PickingMode.Position;
+            var list = Ui.Box("panel", "role-menu").Into(roleMenu);
+            var r = anchor.worldBound;
+            var local = roleMenu.WorldToLocal(new Vector2(r.xMin, r.yMax));
+            list.style.left = local.x;
+            list.style.top = local.y + 2;
+            foreach (CrewRole role in Enum.GetValues(typeof(CrewRole)))
+            {
+                if (role == CrewRole.Manager) continue;   // appointed from the property panel
+                var rr = role;
+                var b = Ui.Btn(RoleLabel(role), () =>
+                {
+                    p.Role = rr;
+                    roleMenu.Show(false);
+                    bizDirty = true;
+                    RefreshAll();
+                }, list, "btn--small", "role-menu__item");
+                b.Toggle("btn--on", p.Role == role);
+            }
+        }
+
         static void CycleRole(Pawn p)
         {
             var roles = (CrewRole[])Enum.GetValues(typeof(CrewRole));
@@ -164,7 +197,7 @@ namespace OSistema.UI
             inspSub = Ui.Text("", names, "subtitle");
 
             var actions = Ui.Row(inspectorDetail);
-            roleButton = Ui.Btn("", () => { if (Single(out var p)) CycleRole(p); RefreshAll(); }, actions, "btn--small");
+            roleButton = Ui.Btn("", () => { if (Single(out var p)) ShowRoleMenu(p, roleButton); }, actions, "btn--small");
             Tip(roleButton, () => "Click to change job: general, pusher, lookout, collector, bagger, roller, bodyguard.");
             draftButton = Ui.Btn("Call over", () =>
             {
@@ -261,7 +294,7 @@ namespace OSistema.UI
             long now = game.Ticks.TicksGame;
             inspName.text = p.IsBoss ? $"<color=#E8C26A>{p.DisplayName}</color> {p.LastName}" : p.FullName;
             inspSub.text = $"“{p.Nickname}”  ·  {RoleLabel(p.Role)}  ·  €{p.Wage}/week";
-            roleButton.text = $"Role: {RoleLabel(p.Role)}";
+            roleButton.text = $"Job: {RoleLabel(p.Role)}  ▾";
             draftButton.Show(!p.Controlled);
             roleButton.Show(!p.Controlled);
             armButton.text = p.Armed ? "Disarm" : "Arm";

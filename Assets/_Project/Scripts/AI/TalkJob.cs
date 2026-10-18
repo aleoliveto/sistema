@@ -57,10 +57,22 @@ namespace OSistema.AI
             {
                 var job = o;
                 long hours = (o.ExpiresTick - game.Ticks.TicksGame) / GameClock.TicksPerHour;
-                e.Option($"{o.Title} · €{o.Reward}", $"Respect +{o.RespectReward:0.#}. Risk: {o.Risk} Offer stands {hours}h.", g =>
+                e.Option($"{o.Title} · €{o.Reward} · do it yourself", $"Respect +{o.RespectReward:0.#}. Risk: {o.Risk} Offer stands {hours}h.", g =>
                 {
                     if (!g.Contracts.Assign(job, pawn, g, out var error)) g.Log.Add(error, MessageKind.Bad);
                 }, g => !busy && pawn.CanAct);
+                // Or hand it to one of your boys: they go and do it on their own.
+                int sent = 0;
+                foreach (var c in game.Pawns.Crew)
+                {
+                    if (c == pawn || c.Controlled || !c.CanAct || game.Contracts.ActiveFor(c) != null || sent >= 3) continue;
+                    var crew = c;
+                    sent++;
+                    e.Option($"    …or send {crew.Nickname}", $"{crew.DisplayName} does it on his own. Same pay and respect for the family; he learns from it.", g =>
+                    {
+                        if (!g.Contracts.Assign(job, crew, g, out var error)) g.Log.Add(error, MessageKind.Bad);
+                    });
+                }
             }
             // Some contacts trade as well as giving work.
             if (contact.Name == ContactBook.Totonno && game.Stock.Cigarettes > 0 && game.Org.TotonnoWants(game) > 0)

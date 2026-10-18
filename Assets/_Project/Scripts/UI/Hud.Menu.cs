@@ -33,6 +33,7 @@ namespace OSistema.UI
 
         void OpenMenu(Menu menu)
         {
+            if (menu != Menu.Creator) HookTyping(false);
             if (openMenu == Menu.None && game != null)
             {
                 speedBeforeMenu = game.Ticks.Speed == 0 ? 1 : game.Ticks.Speed;
@@ -52,6 +53,7 @@ namespace OSistema.UI
 
         void CloseMenu()
         {
+            HookTyping(false);
             openMenu = Menu.None;
             menuClosedAt = Time.unscaledTime;
             menuDim.Clear();
@@ -139,6 +141,11 @@ namespace OSistema.UI
             if (MinigameOpen)
             {
                 CloseMinigame();
+                return;
+            }
+            if (ShopOpen)
+            {
+                CloseShop();
                 return;
             }
             if (mapOpen)

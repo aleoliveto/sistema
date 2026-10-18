@@ -25,6 +25,8 @@ namespace OSistema.AI
             ? (atShop ? "Eating a pizza" : "Eating")
             : (atShop ? "Going for a pizza" : "Getting food");
 
+        public override float Progress => eating ? 1f - eatLeft / (float)EatTicks : -1f;
+
         public override bool Tick(Game game)
         {
             if (!eating)
@@ -83,6 +85,8 @@ namespace OSistema.AI
         }
 
         public override string Label => !asleep ? "Going to bed" : Pawn.Sleep == SleepState.InBed ? "Sleeping" : "Sleeping on the floor";
+
+        public override float Progress => asleep ? Pawn.Needs.Rest : -1f;
 
         public override bool Tick(Game game)
         {

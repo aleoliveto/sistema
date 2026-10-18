@@ -45,6 +45,12 @@ namespace OSistema.Core
         public readonly ContactBook Contacts = new ContactBook();
         public readonly Pursuit Pursuit = new Pursuit();
 
+        /// <summary>Who's working at each table: one person per workstation.</summary>
+        public readonly Dictionary<Vector2Int, Pawn> StationClaims = new Dictionary<Vector2Int, Pawn>();
+
+        public Pawn WorkerAt(Vector2Int station) =>
+            StationClaims.TryGetValue(station, out var p) && p != null && p.IsPresent && !p.Dead && p.CurrentJob is AI.StationJob ? p : null;
+
         /// <summary>
         /// Street furniture (lamps, bins, benches, parked cars and scooters, chairs) must never choke a
         /// vicolo: anything that leaves less than two clear cells beside it, across the lane, goes.
@@ -66,12 +72,27 @@ namespace OSistema.Core
                 }
                 return n;
             }
+            // Something solid beside it: a wall, a building, the water's edge.
+            bool AgainstEdge(Vector2Int c)
+            {
+                foreach (var n in new[] { c + Vector2Int.left, c + Vector2Int.right, c + Vector2Int.up, c + Vector2Int.down })
+                {
+                    if (!Map.InBounds(n.x, n.y)) return true;
+                    var b = Map.GetBuilding(n.x, n.y);
+                    var t = Map.GetTerrain(n.x, n.y);
+                    if (b == BuildingDefs.Wall || b == BuildingDefs.Door || t == TerrainType.Floor || t == TerrainType.Marble || t == TerrainType.Water) return true;
+                }
+                return false;
+            }
             int removed = 0;
             foreach (var def in clutter)
             foreach (var c in new List<Vector2Int>(Map.PositionsOf(def)))
             {
                 int across = Mathf.Min(Span(c.x, c.y, 1, 0) + Span(c.x, c.y, -1, 0), Span(c.x, c.y, 0, 1) + Span(c.x, c.y, 0, -1));
-                if (across >= 2) continue;
+                // Keep it only against the edge of the street, with room to pass; never in the middle of a lane.
+                bool narrow = across < 3;
+                bool loose = !AgainstEdge(c) && across < 6 && def != BuildingDefs.MarketStall;
+                if (!narrow && !loose) continue;
                 Map.SetBuilding(c.x, c.y, null);
                 removed++;
             }

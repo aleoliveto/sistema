@@ -11,7 +11,7 @@ using UnityEngine.InputSystem;
 
 namespace OSistema.Input
 {
-    public enum Tool { Select, Build, Deconstruct, Cancel, Square }
+    public enum Tool { Select, Build, Deconstruct, Cancel, Square, Move }
 
     /// <summary>Camera, selection, orders and build tools. Turns player input into simulation commands.</summary>
     public sealed class PlayerController : MonoBehaviour
@@ -132,8 +132,23 @@ namespace OSistema.Input
             if (Instance == this) Instance = null;
         }
 
+        // Moving furniture: what's in your hands and where it came from.
+        BuildingDef carried;
+        Vector2Int carriedFrom;
+        int carriedRotation;
+
         public void SetTool(Tool tool, BuildingDef def = null)
         {
+            // Changed your mind halfway through a move: it goes back where it was.
+            if (carried != null && !(tool == Tool.Build && def == carried))
+            {
+                if (game.Map.GetBuilding(carriedFrom.x, carriedFrom.y) == null)
+                {
+                    game.Map.SetRotation(carriedFrom.x, carriedFrom.y, carriedRotation);
+                    game.Map.SetBuilding(carriedFrom.x, carriedFrom.y, carried);
+                }
+                carried = null;
+            }
             CurrentTool = tool;
             CurrentDef = def;
             dragging = false;
@@ -153,7 +168,9 @@ namespace OSistema.Input
             if (hud.MenuOpen) return;   // typing a name, or in a menu: the keys aren't for the game
 
             var player = game.Player;
-            if (hud.MinigameOpen)
+            // Working at a table or shopping counts as doing something: don't nod off at it.
+            if (player != null && (hud.MinigameOpen || hud.ShopOpen || mouse.leftButton.wasPressedThisFrame)) player.LastInputTick = game.Ticks.TicksGame;
+            if (hud.MinigameOpen || hud.ShopOpen)
             {
                 Aiming = false;
                 aimLine.enabled = false;
@@ -331,6 +348,15 @@ namespace OSistema.Input
                         if (why != null) game.Log.Add(why, MessageKind.Bad);
                         break;
                     }
+                    if (carried == CurrentDef && carried != null)
+                    {
+                        // Putting down something you're moving: free.
+                        game.Map.SetRotation(start.x, start.y, (byte)PlacementRotation);
+                        game.Map.SetBuilding(start.x, start.y, CurrentDef);
+                        carried = null;
+                        SetTool(Tool.Move);
+                        break;
+                    }
                     int cost = BuildingDef.CostOf(CurrentDef);
                     if (!game.Org.Pay(cost, game, out var payError))
                     {
@@ -341,6 +367,19 @@ namespace OSistema.Input
                     game.Map.SetBuilding(start.x, start.y, CurrentDef);
                     game.PopupAt(ScreenToWorld(mousePos), $"-€{cost}");
                     OSistema.Views.SoundManager.PlayUi(OSistema.Views.AudioSynth.Click, 0.3f);
+                    break;
+                }
+
+                case Tool.Move:
+                {
+                    var b = game.Map.GetBuilding(start.x, start.y);
+                    if (b == null || !InOwnedHome(start) || b == BuildingDefs.Wall || b == BuildingDefs.Door) break;
+                    carriedFrom = start;
+                    carriedRotation = game.Map.GetRotation(start.x, start.y);
+                    game.Map.SetBuilding(start.x, start.y, null);
+                    PlacementRotation = carriedRotation;
+                    SetTool(Tool.Build, b);
+                    carried = b;
                     break;
                 }
 
@@ -501,18 +540,21 @@ namespace OSistema.Input
                 p.LastInputTick = now;
                 if (p.CurrentJob != null && !(p.CurrentJob is DownedJob)) p.EndCurrentJob(game);
                 if (p.Sleep != SleepState.Awake) p.Sleep = SleepState.Awake;
-                // Real-time steering: faster game speeds help a little, but never make him uncontrollable.
-                float mult = Mathf.Min(TickManager.SpeedMultipliers[game.Ticks.Speed], 2f);
-                float step = Pawn.BaseSpeed * p.SpeedFactor * TickManager.TicksPerSecond * mult * dt;
+                // On foot, in real time whatever the game speed: a walk, a jog, never as fast as a scooter.
+                float step = Pawn.BaseSpeed * p.SpeedFactor * TickManager.TicksPerSecond * dt;
                 // Tired or hungry legs are slower.
                 if (p.Needs.Rest < Needs.ExhaustedBelow * 2f || p.Needs.Food < Needs.RavenousBelow) step *= 0.8f;
-                running = kb.leftShiftKey.isPressed && p.Stamina > 0.05f;
-                if (running) step *= 1.55f;
+                running = kb.leftShiftKey.isPressed && !p.Winded;
+                if (running) step *= 1.5f;
                 p.Mover.Slide(dir.normalized * step, game.Map);
                 p.Heading = Mathf.Atan2(-dir.x, dir.y) * Mathf.Rad2Deg;   // so a scooter starts off the way you were walking
                 follow = p;
             }
-            p.Stamina = Mathf.Clamp01(p.Stamina + (running ? -0.2f : 0.12f) * dt);
+            // Breath: about five seconds of running; once it's gone you can't run until it's back past a third.
+            float recover = (p.Needs.Food < 0.25f || p.Needs.Rest < 0.25f) ? 0.05f : 0.09f;
+            p.Stamina = Mathf.Clamp01(p.Stamina + (running ? -0.2f : recover * (dir == Vector2.zero ? 1.6f : 1f)) * dt);
+            if (p.Stamina <= 0.001f) p.Winded = true;
+            else if (p.Winded && p.Stamina >= 0.35f) p.Winded = false;
 
             // Hold the right button to aim, click the left to shoot (or punch, unarmed).
             Aiming = mouse.rightButton.isPressed && !overUi && CurrentTool == Tool.Select;
@@ -655,14 +697,27 @@ namespace OSistema.Input
                 {
                     if (job.Kind == ContractKind.Debt)
                         return new Action { Label = "Knock on the door", Do = () => game.Events.Raise(Story.StreetScenes.Knock(job, p, game)) };
-                    return new Action { Label = Contracts.StepLabel(job), Do = () => { p.LastInputTick = game.Ticks.TicksGame; p.ForceJob(new ContractJob(p, job), game); } };
+                    return new Action { Label = Contracts.StepLabel(job), Do = () =>
+                    {
+                        p.LastInputTick = game.Ticks.TicksGame;
+                        ContractJob.ArriveNow(job);   // you're there: start now, no walking
+                        p.ForceJob(new ContractJob(p, job), game);
+                    } };
                 }
             }
 
-            if (Near(p, BuildingDefs.BaggingTable, out _))
-                return new Action { Label = "Cut and bag doses", Do = () => hud.OpenBagging() };
-            if (Near(p, BuildingDefs.RollingTable, out _))
-                return new Action { Label = "Roll a pack of ROSSE", Do = () => hud.OpenRolling() };
+            if (Near(p, BuildingDefs.BaggingTable, out var bagT))
+            {
+                var w = game.WorkerAt(bagT);
+                return w != null ? new Action { Label = $"{w.Nickname} is working at this table", Do = () => { } }
+                                 : new Action { Label = "Cut and bag doses", Do = () => hud.OpenBagging() };
+            }
+            if (Near(p, BuildingDefs.RollingTable, out var rollT))
+            {
+                var w = game.WorkerAt(rollT);
+                return w != null ? new Action { Label = $"{w.Nickname} is working at this table", Do = () => { } }
+                                 : new Action { Label = "Roll a pack of ROSSE", Do = () => hud.OpenRolling() };
+            }
 
             foreach (var b in game.Org.Businesses)
             {
@@ -676,7 +731,7 @@ namespace OSistema.Input
                 if (!shopKind && !Story.ShopCards.PizzoActionable(b, game)) continue;
                 if (hour < 8 || hour >= 21) return new Action { Label = $"{b.Name} is closed", Do = () => { } };
                 var shop = b;
-                if (shopKind) return new Action { Label = $"Buy at the counter", Do = () => game.Events.Raise(Story.ShopCards.Shop(shop, game)) };
+                if (shopKind) return new Action { Label = $"Buy at the counter", Do = () => hud.OpenShop(shop) };
                 string what = b.Status == BusinessStatus.Paying ? "Collect the pizzo at" : "Have a word with the owner of";
                 return new Action { Label = $"{what} {b.Name}", Do = () => game.Events.Raise(Story.ShopCards.Owner(shop, game)) };
             }

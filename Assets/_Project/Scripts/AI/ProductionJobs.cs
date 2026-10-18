@@ -19,7 +19,11 @@ namespace OSistema.AI
             walker = new Walker(station, adjacent: true);
         }
 
+        bool claimed;
+
         public override bool IsWork => true;
+        public override float Progress => arrived ? work / (float)Mathf.Max(1, lastTicksPerItem) : -1f;
+        int lastTicksPerItem = 1;
         protected abstract BuildingDef Station { get; }
         protected abstract bool HasInputs(Game game);
         protected abstract int TicksPerItem(Game game);
@@ -28,6 +32,13 @@ namespace OSistema.AI
         public override bool Tick(Game game)
         {
             if (game.Map.GetBuilding(station) != Station || !HasInputs(game)) return true;
+            if (!claimed)
+            {
+                var other = game.WorkerAt(station);
+                if (other != null && other != Pawn) return true;
+                game.StationClaims[station] = Pawn;
+                claimed = true;
+            }
             if (!arrived)
             {
                 var status = walker.Tick(Pawn, game);
@@ -36,13 +47,18 @@ namespace OSistema.AI
                 arrived = true;
                 Pawn.AimPoint = Mover.CellCenter(station);
             }
-            if (++work < TicksPerItem(game)) return false;
+            lastTicksPerItem = TicksPerItem(game);
+            if (++work < lastTicksPerItem) return false;
             work = 0;
             Produce(game);
             return false;
         }
 
-        public override void OnEnd(Game game) => Pawn.AimPoint = null;
+        public override void OnEnd(Game game)
+        {
+            Pawn.AimPoint = null;
+            if (claimed && game.StationClaims.TryGetValue(station, out var p) && p == Pawn) game.StationClaims.Remove(station);
+        }
 
         public static bool TryFind(Pawn pawn, BuildingDef def, Game game, out Vector2Int station)
         {
@@ -52,6 +68,8 @@ namespace OSistema.AI
             foreach (var c in game.Map.PositionsOf(def))
             {
                 if (!game.PlayerBase.Contains(c) && !game.Properties.IsOwnedHome(c)) continue;
+                var busy = game.WorkerAt(c);
+                if (busy != null && busy != pawn) continue;   // one person per table
                 int d = GridUtil.Manhattan(pawn.Cell, c);
                 if (d < best)
                 {

@@ -27,7 +27,12 @@ namespace OSistema.UI
 
             if (org.CarriedDg > 0) return Go("Get the product home without meeting the police", Home(game));
 
-            // The body first: nobody looks after Gennaro but you.
+            // A job in hand comes first, unless the body really can't wait.
+            var job = game.Contracts.ActiveFor(p);
+            bool critical = p.Needs.Food < 0.08f || p.Needs.Rest < 0.06f;
+            if (job != null && !critical) return Go(Contracts.StepGoal(job), Mover.CellCenter(Contracts.StepTarget(job)));
+
+            // The body: nobody looks after Gennaro but you.
             if (p.Needs.Food < 0.22f)
             {
                 if (s.Meals > 0) return Station(game, p.Cell, BuildingDefs.Pantry, "You're starving: eat something at home (E at the pantry)", "You're starving: buy a pizza");
@@ -38,7 +43,6 @@ namespace OSistema.UI
             var visitor = game.Events.Visitor;
             if (visitor != null) return Go($"{game.Events.VisitorTitle}: someone wants a word with you", visitor.Mover.Position);
 
-            var job = game.Contracts.ActiveFor(p);
             if (job != null) return Go(Contracts.StepGoal(job), Mover.CellCenter(Contracts.StepTarget(job)));
 
             var saverio = game.Contacts.ByName(ContactBook.Saverio);
@@ -49,12 +53,19 @@ namespace OSistema.UI
             if (s.Cigarettes > 0 && totonno != null && totonno.Present && org.TotonnoWants(game) > 0)
                 return Go($"Sell your {s.Cigarettes} packs of ROSSE to Zio Totonno", totonno.Position);
 
-            if (s.BulkDg >= 2 && s.Baggies > 0)
+            bool bagger = false, roller = false;
+            foreach (var c in game.Pawns.Crew)
+            {
+                if (!c.IsPresent || c.Controlled) continue;
+                if (c.Role == CrewRole.Bagger) bagger = true;
+                if (c.Role == CrewRole.Roller) roller = true;
+            }
+            if (s.BulkDg >= 2 && s.Baggies > 0 && !bagger)
                 return Station(game, p.Cell, BuildingDefs.BaggingTable, "Cut and bag the product at the bagging table", "Build a bagging table at home (B, Work & Crime)");
             if (s.BulkDg >= 2 && s.Baggies <= 0)
                 return Shop(game, p.Cell, ShopKind.Salumeria, "Buy small bags at the salumeria");
 
-            if (org.CanMakePack(game) && s.TobaccoG >= Prices.TobaccoPerPack)
+            if (org.CanMakePack(game) && s.TobaccoG >= Prices.TobaccoPerPack && !roller)
                 return Station(game, p.Cell, BuildingDefs.RollingTable, "Roll a pack of ROSSE at the rolling table", "Build a rolling table at home (B, Work & Crime)");
             if (s.TobaccoG < Prices.TobaccoPerPack || s.Papers < 20)
             {

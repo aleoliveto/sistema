@@ -28,6 +28,9 @@ namespace OSistema.AI
 
         public virtual void OnEnd(Game game) { }
 
+        /// <summary>0..1 while doing something that takes time (eating, sleeping, a job step), else -1. Drawn over the pawn.</summary>
+        public virtual float Progress => -1f;
+
         protected bool Fail()
         {
             Failed = true;

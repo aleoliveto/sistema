@@ -21,7 +21,8 @@ namespace OSistema.Views
         {
             if (i < 0) return null;
             string key = $"{kind}_{i:00}";
-            if (textures.TryGetValue(key, out var tex)) return tex;
+            // Unity throws loaded and created assets away between Play sessions: never trust a stale cache.
+            if (textures.TryGetValue(key, out var tex) && tex != null) return tex;
             tex = Resources.Load<Texture2D>("Characters/" + key);
             textures[key] = tex;
             return tex;
@@ -31,7 +32,7 @@ namespace OSistema.Views
         {
             if (i < 0) return null;
             string key = $"{kind}_{i:00}";
-            if (sprites.TryGetValue(key, out var s)) return s;
+            if (sprites.TryGetValue(key, out var s) && s != null) return s;
             var tex = Texture(kind, i);
             s = tex != null ? UnityEngine.Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), PixelsPerUnit) : null;
             sprites[key] = s;
@@ -41,7 +42,7 @@ namespace OSistema.Views
         /// <summary>How many of a kind of part exist (body_00, body_01, ...).</summary>
         public static int Count(string kind)
         {
-            if (counts.TryGetValue(kind, out int n)) return n;
+            if (counts.TryGetValue(kind, out int n) && n > 0) return n;
             n = 0;
             while (Texture(kind, n) != null) n++;
             counts[kind] = n;

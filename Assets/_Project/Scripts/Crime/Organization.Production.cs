@@ -94,10 +94,11 @@ namespace OSistema.Crime
             int dg = Mathf.Clamp(Mathf.RoundToInt(grams * 10f), 1, s.BulkDg);
             s.BulkDg -= dg;
             s.Baggies--;
-            s.Product++;
             float err = (grams - Prices.DoseDg / 10f) / (Prices.DoseDg / 10f);
             float q = err < 0f ? 1f - Mathf.Clamp01(-err * 3f) : 1f - Mathf.Clamp01(err * 0.8f);
-            s.DoseQuality = Mathf.Lerp(s.DoseQuality, q, 0.04f);
+            // The stock's honesty is the average of the bags in it: each bag counts the same.
+            s.DoseQuality = s.Product <= 0 ? q : (s.DoseQuality * s.Product + q) / (s.Product + 1);
+            s.Product++;
         }
 
         public bool CanMakeDose(Game game) => game.Stock.BulkDg >= 2 && game.Stock.Baggies > 0;
@@ -115,8 +116,10 @@ namespace OSistema.Crime
             s.TobaccoG = Mathf.Max(0, s.TobaccoG - tobaccoG);
             s.Papers -= 20;
             s.EmptyPacks--;
+            // The quality of the packs in stock is their average: a good pack never drags the rest down.
+            float q = Mathf.Clamp01(quality);
+            s.PackQuality = s.Cigarettes <= 0 ? q : (s.PackQuality * s.Cigarettes + q) / (s.Cigarettes + 1);
             s.Cigarettes++;
-            s.PackQuality = Mathf.Lerp(s.PackQuality, Mathf.Clamp01(quality), 0.1f);
         }
 
         public int PackPrice(Game game) => Mathf.Max(1, Mathf.RoundToInt(Prices.PackStreet * (0.55f + 0.6f * game.Stock.PackQuality)));

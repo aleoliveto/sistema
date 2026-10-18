@@ -17,6 +17,28 @@ namespace OSistema.UI
         readonly List<Label> tags = new List<Label>();
         readonly List<VisualElement> bubbles = new List<VisualElement>();
         int tagsUsed, bubblesUsed;
+        readonly List<(VisualElement box, Label label, VisualElement fill)> actions = new List<(VisualElement, Label, VisualElement)>();
+        int actionsUsed;
+
+        // "Eating... ███░░" over someone busy with something that takes time.
+        void ActionBar(Vector2 panelPos, float unit, string text, float progress)
+        {
+            if (actionsUsed >= actions.Count)
+            {
+                var box = Ui.Box("action").Into(worldLayer);
+                box.pickingMode = PickingMode.Ignore;
+                var label = Ui.Text("", box, "action__label");
+                var bar = Ui.Box("action__bar").Into(box);
+                var fill = Ui.Box("action__fill").Into(bar);
+                actions.Add((box, label, fill));
+            }
+            var a = actions[actionsUsed++];
+            a.box.style.display = DisplayStyle.Flex;
+            a.label.text = text;
+            a.fill.style.width = Length.Percent(Mathf.Clamp01(progress) * 100f);
+            a.box.style.left = panelPos.x;
+            a.box.style.top = panelPos.y - unit * 1.15f;
+        }
 
         void ResetWorldLabels()
         {
@@ -54,6 +76,7 @@ namespace OSistema.UI
         {
             tagsUsed = 0;
             bubblesUsed = 0;
+            actionsUsed = 0;
             float zoom = cam.orthographicSize;
             float unitPx = WorldToPanel(Vector2.up).y - WorldToPanel(Vector2.zero).y; // panel pixels per world unit (negative: y is down)
             float unit = Mathf.Abs(unitPx);
@@ -80,6 +103,24 @@ namespace OSistema.UI
                     else if (p.IsBoss) tag.AddToClassList("tag--boss");
                     tag.style.left = pos.x;
                     tag.style.top = pos.y + unit * 0.42f;
+                }
+
+                // What they're busy doing, with progress; and the zZz of a sleeper.
+                if (!rival && !p.Dead && p.CurrentJob != null)
+                {
+                    float prog = p.CurrentJob.Progress;
+                    bool mine = p.Controlled || selected.Contains(p);
+                    if (prog >= 0f && (mine || close)) ActionBar(pos, unit, p.CurrentJob.Label, prog);
+                }
+                if (!rival && !p.Dead && p.Sleep != SleepState.Awake)
+                {
+                    var z = NextTag();
+                    z.AddToClassList("tag--sleep");
+                    float t = (Time.unscaledTime * 0.7f + p.Id * 0.37f) % 1f;
+                    z.text = t < 0.33f ? "z" : t < 0.66f ? "z z" : "z z Z";
+                    z.style.left = pos.x + unit * (0.3f + t * 0.3f);
+                    z.style.top = pos.y - unit * (0.5f + t * 0.5f);
+                    z.style.opacity = 1f - t * 0.6f;
                 }
 
                 if (p.HasBark && !p.Dead && !rival && close)
@@ -165,6 +206,7 @@ namespace OSistema.UI
                 if (FogOfWar.HasExplored(sq.Cell)) SquareTag(sq, $"{game.Rival.Name} piazza", "tag--rival");
 
             for (int i = tagsUsed; i < tags.Count; i++) tags[i].style.display = DisplayStyle.None;
+            for (int i = actionsUsed; i < actions.Count; i++) actions[i].box.style.display = DisplayStyle.None;
             for (int i = bubblesUsed; i < bubbles.Count; i++) bubbles[i].style.display = DisplayStyle.None;
 
             void SquareTag(DrugSquare sq, string text, string cls)

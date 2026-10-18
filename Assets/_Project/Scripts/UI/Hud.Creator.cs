@@ -64,20 +64,20 @@ namespace OSistema.UI
             // ---- Right: name, roots, skills ----
             var right = Ui.Box("col", "grow").Into(cols);
             right.style.width = 420;
-            Ui.Text("NAME", right, "section");
-            var first = Field(right, "First name", s.FirstName, v => s.FirstName = v);
-            var last = Field(right, "Surname", s.LastName, v => s.LastName = v);
-            var nick = Field(right, "Nickname", s.Nickname, v => s.Nickname = v);
+            Ui.Text("NAME  <color=#A89F8E>(click a field and type)</color>", right, "section");
+            nameFields.Clear();
+            NameField(right, "First name", () => s.FirstName, v => s.FirstName = v);
+            NameField(right, "Surname", () => s.LastName, v => s.LastName = v);
+            NameField(right, "Nickname", () => s.Nickname, v => s.Nickname = v);
             Ui.Btn("Roll a name", () =>
             {
                 var rng = new System.Random();
                 s.FirstName = Story.Names.Pick(Story.Names.FirstNames, rng);
                 s.LastName = Story.Names.Pick(Story.Names.Surnames, rng);
                 s.Nickname = Story.Names.Pick(Story.Names.Nicknames, rng);
-                first.value = s.FirstName;
-                last.value = s.LastName;
-                nick.value = s.Nickname;
+                RefreshNameFields();
             }, right, "btn--small").style.alignSelf = Align.FlexStart;
+            HookTyping(true);
 
             Ui.Text("WHERE HE COMES FROM", right, "section");
             var bgRow = Ui.Row(right);
@@ -164,16 +164,66 @@ namespace OSistema.UI
             Show();
         }
 
-        static TextField Field(VisualElement parent, string label, string value, System.Action<string> set)
+        // ---------- Typing names (read straight from the keyboard) ----------
+
+        sealed class NameBox
+        {
+            public Label Text;
+            public VisualElement Box;
+            public System.Func<string> Get;
+            public System.Action<string> Set;
+        }
+
+        readonly System.Collections.Generic.List<NameBox> nameFields = new System.Collections.Generic.List<NameBox>();
+        NameBox typingInto;
+        bool typingHooked;
+
+        void NameField(VisualElement parent, string label, System.Func<string> get, System.Action<string> set)
         {
             var row = Ui.Row(parent);
             row.style.alignItems = Align.Center;
             Ui.Text(label, row, "small").style.width = 90;
-            var f = new TextField { value = value, maxLength = 24 };
-            f.style.flexGrow = 1;
-            f.RegisterValueChangedCallback(e => set(e.newValue));
-            row.Add(f);
-            return f;
+            var box = Ui.Box("namefield").Into(row);
+            var nb = new NameBox { Box = box, Text = Ui.Text("", box), Get = get, Set = set };
+            box.RegisterCallback<PointerDownEvent>(_ => { typingInto = nb; RefreshNameFields(); });
+            nameFields.Add(nb);
+            RefreshNameFields();
+        }
+
+        void RefreshNameFields()
+        {
+            foreach (var f in nameFields)
+            {
+                bool on = f == typingInto;
+                f.Box.Toggle("namefield--on", on);
+                f.Text.text = (f.Get() ?? "") + (on ? "<color=#E8C26A>|</color>" : "");
+            }
+        }
+
+        void HookTyping(bool on)
+        {
+            var kb = UnityEngine.InputSystem.Keyboard.current;
+            if (kb == null || on == typingHooked) return;
+            if (on) kb.onTextInput += OnTyped; else kb.onTextInput -= OnTyped;
+            typingHooked = on;
+            if (!on) typingInto = null;
+        }
+
+        void OnTyped(char c)
+        {
+            if (typingInto == null || openMenu != Menu.Creator) return;
+            string v = typingInto.Get() ?? "";
+            if (c == '\b' || c == (char)127) { if (v.Length > 0) v = v.Substring(0, v.Length - 1); }
+            else if (c == '\t' || c == '\r' || c == '\n')
+            {
+                int i = nameFields.IndexOf(typingInto);
+                typingInto = i + 1 < nameFields.Count ? nameFields[i + 1] : null;
+                RefreshNameFields();
+                return;
+            }
+            else if (!char.IsControl(c) && v.Length < 24) v += c;
+            typingInto.Set(v);
+            RefreshNameFields();
         }
     }
 }

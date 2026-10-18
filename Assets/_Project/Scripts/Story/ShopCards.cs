@@ -18,6 +18,30 @@ namespace OSistema.Story
             g.Log.Add($"Bought {what} for €{price}.");
         }
 
+        public sealed class Item
+        {
+            public string Name, Note;
+            public int Price;
+            public System.Action<Game> Give;
+        }
+
+        /// <summary>What's on the shelves, for the checkout.</summary>
+        public static System.Collections.Generic.List<Item> Items(Business shop)
+        {
+            var list = new System.Collections.Generic.List<Item>();
+            if (shop.Kind == ShopKind.Tabaccheria)
+            {
+                list.Add(new Item { Name = "Loose tobacco, 100 g", Note = "seven packs' worth", Price = Prices.TobaccoPer100g, Give = g => g.Stock.TobaccoG += 100 });
+                list.Add(new Item { Name = "Papers and filters ×200", Note = "ten packs' worth", Price = Prices.Papers200, Give = g => g.Stock.Papers += 200 });
+            }
+            else
+            {
+                list.Add(new Item { Name = "Small food bags ×100", Note = "for the doses", Price = Prices.Baggies100, Give = g => g.Stock.Baggies += 100 });
+                list.Add(new Item { Name = "Groceries", Note = "each cooks two meals", Price = Prices.Groceries, Give = g => g.Stock.Groceries += 1 });
+            }
+            return list;
+        }
+
         /// <summary>True when there's pizzo business to do with this shop in person.</summary>
         public static bool PizzoActionable(Business b, Game game)
         {
@@ -28,7 +52,7 @@ namespace OSistema.Story
         }
 
         /// <summary>Adds the pizzo choices that fit this shop's situation to a card.</summary>
-        static GameEvent WithPizzo(GameEvent e, Business b, Game game)
+        public static GameEvent WithPizzo(GameEvent e, Business b, Game game)
         {
             var org = game.Org;
             var p = game.Player;

@@ -184,6 +184,7 @@ namespace OSistema.Pawns
         public long LastInputTick = -1000000;
         public Vector2? AimPoint;        // where the player is aiming with the mouse
         public float Stamina = 1f;       // the player's breath for running
+        public bool Winded;              // ran out of breath: no running until it comes back
         public Vector2 Velocity;         // the player's scooter keeps its momentum
         public bool StolenScooter;       // riding someone else's, for Nanninella
         public float Heading;            // the player's scooter: degrees, 0 = north, positive = turning left

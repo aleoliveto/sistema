@@ -172,7 +172,10 @@ namespace OSistema.UI
                 Ui.Text(p.IsBoss ? $"<color=#E8C26A>{p.DisplayName}</color>" : $"<b>{p.DisplayName}</b>", names);
                 Ui.Text(ShortStatus(p, now), names, "small", "muted");
                 var pawn = p;
-                Ui.Btn(RoleLabel(p.Role), Do(() => CycleRole(pawn)), row, "btn--small").style.width = 120;
+                Button roleBtn = null;
+                roleBtn = Ui.Btn(RoleLabel(p.Role) + "  ▾", () => ShowRoleMenu(pawn, roleBtn), row, "btn--small");
+                roleBtn.style.width = 150;
+                roleBtn.SetEnabled(!p.Controlled);
                 Ui.Btn("−", Do(() => pawn.Wage = Mathf.Max(0, pawn.Wage - 10)), row, "btn--small");
                 Ui.Text($"€{p.Wage}", row).style.width = 44;
                 Ui.Btn("+", Do(() => pawn.Wage = Mathf.Min(1000, pawn.Wage + 10)), row, "btn--small");

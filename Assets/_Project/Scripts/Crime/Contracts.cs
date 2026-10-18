@@ -140,8 +140,8 @@ namespace OSistema.Crime
                 }
                 if (added > 0) Version++;
             }
-            // Don Saverio always needs eyes on the corner at night.
-            if ((first || hour == 16) && !HasOffer(ContactBook.Saverio))
+            // Don Saverio always needs eyes on the corner, from the afternoon into the night.
+            if ((first || hour == 15 || hour == 18 || hour == 21) && !HasOffer(ContactBook.Saverio) && !All.Exists(c => c.Giver == ContactBook.Saverio && c.State == ContractState.Active))
             {
                 var c = Generate(game, ContactBook.Saverio);
                 if (c != null)
@@ -240,18 +240,21 @@ namespace OSistema.Crime
 
         static Vector2Int? CornerNear(Game game, Vector2Int around)
         {
+            // A spot on the pavement a little way from Don Saverio, ideally where it meets a road.
             var map = game.Map;
-            foreach (var c in GridUtil.CellsAround(around, 10))
+            var best = new List<Vector2Int>();
+            var any = new List<Vector2Int>();
+            foreach (var c in GridUtil.CellsAround(around, 14))
             {
                 if ((c - around).sqrMagnitude < 9 || !map.InBounds(c) || !map.IsPassable(c) || map.GetBuilding(c.x, c.y) != null) continue;
-                if (map.GetTerrain(c.x, c.y) != TerrainType.Sidewalk) continue;
-                // A corner: open street on two sides.
-                int open = 0;
+                var t = map.GetTerrain(c.x, c.y);
+                if (t != TerrainType.Sidewalk && t != TerrainType.Paving) continue;
+                any.Add(c);
                 foreach (var n in new[] { c + Vector2Int.left, c + Vector2Int.right, c + Vector2Int.up, c + Vector2Int.down })
-                    if (map.InBounds(n) && map.GetTerrain(n.x, n.y) == TerrainType.Road) open++;
-                if (open >= 1 && game.Rng.NextDouble() < 0.3) return c;
+                    if (map.InBounds(n) && map.GetTerrain(n.x, n.y) == TerrainType.Road) { best.Add(c); break; }
             }
-            return null;
+            var pool = best.Count > 0 ? best : any;
+            return pool.Count > 0 ? pool[game.Rng.Next(pool.Count)] : (Vector2Int?)null;
         }
 
         static Vector2Int? DoorNear(Game game, Vector2Int around, int min, int max)

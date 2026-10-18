@@ -11,7 +11,7 @@ namespace OSistema.Pawns
         public const float ExhaustedBelow = 0.1f;
 
         // Per-tick rates. A day is 60,000 ticks.
-        const float FoodDecay = 1f / 48000f;       // empty in ~0.8 days
+        const float FoodDecay = 1f / 105000f;      // empty in ~1.75 days: two good meals a day keep you going
         const float RestDecay = 1f / 56000f;       // awake for ~0.9 days
         const float RestInBed = 1f / 18000f;       // a full night's sleep is ~7 hours
         const float RestOnFloor = 1f / 26000f;

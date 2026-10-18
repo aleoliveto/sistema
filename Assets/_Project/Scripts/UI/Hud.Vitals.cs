@@ -81,13 +81,13 @@ namespace OSistema.UI
             vitals.Show(p != null);
             if (p == null) return;
             vitalsName.text = "";
-            vitalsState.text = (p.Riding ? "ON THE SCOOTER" : game.Org.DealingCorner != null ? "DEALING" : game.Org.CarriedDg > 0 ? $"CARRYING {game.Org.CarriedDg / 10} G" : "")
+            vitalsState.text = (p.Riding ? "ON THE SCOOTER" : game.Org.DealingCorner != null ? "DEALING" : game.Org.CarriedDg > 0 ? $"CARRYING {game.Org.CarriedDg / 10} G" : p.Carrying != null ? $"CARRYING {p.Carrying.ToUpper()}" : "")
                 + (p.Autopilot ? "  · AUTO" : "");
             float health = 1f - Mathf.Max(p.Health.BloodLoss / 0.6f, p.Health.Pain / 0.8f);
             vHealth.text = Pct(health);
             vFood.text = Pct(p.Needs.Food);
             vRest.text = Pct(p.Needs.Rest);
-            vBreath.text = Pct(p.Stamina);
+            vBreath.text = p.Winded ? "<color=#F07A6E>out of breath</color>" : Pct(p.Stamina);
 
             wanted.Show(game.Pursuit.Active);
             if (game.Pursuit.Active) Ui.SetFill(wantedFill, game.Pursuit.EscapeProgress);
