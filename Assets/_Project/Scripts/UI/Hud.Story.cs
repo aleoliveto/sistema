@@ -112,11 +112,20 @@ namespace OSistema.UI
         }
 
         bool devSoak;
+        const int SoakDays = 30;
 
         void RefreshModals()
         {
             if (devSoak)
             {
+                // Soak test: when the family falls or makes it past a month, note how it went and start another.
+                if (game.Org.GameOver || game.Clock.Day > SoakDays)
+                {
+                    Debug.Log($"[soak] END day {game.Clock.Day}, generation {game.Org.Generation}, " + (game.Org.GameOver ? "GAME OVER: " + game.Org.GameOverReason : "survived"));
+                    NewGameRequested?.Invoke(null);
+                    if (devPiazza) DevOpenPiazza();
+                    return;
+                }
                 // Soak test: answer every scene with its last choice, fold every paper, keep the clock running.
                 if (game.Events.Current != null) game.Events.Choose(game.Events.Current.Options.Count - 1, game);
                 if (PaperOpen) ClosePaper();

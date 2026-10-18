@@ -190,18 +190,45 @@ namespace OSistema.UI
             game?.Log.Add(on ? "Automatic movement on: left alone, he eats, sleeps and works by himself (Z or Settings to turn off)." : "Automatic movement off: he only moves when you move him.", Core.MessageKind.Info);
         }
 
+        bool devPiazza;
+
+        void DevOpenPiazza()
+        {
+            // Right next to a clan's corner, the worst place to be: their hostility climbs every day.
+            foreach (var rival in game.RivalSquares)
+            foreach (var c in OSistema.World.GridUtil.CellsAround(rival.Cell, 14))
+            {
+                var zone = game.Territory.ZoneAt(c);
+                if (zone == null || !game.Map.InBounds(c) || game.PlayerBase.Contains(c)) continue;
+                if (game.Map.GetBuilding(c) != null || game.Map.GetTerrain(c.x, c.y) == OSistema.World.TerrainType.Floor) continue;
+                if (System.Linq.Enumerable.Any(game.RivalSquares, s => (s.Cell - c).sqrMagnitude < 100)) continue;
+                game.Org.RestoreSquare(new Crime.DrugSquare { Cell = c, ZoneId = zone.Id }, game.Map);
+                Debug.Log($"[soak] dev piazza opened in {zone.Name}, next to the {game.Clans[rival.Clan].Name}");
+                return;
+            }
+        }
+
         void ShowTitleOnce()
         {
             if (titleShown) return;
             titleShown = true;
             // Developer switch: a file named dev_autoplay in the save folder skips the title (for testing).
             var dev = System.IO.Path.Combine(Application.persistentDataPath, "dev_autoplay");
+            Core.MessageLog.Trace = null;   // statics survive Play with domain reload off
             if (System.IO.File.Exists(dev))
             {
                 // "soak" in the file: run at top speed and answer every scene, to shake out errors.
                 string text = System.IO.File.ReadAllText(dev);
                 devSoak = text.Contains("soak");
-                if (devSoak && game != null) game.Ticks.SetSpeed(5);
+                if (devSoak && game != null)
+                {
+                    game.Ticks.SetSpeed(5);
+                    Application.runInBackground = true;   // keep going while the editor isn't in front
+                    Core.MessageLog.Trace = m => Debug.Log($"[soak] d{this.game?.Clock.Day} {this.game?.Clock.Hour:00}h | {m}");
+                }
+                // "piazza": the family starts with a piazza by the basso, so the clans have something to come for.
+                devPiazza = text.Contains("piazza");
+                if (devPiazza && game != null) DevOpenPiazza();
                 // "night" jumps to the evening, "rain" brings the rain: to look at the lighting.
                 if (text.Contains("night") && game != null) game.Ticks.Advance((int)(((21.5f - game.Clock.HourF + 24f) % 24f) * Core.GameClock.TicksPerHour));
                 if (text.Contains("rain") && game != null) game.Weather.ForceRain();

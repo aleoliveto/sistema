@@ -316,22 +316,64 @@ namespace OSistema.Crime
                 if (target.square != null) StartAssault(target.square, game);
             }
 
+            if (OperationActive(game) || !CanStrikeFamily(game)) return;
+
             // Your piazze: when they're angry enough, they come to take one.
-            if (!InTruce(game) && !OperationActive(game) && Hostility >= 55f && Soldiers >= 4 && game.Org.Squares.Count > 0 && game.Rng.NextDouble() < 0.04)
+            if (Hostility >= 55f && Soldiers >= 4 && game.Rng.NextDouble() < 0.04)
             {
                 var target = PickTargetSquare(game);
-                if (target != null) StartAssault(target, game);
+                if (target != null)
+                {
+                    StartAssault(target, game);
+                    StruckFamily(game);
+                    return;
+                }
             }
 
-            if (InTruce(game) || OperationActive(game) || game.Org.Squares.Count == 0) return;
             double roll = game.Rng.NextDouble();
-            if (Hostility >= HitHostility && roll < 0.05) StartHit(game);
-            else if (Hostility >= StesaHostility && roll < 0.05) StartStesa(game);
+            if (Hostility >= HitHostility && roll < 0.05) { if (StartHit(game)) StruckFamily(game); }
+            else if (Hostility >= StesaHostility && roll < 0.05) { if (StartStesa(game)) StruckFamily(game); }
+        }
+
+        // Blows against the family come one at a time across the city, with a breather in between,
+        // and a new boss gets to bury the old one first. Four clans striking at will wiped a family in days.
+        const long StruckCooldown = GameClock.TicksPerDay * 3 / 2;
+        const long CityCooldown = GameClock.TicksPerDay / 2;
+        const long SuccessionGrace = GameClock.TicksPerDay * 2;
+        long nextFamilyStrikeTick;
+        int generationSeen = -1;
+
+        bool CanStrikeFamily(Game game)
+        {
+            if (InTruce(game) || game.Org.Squares.Count == 0) return false;
+            long now = game.Ticks.TicksGame;
+            if (generationSeen != game.Org.Generation)
+            {
+                if (generationSeen >= 0) nextFamilyStrikeTick = System.Math.Max(nextFamilyStrikeTick, now + SuccessionGrace);
+                generationSeen = game.Org.Generation;
+            }
+            if (now < nextFamilyStrikeTick) return false;
+            // Someone (any clan) is already out for them: let that play out first.
+            foreach (var p in game.Pawns.Rivals)
+                if (p.IsPresent && Combat.CombatSystem.AfterFamily(p)) return false;
+            return true;
+        }
+
+        void StruckFamily(Game game)
+        {
+            long now = game.Ticks.TicksGame;
+            foreach (var c in game.Clans)
+                c.nextFamilyStrikeTick = System.Math.Max(c.nextFamilyStrikeTick, now + (c == this ? StruckCooldown : CityCooldown));
         }
 
         void OnNewDay(Game game)
         {
             atWar = Hostility >= HitHostility;
+            if (Id == 0 && MessageLog.Trace != null)
+            {
+                MessageLog.Trace("[day] crew " + game.Pawns.Crew.Count(p => p.IsPresent) + " present / " + game.Pawns.Crew.Count(p => !p.Dead && !p.Departed) + " alive, piazze " + game.Org.Squares.Count + ", rivals on map " + game.Pawns.Rivals.Count(p => p.IsPresent)
+                    + " | " + string.Join(" · ", game.Clans.Select(c => $"{c.Id}: host {c.Hostility:0} sold {c.Soldiers} sq {c.Squares.Count}{(c.Destroyed ? " DEAD" : "")}")));
+            }
 
             // Your piazze near their territory are an insult that grows every day.
             float drift = -3f;
@@ -556,7 +598,11 @@ namespace OSistema.Crime
                 var mine = new DrugSquare { Cell = sq.Cell, ZoneId = sq.ZoneId, Rival = true, OpenHour = 0, CloseHour = 0, Clan = Id };
                 Squares.Add(mine);
                 foreach (var p in Members(game))
-                    if (p.Mission == RivalMission.Assault && p.MissionSquare == sq) p.Mission = RivalMission.Leave;
+                    if (p.Mission == RivalMission.Assault && p.MissionSquare == sq)
+                    {
+                        p.Mission = RivalMission.Leave;
+                        p.AggressiveUntil = game.Ticks.TicksGame + 600;
+                    }
                 SpawnPusher(mine, game);
                 SpawnLookout(mine, game);
             }
@@ -571,10 +617,10 @@ namespace OSistema.Crime
         public void DebugHit(Game game) => StartHit(game);
         public void DebugStesa(Game game) => StartStesa(game);
 
-        void StartStesa(Game game)
+        bool StartStesa(Game game)
         {
             var target = PickTargetSquare(game);
-            if (target == null) return;
+            if (target == null) return false;
             var entrance = NearestEntrance(target.Cell, game);
             StesaInProgress = false;
             for (int i = 0; i < 3; i++)
@@ -582,9 +628,10 @@ namespace OSistema.Crime
                 var p = SpawnSoldier(entrance, RivalMission.Stesa, true, game);
                 p.MissionSquare = target;
             }
+            return true;
         }
 
-        void StartHit(Game game)
+        bool StartHit(Game game)
         {
             // Someone exposed: on a post, collecting, or anywhere outside the basso.
             Pawn target = null;
@@ -593,7 +640,7 @@ namespace OSistema.Crime
                 if (!p.CanAct || game.PlayerBase.Contains(p.Cell)) continue;
                 if (target == null || p.CurrentJob is PostJob || p.IsBoss) target = p;
             }
-            if (target == null) return;
+            if (target == null) return false;
 
             var entrance = NearestEntrance(target.Cell, game);
             int count = Hostility > 85f ? 4 : 3;
@@ -603,6 +650,7 @@ namespace OSistema.Crime
                 p.MissionTarget = target;
             }
             game.Log.Add($"Killers of the {Name} have been seen entering the rione. They're after {target.DisplayName}.", MessageKind.Bad, target.Cell);
+            return true;
         }
 
         DrugSquare PickTargetSquare(Game game)

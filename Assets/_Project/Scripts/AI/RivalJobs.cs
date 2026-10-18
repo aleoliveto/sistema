@@ -300,6 +300,7 @@ namespace OSistema.AI
             if (gone || held > HoldTicks || Pawn.Health.Pain > 0.45f)
             {
                 Pawn.Mission = RivalMission.Leave;
+                Pawn.AggressiveUntil = game.Ticks.TicksGame + 600;   // still edgy on the way out, not forever
                 return true;
             }
             if (walker == null)

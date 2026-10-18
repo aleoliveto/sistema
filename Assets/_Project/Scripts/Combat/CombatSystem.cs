@@ -101,12 +101,28 @@ namespace OSistema.Combat
             if (a.Controlled) return false;   // the player aims and fires himself
             if (a.Faction == Faction.Crew)
             {
-                // Bodyguards fight for the boss: anyone shooting, or anyone the boss is shooting at.
-                if (a.Role == CrewRole.Bodyguard && a.Armed) return b.IsAggressive(now) || now - LastPlayerShotTick < 900;
-                return a.Drafted || (a.Armed && (b.IsAggressive(now) || (a.OnOperationUntil > now && b.Faction == Faction.Rival)));
+                // A squad riding through to settle scores with another clan is not the crew's fight.
+                bool threat = b.IsAggressive(now) && AfterFamily(b);
+                // Bodyguards fight for the boss: anyone coming for the family, or anyone the boss is shooting at.
+                if (a.Role == CrewRole.Bodyguard && a.Armed) return threat || now - LastPlayerShotTick < 900;
+                return a.Drafted || (a.Armed && (threat || (a.OnOperationUntil > now && b.Faction == Faction.Rival)));
             }
-            return a.IsAggressive(now);
+            return a.IsAggressive(now) && AfterFamily(a);
         }
+
+        /// <summary>
+        /// Is this clan soldier out for the family: sent against it, or answering its shots (which turns him
+        /// into a hunter, see RivalClan.OnRivalAttacked)? Not one on his way to another clan's corner, nor
+        /// one riled up by another clan's shooting.
+        /// </summary>
+        public static bool AfterFamily(Pawn r) => r.Mission switch
+        {
+            RivalMission.Stesa => true,
+            RivalMission.Hit => r.MissionTarget == null || r.MissionTarget.Faction == Faction.Crew,
+            RivalMission.Assault => r.MissionSquare == null || !r.MissionSquare.Rival,
+            RivalMission.Leave => (r.MissionTarget != null && r.MissionTarget.Faction == Faction.Crew) || (r.MissionSquare != null && !r.MissionSquare.Rival),
+            _ => false,
+        };
 
         /// <summary>
         /// The player shoots (or swings, unarmed) towards a point. The bullet hits the first person
@@ -299,6 +315,8 @@ namespace OSistema.Combat
 
             OnAttacked(target, attacker, game, now);
             if (hit) Wound(target, melee, game, (target.Position - attacker.Position).normalized);
+            if (hit && target.Faction == Faction.Crew && MessageLog.Trace != null)
+                MessageLog.Trace($"[hit] {target.DisplayName}{(target.IsBoss ? " (boss)" : "")} hit by {attacker.Faction} clan {attacker.Clan} mission {attacker.Mission} target-square-rival {attacker.MissionSquare?.Rival}");
         }
 
         static void OnAttacked(Pawn target, Pawn attacker, Game game, long now)

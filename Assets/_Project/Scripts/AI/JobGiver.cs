@@ -43,7 +43,7 @@ namespace OSistema.AI
             float bestDist = 14f;
             foreach (var r in game.Pawns.Rivals)
             {
-                if (!r.CanAct || !r.IsAggressive(now)) continue;
+                if (!r.CanAct || !r.IsAggressive(now) || !Combat.CombatSystem.AfterFamily(r)) continue;
                 float d = (r.Position - pawn.Position).magnitude;
                 if (d < bestDist && Combat.CombatSystem.HasLineOfSight(game.Map, pawn.Cell, r.Cell))
                 {

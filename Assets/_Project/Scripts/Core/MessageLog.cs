@@ -34,9 +34,13 @@ namespace OSistema.Core
 
         public int Version { get; private set; }
 
+        /// <summary>Developer soak runs copy every message here (to the editor log), to read afterwards.</summary>
+        public static System.Action<string> Trace;
+
         public void Add(string text, MessageKind kind = MessageKind.Info, UnityEngine.Vector2Int? location = null)
         {
             Version++;
+            Trace?.Invoke(text);
             messages.Add(new Message(text, kind, ticks.TicksGame, location));
             if (messages.Count > MaxMessages) messages.RemoveAt(0);
         }
