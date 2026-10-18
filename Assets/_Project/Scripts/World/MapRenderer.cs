@@ -67,7 +67,10 @@ namespace OSistema.World
             overlay.sortingOrder = 1;
 
             gameObject.AddComponent<WorldLighting>().Init(g);
-            new GameObject("Props").AddComponent<PropLayer>().Init(map);
+            // A child of the map, so it goes when the map goes (a new game from the title builds a new one).
+            var props = new GameObject("Props");
+            props.transform.SetParent(transform, false);
+            props.AddComponent<PropLayer>().Init(map);
             map.CellChanged += OnCellChanged;
         }
 
