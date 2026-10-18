@@ -41,6 +41,8 @@ namespace OSistema.UI
             phoneLcd = Ui.Box("nokia__screen").Into(phoneWindow);
             phoneStatusLine = Ui.Text("", phoneLcd, "lcd", "lcd__status");
             var scroll = new ScrollView(ScrollViewMode.Vertical).Cls("lcd__body").Into(phoneLcd);
+            scroll.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
+            scroll.verticalScrollerVisibility = ScrollerVisibility.Hidden;   // an old phone has no scrollbar: the arrows scroll
             phoneLcdBody = scroll.contentContainer;
             var soft = Ui.Row(phoneLcd);
             soft.AddToClassList("lcd__soft");
@@ -151,6 +153,7 @@ namespace OSistema.UI
             {
                 phoneItems.Add(act);
                 l.Toggle("lcd__row--sel", index == phoneSel);
+                if (index == phoneSel) l.schedule.Execute(() => (phoneLcdBody.parent?.parent as ScrollView)?.ScrollTo(l));
                 l.RegisterCallback<ClickEvent>(_ => { phoneSel = index; PhoneSelect(); });
             }
             return l;
@@ -202,7 +205,8 @@ namespace OSistema.UI
                 {
                     LcdText("MESSAGES", "lcd__title");
                     if (phone.Messages.Count == 0) LcdText("No messages.");
-                    for (int i = phone.Messages.Count - 1; i >= 0; i--)
+                    // Newest at the top.
+                    for (int i = 0; i < phone.Messages.Count; i++)
                     {
                         var m = phone.Messages[i];
                         string mark = m.Open(now) ? "?" : !m.Read ? "•" : " ";
@@ -211,6 +215,8 @@ namespace OSistema.UI
                         var msg = m;
                         LcdRow($"{mark} {ShortName(m.From)}: {preview}", () => { phoneMsg = msg; msg.Read = true; PhoneGo(PhoneScreen.Message); });
                     }
+                    if (phone.Messages.Count > 0)
+                        LcdRow("× Delete all read", () => { game.Phone.DeleteRead(game.Ticks.TicksGame); phoneSel = 0; RenderPhone(); });
                     phoneSoftL.text = "Read";
                     phoneSoftR.text = "Back";
                     break;
@@ -240,7 +246,12 @@ namespace OSistema.UI
                         if (m.Criminal && phone.Tapped(now)) LcdText("(the line clicks)", "lcd__small");
                     }
                     else if (m.Answer >= 0 && m.Answer < m.Choices.Count) LcdText($"→ {m.Choices[m.Answer]}", "lcd__small");
-                    phoneSoftL.text = m.Open(now) ? "Reply" : "";
+                    if (!m.Open(now))
+                    {
+                        var del = m;
+                        LcdRow("× Delete", () => { game.Phone.Delete(del); phoneMsg = null; PhoneGo(PhoneScreen.Inbox); });
+                    }
+                    phoneSoftL.text = m.Open(now) ? "Reply" : "Delete";
                     phoneSoftR.text = "Back";
                     break;
                 }

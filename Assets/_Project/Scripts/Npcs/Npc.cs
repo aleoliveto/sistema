@@ -244,13 +244,16 @@ namespace OSistema.Npcs
                         Leave(npc);
                         return;
                     }
-                    npc.Walker ??= new Walker(npc.Square.Cell, adjacent: true);
+                    // At the player's corner they come to him, wherever he's standing now.
+                    bool corner = npc.Square == game.Org.DealingCorner && game.Player != null;
+                    var goal = corner ? game.Player.Cell : npc.Square.Cell;
+                    if (npc.Walker == null || (corner && (npc.Walker.Target - goal).sqrMagnitude > 2)) npc.Walker = new Walker(goal, adjacent: true);
                     var status = npc.Walker.Tick(npc.Mover, 1f, game);
                     if (status == WalkStatus.Failed) Leave(npc);
                     else if (status == WalkStatus.Arrived)
                     {
                         npc.State = 1;
-                        npc.Timer = Patience;
+                        npc.Timer = corner ? Patience * 3 : Patience;
                     }
                     return;
                 }
@@ -263,7 +266,14 @@ namespace OSistema.Npcs
                     }
                     if (npc.Square == game.Org.DealingCorner)
                     {
-                        // At the player's corner: wait for him to hand it over (E).
+                        // At the player's corner: wait for him to hand it over (E). If he steps away, follow.
+                        var me = game.Player;
+                        if (me != null && (me.Position - npc.Mover.Position).sqrMagnitude > 2f * 2f)
+                        {
+                            npc.State = 0;
+                            npc.Walker = null;
+                            return;
+                        }
                         if (--npc.Timer <= 0)
                         {
                             game.Org.LoseCustomer(npc.Square, game);

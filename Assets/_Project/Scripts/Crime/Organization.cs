@@ -25,6 +25,9 @@ namespace OSistema.Crime
         const int MaxCustomers = 16; // shared by your piazze and the rivals'
 
         public float Respect = 10f;
+
+        /// <summary>Early-game steps the player has done once: the hints for them stop.</summary>
+        public readonly System.Collections.Generic.List<string> Learned = new System.Collections.Generic.List<string>();
         public readonly List<DrugSquare> Squares = new List<DrugSquare>();
         public readonly List<Business> Businesses = new List<Business>();
 

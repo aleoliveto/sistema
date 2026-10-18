@@ -7,6 +7,24 @@ namespace OSistema.Views
     {
         Npc npc;
         PersonRig rig;
+        Vector2 standLast;
+        bool faced;
+
+        Vector2 AwayFromWalls()
+        {
+            var map = OSistema.Core.GameRunner.CurrentMap;
+            if (map == null) return Vector2.down;
+            var c = npc.Mover.Cell;
+            var away = Vector2.zero;
+            for (int dy = -2; dy <= 2; dy++)
+            for (int dx = -2; dx <= 2; dx++)
+            {
+                if ((dx == 0 && dy == 0) || !map.InBounds(c.x + dx, c.y + dy)) continue;
+                if (!map.IsPassable(c.x + dx, c.y + dy)) away -= new Vector2(dx, dy) / (dx * dx + dy * dy);
+            }
+            return away.sqrMagnitude > 0.01f ? away.normalized : Vector2.down;
+        }
+
         void OnDestroy()
         {
             if (headlight != null) Destroy(headlight.gameObject);
@@ -42,8 +60,8 @@ namespace OSistema.Views
             {
                 case NpcKind.Police: rig.ApplyLook(OSistema.Pawns.Look.Police(n.Id)); break;
                 case NpcKind.Elder: rig.ApplyLook(n.Id % 2 == 0 ? OSistema.Pawns.Look.Woman(n.Id, old: true) : OSistema.Pawns.Look.Old(n.Id)); break;
-                case NpcKind.Child:
-                case NpcKind.Paramedic: break;
+                case NpcKind.Child: rig.ApplyLook(n.Id % 3 == 0 ? OSistema.Pawns.Look.Woman(n.Id) : OSistema.Pawns.Look.Young(n.Id)); break;   // drawn smaller
+                case NpcKind.Paramedic: rig.ApplyLook(new OSistema.Pawns.Look { Body = OSistema.Pawns.Look.Street + 4, Head = n.Id % 16, Hair = 0 }); break;
                 default: rig.ApplyLook(OSistema.Pawns.Look.Passerby(n.Id + 5000)); break;
             }
 
@@ -142,6 +160,13 @@ namespace OSistema.Views
             bool visible = FogOfWar.CanSee(npc.Mover.Position);
             rig.SetVisible(visible);
             if (scooter != null) scooter.enabled = visible;
+            // Shopkeepers, vendors and contacts standing at their spot look out at the street, not at the wall.
+            if ((npc.IsFixture || npc.ContactName != null) && (npc.Mover.Position - standLast).sqrMagnitude < 0.0001f)
+            {
+                if (!faced) { rig.LookTowards(AwayFromWalls()); faced = true; }
+            }
+            else faced = false;
+            standLast = npc.Mover.Position;
             rig.Update(npc.Mover.Position, false, Time.deltaTime);
 
             if (scooter != null)

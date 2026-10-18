@@ -134,6 +134,18 @@ namespace OSistema.Core
                 }
                 placed:;
             }
+            // Never two lamps side by side: thin them out to one every few cells along a wall.
+            for (int y = 0; y < Map.Height; y++)
+            for (int x = 0; x < Map.Width; x++)
+            {
+                if (Map.GetDecor(x, y) != MapDecor.WallLamp) continue;
+                for (int dy = -4; dy <= 4; dy++)
+                for (int dx = -4; dx <= 4; dx++)
+                {
+                    if ((dx == 0 && dy == 0) || !Map.InBounds(x + dx, y + dy)) continue;
+                    if ((dy > 0 || (dy == 0 && dx > 0)) && Map.GetDecor(x + dx, y + dy) == MapDecor.WallLamp) Map.SetDecor(x + dx, y + dy, MapDecor.None);
+                }
+            }
             foreach (var def in clutter)
             foreach (var c in new List<Vector2Int>(Map.PositionsOf(def)))
             {

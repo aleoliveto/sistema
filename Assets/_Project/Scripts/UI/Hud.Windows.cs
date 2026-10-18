@@ -54,6 +54,7 @@ namespace OSistema.UI
             bizTitle = Ui.Text("", head, "famiglia__title");
             bizBlurb = Ui.Text("", head, "small", "muted", "wrap");
             bizScroll = new ScrollView(ScrollViewMode.Vertical).Cls("window__body").Into(main);
+            bizScroll.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
             bizBody = bizScroll.contentContainer;
             businessWindow.Show(false);
 

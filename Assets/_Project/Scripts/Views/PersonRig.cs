@@ -168,6 +168,12 @@ namespace OSistema.Views
 
         public void SetArmed(bool armed) => gun.enabled = armed && body.enabled;
 
+        /// <summary>Turns to look a way (degrees from a direction) without raising a gun: for people standing about.</summary>
+        public void LookTowards(Vector2 dir)
+        {
+            if (dir.sqrMagnitude > 0.0001f) heading = Mathf.Atan2(-dir.x, dir.y) * Mathf.Rad2Deg;
+        }
+
         /// <summary>Faces a point (e.g. the target being shot at) instead of the walking direction.</summary>
         public void FaceTowards(Vector2 point)
         {

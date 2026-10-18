@@ -131,7 +131,8 @@ namespace OSistema.Views
                 sr.sprite = art;
                 sr.color = Color.white;
                 sr.transform.localRotation = Quaternion.Euler(0f, 0f, heading + 180f);
-                float len = 1.05f + model * 0.12f;
+                // Big enough to see under the rider: a step-through is longer than a person, a maxi much longer.
+                float len = 1.3f + model * 0.22f;
                 sr.transform.localScale = new Vector3(len, len, 1f);
                 // The rider sits on the seat, behind the middle: so the scooter sits forward of him.
                 var fwd = new Vector2(-Mathf.Sin(heading * Mathf.Deg2Rad), Mathf.Cos(heading * Mathf.Deg2Rad));

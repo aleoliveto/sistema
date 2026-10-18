@@ -18,6 +18,9 @@ namespace OSistema.Core
     {
         public Game Game { get; private set; }
 
+        /// <summary>The map in play, for views that need a look at their surroundings. Reset with each game.</summary>
+        public static OSistema.World.Map CurrentMap { get; private set; }
+
         Camera cam;
         Hud hud;
         PlayerController controller;
@@ -66,6 +69,7 @@ namespace OSistema.Core
         {
             StopGame();
             Game = game;
+            CurrentMap = game.Map;
 
             worldRoot = new GameObject("World").transform;
             var mapGo = new GameObject("Map");

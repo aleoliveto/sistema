@@ -20,7 +20,27 @@ namespace OSistema.Crime
         {
             if (p == null || !p.CanAct || DealingCorner != null || game.Stock.Product <= 0) return false;
             var t = game.Map.GetTerrain(p.Cell.x, p.Cell.y);
-            return (t == TerrainType.Sidewalk || t == TerrainType.Paving) && game.Territory.ZoneAt(p.Cell) != null;
+            if ((t != TerrainType.Sidewalk && t != TerrainType.Paving) || game.Territory.ZoneAt(p.Cell) == null) return false;
+            // Once the family runs a piazza, you deal there. Before that, on a street corner of your own turf.
+            if (Squares.Count > 0) return Squares.Exists(sq => (sq.Cell - p.Cell).sqrMagnitude <= 9);
+            return ControlsZone(game.Territory.ZoneAt(p.Cell), game) && IsCorner(game.Map, p.Cell);
+        }
+
+        /// <summary>A crossing: open ground in at least three directions.</summary>
+        static bool IsCorner(Map map, Vector2Int c)
+        {
+            int open = 0;
+            foreach (var d in new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right })
+            {
+                bool clear = true;
+                for (int k = 1; k <= 3 && clear; k++)
+                {
+                    var n = c + d * k;
+                    clear = map.InBounds(n) && map.IsPassable(n) && map.GetTerrain(n.x, n.y) != TerrainType.Floor;
+                }
+                if (clear) open++;
+            }
+            return open >= 3;
         }
 
         public void StartDealing(Game game)

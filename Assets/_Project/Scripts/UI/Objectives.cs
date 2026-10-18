@@ -58,55 +58,56 @@ namespace OSistema.UI
 
             if (job != null) return Go(Contracts.StepGoal(job), Mover.CellCenter(Contracts.StepTarget(job)));
 
-            var saverio = game.Contacts.ByName(ContactBook.Saverio);
-            if (saverio != null && saverio.Present && game.Contacts.HasWork(saverio, game) && hour >= 16)
-                return Go("Don Saverio needs a lookout tonight", saverio.Position);
-
-            var totonno = game.Contacts.ByName(ContactBook.Totonno);
-            if (s.Cigarettes > 0 && totonno != null && totonno.Present && org.TotonnoWants(game) > 0)
-                return Go($"Sell your {s.Cigarettes} packs of ROSSE to Zio Totonno", totonno.Position);
-
-            bool bagger = false, roller = false;
-            foreach (var c in game.Pawns.Crew)
-            {
-                if (!c.IsPresent || c.Controlled) continue;
-                if (c.Role == CrewRole.Bagger) bagger = true;
-                if (c.Role == CrewRole.Roller) roller = true;
-            }
-            if (s.BulkDg >= 2 && s.Baggies > 0 && !bagger)
-                return StationOrBuy(game, p.Cell, BuildingDefs.BaggingTable, "Cut and bag the product at the bagging table");
-            if (s.BulkDg >= 2 && s.Baggies <= 0)
-                return Shop(game, p.Cell, ShopKind.Salumeria, "Buy small bags at the salumeria");
-
-            if (org.CanMakePack(game) && s.TobaccoG >= Prices.TobaccoPerPack && !roller)
-                return StationOrBuy(game, p.Cell, BuildingDefs.RollingTable, "Roll a pack of ROSSE at the rolling table");
-            if (s.TobaccoG < Prices.TobaccoPerPack || s.Papers < 20)
-            {
-                var g = Shop(game, p.Cell, ShopKind.Tabaccheria, "Buy tobacco and papers at the tabaccaio");
-                if (g.Target.HasValue && game.Stock.Cash + game.Stock.Clean >= Prices.TobaccoPer100g) return g;
-            }
-            var nanni = game.Contacts.ByName(ContactBook.Nanninella);
-            if (s.EmptyPacks <= 0 && nanni != null && nanni.Present && s.Cash >= Prices.EmptyPacks20)
-                return Go("Buy empty ROSSE packs from Nanninella", nanni.Position);
-
-            if (org.SupplierIntroduced && s.BulkDg < 2 && org.CarriedDg == 0)
+            // The supplier: a serious run, always marked.
+            if (org.SupplierIntroduced && s.BulkDg < 2 && s.Product < 10 && org.CarriedDg == 0)
             {
                 var tore = game.Contacts.ByName(ContactBook.Supplier);
                 if (tore != null && tore.Present && s.Cash + s.Clean >= Prices.Etto) return Go("Buy product from Zì Tore", tore.Position);
             }
 
-            Contact best = null;
-            float bestD = float.MaxValue;
-            foreach (var c in game.Contacts.All)
-            {
-                if (!c.Present || !game.Contacts.HasWork(c, game)) continue;
-                float d = (c.Position - p.Position).sqrMagnitude;
-                if (d < bestD) { bestD = d; best = c; }
-            }
-            if (best != null) return Go($"{best.Name} has work for you", best.Position);
+            // First steps, as a tutorial: each hint shows until you've done it once, then never again.
+            var learn = Tutorial(game, p, org, s);
+            if (learn.HasValue) return learn.Value;
 
-            if (hour >= 22 || hour < 6) return Go("Go home and sleep", Home(game));
-            return new Goal { Text = "Walk the rione. Someone always needs something." };
+            // Nothing serious going on: no marker. The Taccuino (J) says who has work.
+            if (hour >= 23 || hour < 5) return new Goal { Text = "Late. Home and bed, when you're done." };
+            return new Goal { Text = "" };
+        }
+
+        // Hints shown at the moment, so that when one is done it's remembered and dropped.
+        static readonly System.Collections.Generic.HashSet<string> shown = new System.Collections.Generic.HashSet<string>();
+
+        static Goal? Tutorial(Game game, Pawn p, Organization org, Stock s)
+        {
+            Goal? Step(string key, bool needed, System.Func<Goal> goal)
+            {
+                if (org.Learned.Contains(key)) return null;
+                if (needed)
+                {
+                    shown.Add(key);
+                    var g = goal();
+                    return g.Target.HasValue || !string.IsNullOrEmpty(g.Text) ? g : (Goal?)null;
+                }
+                // It was being asked for and now it isn't: done once, learned.
+                if (shown.Remove(key)) org.Learned.Add(key);
+                return null;
+            }
+
+            bool roller = false, bagger = false;
+            foreach (var c in game.Pawns.Crew)
+            {
+                if (!c.IsPresent || c.Controlled) continue;
+                roller |= c.Role == CrewRole.Roller;
+                bagger |= c.Role == CrewRole.Bagger;
+            }
+            var totonno = game.Contacts.ByName(ContactBook.Totonno);
+            var nanni = game.Contacts.ByName(ContactBook.Nanninella);
+            return Step("tobacco", s.TobaccoG < Prices.TobaccoPerPack || s.Papers < 20, () => Shop(game, p.Cell, ShopKind.Tabaccheria, "Buy tobacco and papers at the tabaccaio"))
+                ?? Step("packs", s.EmptyPacks <= 0 && nanni != null && nanni.Present, () => Go("Buy empty ROSSE packs from Nanninella", nanni.Position))
+                ?? Step("roll", s.Cigarettes == 0 && org.CanMakePack(game) && s.TobaccoG >= Prices.TobaccoPerPack && !roller, () => StationOrBuy(game, p.Cell, BuildingDefs.RollingTable, "Roll a pack of ROSSE at the rolling table"))
+                ?? Step("sell", s.Cigarettes > 0 && totonno != null && totonno.Present && org.TotonnoWants(game) > 0, () => Go($"Sell your packs of ROSSE to Zio Totonno", totonno.Position))
+                ?? Step("bags", s.BulkDg >= 2 && s.Baggies <= 0, () => Shop(game, p.Cell, ShopKind.Salumeria, "Buy small bags at the salumeria"))
+                ?? Step("bag", s.BulkDg >= 2 && s.Baggies > 0 && !bagger, () => StationOrBuy(game, p.Cell, BuildingDefs.BaggingTable, "Cut and bag the product at the bagging table"));
         }
 
         static Goal Go(string text, Vector2 at) => new Goal { Text = text, Target = at };

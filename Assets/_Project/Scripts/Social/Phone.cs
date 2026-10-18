@@ -108,6 +108,11 @@ namespace OSistema.Social
             return m;
         }
 
+        public void Delete(PhoneMessage m) => S.Messages.Remove(m);
+
+        /// <summary>Clears the read messages that don't need an answer any more.</summary>
+        public void DeleteRead(long now) => S.Messages.RemoveAll(m => m.Read && !m.Open(now));
+
         public void MarkAllRead()
         {
             foreach (var m in S.Messages) m.Read = true;

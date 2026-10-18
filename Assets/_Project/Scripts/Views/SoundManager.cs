@@ -32,8 +32,12 @@ namespace OSistema.Views
             bool riding = p != null && p.Riding && game.Ticks.Speed > 0;
             if (riding && !engineSource.isPlaying) engineSource.Play();
             float speed = riding ? p.Velocity.magnitude / 11.7f : 0f;
-            engineSource.pitch = Mathf.Lerp(engineSource.pitch, 0.75f + 1.1f * speed, Time.unscaledDeltaTime * 4f);
-            engineSource.volume = Mathf.MoveTowards(engineSource.volume, riding ? 0.16f + 0.1f * speed : 0f, Time.unscaledDeltaTime);
+            // A 50cc buzzes thin and quiet; the maxi growls lower and louder.
+            int model = riding && !p.StolenScooter ? Mathf.Clamp(game.Stock.ScooterModel, 0, 3) : 0;
+            float basePitch = 1.05f - 0.13f * model;
+            engineSource.pitch = Mathf.Lerp(engineSource.pitch, basePitch * (0.8f + 0.9f * speed), Time.unscaledDeltaTime * 4f);
+            float loud = 0.07f + 0.045f * model;
+            engineSource.volume = Mathf.MoveTowards(engineSource.volume, riding ? loud + 0.06f * speed : 0f, Time.unscaledDeltaTime);
             if (!riding && engineSource.volume <= 0.001f && engineSource.isPlaying) engineSource.Stop();
         }
 
@@ -161,7 +165,7 @@ namespace OSistema.Views
                 if (!FogOfWar.CanSee(npc.Mover.Position)) continue;
                 if ((npc.Mover.Position - (Vector2)cam.transform.position).magnitude > cam.orthographicSize * 0.9f) continue;
                 heardScooters.Add(npc.Id);
-                Play(AudioSynth.Scooter, npc.Mover.Position, 0.1f);
+                Play(AudioSynth.Scooter, npc.Mover.Position, 0.06f);
             }
             if (heardScooters.Count > 200) heardScooters.Clear();
         }

@@ -30,6 +30,7 @@ namespace OSistema.UI
             Ui.Box("spacer").Into(header);
             Ui.Btn("✕", () => ToggleWindow(Window.Jobs), header, "btn--small");
             jobsScroll = new ScrollView(ScrollViewMode.Vertical).Cls("window__body").Into(jobsWindow);
+            jobsScroll.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
             jobsBody = jobsScroll.contentContainer;
             jobsWindow.Show(false);
         }

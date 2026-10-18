@@ -39,6 +39,28 @@ namespace OSistema.AI
             return true;
         }
 
+        /// <summary>Who to send on a job: the free crew, with what they're good at.</summary>
+        static GameEvent SendPicker(Contract job, Pawn boss, Game game)
+        {
+            var e = new GameEvent
+            {
+                Id = "send_picker",
+                Title = $"Who goes? · {job.Title}",
+                English = "Pick one of the boys. He goes and does it on his own.",
+                Body = $"€{job.Reward} · respect +{job.RespectReward:0.#} · risk: {job.Risk}",
+            };
+            foreach (var c in game.Pawns.Crew)
+            {
+                if (c == boss || c.Controlled || !c.CanAct || game.Contracts.ActiveFor(c) != null) continue;
+                var crew = c;
+                e.Option($"{crew.DisplayName} · {crew.CurrentJob?.Label ?? "free"}", $"Intimidation {crew.IntimidationSkill} · awareness {crew.AwarenessSkill} · shooting {crew.ShootingSkill} · loyalty {crew.Loyalty:0}", g =>
+                {
+                    if (!g.Contracts.Assign(job, crew, g, out var error)) g.Log.Add(error, MessageKind.Bad);
+                });
+            }
+            return e.Option("Nobody", "", g => { });
+        }
+
         public static GameEvent Card(Contact contact, Pawn pawn, Game game)
         {
             if (contact.Name == ContactBook.Supplier) return SupplierCard(contact, game);
@@ -61,18 +83,10 @@ namespace OSistema.AI
                 {
                     if (!g.Contracts.Assign(job, pawn, g, out var error)) g.Log.Add(error, MessageKind.Bad);
                 }, g => !busy && pawn.CanAct);
-                // Or hand it to one of your boys: they go and do it on their own.
-                int sent = 0;
-                foreach (var c in game.Pawns.Crew)
-                {
-                    if (c == pawn || c.Controlled || !c.CanAct || game.Contracts.ActiveFor(c) != null || sent >= 3) continue;
-                    var crew = c;
-                    sent++;
-                    e.Option($"    …or send {crew.Nickname}", $"{crew.DisplayName} does it on his own. Same pay and respect for the family; he learns from it.", g =>
-                    {
-                        if (!g.Contracts.Assign(job, crew, g, out var error)) g.Log.Add(error, MessageKind.Bad);
-                    });
-                }
+                // Or hand it to one of your boys: one choice, then pick who.
+                int free = game.Pawns.Crew.Count(c => c != pawn && !c.Controlled && c.CanAct && game.Contracts.ActiveFor(c) == null);
+                if (free > 0)
+                    e.Option($"    …or send someone ({free} free) ▸", "Pick who goes. Same pay and respect for the family; he learns from it.", g => g.Events.Raise(SendPicker(job, pawn, g)));
             }
             // Some contacts trade as well as giving work.
             if (contact.Name == ContactBook.Totonno && game.Stock.Cigarettes > 0 && game.Org.TotonnoWants(game) > 0)

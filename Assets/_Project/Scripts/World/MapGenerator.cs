@@ -631,6 +631,15 @@ namespace OSistema.World
 
         // ---------- Street furniture ----------
 
+        /// <summary>Another wall lamp within a few cells: lamps are spaced along a lane, not bunched.</summary>
+        static bool LampNear(Map map, int x, int y)
+        {
+            for (int dy = -5; dy <= 5; dy++)
+            for (int dx = -5; dx <= 5; dx++)
+                if (map.InBounds(x + dx, y + dy) && map.GetDecor(x + dx, y + dy) == MapDecor.WallLamp) return true;
+            return false;
+        }
+
         void DecorateStreets(Map map, List<RectInt> quarters)
         {
             // Lamps and parked scooters along the pavements of the main roads.
@@ -656,7 +665,7 @@ namespace OSistema.World
                 {
                     double r = rng.NextDouble();
                     if (r < 0.012) map.SetDecor(x, y, MapDecor.Shrine);
-                    else if (r < 0.085) map.SetDecor(x, y, MapDecor.WallLamp);
+                    else if (r < 0.085 && !LampNear(map, x, y)) map.SetDecor(x, y, MapDecor.WallLamp);
                 }
                 else if (b == null && map.GetTerrain(x, y) == TerrainType.Sidewalk && NextToWall(map, x, y) && !NextToDoor(map, x, y))
                 {

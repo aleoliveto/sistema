@@ -932,3 +932,13 @@
 .nokia__digit { font-size: 13px; color: #E6E9EC; -unity-font-style: bold; }
 .nokia__letters { font-size: 7px; color: #9AA0A6; margin-left: 3px; }
 .shop__pic { width: 44px; height: 56px; margin-right: 8px; -unity-background-scale-mode: scale-to-fit; }
+
+/* ---------- Scrollbars: a thin gold line, no arrows, no track ---------- */
+.unity-scroller--vertical { width: 6px; margin-left: 2px; }
+.unity-scroller--horizontal { height: 0; display: none; }
+.unity-scroller .unity-repeat-button { display: none; width: 0; height: 0; }
+.unity-scroller .unity-slider { margin: 0; }
+.unity-scroller--vertical .unity-slider { margin-top: 0; margin-bottom: 0; }
+.unity-scroller .unity-base-slider__tracker { background-color: rgba(255, 255, 255, 0.04); border-width: 0; border-radius: 3px; }
+.unity-scroller .unity-base-slider__dragger { background-color: rgba(232, 194, 106, 0.45); border-width: 0; border-radius: 3px; width: 6px; left: 0; margin: 0; }
+.unity-scroller .unity-base-slider__dragger:hover { background-color: rgba(232, 194, 106, 0.75); }

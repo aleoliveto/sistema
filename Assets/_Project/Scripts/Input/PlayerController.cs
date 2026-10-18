@@ -818,7 +818,9 @@ namespace OSistema.Input
             if (job != null && !(p.CurrentJob is ContractJob))
             {
                 var at = Contracts.StepTarget(job);
-                if ((Mover.CellCenter(at) - p.Position).sqrMagnitude < 2.4f * 2.4f)
+                // Only right at the doorstep, from outside: a step away and the door is yours again.
+                bool outside = game.Map.GetTerrain(p.Cell.x, p.Cell.y) != TerrainType.Floor;
+                if ((Mover.CellCenter(at) - p.Position).sqrMagnitude < 1.6f * 1.6f && (outside || job.Kind == ContractKind.Debt))
                 {
                     if (job.Kind == ContractKind.Debt)
                         return new Action { Label = "Knock on the door", Do = () => game.Events.Raise(Story.StreetScenes.Knock(job, p, game)) };

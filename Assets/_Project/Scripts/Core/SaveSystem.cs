@@ -55,7 +55,7 @@ namespace OSistema.Core
                 meals = game.Stock.Meals,
                 medicine = game.Stock.Medicine,
                 product = game.Stock.Product,
-                respect = game.Org.Respect,
+                respect = game.Org.Respect, learned = game.Org.Learned.ToArray(),
                 pendingOrderUnits = game.Org.PendingOrderUnits,
                 pendingOrderDay = game.Org.PendingOrderDay,
                 lastPaydayWeek = game.Org.LastPaydayWeek,
@@ -164,6 +164,8 @@ namespace OSistema.Core
             game.Stock.Cash = data.cash;
             game.Stock.Product = data.product;
             game.Org.Respect = data.respect;
+            game.Org.Learned.Clear();
+            if (data.learned != null) game.Org.Learned.AddRange(data.learned);
             game.Org.PendingOrderUnits = data.pendingOrderUnits;
             game.Org.PendingOrderDay = data.pendingOrderDay;
             game.Org.LastPaydayWeek = data.lastPaydayWeek;
@@ -376,6 +378,7 @@ namespace OSistema.Core
             public int baseX, baseY, baseW, baseH;
             public int cash, groceries, meals, medicine, product;
             public float respect;
+            public string[] learned;
             public PhoneState phone;
             public FavourState favours;
             public InformantState informants;
