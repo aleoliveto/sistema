@@ -23,6 +23,7 @@ namespace OSistema.Story
             public string Name, Note;
             public int Price;
             public System.Action<Game> Give;
+            public BuildingDef Def;   // furniture: shows how many are in storage
         }
 
         /// <summary>What's on the shelves, for the checkout.</summary>
@@ -34,6 +35,27 @@ namespace OSistema.Story
                 list.Add(new Item { Name = "Loose tobacco, 100 g", Note = "seven packs' worth", Price = Prices.TobaccoPer100g, Give = g => g.Stock.TobaccoG += 100 });
                 list.Add(new Item { Name = "Papers and filters ×200", Note = "ten packs' worth", Price = Prices.Papers200, Give = g => g.Stock.Papers += 200 });
             }
+            else if (shop.Kind == ShopKind.Mobili)
+            {
+                foreach (var (def, note) in Furniture)
+                    list.Add(new Item { Name = def.Label, Note = note, Price = BuildingDef.CostOf(def), Def = def, Give = g => g.Stock.Store(def) });
+            }
+            else if (shop.Kind == ShopKind.Lusso)
+            {
+                list.Add(new Item { Name = "Gold chain", Note = "worn on the chest · +3 respect", Price = 450, Give = g => { if (g.Player != null) g.Player.Look.Neck = 0; g.Org.Respect = UnityEngine.Mathf.Min(100f, g.Org.Respect + 3f); } });
+                list.Add(new Item { Name = "Gold watch", Note = "people notice the wrist · +6 respect", Price = 1400, Give = g => g.Org.Respect = UnityEngine.Mathf.Min(100f, g.Org.Respect + 6f) });
+                list.Add(new Item { Name = "Earrings for Mammà", Note = "the crew sees you look after family · +5 loyalty", Price = 300, Give = g => { foreach (var c in g.Pawns.Crew) if (!c.Dead) c.Loyalty = UnityEngine.Mathf.Min(100f, c.Loyalty + 5f); } });
+                list.Add(new Item { Name = "A gift for the parish", Note = "a silver candlestick · +2 respect", Price = 250, Give = g => g.Org.Respect = UnityEngine.Mathf.Min(100f, g.Org.Respect + 2f) });
+            }
+            else if (shop.Kind == ShopKind.Farmacia)
+            {
+                list.Add(new Item { Name = "Medicine", Note = "patches up a wound", Price = Prices.Medicine, Give = g => g.Stock.Medicine += 1 });
+                list.Add(new Item { Name = "Small food bags ×100", Note = "the chemist sells them too", Price = Prices.Baggies100 + 2, Give = g => g.Stock.Baggies += 100 });
+            }
+            else if (shop.Kind == ShopKind.Macelleria)
+            {
+                list.Add(new Item { Name = "Meat and sausages", Note = "cooks three meals", Price = Prices.Groceries * 2, Give = g => g.Stock.Groceries += 3 });
+            }
             else
             {
                 list.Add(new Item { Name = "Small food bags ×100", Note = "for the doses", Price = Prices.Baggies100, Give = g => g.Stock.Baggies += 100 });
@@ -41,6 +63,26 @@ namespace OSistema.Story
             }
             return list;
         }
+
+        /// <summary>What the Mobilificio has on the floor.</summary>
+        static readonly (BuildingDef, string)[] Furniture =
+        {
+            (BuildingDefs.Bed, "a bed of one's own"),
+            (BuildingDefs.Table, "cover in a firefight, too"),
+            (BuildingDefs.PlasticChair, "for the vicolo"),
+            (BuildingDefs.Stove, "cook groceries into meals"),
+            (BuildingDefs.Pantry, "meals and supplies"),
+            (BuildingDefs.Fridge, "cold beer"),
+            (BuildingDefs.KitchenCounter, "a proper kitchen"),
+            (BuildingDefs.Sofa, "to collapse on"),
+            (BuildingDefs.Armchair, "for the boss"),
+            (BuildingDefs.Television, "Napoli on Sunday: morale"),
+            (BuildingDefs.Wardrobe, "for the good suit"),
+            (BuildingDefs.Rug, "makes a home nicer"),
+            (BuildingDefs.Plant, "a bit of green"),
+            (BuildingDefs.Safe, "where the money sleeps"),
+            (BuildingDefs.HomeShrine, "the Madonna watches over"),
+        };
 
         /// <summary>True when there's pizzo business to do with this shop in person.</summary>
         public static bool PizzoActionable(Business b, Game game)

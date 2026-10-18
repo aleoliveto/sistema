@@ -6,7 +6,7 @@ namespace OSistema.World
 
     public enum PlaceMode { Single, Outline, Fill }
 
-    public enum ShopKind { None, Pizzeria, Salumeria, Farmacia, Bar, Macelleria, Tabaccheria }
+    public enum ShopKind { None, Pizzeria, Salumeria, Farmacia, Bar, Macelleria, Tabaccheria, Mobili, Lusso }
 
     public static class TerrainDefs
     {
@@ -66,9 +66,12 @@ namespace OSistema.World
         {
             ["wall"] = 15, ["door"] = 50, ["bed"] = 150, ["table"] = 100, ["stove"] = 300, ["pantry"] = 150, ["bunker"] = 2000,
             ["sofa"] = 300, ["armchair"] = 150, ["tv"] = 400, ["wardrobe"] = 200, ["kitchen_counter"] = 250, ["fridge"] = 350,
-            ["plant"] = 40, ["rug"] = 120, ["safe"] = 600, ["home_shrine"] = 100,
+            ["plant"] = 40, ["rug"] = 120, ["safe"] = 600, ["home_shrine"] = 100, ["plastic_chair"] = 15,
             ["bagging_table"] = 60, ["rolling_table"] = 35,
         };
+
+        /// <summary>Walls, doors and the bunker are building work, paid where they go. Everything else is bought in a shop and kept in storage.</summary>
+        public static bool BuiltInPlace(BuildingDef d) => d != null && (d.Id == "wall" || d.Id == "door" || d.Id == "bunker");
 
         public static int CostOf(BuildingDef d) => d != null && Costs.TryGetValue(d.Id, out var c) ? c : 0;
     }
@@ -214,6 +217,19 @@ namespace OSistema.World
         public static readonly BuildingDef Safe = Furniture("safe", "Safe", new Color32(70, 74, 80, 255), 0.5f, passable: false, cover: true);
         public static readonly BuildingDef HomeShrine = Furniture("home_shrine", "Home shrine", new Color32(70, 110, 190, 255), 2.5f, passable: false);
 
+        // ---- More shops ----
+        public static readonly BuildingDef MobiliCounter = new BuildingDef
+        {
+            Id = "mobili_counter", Label = "Mobilificio", Passable = false, WorkToBuild = 600,
+            Color = new Color32(150, 104, 66, 255), Shop = ShopKind.Mobili,
+        };
+
+        public static readonly BuildingDef LussoCounter = new BuildingDef
+        {
+            Id = "lusso_counter", Label = "Gioielleria", Passable = false, WorkToBuild = 600,
+            Color = new Color32(90, 190, 200, 255), Shop = ShopKind.Lusso,
+        };
+
         // ---- Workstations: where the money is made by hand ----
         public static readonly BuildingDef BaggingTable = Furniture("bagging_table", "Bagging table", new Color32(176, 170, 160, 255), 0f, passable: false, cover: true);
         public static readonly BuildingDef RollingTable = Furniture("rolling_table", "Rolling table", new Color32(150, 110, 70, 255), 0f, passable: false, cover: true);
@@ -239,7 +255,7 @@ namespace OSistema.World
             Tree, ParkedCar, ParkedScooter, Bench, Bin, StreetLamp, MarketStall, Shrine, Altar, Pew, Fountain, Rubble,
             Railing, HospitalDesk, PlasticChair,
             Sofa, Armchair, Television, Wardrobe, KitchenCounter, Fridge, Plant, Rug, Safe, HomeShrine,
-            BaggingTable, RollingTable,
+            BaggingTable, RollingTable, MobiliCounter, LussoCounter,
         };
 
         public static BuildingDef ById(string id)

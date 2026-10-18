@@ -86,6 +86,16 @@ namespace OSistema.AI
                 {
                     if (g.Org.Pay(Prices.EmptyPacks20, g, out var err)) g.Stock.EmptyPacks += 20; else g.Log.Add(err, MessageKind.Bad);
                 });
+                foreach (var table in new[] { BuildingDefs.RollingTable, BuildingDefs.BaggingTable })
+                {
+                    var t = table;
+                    int price = BuildingDef.CostOf(t);
+                    e.Option($"A {t.Label.ToLower()} · €{price}", $"Delivered to your storage ({game.Stock.StoredOf(t)} there now). Put it down from Build › Work.", g =>
+                    {
+                        if (g.Org.Pay(price, g, out var err)) { g.Stock.Store(t); g.Log.Add($"Nanninella's nephew brings a {t.Label.ToLower()} round. It's in storage.", MessageKind.Good); }
+                        else g.Log.Add(err, MessageKind.Bad);
+                    });
+                }
                 if (!game.Stock.DigitalScale)
                     e.Option($"A digital scale · €{Prices.DigitalScale}", "Weighs to a hundredth of a gram. Honest doses, faster baggers.", g =>
                     {

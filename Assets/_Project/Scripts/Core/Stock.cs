@@ -1,4 +1,5 @@
 using OSistema.Pawns;
+using OSistema.World;
 
 namespace OSistema.Core
 {
@@ -30,6 +31,23 @@ namespace OSistema.Core
         public bool DigitalScale, HeatSealer, RollingMachine;
         public float DoseQuality = 0.75f;   // how honest the doses are (0..1): short bags lose customers
         public float PackQuality = 0.75f;   // how good the cigarettes are: sets the price
+
+        // Furniture bought and not yet put down, by BuildingDefs.All index.
+        public int[] Stored = new int[BuildingDefs.All.Length];
+
+        public int StoredOf(BuildingDef d)
+        {
+            int i = System.Array.IndexOf(BuildingDefs.All, d);
+            return i >= 0 && i < Stored.Length ? Stored[i] : 0;
+        }
+
+        public void Store(BuildingDef d, int n = 1)
+        {
+            int i = System.Array.IndexOf(BuildingDefs.All, d);
+            if (i < 0) return;
+            if (Stored.Length < BuildingDefs.All.Length) System.Array.Resize(ref Stored, BuildingDefs.All.Length);
+            Stored[i] = System.Math.Max(0, Stored[i] + n);
+        }
 
         // Only one pawn cooks and one shops at a time, so they don't all leave together.
         public Pawn Cook;

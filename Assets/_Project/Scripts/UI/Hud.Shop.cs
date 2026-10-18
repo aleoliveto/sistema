@@ -29,9 +29,14 @@ namespace OSistema.UI
             Ui.Text(shop.Name, band, "card__title");
             var body = Ui.Box("card__body").Into(card);
             var s = game.Stock;
-            Ui.Text(shop.Kind == ShopKind.Tabaccheria
-                ? $"At home: {s.TobaccoG} g tobacco, {s.Papers} papers."
-                : $"At home: {s.Baggies} bags, {s.Groceries} groceries, {s.Meals} meals.", body, "small", "muted");
+            Ui.Text(shop.Kind switch
+            {
+                ShopKind.Tabaccheria => $"At home: {s.TobaccoG} g tobacco, {s.Papers} papers.",
+                ShopKind.Mobili => "Delivered to your storage. Put it down from Build › Home, in any home you own.",
+                ShopKind.Lusso => $"Respect {game.Org.Respect:0}. People judge a man by his wrist.",
+                ShopKind.Farmacia => $"At home: {s.Medicine} medicine, {s.Baggies} bags.",
+                _ => $"At home: {s.Baggies} bags, {s.Groceries} groceries, {s.Meals} meals.",
+            }, body, "small", "muted", "wrap");
 
             var total = Ui.Text("", body, "bold");
             Button pay = null;
@@ -52,6 +57,8 @@ namespace OSistema.UI
                 col.style.width = 260;
                 Ui.Text($"<b>{items[i].Name}</b>", col);
                 Ui.Text($"€{items[i].Price} · {items[i].Note}", col, "small", "muted");
+                if (items[i].Def != null)
+                    Ui.Text($"{s.StoredOf(items[i].Def)} in storage", col, "tiny", "muted");
                 Ui.Box("spacer").Into(row);
                 var n = Ui.Text("0", null, "bold");
                 Ui.Btn("−", () => { if (qty[k] > 0) qty[k]--; n.text = qty[k].ToString(); Update(); }, row, "btn--small");

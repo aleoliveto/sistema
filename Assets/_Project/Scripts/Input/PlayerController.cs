@@ -357,6 +357,23 @@ namespace OSistema.Input
                         SetTool(Tool.Move);
                         break;
                     }
+                    if (!BuildingDef.BuiltInPlace(CurrentDef))
+                    {
+                        // Furniture comes out of storage: bought at the Mobilificio (or from Nanninella).
+                        if (game.Stock.StoredOf(CurrentDef) <= 0)
+                        {
+                            game.Log.Add(CurrentDef == BuildingDefs.BaggingTable || CurrentDef == BuildingDefs.RollingTable
+                                ? $"You don't have a {CurrentDef.Label.ToLower()}. Nanninella can get you one."
+                                : $"You don't have a {CurrentDef.Label.ToLower()}. Buy one at the Mobilificio.", MessageKind.Bad);
+                            break;
+                        }
+                        game.Stock.Store(CurrentDef, -1);
+                        game.Map.SetRotation(start.x, start.y, (byte)PlacementRotation);
+                        game.Map.SetBuilding(start.x, start.y, CurrentDef);
+                        OSistema.Views.SoundManager.PlayUi(OSistema.Views.AudioSynth.Click, 0.3f);
+                        if (game.Stock.StoredOf(CurrentDef) <= 0) SetTool(Tool.Select);
+                        break;
+                    }
                     int cost = BuildingDef.CostOf(CurrentDef);
                     if (!game.Org.Pay(cost, game, out var payError))
                     {
@@ -388,10 +405,19 @@ namespace OSistema.Input
                     {
                         var b = game.Map.GetBuilding(c.x, c.y);
                         if (b == null || !InOwnedHome(c) || b == BuildingDefs.Wall || b == BuildingDefs.Door) continue;
-                        int refund = BuildingDef.CostOf(b) / 2;
                         game.Map.SetBuilding(c.x, c.y, null);
-                        game.Stock.Cash += refund;
-                        if (refund > 0) game.PopupAt(Mover.CellCenter(c), $"+€{refund}");
+                        if (BuildingDef.BuiltInPlace(b))
+                        {
+                            int refund = BuildingDef.CostOf(b) / 2;
+                            game.Stock.Cash += refund;
+                            if (refund > 0) game.PopupAt(Mover.CellCenter(c), $"+€{refund}");
+                        }
+                        else
+                        {
+                            // Back into storage, to put down somewhere else.
+                            game.Stock.Store(b);
+                            game.PopupAt(Mover.CellCenter(c), "stored");
+                        }
                     }
                     break;
 
@@ -504,11 +530,7 @@ namespace OSistema.Input
             bool live = game.Ticks.Speed > 0 && game.Events.Current == null;
 
             // Z: let him get on with things on his own (eat, sleep, do the lavoretto), or not.
-            if (kb.zKey.wasPressedThisFrame)
-            {
-                p.Autopilot = !p.Autopilot;
-                game.Log.Add(p.Autopilot ? "Gennaro gets on with things by himself when you leave him be (Z to stop)." : "Gennaro only moves when you move him.", MessageKind.Info);
-            }
+            if (kb.zKey.wasPressedThisFrame) hud.ToggleAutoMovement();
 
             // R: get on or off your scooter.
             if (kb.rKey.wasPressedThisFrame && live) ToggleScooter(p);
@@ -727,7 +749,7 @@ namespace OSistema.Input
                 var here = game.Map.GetTerrain(p.Cell.x, p.Cell.y);
                 if (here != TerrainType.Floor && here != TerrainType.Marble) continue;
                 int hour = game.Clock.Hour;
-                bool shopKind = b.Kind == ShopKind.Tabaccheria || b.Kind == ShopKind.Salumeria;
+                bool shopKind = b.Kind == ShopKind.Tabaccheria || b.Kind == ShopKind.Salumeria || b.Kind == ShopKind.Mobili || b.Kind == ShopKind.Lusso || b.Kind == ShopKind.Farmacia || b.Kind == ShopKind.Macelleria;
                 if (!shopKind && !Story.ShopCards.PizzoActionable(b, game)) continue;
                 if (hour < 8 || hour >= 21) return new Action { Label = $"{b.Name} is closed", Do = () => { } };
                 var shop = b;
@@ -741,7 +763,13 @@ namespace OSistema.Input
                 return new Action { Label = $"Buy a pizza · €{Prices.Pizza}", Do = () => { p.ForceJob(new EatJob(p, pizzeria, atShop: true), game); } };
 
             if (Near(p, BuildingDefs.Bed, out var bed) && (game.PlayerBase.Contains(bed) || game.Properties.IsOwnedHome(bed)))
-                return new Action { Label = "Sleep", Do = () => { p.LastInputTick = -1000000; p.ForceJob(new SleepJob(p, bed, null), game); } };
+            {
+                // Your own bed, or a free one (which becomes yours). Not someone else's.
+                Pawn owner = null;
+                foreach (var c in game.Pawns.Crew) if (c != p && !c.Dead && c.Bed == bed) owner = c;
+                if (owner != null && p.Bed != bed) return new Action { Label = $"{owner.Nickname}'s bed (assign beds in Famiglia)", Do = () => { } };
+                return new Action { Label = "Sleep", Do = () => { p.Bed = bed; p.LastInputTick = -1000000; p.ForceJob(new SleepJob(p, bed, null), game); } };
+            }
             if (game.Stock.Meals > 0 && p.Needs.Food < 0.8f && Near(p, BuildingDefs.Pantry, out var pantry))
                 return new Action { Label = "Eat something", Do = () => { p.LastInputTick = -1000000; p.ForceJob(new EatJob(p, pantry, atShop: false), game); } };
 

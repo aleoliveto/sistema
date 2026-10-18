@@ -63,6 +63,8 @@ namespace OSistema.UI
                     ShopKind.Salumeria => ("S", "icon--salumeria", "Salumeria"),
                     ShopKind.Farmacia => ("+", "icon--farmacia", "Farmacia"),
                     ShopKind.Macelleria => ("M", "icon--macelleria", "Macelleria"),
+                    ShopKind.Mobili => ("F", "icon--mobili", "Mobilificio (furniture)"),
+                    ShopKind.Lusso => ("◆", "icon--lusso", "Gioielleria (luxury)"),
                     _ => ("·", "icon--shop", "Shop"),
                 };
                 places.Add(new Place { At = Mover.CellCenter(b.Cell), Glyph = g, Css = css, Name = $"{what} · {b.Name}" });
@@ -130,18 +132,41 @@ namespace OSistema.UI
             Ui.Text("   click to set a waypoint · click it again to clear", head, "small", "muted");
             Ui.Box("spacer").Into(head);
             Ui.Btn("Close  [M]", ToggleMap, head, "btn--small");
-            bigImage = Ui.Box("bigmap__image").Into(panel);
+            var mapBody = Ui.Row(panel);
+            mapBody.style.alignItems = Align.FlexStart;
+            bigImage = Ui.Box("bigmap__image").Into(mapBody);
             bigLayer = Ui.Box("layer").Into(bigImage);
             bigLayer.pickingMode = PickingMode.Ignore;
-            var legend = Ui.Row(panel);
-            legend.style.marginTop = 6;
-            foreach (var (cls, text) in new[] { ("dot--you", "you"), ("dot--home", "home"), ("dot--goal", "objective"), ("dot--pin", "your pin"), ("dot--work", "work for you"), ("dot--contact", "people you know"), ("dot--shop", "shops"), ("dot--crew", "crew"), ("dot--police", "police") })
+            // The legend: what each icon means. Hover an icon on the map for its name.
+            var legend = Ui.Box("map-legend").Into(mapBody);
+            Ui.Text("LEGEND", legend, "section");
+            foreach (var (glyph, cls, text) in new[]
             {
-                var d = Ui.Box("dot", cls).Into(legend);
-                d.style.position = Position.Relative;
-                d.style.marginRight = 4;
-                Ui.Text(text, legend, "small", "muted").style.marginRight = 12;
+                ("C", "icon--home", "Home"), ("P", "icon--pizza", "Pizzeria"), ("B", "icon--bar", "Bar"), ("T", "icon--tabacchi", "Tabaccaio"),
+                ("S", "icon--salumeria", "Salumeria"), ("+", "icon--farmacia", "Farmacia"), ("M", "icon--macelleria", "Macelleria"),
+                ("F", "icon--mobili", "Furniture shop"), ("◆", "icon--lusso", "Jeweller"),
+                ("H", "icon--hospital", "Hospital"), ("†", "icon--church", "Church"), ("A", "icon--work", "Someone with work for you"),
+                ("A", "icon--contact", "Someone you know"),
+            })
+            {
+                var row = Ui.Row(legend);
+                row.style.alignItems = Align.Center;
+                row.style.marginBottom = 3;
+                var ic = Ui.Text(glyph, row, "map-icon", "map-icon--legend", cls);
+                Ui.Text(text, row, "small");
             }
+            foreach (var (cls, text) in new[] { ("dot--you", "You"), ("dot--goal", "Objective"), ("dot--pin", "Your pin"), ("dot--crew", "Your crew"), ("dot--piazza", "Piazza"), ("dot--police", "Police in sight") })
+            {
+                var row = Ui.Row(legend);
+                row.style.alignItems = Align.Center;
+                row.style.marginBottom = 3;
+                var d = Ui.Box("dot", cls).Into(row);
+                d.style.position = Position.Relative;
+                d.style.marginLeft = 4;
+                d.style.marginRight = 10;
+                Ui.Text(text, row, "small");
+            }
+            Ui.Text("Hover an icon for its name and hours. Click the map to drop a pin.", legend, "tiny").style.marginTop = 6;
             bigImage.RegisterCallback<PointerDownEvent>(e =>
             {
                 var local = (Vector2)e.localPosition;
@@ -358,7 +383,13 @@ namespace OSistema.UI
                 ic.text = pl.Glyph;
                 ic.style.left = pl.At.x * bigScale;
                 ic.style.top = (map.Height - pl.At.y) * bigScale;
-                BigLabel(pl.At + new Vector2(0.8f, 0f), pl.Name);
+                ic.userData = pl.Name;
+                if (ic.pickingMode != PickingMode.Position)
+                {
+                    ic.pickingMode = PickingMode.Position;
+                    var icon = ic;
+                    Tip(icon, () => icon.userData as string);
+                }
             }
             for (int i = bigIconsUsed; i < bigIcons.Count; i++) bigIcons[i].style.display = DisplayStyle.None;
             if (waypoint.HasValue) BigDot(waypoint.Value, "dot--pin", false);

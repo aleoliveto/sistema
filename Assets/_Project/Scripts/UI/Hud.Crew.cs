@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using OSistema.Pawns;
+using OSistema.World;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -26,7 +27,7 @@ namespace OSistema.UI
         bool showMore;
         VisualElement inspectorAvatar;
         Label inspName, inspSub, inspJob, inspSkills, inspHealth, inspMulti;
-        Button roleButton, draftButton, armButton;
+        Button roleButton, draftButton, armButton, bedButton;
         VisualElement moodFill, foodFill, restFill, loyaltyFill;
         Label moodValue, foodValue, restValue, loyaltyValue;
 
@@ -73,6 +74,58 @@ namespace OSistema.UI
                 }, list, "btn--small", "role-menu__item");
                 b.Toggle("btn--on", p.Role == role);
             }
+        }
+
+        /// <summary>Beds in the family's homes, with whose they are; pick one to give it to this person.</summary>
+        void ShowBedMenu(Pawn p, VisualElement anchor)
+        {
+            if (roleMenu == null)
+            {
+                roleMenu = Ui.Box("layer").Into(modalLayer);
+                roleMenu.RegisterCallback<PointerDownEvent>(e => { if (e.target == roleMenu) roleMenu.Show(false); });
+            }
+            roleMenu.Clear();
+            roleMenu.Show(true);
+            roleMenu.pickingMode = PickingMode.Position;
+            var list = Ui.Box("panel", "role-menu").Into(roleMenu);
+            var r = anchor.worldBound;
+            var local = roleMenu.WorldToLocal(new Vector2(r.xMin, r.yMax));
+            list.style.left = local.x;
+            list.style.top = local.y + 2;
+            int n = 0;
+            foreach (var bed in game.Map.PositionsOf(BuildingDefs.Bed))
+            {
+                if (!game.PlayerBase.Contains(bed) && !game.Properties.IsOwnedHome(bed)) continue;
+                n++;
+                Pawn owner = null;
+                foreach (var c in game.Pawns.Crew) if (!c.Dead && c.Bed == bed) owner = c;
+                var home = game.PlayerBase.Contains(bed) ? "the basso" : game.Properties.At(bed)?.Name ?? "home";
+                var b = bed;
+                var item = Ui.Btn($"Bed {n} · {home} · {(owner == null ? "free" : owner.Nickname)}", () =>
+                {
+                    // Swap: whoever had it takes this person's old bed.
+                    if (owner != null && owner != p) owner.Bed = p.Bed;
+                    p.Bed = b;
+                    roleMenu.Show(false);
+                    bizDirty = true;
+                    RefreshAll();
+                }, list, "btn--small", "role-menu__item");
+                item.Toggle("btn--on", p.Bed == bed);
+            }
+            if (n == 0) Ui.Text("No beds yet. Buy one at the furniture shop and place it at home.", list, "small", "muted");
+        }
+
+        string BedLabel(Pawn p)
+        {
+            if (!p.Bed.HasValue) return "Bed: none ▾";
+            int n = 0;
+            foreach (var bed in game.Map.PositionsOf(BuildingDefs.Bed))
+            {
+                if (!game.PlayerBase.Contains(bed) && !game.Properties.IsOwnedHome(bed)) continue;
+                n++;
+                if (bed == p.Bed.Value) return $"Bed {n} ▾";
+            }
+            return "Bed: none ▾";
         }
 
         static void CycleRole(Pawn p)
@@ -208,6 +261,8 @@ namespace OSistema.UI
             Tip(draftButton, () => "Call him over to where you are.");
             armButton = Ui.Btn("", () => { if (Single(out var p)) ToggleArmed(p); RefreshAll(); }, actions, "btn--small");
             Tip(armButton, () => $"Give or take back a pistol. Pistols in the stash: {game.Stock.Pistols}.");
+            bedButton = Ui.Btn("", () => { if (Single(out var p)) ShowBedMenu(p, bedButton); }, actions, "btn--small");
+            Tip(bedButton, () => "Which bed is theirs. Pick one to give it to them; whoever had it swaps.");
             callButton = Ui.Btn("Call 118", () => { if (Single(out var p)) game.Hospital.Call(p, game, byPasserby: false); RefreshAll(); }, actions, "btn--small", "btn--danger");
             Tip(callButton, () => "Send for an ambulance. The hospital will patch them up, and report any gunshot wound to the police.");
 
@@ -298,6 +353,7 @@ namespace OSistema.UI
             draftButton.Show(!p.Controlled);
             roleButton.Show(!p.Controlled);
             armButton.text = p.Armed ? "Disarm" : "Arm";
+            bedButton.text = BedLabel(p);
             armButton.Toggle("btn--on", p.Armed);
             callButton.Show(p.Health.Downed && !game.Hospital.IsCalled(p));
             moreButton.text = showMore ? "Less ▴" : "More ▾";

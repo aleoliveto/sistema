@@ -63,6 +63,7 @@ namespace OSistema.UI
             popups.Clear();
             HookPopups(g);
             HookPhone(g);
+            ApplyAutoMovement();
             RefreshAll();
             ShowTitleOnce();
         }
@@ -189,6 +190,7 @@ namespace OSistema.UI
             RefreshDock();
             RefreshPhone();
             RefreshVitals();
+            UpdatePoliceAlerts();
             RefreshWindows();
             RefreshModals();
         }

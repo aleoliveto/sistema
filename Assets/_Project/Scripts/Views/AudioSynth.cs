@@ -215,6 +215,29 @@ namespace OSistema.Views
             return Clip("scooter", d);
         }
 
+        static AudioClip whistle;
+
+        /// <summary>A lookout's two-finger whistle: up, then a long high note.</summary>
+        public static AudioClip Whistle => whistle != null ? whistle : whistle = MakeWhistle();
+
+        static AudioClip MakeWhistle()
+        {
+            int n = (int)(Rate * 0.9f);
+            var d = new float[n];
+            float phase = 0f;
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)Rate;
+                bool first = t < 0.22f, second = t > 0.32f && t < 0.85f;
+                if (!first && !second) continue;
+                float f = first ? Mathf.Lerp(1700f, 2400f, t / 0.22f) : 2550f + 40f * Mathf.Sin(t * 40f);
+                phase += f / Rate;
+                float env = first ? Mathf.Sin(Mathf.PI * t / 0.22f) : Mathf.Min(1f, (t - 0.32f) * 20f) * Mathf.Min(1f, (0.85f - t) * 10f);
+                d[i] = Mathf.Sin(phase * 2f * Mathf.PI) * env * 0.6f;
+            }
+            return Clip("whistle", d);
+        }
+
         static AudioClip engine;
 
         /// <summary>A seamless loop of an engine at a steady rate, for the player's own scooter (pitch it by speed).</summary>

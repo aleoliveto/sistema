@@ -88,7 +88,7 @@ namespace OSistema.Core
                 supplierIntroduced = game.Org.SupplierIntroduced,
                 bulkDg = game.Stock.BulkDg, carriedDg = game.Org.CarriedDg, baggies = game.Stock.Baggies,
                 tobaccoG = game.Stock.TobaccoG, papers = game.Stock.Papers, emptyPacks = game.Stock.EmptyPacks,
-                digitalScale = game.Stock.DigitalScale, heatSealer = game.Stock.HeatSealer, rollingMachine = game.Stock.RollingMachine,
+                digitalScale = game.Stock.DigitalScale, heatSealer = game.Stock.HeatSealer, rollingMachine = game.Stock.RollingMachine, stored = game.Stock.Stored,
                 doseQuality = game.Stock.DoseQuality, packQuality = game.Stock.PackQuality,
             };
             foreach (var sq in game.Rival.Squares)
@@ -249,6 +249,11 @@ namespace OSistema.Core
             st.BulkDg = data.bulkDg; game.Org.CarriedDg = data.carriedDg; st.Baggies = data.baggies;
             st.TobaccoG = data.tobaccoG; st.Papers = data.papers; st.EmptyPacks = data.emptyPacks;
             st.DigitalScale = data.digitalScale; st.HeatSealer = data.heatSealer; st.RollingMachine = data.rollingMachine;
+            if (data.stored != null)
+            {
+                st.Stored = new int[BuildingDefs.All.Length];
+                System.Array.Copy(data.stored, st.Stored, System.Math.Min(data.stored.Length, st.Stored.Length));
+            }
             if (data.version >= 9) { st.DoseQuality = data.doseQuality; st.PackQuality = data.packQuality; }
             // Families from before version 8 already had a supplier.
             game.Org.SupplierIntroduced = data.version < 8 || data.supplierIntroduced;
@@ -378,6 +383,7 @@ namespace OSistema.Core
             public bool supplierIntroduced;
             public int bulkDg, carriedDg, baggies, tobaccoG, papers, emptyPacks;
             public bool digitalScale, heatSealer, rollingMachine;
+            public int[] stored;
             public float doseQuality = 0.75f, packQuality = 0.75f;
             public int pendingOrderUnits, pendingOrderDay, lastPaydayWeek;
             public List<ZoneData> zones = new List<ZoneData>();

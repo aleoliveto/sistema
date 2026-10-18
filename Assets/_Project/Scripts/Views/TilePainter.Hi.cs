@@ -167,6 +167,25 @@ namespace OSistema.Views
         }
 
         /// <summary>The basolato: big blocks of dark Vesuvian lava stone in irregular rows, worn smooth.</summary>
+        /// <summary>A square of basolato, for backdrops (the character creator).</summary>
+        public static Texture2D BasolatoTexture(int size)
+        {
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear };
+            var px = new Color32[size * size];
+            for (int y = 0; y < size; y++)
+            for (int x = 0; x < size; x++)
+            {
+                var c = Basolato(x + 37, y + 11, N(x, y, 71));
+                // A pool of warm light in the middle, dark at the edges.
+                float dx = (x - size / 2f) / size, dy = (y - size / 2f) / size;
+                float light = 1.15f - 1.4f * (dx * dx + dy * dy);
+                px[y * size + x] = Shade(c, light);
+            }
+            tex.SetPixels32(px);
+            tex.Apply();
+            return tex;
+        }
+
         static Color32 Basolato(int gx, int gy, float fine)
         {
             const int rowH = 13;

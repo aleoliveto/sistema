@@ -21,6 +21,7 @@ namespace OSistema.UI
             public BuildingDef Def;
             public System.Action Action;  // for buttons that aren't tools
             public Button Button;
+            public Label Price;
         }
 
         VisualElement dockTools;
@@ -63,7 +64,7 @@ namespace OSistema.UI
             toolsByTab[DockTab.Orders] = new List<ToolEntry>
             {
                 new ToolEntry { Label = "Move", Tool = Tool.Move, Swatch = new Color(0.6f, 0.8f, 0.95f), Tip = "Click a piece of furniture in your home to pick it up, then click where it goes (Q / E to turn it). Free." },
-                new ToolEntry { Label = "Sell furniture", Tool = Tool.Deconstruct, Swatch = new Color(0.9f, 0.3f, 0.25f), Tip = "Click or drag over furniture in your homes to sell it back for half what you paid." },
+                new ToolEntry { Label = "Put away", Tool = Tool.Deconstruct, Swatch = new Color(0.9f, 0.3f, 0.25f), Tip = "Click or drag over furniture in your homes to put it back in storage. Walls and doors are knocked down for half what they cost." },
                 new ToolEntry { Label = "Close piazza", Tool = Tool.Cancel, Swatch = new Color(0.95f, 0.65f, 0.3f), Tip = "Click a piazza of yours to close it." },
             };
 
@@ -77,7 +78,7 @@ namespace OSistema.UI
             AddTab(buildTabs, DockTab.Furnish, "HOME", IconKind.Furnish);
             AddTab(buildTabs, DockTab.Crime, "WORK", IconKind.Crime);
             AddTab(buildTabs, DockTab.Build, "PIAZZA", IconKind.Product);
-            AddTab(buildTabs, DockTab.Orders, "MOVE & SELL", IconKind.Orders);
+            AddTab(buildTabs, DockTab.Orders, "MOVE", IconKind.Orders);
             buildTabs.style.marginBottom = 4;
 
             // The hotbar: every screen, with its key.
@@ -155,10 +156,10 @@ namespace OSistema.UI
             foreach (var kv in tabButtons) kv.Value.Toggle("btn--on", kv.Key == openTab);
             buildTitle.text = openTab switch
             {
-                DockTab.Furnish => "Furnish homes you own · click a free floor tile · Q / E turn · right-click to stop",
-                DockTab.Crime => "Tables where the goods are made · E to work at one, or give someone the job",
+                DockTab.Furnish => "Put down furniture from storage (buy it at the Mobilificio) · Q / E turn · right-click to stop",
+                DockTab.Crime => "Work tables from storage (Nanninella sells them) · E to work at one, or give someone the job",
                 DockTab.Build => "Open a piazza on a pavement in your turf",
-                DockTab.Orders => "Move furniture (pick up, put down) · sell it back for half · close a piazza",
+                DockTab.Orders => "Move furniture · put it back in storage · close a piazza",
                 _ => "",
             };
             businessButton.Toggle("btn--on", openWindow == Window.Business);
@@ -168,7 +169,8 @@ namespace OSistema.UI
             bool rotatable = building && controller.CurrentDef != BuildingDefs.Wall && controller.CurrentDef != BuildingDefs.Door;
             buildHint.Show(building);
             if (building)
-                buildHint.text = $"<b>{controller.CurrentDef.Label}</b> · €{BuildingDef.CostOf(controller.CurrentDef)} each" +
+                buildHint.text = $"<b>{controller.CurrentDef.Label}</b> · " +
+                    (BuildingDef.BuiltInPlace(controller.CurrentDef) ? $"€{BuildingDef.CostOf(controller.CurrentDef)} each" : $"{game.Stock.StoredOf(controller.CurrentDef)} in storage") +
                     (rotatable ? $" · <color=#E8C26A>Q / E</color> rotate ({controller.PlacementRotation * 90}°)" : " · drag to draw") +
                     " · right-click to stop";
 
@@ -186,8 +188,12 @@ namespace OSistema.UI
             {
                 bool active = entry.Action == null && controller.CurrentTool == entry.Tool && controller.CurrentDef == entry.Def;
                 entry.Button.Toggle("btn--on", active);
+                if (entry.Price != null && entry.Def != null) entry.Price.text = PriceTag(entry.Def);
             }
         }
+
+        string PriceTag(BuildingDef d) => BuildingDef.BuiltInPlace(d) ? $"€{BuildingDef.CostOf(d)}"
+            : game.Stock.StoredOf(d) > 0 ? $"×{game.Stock.StoredOf(d)}" : "<color=#7A7468>none</color>";
 
         Button ToolButton(ToolEntry entry)
         {
@@ -206,10 +212,13 @@ namespace OSistema.UI
             }
             else swatch.style.backgroundColor = entry.Swatch;
             Ui.Text(entry.Label, b, "tool__label");
-            if (entry.Def != null) Ui.Text($"€{BuildingDef.CostOf(entry.Def)}", b, "tool__price");
-            Tip(b, () => entry.Def != null
-                ? $"{entry.Tip}\nCost €{BuildingDef.CostOf(entry.Def)}{(entry.Def.Beauty > 0 ? $" · makes a home nicer (+{entry.Def.Beauty:0.#})" : "")}"
-                : entry.Tip);
+            if (entry.Def != null) entry.Price = Ui.Text(PriceTag(entry.Def), b, "tool__price");
+            Tip(b, () => entry.Def == null ? entry.Tip
+                : BuildingDef.BuiltInPlace(entry.Def)
+                    ? $"{entry.Tip}\nCost €{BuildingDef.CostOf(entry.Def)}, paid where you put it."
+                    : $"{entry.Tip}\n{game.Stock.StoredOf(entry.Def)} in storage. " +
+                      (entry.Def == BuildingDefs.BaggingTable || entry.Def == BuildingDefs.RollingTable ? "Nanninella sells them" : "Buy more at the Mobilificio (on the map)") +
+                      $"{(entry.Def.Beauty > 0 ? $" · makes a home nicer (+{entry.Def.Beauty:0.#})" : "")}");
             return b;
         }
     }

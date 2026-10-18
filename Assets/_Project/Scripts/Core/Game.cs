@@ -45,6 +45,9 @@ namespace OSistema.Core
         public readonly ContactBook Contacts = new ContactBook();
         public readonly Pursuit Pursuit = new Pursuit();
 
+        /// <summary>Setting: when the player leaves him alone, may Gennaro eat and sleep by himself? Off by default.</summary>
+        public bool PlayerSelfCare;
+
         /// <summary>Who's working at each table: one person per workstation.</summary>
         public readonly Dictionary<Vector2Int, Pawn> StationClaims = new Dictionary<Vector2Int, Pawn>();
 
@@ -85,6 +88,21 @@ namespace OSistema.Core
                 return false;
             }
             int removed = 0;
+            // Lamps belong on walls: move each one onto the nearest wall as a bracket lamp.
+            foreach (var c in new List<Vector2Int>(Map.PositionsOf(BuildingDefs.StreetLamp)))
+            {
+                Map.SetBuilding(c.x, c.y, null);
+                removed++;
+                for (int r = 1; r <= 2; r++)
+                foreach (var d in new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right })
+                {
+                    var w = c + d * r;
+                    if (!Map.InBounds(w.x, w.y) || Map.GetBuilding(w.x, w.y) != BuildingDefs.Wall || Map.GetDecor(w.x, w.y) != MapDecor.None) continue;
+                    Map.SetDecor(w.x, w.y, MapDecor.WallLamp);
+                    goto placed;
+                }
+                placed:;
+            }
             foreach (var def in clutter)
             foreach (var c in new List<Vector2Int>(Map.PositionsOf(def)))
             {
@@ -263,6 +281,7 @@ namespace OSistema.Core
             var me = SpawnCrew(Friends[0], boss: true);
             EnsurePlayer();
             if (me == null) return;
+            Stock.Store(BuildingDefs.Bed);   // a folding bed for the first guaglione who joins
             me.Look = new Pawns.Look { Body = 0, Head = 2, Hair = 1, Face = 0 };
             if (setup == null) return;
             // The player's own character, as he made him.

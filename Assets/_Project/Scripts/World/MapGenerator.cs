@@ -488,32 +488,97 @@ namespace OSistema.World
 
         void PlaceShops(Map map)
         {
-            var shops = new[]
-            {
-                BuildingDefs.PizzeriaCounter, BuildingDefs.PizzeriaCounter, BuildingDefs.PizzeriaCounter, BuildingDefs.PizzeriaCounter,
-                BuildingDefs.SalumeriaCounter, BuildingDefs.SalumeriaCounter, BuildingDefs.FarmaciaCounter,
-                BuildingDefs.BarCounter, BuildingDefs.BarCounter, BuildingDefs.BarCounter, BuildingDefs.BarCounter,
-                BuildingDefs.MacelleriaCounter, BuildingDefs.MacelleriaCounter,
-                BuildingDefs.TabaccheriaCounter, BuildingDefs.TabaccheriaCounter,
-            };
-            for (int i = shopLots.Count - 1; i > 0; i--)
-            {
-                int j = rng.Next(i + 1);
-                (shopLots[i], shopLots[j]) = (shopLots[j], shopLots[i]);
-            }
-            int placed = 0;
+            // Every row of blocks gets its own little high street: a bar, a pizzeria, a tabaccaio, a
+            // salumeria... and here and there a pharmacy, a butcher, a furniture shop or a jeweller.
+            var everyRow = new[] { BuildingDefs.BarCounter, BuildingDefs.PizzeriaCounter, BuildingDefs.TabaccheriaCounter, BuildingDefs.SalumeriaCounter };
+            var sometimes = new[] { BuildingDefs.MacelleriaCounter, BuildingDefs.FarmaciaCounter, BuildingDefs.MobiliCounter, BuildingDefs.LussoCounter, BuildingDefs.BarCounter, BuildingDefs.PizzeriaCounter };
+            var rows = new SortedDictionary<int, List<RectInt>>();
             foreach (var lot in shopLots)
             {
-                if (placed >= shops.Length) break;
-                var mid = Vector2Int.RoundToInt(lot.center);
-                if (map.GetTerrain(mid.x, mid.y) != TerrainType.Floor || map.GetBuilding(mid.x, mid.y) != null) continue;
-                bool clear = true;
-                foreach (var c in GridUtil.CellsAround(mid, 1))
-                    if (map.GetBuilding(c) == BuildingDefs.Wall) clear = false;
-                if (!clear) continue;
-                map.SetBuilding(mid.x, mid.y, shops[placed++]);
-                var prop = properties.Find(p => p.Rect.Equals(lot));
-                if (prop != null) prop.Kind = PropertyKind.Shop;
+                int band = Mathf.RoundToInt(lot.center.y) / 24;
+                if (!rows.TryGetValue(band, out var list)) rows[band] = list = new List<RectInt>();
+                list.Add(lot);
+            }
+            int extra = rng.Next(sometimes.Length);
+            bool mobili = false, lusso = false;
+            foreach (var kv in rows)
+            {
+                var lots = kv.Value;
+                for (int i = lots.Count - 1; i > 0; i--)
+                {
+                    int j = rng.Next(i + 1);
+                    (lots[i], lots[j]) = (lots[j], lots[i]);
+                }
+                var wanted = new List<BuildingDef>(everyRow);
+                for (int k = 0; k < 2; k++) wanted.Add(sometimes[(extra++) % sometimes.Length]);
+                int w = 0;
+                foreach (var lot in lots)
+                {
+                    if (w >= wanted.Count) break;
+                    var def = wanted[w];
+                    if (TryPlaceShop(map, lot, def))
+                    {
+                        w++;
+                        mobili |= def == BuildingDefs.MobiliCounter;
+                        lusso |= def == BuildingDefs.LussoCounter;
+                    }
+                }
+            }
+            // There's always at least one furniture shop and one jeweller in the district.
+            foreach (var (need, def) in new[] { (!mobili, BuildingDefs.MobiliCounter), (!lusso, BuildingDefs.LussoCounter) })
+            {
+                if (!need) continue;
+                foreach (var lot in shopLots)
+                    if (TryPlaceShop(map, lot, def)) break;
+            }
+        }
+
+        bool TryPlaceShop(Map map, RectInt lot, BuildingDef counter)
+        {
+            var prop = properties.Find(p => p.Rect.Equals(lot));
+            if (prop == null || prop.Kind == PropertyKind.Shop) return false;
+            var mid = Vector2Int.RoundToInt(lot.center);
+            if (map.GetTerrain(mid.x, mid.y) != TerrainType.Floor || map.GetBuilding(mid.x, mid.y) != null) return false;
+            foreach (var c in GridUtil.CellsAround(mid, 1))
+                if (map.GetBuilding(c) == BuildingDefs.Wall) return false;
+            map.SetBuilding(mid.x, mid.y, counter);
+            prop.Kind = PropertyKind.Shop;
+            FitOut(map, prop, counter, mid);
+            return true;
+        }
+
+        /// <summary>Furnishes a shop for its trade: tables in a pizzeria, shelves in a salumeria, and so on.</summary>
+        void FitOut(Map map, Property prop, BuildingDef counter, Vector2Int mid)
+        {
+            BuildingDef[] items;
+            if (counter == BuildingDefs.PizzeriaCounter) items = new[] { BuildingDefs.Stove, BuildingDefs.Table, BuildingDefs.Table, BuildingDefs.Table, BuildingDefs.PlasticChair, BuildingDefs.PlasticChair };
+            else if (counter == BuildingDefs.BarCounter) items = new[] { BuildingDefs.Fridge, BuildingDefs.Table, BuildingDefs.Table, BuildingDefs.PlasticChair, BuildingDefs.PlasticChair, BuildingDefs.Television };
+            else if (counter == BuildingDefs.SalumeriaCounter) items = new[] { BuildingDefs.Pantry, BuildingDefs.Pantry, BuildingDefs.Pantry, BuildingDefs.Fridge, BuildingDefs.KitchenCounter };
+            else if (counter == BuildingDefs.TabaccheriaCounter) items = new[] { BuildingDefs.Pantry, BuildingDefs.Pantry, BuildingDefs.Wardrobe, BuildingDefs.Plant };
+            else if (counter == BuildingDefs.FarmaciaCounter) items = new[] { BuildingDefs.Pantry, BuildingDefs.Pantry, BuildingDefs.Pantry, BuildingDefs.Plant };
+            else if (counter == BuildingDefs.MacelleriaCounter) items = new[] { BuildingDefs.Fridge, BuildingDefs.Fridge, BuildingDefs.KitchenCounter, BuildingDefs.KitchenCounter };
+            else if (counter == BuildingDefs.MobiliCounter) items = new[] { BuildingDefs.Sofa, BuildingDefs.Armchair, BuildingDefs.Bed, BuildingDefs.Wardrobe, BuildingDefs.Table, BuildingDefs.Rug };
+            else items = new[] { BuildingDefs.Safe, BuildingDefs.Rug, BuildingDefs.Plant, BuildingDefs.Plant, BuildingDefs.Armchair };
+
+            var r = prop.Interior;
+            int placed = 0;
+            for (int y = r.yMin; y < r.yMax && placed < items.Length; y++)
+            for (int x = r.xMin; x < r.xMax && placed < items.Length; x++)
+            {
+                var c = new Vector2Int(x, y);
+                if (map.GetBuilding(x, y) != null || map.GetTerrain(x, y) != TerrainType.Floor) continue;
+                if ((c - mid).sqrMagnitude <= 2) continue;   // room in front of the counter
+                bool nearDoor = false;
+                foreach (var n in GridUtil.CellsAround(c, 1))
+                    if (map.InBounds(n) && map.GetBuilding(n) == BuildingDefs.Door) nearDoor = true;
+                if (nearDoor) continue;
+                // Tables and chairs in the room; shelves and fridges against the walls.
+                bool againstWall = x == r.xMin || x == r.xMax - 1 || y == r.yMin || y == r.yMax - 1;
+                var item = items[placed];
+                bool roomItem = item == BuildingDefs.Table || item == BuildingDefs.PlasticChair || item == BuildingDefs.Rug;
+                if (roomItem == againstWall && r.width > 3 && r.height > 3) continue;
+                map.SetBuilding(x, y, item);
+                placed++;
             }
         }
 

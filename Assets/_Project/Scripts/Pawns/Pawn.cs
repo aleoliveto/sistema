@@ -280,7 +280,7 @@ namespace OSistema.Pawns
             // for a while still eats when it's starving and sleeps when it can't stand.
             if (CurrentJob == null && Manual(now))
             {
-                if (now - LastInputTick < ManualHoldTicks || !HasUrgentNeed) return;
+                if (!game.PlayerSelfCare || now - LastInputTick < ManualHoldTicks || !HasUrgentNeed) return;
                 CurrentJob = JobGiver.ForNeeds(this, game);
                 if (CurrentJob == null) return;
             }

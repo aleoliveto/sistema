@@ -61,12 +61,12 @@ namespace OSistema.UI
                 if (c.Role == CrewRole.Roller) roller = true;
             }
             if (s.BulkDg >= 2 && s.Baggies > 0 && !bagger)
-                return Station(game, p.Cell, BuildingDefs.BaggingTable, "Cut and bag the product at the bagging table", "Build a bagging table at home (B, Work & Crime)");
+                return StationOrBuy(game, p.Cell, BuildingDefs.BaggingTable, "Cut and bag the product at the bagging table");
             if (s.BulkDg >= 2 && s.Baggies <= 0)
                 return Shop(game, p.Cell, ShopKind.Salumeria, "Buy small bags at the salumeria");
 
             if (org.CanMakePack(game) && s.TobaccoG >= Prices.TobaccoPerPack && !roller)
-                return Station(game, p.Cell, BuildingDefs.RollingTable, "Roll a pack of ROSSE at the rolling table", "Build a rolling table at home (B, Work & Crime)");
+                return StationOrBuy(game, p.Cell, BuildingDefs.RollingTable, "Roll a pack of ROSSE at the rolling table");
             if (s.TobaccoG < Prices.TobaccoPerPack || s.Papers < 20)
             {
                 var g = Shop(game, p.Cell, ShopKind.Tabaccheria, "Buy tobacco and papers at the tabaccaio");
@@ -115,6 +115,17 @@ namespace OSistema.UI
                 if (d < bestD) { bestD = d; best = c; }
             }
             return best.HasValue ? Go(text, Mover.CellCenter(best.Value)) : new Goal { Text = missing };
+        }
+
+        /// <summary>Go to the table; or put down the one in storage; or buy one from Nanninella.</summary>
+        static Goal StationOrBuy(Game game, Vector2Int from, BuildingDef def, string text)
+        {
+            var g = Station(game, from, def, text, null);
+            if (g.Target.HasValue) return g;
+            if (game.Stock.StoredOf(def) > 0) return new Goal { Text = $"Put down your {def.Label.ToLower()} at home (B, Work)" };
+            var nanni = game.Contacts.ByName(ContactBook.Nanninella);
+            if (nanni != null && nanni.Present) return Go($"Buy a {def.Label.ToLower()} from Nanninella", nanni.Position);
+            return new Goal { Text = $"Buy a {def.Label.ToLower()} from Nanninella" };
         }
 
         static Goal Shop(Game game, Vector2Int from, ShopKind kind, string text)

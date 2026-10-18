@@ -12,37 +12,48 @@ namespace OSistema.UI
     public sealed partial class Hud
     {
         enum Window { None, Business, Help, Jobs, Phone }
-        enum BizTab { Crew, Piazze, Pizzo, Property, Supply, Favours, Rivals }
+        enum BizTab { Overview, Crew, Piazze, Pizzo, Supply, Property, Favours, Rivals }
 
         Window openWindow;
         BizTab bizTab;
         VisualElement businessWindow, helpWindow, bizBody;
         ScrollView bizScroll;
-        readonly System.Collections.Generic.Dictionary<BizTab, Button> bizTabButtons = new System.Collections.Generic.Dictionary<BizTab, Button>();
+        readonly System.Collections.Generic.Dictionary<BizTab, VisualElement> bizTabButtons = new System.Collections.Generic.Dictionary<BizTab, VisualElement>();
+        readonly System.Collections.Generic.Dictionary<BizTab, Label> bizTabStatus = new System.Collections.Generic.Dictionary<BizTab, Label>();
+        Label bizTitle, bizBlurb;
         float bizRefreshTimer;
         bool bizDirty = true;
 
         void BuildWindows()
         {
             // Business
-            businessWindow = Ui.Box("panel", "window").Into(hudLayer);
+            // A sidebar of sections, each with a one-line status; the open section on the right,
+            // headed by what it's for.
+            businessWindow = Ui.Box("panel", "window", "window--famiglia").Into(hudLayer);
             var header = Ui.Box("window__header").Into(businessWindow);
-            Ui.Text("'O SISTEMA", header, "title", "gold").style.marginRight = 16;
-            foreach (BizTab tab in System.Enum.GetValues(typeof(BizTab)))
-            {
-                var t = tab;
-                bizTabButtons[t] = Ui.Btn(tab == BizTab.Supply ? "Supply & arms" : tab == BizTab.Favours ? "Favours & trust" : tab.ToString(), () =>
-                {
-                    bizTab = t;
-                    bizDirty = true;
-                    if (bizScroll != null) bizScroll.scrollOffset = Vector2.zero;
-                    RefreshWindows();
-                }, header, "btn--small");
-            }
+            Ui.Text("FAMIGLIA", header, "title", "gold").style.marginRight = 16;
+            Ui.Text("Tab to close", header, "tiny", "muted");
             Ui.Box("spacer").Into(header);
             Ui.Btn("✕", () => ToggleWindow(Window.Business), header, "btn--small");
 
-            bizScroll = new ScrollView(ScrollViewMode.Vertical).Cls("window__body").Into(businessWindow);
+            var split = Ui.Box("famiglia").Into(businessWindow);
+            var nav = Ui.Box("famiglia__nav").Into(split);
+            foreach (BizTab tab in System.Enum.GetValues(typeof(BizTab)))
+            {
+                var t = tab;
+                var item = Ui.Box("famiglia__item").Into(nav);
+                Ui.Text(TabName(t), item, "famiglia__name").pickingMode = PickingMode.Ignore;
+                bizTabStatus[t] = Ui.Text("", item, "famiglia__status");
+                bizTabStatus[t].pickingMode = PickingMode.Ignore;
+                item.RegisterCallback<ClickEvent>(_ => OpenBizTab(t));
+                bizTabButtons[t] = item;
+            }
+
+            var main = Ui.Box("famiglia__main").Into(split);
+            var head = Ui.Box("famiglia__head").Into(main);
+            bizTitle = Ui.Text("", head, "famiglia__title");
+            bizBlurb = Ui.Text("", head, "small", "muted", "wrap");
+            bizScroll = new ScrollView(ScrollViewMode.Vertical).Cls("window__body").Into(main);
             bizBody = bizScroll.contentContainer;
             businessWindow.Show(false);
 
@@ -86,7 +97,7 @@ namespace OSistema.UI
         {
             RefreshJobs();
             if (openWindow != Window.Business) return;
-            foreach (var kv in bizTabButtons) kv.Value.Toggle("btn--on", kv.Key == bizTab);
+            foreach (var kv in bizTabButtons) kv.Value.Toggle("famiglia__item--on", kv.Key == bizTab);
 
             bizRefreshTimer += RefreshSeconds;
             // Don't rebuild under the mouse while someone is painting shifts.
@@ -98,8 +109,12 @@ namespace OSistema.UI
 
             var scroll = bizScroll.scrollOffset;
             bizBody.Clear();
+            RefreshBizNav();
+            bizTitle.text = TabName(bizTab).ToUpper();
+            bizBlurb.text = TabBlurb(bizTab);
             switch (bizTab)
             {
+                case BizTab.Overview: OverviewTab(); break;
                 case BizTab.Crew: CrewTab(); break;
                 case BizTab.Piazze: PiazzeTab(); break;
                 case BizTab.Pizzo: PizzoTab(); break;
@@ -109,6 +124,141 @@ namespace OSistema.UI
                 case BizTab.Rivals: RivalsTab(); break;
             }
             bizScroll.scrollOffset = scroll;
+        }
+
+        void OpenBizTab(BizTab t)
+        {
+            bizTab = t;
+            bizDirty = true;
+            if (bizScroll != null) bizScroll.scrollOffset = Vector2.zero;
+            RefreshWindows();
+        }
+
+        static string TabName(BizTab t) => t switch
+        {
+            BizTab.Overview => "Overview",
+            BizTab.Crew => "Crew",
+            BizTab.Piazze => "Piazze",
+            BizTab.Pizzo => "Pizzo",
+            BizTab.Supply => "Goods & gear",
+            BizTab.Property => "Property & money",
+            BizTab.Favours => "Favours",
+            _ => "Rivals",
+        };
+
+        static string TabBlurb(BizTab t) => t switch
+        {
+            BizTab.Overview => "How the family is doing, and what needs you now. Click a line to go there.",
+            BizTab.Crew => "Who works for you: give each guaglione a job, a bed and shifts. Wages are paid on Sunday.",
+            BizTab.Piazze => "Your drug squares: pushers sell, lookouts whistle when the police come. Watch the heat.",
+            BizTab.Pizzo => "Shops on your turf pay for protection. A Collector does the rounds, or you go yourself.",
+            BizTab.Supply => "What's in the basso: doses, cigarettes, tools, scooters and guns.",
+            BizTab.Property => "Dirty and clean money, homes, fronts and laundering.",
+            BizTab.Favours => "The neighbourhood: who owes you, who trusts you, and what you can ask for.",
+            _ => "The other clan: how angry they are and where they sell.",
+        };
+
+        /// <summary>The one-line status under each section name.</summary>
+        void RefreshBizNav()
+        {
+            var org = game.Org;
+            int crew = 0, idle = 0;
+            foreach (var c in game.Pawns.Crew)
+            {
+                if (c.Dead || c.Controlled) continue;
+                crew++;
+                if (c.Role == CrewRole.General) idle++;
+            }
+            int paying = org.Businesses.Count(b => b.Status == BusinessStatus.Paying);
+            var problems = Problems();
+            SetStatus(BizTab.Overview, problems.Count == 0 ? "<color=#8FD18A>all quiet</color>" : $"<color=#F2B866>{problems.Count} to look at</color>");
+            SetStatus(BizTab.Crew, crew == 0 ? "just you" : $"{crew} guagliun{(crew == 1 ? "e" : "i")}" + (idle > 0 ? $" · <color=#F2B866>{idle} without a job</color>" : ""));
+            SetStatus(BizTab.Piazze, org.Squares.Count == 0 ? "none yet" : $"{org.Squares.Count} open");
+            SetStatus(BizTab.Pizzo, paying == 0 ? "nobody pays yet" : $"{paying} paying");
+            SetStatus(BizTab.Supply, $"{game.Stock.Product} doses · {game.Stock.Cigarettes} packs");
+            SetStatus(BizTab.Property, $"€{game.Stock.Cash} dirty · €{game.Stock.Clean} clean");
+            SetStatus(BizTab.Favours, "the neighbours");
+            SetStatus(BizTab.Rivals, game.Rival.Destroyed ? "destroyed" : game.Rival.Hostility >= 70f ? "<color=#F07A6E>out for blood</color>" : game.Rival.Hostility >= 40f ? "<color=#F2B866>angry</color>" : "watching");
+        }
+
+        void SetStatus(BizTab t, string text)
+        {
+            if (bizTabStatus.TryGetValue(t, out var l)) l.text = text;
+        }
+
+        /// <summary>Things that need the boss, most urgent first, each pointing at the section that fixes it.</summary>
+        System.Collections.Generic.List<(string text, BizTab tab, bool bad)> Problems()
+        {
+            var list = new System.Collections.Generic.List<(string, BizTab, bool)>();
+            var org = game.Org;
+            var st = game.Stock;
+            int crew = 0, idle = 0, hungry = 0, beds = game.Map.PositionsOf(BuildingDefs.Bed).Count(b => game.PlayerBase.Contains(b) || game.Properties.IsOwnedHome(b));
+            bool pusher = false, lookout = false, collector = false;
+            foreach (var c in game.Pawns.Crew)
+            {
+                if (c.Dead) continue;
+                crew++;
+                if (c.Controlled) continue;
+                if (c.Role == CrewRole.General) idle++;
+                if (c.Needs.Hungry) hungry++;
+                pusher |= c.Role == CrewRole.Pusher;
+                lookout |= c.Role == CrewRole.Lookout;
+                collector |= c.Role == CrewRole.Collector;
+            }
+            int wages = org.WeeklyWageBill(game);
+            if (st.Cash + st.Clean < wages) list.Add(($"Not enough money for Sunday's wages (€{wages}). Unpaid crew lose loyalty.", BizTab.Property, true));
+            if (org.Evidence >= 60f) list.Add(($"Evidence against you is at {org.Evidence:0}/100. Lie low, launder, keep your hands clean.", BizTab.Property, true));
+            if (beds < crew) list.Add(($"{crew - beds} of the crew {(crew - beds == 1 ? "has" : "have")} no bed. Buy one at the Mobilificio and put it down at home.", BizTab.Crew, true));
+            if (hungry > 0) list.Add(($"{hungry} of the crew {(hungry == 1 ? "is" : "are")} hungry. Groceries and a stove, or pizza money.", BizTab.Supply, true));
+            if (idle > 0) list.Add(($"{idle} of the crew {(idle == 1 ? "has" : "have")} no job. Give them a role.", BizTab.Crew, false));
+            if (org.Squares.Count > 0 && !pusher) list.Add(("Your piazza has no pusher: nobody is selling.", BizTab.Crew, true));
+            if (org.Squares.Count > 0 && !lookout) list.Add(("No lookout: nobody will whistle when the police come.", BizTab.Crew, false));
+            if (org.Squares.Count > 0 && st.Product <= 0) list.Add(("No doses left to sell. Buy from the supplier and bag them.", BizTab.Supply, false));
+            foreach (var sq in org.Squares)
+            {
+                var zone = sq.ZoneId >= 0 && sq.ZoneId < game.Territory.Zones.Count ? game.Territory.Zones[sq.ZoneId] : null;
+                if (zone != null && zone.Heat >= 60f) list.Add(($"The police are watching {zone.Name} (heat {zone.Heat:0}). Close it for a while, or add lookouts.", BizTab.Piazze, true));
+            }
+            int due = org.Businesses.Count(b => b.Status == BusinessStatus.Paying && org.IsDue(b, Organization.WeekOf(game.Clock)));
+            if (due > 0 && !collector) list.Add(($"{due} shop{(due == 1 ? "" : "s")} owe this week's pizzo and nobody collects. Go yourself, or name a Collector.", BizTab.Pizzo, false));
+            if (!game.Rival.Destroyed && game.Rival.Hostility >= 70f) list.Add(("The rivals are planning a hit. Arm the crew, keep bodyguards close.", BizTab.Rivals, true));
+            return list;
+        }
+
+        void OverviewTab()
+        {
+            var st = game.Stock;
+            var org = game.Org;
+            var cards = Ui.Row(bizBody);
+            cards.style.flexWrap = Wrap.Wrap;
+            void Card(string label, string value, string note)
+            {
+                var c = Ui.Box("stat-card").Into(cards);
+                Ui.Text(label, c, "tiny", "muted");
+                Ui.Text(value, c, "stat-card__value");
+                Ui.Text(note, c, "tiny", "muted", "wrap");
+            }
+            Card("CASH", $"€{st.Cash}", $"+ €{st.Clean} clean");
+            Card("WAGES ON SUNDAY", $"€{org.WeeklyWageBill(game)}", "mesata and family support");
+            Card("RESPECT", $"{org.Respect:0}", "opens doors, scares shopkeepers");
+            Card("EVIDENCE", $"{org.Evidence:0}/100", "at 100, a warrant");
+
+            Ui.Text("NEEDS YOU", bizBody, "section");
+            var problems = Problems();
+            if (problems.Count == 0) Ui.Text("Nothing urgent. Go and make some money.", bizBody, "good");
+            foreach (var (text, tab, bad) in problems)
+            {
+                var row = Ui.Box("attention").Into(bizBody);
+                row.AddToClassList(bad ? "attention--bad" : "attention--warn");
+                Ui.Text(text, row, "wrap", "grow").pickingMode = PickingMode.Ignore;
+                Ui.Text($"{TabName(tab)} ›", row, "small", "gold").pickingMode = PickingMode.Ignore;
+                var t = tab;
+                row.RegisterCallback<ClickEvent>(_ => OpenBizTab(t));
+            }
+
+            Ui.Text("WHAT YOU'RE WORKING ON", bizBody, "section");
+            Ui.Text(Objectives.Current(game, null).Text ?? "Nothing in particular.", bizBody, "wrap");
+            Ui.Text("Lavoretti from contacts are in the Taccuino (J). Shops and contacts are on the map (M).", bizBody, "small", "muted", "wrap");
         }
 
         /// <summary>Runs an action from a window button and redraws the window straight away.</summary>
@@ -176,6 +326,9 @@ namespace OSistema.UI
                 roleBtn = Ui.Btn(RoleLabel(p.Role) + "  ▾", () => ShowRoleMenu(pawn, roleBtn), row, "btn--small");
                 roleBtn.style.width = 150;
                 roleBtn.SetEnabled(!p.Controlled);
+                Button bedBtn = null;
+                bedBtn = Ui.Btn(BedLabel(p), () => ShowBedMenu(pawn, bedBtn), row, "btn--small");
+                bedBtn.style.width = 80;
                 Ui.Btn("−", Do(() => pawn.Wage = Mathf.Max(0, pawn.Wage - 10)), row, "btn--small");
                 Ui.Text($"€{p.Wage}", row).style.width = 44;
                 Ui.Btn("+", Do(() => pawn.Wage = Mathf.Min(1000, pawn.Wage + 10)), row, "btn--small");

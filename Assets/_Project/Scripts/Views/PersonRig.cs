@@ -202,8 +202,33 @@ namespace OSistema.Views
                 handR.enabled = hands;
             }
             aiming = false;
-            // A slight bob of the shoulders as the weight shifts.
-            body.transform.localScale = Vector3.one * (1f + Mathf.Abs(Mathf.Sin(stride)) * 0.04f * moving);
+            if (art && !lying)
+            {
+                // Walking from above: the shoulders swing against the stride, the head nods, the body
+                // rises and falls with each step. Running exaggerates all of it; standing, he breathes.
+                float run = Mathf.Clamp01((speed - 3.5f) / 3f);
+                float amp = moving * (1f + run * 0.8f);
+                float sway = Mathf.Sin(stride) * 7f * amp;
+                float breathe = Seated ? 0f : Mathf.Sin(Time.time * 2.2f + stride) * 0.012f * (1f - moving);
+                float step = Mathf.Abs(Mathf.Sin(stride)) * 0.05f * amp;
+                body.transform.localRotation = Quaternion.Euler(0f, 0f, 180f + sway);
+                if (neck != null) neck.transform.localRotation = body.transform.localRotation;
+                var headRot = Quaternion.Euler(0f, 0f, 180f - sway * 0.35f);
+                head.transform.localRotation = headRot;
+                hair.transform.localRotation = headRot;
+                if (hat != null) hat.transform.localRotation = headRot;
+                // Leaning into the run.
+                var lean = new Vector3(0f, 0.04f * run * moving, 0f);
+                head.transform.localPosition = lean;
+                hair.transform.localPosition = lean;
+                if (hat != null) hat.transform.localPosition = lean;
+                body.transform.localScale = new Vector3(1f + breathe, 1f + breathe + step, 1f);
+            }
+            else
+            {
+                // A slight bob of the shoulders as the weight shifts.
+                body.transform.localScale = Vector3.one * (1f + Mathf.Abs(Mathf.Sin(stride)) * 0.04f * moving);
+            }
 
             root.position = new Vector3(position.x, position.y, 0f);
             float current = pivot.localEulerAngles.z;

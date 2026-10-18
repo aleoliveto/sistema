@@ -245,18 +245,26 @@ namespace OSistema.Npcs
             Crime.Zone hottest = null;
             foreach (var z in game.Territory.Zones)
                 if (z.Heat > 30f && (hottest == null || z.Heat > hottest.Heat)) hottest = z;
+            // Even a quiet rione sees a patrol walk through every few hours: the State is always around.
+            var p = game.Player;
+            if (hottest == null && p != null && p.IsPresent && now - lastPatrolTick > GameClock.TicksPerHour * 4 && game.Rng.NextDouble() < 0.5)
+                hottest = game.Territory.ZoneAt(p.Cell);
             if (hottest == null || game.Territory.Entrances.Count == 0) return;
 
             lastPatrolTick = now;
             var rng = game.Rng;
+            // They start a few streets away, not at the edge of the map.
             var entrance = game.Territory.RandomEntrance(rng);
+            var near = RandomDestinationNear(Vector2Int.RoundToInt(hottest.Rect.center), game);
+            var exit = entrance;
+            if (p == null || (near - p.Cell).sqrMagnitude > 18 * 18) entrance = near;
             for (int i = 0; i < 2; i++)
             {
                 var cop = game.Npcs.Spawn(NpcKind.Police, entrance, 0.05f, new Color32(30, 50, 130, 255));
                 cop.IsPatrol = true;
                 cop.TripsLeft = 4;
                 cop.Target = RandomCellIn(hottest.Rect, game);
-                cop.Exit = entrance;
+                cop.Exit = exit;
             }
         }
 

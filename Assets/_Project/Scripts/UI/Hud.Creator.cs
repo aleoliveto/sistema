@@ -35,6 +35,7 @@ namespace OSistema.UI
             var pics = Ui.Row(left);
             var portrait = Ui.Box("creator__portrait").Into(pics);
             var preview = Ui.Box("creator__preview").Into(pics);
+            preview.style.backgroundImage = new StyleBackground(TilePainter.BasolatoTexture(128));
             var layers = new VisualElement[5];
             for (int i = 0; i < layers.Length; i++)
             {
@@ -184,7 +185,7 @@ namespace OSistema.UI
             row.style.alignItems = Align.Center;
             Ui.Text(label, row, "small").style.width = 90;
             var box = Ui.Box("namefield").Into(row);
-            var nb = new NameBox { Box = box, Text = Ui.Text("", box), Get = get, Set = set };
+            var nb = new NameBox { Box = box, Text = Ui.Text("", box, "namefield__text"), Get = get, Set = set };
             box.RegisterCallback<PointerDownEvent>(_ => { typingInto = nb; RefreshNameFields(); });
             nameFields.Add(nb);
             RefreshNameFields();

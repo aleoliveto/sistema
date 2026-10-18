@@ -110,6 +110,10 @@ namespace OSistema.UI
             scale.RegisterValueChangedCallback(e => { PlayerPrefs.SetFloat("ui_scale", e.newValue); ApplySettings(); });
             Setting(body, "Interface size", scale);
 
+            var auto = new Toggle { value = PlayerPrefs.GetInt("auto_move", 0) == 1 };
+            auto.RegisterValueChangedCallback(e => { PlayerPrefs.SetInt("auto_move", e.newValue ? 1 : 0); ApplySettings(); });
+            Setting(body, "Automatic movement (he eats, sleeps and works on his own when you leave him)", auto);
+
             var names = new Toggle { value = PlayerPrefs.GetInt("names_always", 0) == 1 };
             names.RegisterValueChangedCallback(e => { PlayerPrefs.SetInt("names_always", e.newValue ? 1 : 0); ApplySettings(); });
             Setting(body, "Always show names", names);
@@ -129,6 +133,7 @@ namespace OSistema.UI
             AudioListener.volume = PlayerPrefs.GetFloat("volume", 0.8f);
             if (document != null && document.panelSettings != null) document.panelSettings.scale = PlayerPrefs.GetFloat("ui_scale", 1f);
             AlwaysShowNames = PlayerPrefs.GetInt("names_always", 0) == 1;
+            ApplyAutoMovement();
         }
 
         /// <summary>Esc closes the topmost thing; with nothing open it brings up the pause menu.</summary>
@@ -165,6 +170,24 @@ namespace OSistema.UI
             else if (openMenu == Menu.Creator) OpenMenu(Menu.Title);
             else if (openWindow != Window.None) ToggleWindow(openWindow);
             else OpenMenu(Menu.Pause);
+        }
+
+        /// <summary>Automatic movement for the player's character: off unless ticked in Settings (or Z).</summary>
+        void ApplyAutoMovement()
+        {
+            if (game == null) return;
+            bool on = PlayerPrefs.GetInt("auto_move", 0) == 1;
+            game.PlayerSelfCare = on;
+            var p = game.Player;
+            if (p != null) p.Autopilot = on;
+        }
+
+        public void ToggleAutoMovement()
+        {
+            bool on = PlayerPrefs.GetInt("auto_move", 0) != 1;
+            PlayerPrefs.SetInt("auto_move", on ? 1 : 0);
+            ApplyAutoMovement();
+            game?.Log.Add(on ? "Automatic movement on: left alone, he eats, sleeps and works by himself (Z or Settings to turn off)." : "Automatic movement off: he only moves when you move him.", Core.MessageKind.Info);
         }
 
         void ShowTitleOnce()

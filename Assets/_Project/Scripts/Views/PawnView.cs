@@ -25,6 +25,8 @@ namespace OSistema.Views
             new Color(0.75f, 0.1f, 0.12f), new Color(0.92f, 0.92f, 0.9f), new Color(0.12f, 0.12f, 0.13f), new Color(0.45f, 0.65f, 0.85f),
         };
 
+        int wornNeck = -2, wornHat = -2;
+
         public Pawn Pawn => pawn;
 
         public void Init(Pawn p)
@@ -63,6 +65,13 @@ namespace OSistema.Views
 
         void LateUpdate()
         {
+            // Bought a chain or a hat: wear it.
+            if (pawn != null && pawn.Look != null && pawn.Faction != Faction.Rival && (pawn.Look.Neck != wornNeck || pawn.Look.Hat != wornHat))
+            {
+                wornNeck = pawn.Look.Neck;
+                wornHat = pawn.Look.Hat;
+                rig.ApplyLook(pawn.Look);
+            }
             if (pawn == null || rig == null) return; // state lost to a script reload during Play
             if (pawn.Departed)
             {

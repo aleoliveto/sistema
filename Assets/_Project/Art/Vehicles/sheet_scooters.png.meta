@@ -1,0 +1,717 @@
+fileFormatVersion: 2
+guid: f3a6ce10d121140c6ace8a94acb03d9a
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -8995985485219192716
+    second: sheet_scooters_0
+  - first:
+      213: -6172810848090762777
+    second: sheet_scooters_1
+  - first:
+      213: 6304969916333153112
+    second: sheet_scooters_2
+  - first:
+      213: 3997273916228001805
+    second: sheet_scooters_3
+  - first:
+      213: 1843835267287325657
+    second: sheet_scooters_4
+  - first:
+      213: 6412741075694930586
+    second: sheet_scooters_5
+  - first:
+      213: 7918428647419785190
+    second: sheet_scooters_6
+  - first:
+      213: -5374401959884257641
+    second: sheet_scooters_7
+  - first:
+      213: 6819745996882984056
+    second: sheet_scooters_8
+  - first:
+      213: 4749249347001858995
+    second: sheet_scooters_9
+  - first:
+      213: 3473574748467976855
+    second: sheet_scooters_10
+  - first:
+      213: -8913174291322553384
+    second: sheet_scooters_11
+  - first:
+      213: -8854047921509846013
+    second: sheet_scooters_12
+  - first:
+      213: 2162717124139573563
+    second: sheet_scooters_13
+  - first:
+      213: 1528589758336156662
+    second: sheet_scooters_14
+  - first:
+      213: -7636770642745387750
+    second: sheet_scooters_15
+  - first:
+      213: 3876549509442019292
+    second: sheet_scooters_16
+  - first:
+      213: 5476363078219438821
+    second: sheet_scooters_17
+  - first:
+      213: -3835757083189920915
+    second: sheet_scooters_18
+  - first:
+      213: 5577714743768967814
+    second: sheet_scooters_19
+  - first:
+      213: -4904487710837525021
+    second: sheet_scooters_20
+  - first:
+      213: -1034172635571652629
+    second: sheet_scooters_21
+  - first:
+      213: -2682224793907916416
+    second: sheet_scooters_22
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: sheet_scooters_0
+      rect:
+        serializedVersion: 2
+        x: 56
+        y: 959
+        width: 186
+        height: 295
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 470a0fc2dd6d72380800000000000000
+      internalID: -8995985485219192716
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_scooters_1
+      rect:
+        serializedVersion: 2
+        x: 231
+        y: 1213
+        width: 12
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7e15fd51d35c55aa0800000000000000
+      internalID: -6172810848090762777
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_scooters_2
+      rect:
+        serializedVersion: 2
+        x: 329
+        y: 955
+        width: 243
+        height: 299
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 85bdf86dbb0cf7750800000000000000
+      internalID: 6304969916333153112
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_scooters_3
+      rect:
+        serializedVersion: 2
+        x: 585
+        y: 905
+        width: 278
+        height: 349
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d0064b6c27b297730800000000000000
+      internalID: 3997273916228001805
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_scooters_4
+      rect:
+        serializedVersion: 2
+        x: 956
+        y: 955
+        width: 277
+        height: 298
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9db9ff2186e969910800000000000000
+      internalID: 1843835267287325657
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_scooters_5
+      rect:
+        serializedVersion: 2
+        x: 255
+        y: 1197
+        width: 15
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a9a4a5d3802aef850800000000000000
+      internalID: 6412741075694930586
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_scooters_6
+      rect:
+        serializedVersion: 2
+        x: 956
+        y: 1118
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6efabb4b6e8e3ed60800000000000000
+      internalID: 7918428647419785190
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_scooters_7
+      rect:
+        serializedVersion: 2
+        x: 989
+        y: 998
+        width: 7
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7968fec64e94a65b0800000000000000
+      internalID: -5374401959884257641
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_scooters_8
+      rect:
+        serializedVersion: 2
+        x: 1179
+        y: 1008
+        width: 14
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 87c3a920ada94ae50800000000000000
+      internalID: 6819745996882984056
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_scooters_9
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 329
+        height: 950
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3bb3dc55e19b8e140800000000000000
+      internalID: 4749249347001858995
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_scooters_10
+      rect:
+        serializedVersion: 2
+        x: 332
+        y: 15
+        width: 330
+        height: 938
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 79a533774dd943030800000000000000
+      internalID: 3473574748467976855
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_scooters_11
+      rect:
+        serializedVersion: 2
+        x: 663
+        y: 0
+        width: 246
+        height: 633
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8db3390c43b0e4480800000000000000
+      internalID: -8913174291322553384
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_scooters_12
+      rect:
+        serializedVersion: 2
+        x: 675
+        y: 632
+        width: 192
+        height: 319
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 304be1e735a102580800000000000000
+      internalID: -8854047921509846013
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_scooters_13
+      rect:
+        serializedVersion: 2
+        x: 908
+        y: 0
+        width: 323
+        height: 953
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b316efd04c3830e10800000000000000
+      internalID: 2162717124139573563
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_scooters_14
+      rect:
+        serializedVersion: 2
+        x: 297
+        y: 483
+        width: 10
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6f34de05944a63510800000000000000
+      internalID: 1528589758336156662
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_scooters_15
+      rect:
+        serializedVersion: 2
+        x: 946
+        y: 333
+        width: 12
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a159700df8db40690800000000000000
+      internalID: -7636770642745387750
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_scooters_16
+      rect:
+        serializedVersion: 2
+        x: 1206
+        y: 345
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cdf91807d354cc530800000000000000
+      internalID: 3876549509442019292
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_scooters_17
+      rect:
+        serializedVersion: 2
+        x: 577
+        y: 311
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5ea95526433fffb40800000000000000
+      internalID: 5476363078219438821
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_scooters_18
+      rect:
+        serializedVersion: 2
+        x: 599
+        y: 316
+        width: 13
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d6bb6cb6147a4cac0800000000000000
+      internalID: -3835757083189920915
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_scooters_19
+      rect:
+        serializedVersion: 2
+        x: 311
+        y: 53
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 68aeec8e106086d40800000000000000
+      internalID: 5577714743768967814
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_scooters_20
+      rect:
+        serializedVersion: 2
+        x: 669
+        y: 49
+        width: 7
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3e5b24e7962cfebb0800000000000000
+      internalID: -4904487710837525021
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_scooters_21
+      rect:
+        serializedVersion: 2
+        x: 940
+        y: 49
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: be7725c9771e5a1f0800000000000000
+      internalID: -1034172635571652629
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_scooters_22
+      rect:
+        serializedVersion: 2
+        x: 940
+        y: 25
+        width: 26
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0819f5fc2c2d6cad0800000000000000
+      internalID: -2682224793907916416
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      sheet_scooters_0: -8995985485219192716
+      sheet_scooters_1: -6172810848090762777
+      sheet_scooters_10: 3473574748467976855
+      sheet_scooters_11: -8913174291322553384
+      sheet_scooters_12: -8854047921509846013
+      sheet_scooters_13: 2162717124139573563
+      sheet_scooters_14: 1528589758336156662
+      sheet_scooters_15: -7636770642745387750
+      sheet_scooters_16: 3876549509442019292
+      sheet_scooters_17: 5476363078219438821
+      sheet_scooters_18: -3835757083189920915
+      sheet_scooters_19: 5577714743768967814
+      sheet_scooters_2: 6304969916333153112
+      sheet_scooters_20: -4904487710837525021
+      sheet_scooters_21: -1034172635571652629
+      sheet_scooters_22: -2682224793907916416
+      sheet_scooters_3: 3997273916228001805
+      sheet_scooters_4: 1843835267287325657
+      sheet_scooters_5: 6412741075694930586
+      sheet_scooters_6: 7918428647419785190
+      sheet_scooters_7: -5374401959884257641
+      sheet_scooters_8: 6819745996882984056
+      sheet_scooters_9: 4749249347001858995
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

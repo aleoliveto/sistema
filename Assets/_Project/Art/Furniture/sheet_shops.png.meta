@@ -1,0 +1,977 @@
+fileFormatVersion: 2
+guid: d8b260d22a1e14e5db7ec5f43d514594
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 4790984704305064367
+    second: sheet_shops_0
+  - first:
+      213: 8253010047071682614
+    second: sheet_shops_1
+  - first:
+      213: 3798549789050514336
+    second: sheet_shops_2
+  - first:
+      213: 22986996900622488
+    second: sheet_shops_3
+  - first:
+      213: -3414356631175965800
+    second: sheet_shops_4
+  - first:
+      213: 5164679520175752916
+    second: sheet_shops_5
+  - first:
+      213: 6302413929498621604
+    second: sheet_shops_6
+  - first:
+      213: -1487634736146227650
+    second: sheet_shops_7
+  - first:
+      213: 8372558892406482684
+    second: sheet_shops_8
+  - first:
+      213: -4454689745931877648
+    second: sheet_shops_9
+  - first:
+      213: -7432329922848758227
+    second: sheet_shops_10
+  - first:
+      213: -8595917421690894723
+    second: sheet_shops_11
+  - first:
+      213: -3246739294687084619
+    second: sheet_shops_12
+  - first:
+      213: 2305811631129555674
+    second: sheet_shops_13
+  - first:
+      213: -2878603293831581472
+    second: sheet_shops_14
+  - first:
+      213: 3202250779773356147
+    second: sheet_shops_15
+  - first:
+      213: -4723050191526246113
+    second: sheet_shops_16
+  - first:
+      213: -1980432485757927751
+    second: sheet_shops_17
+  - first:
+      213: -8881708913176167133
+    second: sheet_shops_18
+  - first:
+      213: 291783264801974284
+    second: sheet_shops_19
+  - first:
+      213: 6033142072192834492
+    second: sheet_shops_20
+  - first:
+      213: -6710879024941795466
+    second: sheet_shops_21
+  - first:
+      213: -8361664774517831622
+    second: sheet_shops_22
+  - first:
+      213: 1513768745861009456
+    second: sheet_shops_23
+  - first:
+      213: -288812136064923344
+    second: sheet_shops_24
+  - first:
+      213: 4999082830512223747
+    second: sheet_shops_25
+  - first:
+      213: -1406179004645940850
+    second: sheet_shops_26
+  - first:
+      213: -1487652558680722715
+    second: sheet_shops_27
+  - first:
+      213: -3740965970076729552
+    second: sheet_shops_28
+  - first:
+      213: 6793599404169314312
+    second: sheet_shops_29
+  - first:
+      213: -6223060998307737963
+    second: sheet_shops_30
+  - first:
+      213: -5994539629230716164
+    second: sheet_shops_31
+  - first:
+      213: 6749503135253763938
+    second: sheet_shops_32
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: sheet_shops_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 564
+        width: 1254
+        height: 684
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fa9ee60743ffc7240800000000000000
+      internalID: 4790984704305064367
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_1
+      rect:
+        serializedVersion: 2
+        x: 530
+        y: 1229
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 630007759e4988270800000000000000
+      internalID: 8253010047071682614
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_2
+      rect:
+        serializedVersion: 2
+        x: 533
+        y: 1227
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0abadf558e827b430800000000000000
+      internalID: 3798549789050514336
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_3
+      rect:
+        serializedVersion: 2
+        x: 709
+        y: 1227
+        width: 7
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 890f6b84d8aa15000800000000000000
+      internalID: 22986996900622488
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_4
+      rect:
+        serializedVersion: 2
+        x: 713
+        y: 1227
+        width: 12
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 893d146ebb4cd90d0800000000000000
+      internalID: -3414356631175965800
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_5
+      rect:
+        serializedVersion: 2
+        x: 342
+        y: 1181
+        width: 20
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4d68fc2f8a0aca740800000000000000
+      internalID: 5164679520175752916
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_6
+      rect:
+        serializedVersion: 2
+        x: 490
+        y: 1210
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4a63d37c31ca67750800000000000000
+      internalID: 6302413929498621604
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_7
+      rect:
+        serializedVersion: 2
+        x: 754
+        y: 1197
+        width: 19
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e3ed87cd61cda5be0800000000000000
+      internalID: -1487634736146227650
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_8
+      rect:
+        serializedVersion: 2
+        x: 1239
+        y: 854
+        width: 15
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cf62de2f3fd413470800000000000000
+      internalID: 8372558892406482684
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_9
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 773
+        width: 6
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0f2c72d2743cd22c0800000000000000
+      internalID: -4454689745931877648
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_10
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 673
+        width: 7
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d26e717305f0bd890800000000000000
+      internalID: -7432329922848758227
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_11
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 305
+        width: 642
+        height: 298
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d76c589e5aa25b880800000000000000
+      internalID: -8595917421690894723
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_12
+      rect:
+        serializedVersion: 2
+        x: 633
+        y: 568
+        width: 15
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5bfbfdd30d341f2d0800000000000000
+      internalID: -3246739294687084619
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_13
+      rect:
+        serializedVersion: 2
+        x: 892
+        y: 566
+        width: 23
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ad2f0783673efff10800000000000000
+      internalID: 2305811631129555674
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_14
+      rect:
+        serializedVersion: 2
+        x: 914
+        y: 562
+        width: 22
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0e036e54e852d08d0800000000000000
+      internalID: -2878603293831581472
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_15
+      rect:
+        serializedVersion: 2
+        x: 965
+        y: 563
+        width: 19
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 378cb123e1ea07c20800000000000000
+      internalID: 3202250779773356147
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_16
+      rect:
+        serializedVersion: 2
+        x: 1139
+        y: 570
+        width: 14
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f19ccb5efda547eb0800000000000000
+      internalID: -4723050191526246113
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_17
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 1249
+        height: 335
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9be31c0a5271484e0800000000000000
+      internalID: -1980432485757927751
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_18
+      rect:
+        serializedVersion: 2
+        x: 635
+        y: 331
+        width: 313
+        height: 235
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 32db6bffcc4ddb480800000000000000
+      internalID: -8881708913176167133
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_19
+      rect:
+        serializedVersion: 2
+        x: 715
+        y: 323
+        width: 8
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c08ece9555f9c0400800000000000000
+      internalID: 291783264801974284
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_20
+      rect:
+        serializedVersion: 2
+        x: 721
+        y: 316
+        width: 22
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cbb948cefb60ab350800000000000000
+      internalID: 6033142072192834492
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_21
+      rect:
+        serializedVersion: 2
+        x: 938
+        y: 331
+        width: 303
+        height: 234
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 67779b3251b2ed2a0800000000000000
+      internalID: -6710879024941795466
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_22
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 296
+        width: 13
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a38c7f7803665fb80800000000000000
+      internalID: -8361664774517831622
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_23
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 216
+        width: 6
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 030522177acf10510800000000000000
+      internalID: 1513768745861009456
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_24
+      rect:
+        serializedVersion: 2
+        x: 490
+        y: 31
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 039470774eeedfbf0800000000000000
+      internalID: -288812136064923344
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_25
+      rect:
+        serializedVersion: 2
+        x: 504
+        y: 31
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3067f6b195f406540800000000000000
+      internalID: 4999082830512223747
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_26
+      rect:
+        serializedVersion: 2
+        x: 930
+        y: 29
+        width: 12
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e81677145af3c7ce0800000000000000
+      internalID: -1406179004645940850
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_27
+      rect:
+        serializedVersion: 2
+        x: 939
+        y: 33
+        width: 7
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5e272aa31ebca5be0800000000000000
+      internalID: -1487652558680722715
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_28
+      rect:
+        serializedVersion: 2
+        x: 1133
+        y: 33
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 03f70cc454b651cc0800000000000000
+      internalID: -3740965970076729552
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_29
+      rect:
+        serializedVersion: 2
+        x: 1139
+        y: 29
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 80041dff9a6b74e50800000000000000
+      internalID: 6793599404169314312
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_30
+      rect:
+        serializedVersion: 2
+        x: 233
+        y: 23
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 59e87444efe33a9a0800000000000000
+      internalID: -6223060998307737963
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_31
+      rect:
+        serializedVersion: 2
+        x: 922
+        y: 17
+        width: 12
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cfa83b7b7fd1fcca0800000000000000
+      internalID: -5994539629230716164
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_shops_32
+      rect:
+        serializedVersion: 2
+        x: 1091
+        y: 18
+        width: 11
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2679f23575d0bad50800000000000000
+      internalID: 6749503135253763938
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      sheet_shops_0: 4790984704305064367
+      sheet_shops_1: 8253010047071682614
+      sheet_shops_10: -7432329922848758227
+      sheet_shops_11: -8595917421690894723
+      sheet_shops_12: -3246739294687084619
+      sheet_shops_13: 2305811631129555674
+      sheet_shops_14: -2878603293831581472
+      sheet_shops_15: 3202250779773356147
+      sheet_shops_16: -4723050191526246113
+      sheet_shops_17: -1980432485757927751
+      sheet_shops_18: -8881708913176167133
+      sheet_shops_19: 291783264801974284
+      sheet_shops_2: 3798549789050514336
+      sheet_shops_20: 6033142072192834492
+      sheet_shops_21: -6710879024941795466
+      sheet_shops_22: -8361664774517831622
+      sheet_shops_23: 1513768745861009456
+      sheet_shops_24: -288812136064923344
+      sheet_shops_25: 4999082830512223747
+      sheet_shops_26: -1406179004645940850
+      sheet_shops_27: -1487652558680722715
+      sheet_shops_28: -3740965970076729552
+      sheet_shops_29: 6793599404169314312
+      sheet_shops_3: 22986996900622488
+      sheet_shops_30: -6223060998307737963
+      sheet_shops_31: -5994539629230716164
+      sheet_shops_32: 6749503135253763938
+      sheet_shops_4: -3414356631175965800
+      sheet_shops_5: 5164679520175752916
+      sheet_shops_6: 6302413929498621604
+      sheet_shops_7: -1487634736146227650
+      sheet_shops_8: 8372558892406482684
+      sheet_shops_9: -4454689745931877648
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
