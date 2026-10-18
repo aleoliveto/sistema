@@ -29,8 +29,10 @@ namespace OSistema.Crime
 
         /// <summary>Early-game steps the player has done once: the hints for them stop.</summary>
         public readonly System.Collections.Generic.List<string> Learned = new System.Collections.Generic.List<string>();
-        public readonly List<DrugSquare> Squares = new List<DrugSquare>();
-        public readonly List<Business> Businesses = new List<Business>();
+        /// <summary>The district the family is in: its piazze and shops are the ones in play.</summary>
+        public Core.District District;
+        public List<DrugSquare> Squares => District.Squares;
+        public List<Business> Businesses => District.Businesses;
 
         public int PendingOrderUnits;
         public int PendingOrderDay;     // delivered at 08:00 on this day

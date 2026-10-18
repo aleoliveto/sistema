@@ -10,19 +10,127 @@ using UnityEngine;
 namespace OSistema.Core
 {
     /// <summary>
-    /// Saves the whole simulation to JSON. Jobs are not saved: pawns simply re-think after loading.
+    /// Saves the whole simulation to JSON, in a folder: family.json for everything that travels with
+    /// the family (crew, money, clans, phone, the clock) and district_{id}.json for each district's
+    /// map and what stands on it. Jobs are not saved: pawns simply re-think after loading.
+    /// A single save1.json from before districts still loads, as the home district.
     /// Bump <see cref="Version"/> whenever the format changes.
     /// </summary>
     public static class SaveSystem
     {
-        public const int Version = 10;
+        public const int Version = 11;
         const int OldestReadable = 5; // the map generator changed too much to migrate older saves
 
-        public static string DefaultPath => Path.Combine(Application.persistentDataPath, "save1.json");
+        /// <summary>The save slot: a folder.</summary>
+        public static string DefaultPath => Path.Combine(Application.persistentDataPath, "save1");
 
-        public static bool HasSave(string path) => File.Exists(path);
+        /// <summary>Where a save from before districts lived: one file next to the folder.</summary>
+        static string LegacyFile(string folder) => folder.TrimEnd('/', '\\') + ".json";
+        static string FamilyFile(string folder) => Path.Combine(folder, "family.json");
+        static string DistrictFile(string folder, string id) => Path.Combine(folder, $"district_{id}.json");
 
-        public static void Save(Game game, string path)
+        public static bool HasSave(string path) => File.Exists(FamilyFile(path)) || File.Exists(LegacyFile(path));
+
+        public static void Save(Game game, string folder)
+        {
+            var data = Collect(game);
+            // The district's ground goes in its own file; the rest is the family's.
+            var district = SplitDistrict(data, game.District);
+            Directory.CreateDirectory(folder);
+            File.WriteAllText(DistrictFile(folder, district.id), JsonUtility.ToJson(district));
+            File.WriteAllText(FamilyFile(folder), JsonUtility.ToJson(data));
+        }
+
+        public static Game Load(string folder)
+        {
+            SaveData data;
+            if (File.Exists(FamilyFile(folder)))
+            {
+                data = JsonUtility.FromJson<SaveData>(File.ReadAllText(FamilyFile(folder)));
+                string id = string.IsNullOrEmpty(data?.current) ? District.HomeId : data.current;
+                var district = JsonUtility.FromJson<DistrictData>(File.ReadAllText(DistrictFile(folder, id)));
+                MergeDistrict(data, district);
+            }
+            else data = JsonUtility.FromJson<SaveData>(File.ReadAllText(LegacyFile(folder)));
+            return Restore(data);
+        }
+
+        /// <summary>
+        /// For testing (the dev switch): saves to a scratch folder, loads it back and compares the two
+        /// games; then loads the old single-file save if there is one. Returns a report for the log.
+        /// </summary>
+        public static string DevRoundTrip(Game game)
+        {
+            var report = new System.Text.StringBuilder();
+            string folder = Path.Combine(Application.persistentDataPath, "dev_roundtrip");
+            Save(game, folder);
+            var back = Load(folder);
+            int diff = 0;
+            for (int i = 0; i < game.Map.CellCount; i++)
+                if (game.Map.GetTerrainAt(i) != back.Map.GetTerrainAt(i) || game.Map.GetBuildingAt(i) != back.Map.GetBuildingAt(i)) diff++;
+            string Counts(Game g) =>
+                $"district {g.District.Id} · cells {g.Map.CellCount} · pawns {g.Pawns.All.Count} · properties {g.Properties.All.Count} · " +
+                $"businesses {g.Org.Businesses.Count} · piazze {g.Org.Squares.Count} · clans {g.Clans.Count} · clan piazze {System.Linq.Enumerable.Count(g.RivalSquares)} · cash {g.Stock.Cash} · day {g.Clock.Day} {g.Clock.Hour:00}h";
+            report.AppendLine($"ROUNDTRIP saved : {Counts(game)}");
+            report.AppendLine($"ROUNDTRIP loaded: {Counts(back)} · differing cells {diff}");
+            report.AppendLine($"ROUNDTRIP files : {string.Join(", ", System.Linq.Enumerable.Select(Directory.GetFiles(folder), f => Path.GetFileName(f) + " " + new FileInfo(f).Length / 1024 + "KB"))}");
+            string legacy = Path.Combine(Application.persistentDataPath, "save1");
+            if (File.Exists(LegacyFile(legacy)) && !File.Exists(FamilyFile(legacy)))
+            {
+                var old = Load(legacy);
+                report.AppendLine($"LEGACY loaded   : {Counts(old)}");
+            }
+            return report.ToString();
+        }
+
+        /// <summary>Moves the map and everything on it out of the save into a district record.</summary>
+        static DistrictData SplitDistrict(SaveData data, District district)
+        {
+            var d = new DistrictData
+            {
+                version = data.version, id = district.Id, name = district.Name, seed = district.Seed,
+                width = data.width, height = data.height,
+                terrain = data.terrain, buildings = data.buildings, styles = data.styles, decor = data.decor, rotation = data.rotation,
+                baseX = data.baseX, baseY = data.baseY, baseW = data.baseW, baseH = data.baseH,
+                properties = data.properties, zones = data.zones, squares = data.squares, businesses = data.businesses, blueprints = data.blueprints,
+            };
+            // Every clan's piazze here, tagged with the clan.
+            foreach (var sq in data.rivalSquares) { sq.clan = 0; d.clanSquares.Add(sq); }
+            for (int i = 0; i < data.clans.Count; i++)
+                foreach (var sq in data.clans[i].squares) { sq.clan = i + 1; d.clanSquares.Add(sq); }
+
+            data.current = district.Id;
+            data.districts.Clear();
+            data.districts.Add(new DistrictEntry { id = district.Id, name = district.Name, seed = district.Seed });
+            data.terrain = data.buildings = data.styles = data.decor = data.rotation = null;
+            data.properties = new List<PropertyData>();
+            data.zones = new List<ZoneData>();
+            data.squares = new List<SquareData>();
+            data.businesses = new List<BusinessData>();
+            data.blueprints = new List<BlueprintData>();
+            data.rivalSquares = new List<SquareData>();
+            foreach (var c in data.clans) c.squares = new List<SquareData>();
+            return d;
+        }
+
+        /// <summary>Puts a district record back into the save, so the rest of loading reads one shape.</summary>
+        static void MergeDistrict(SaveData data, DistrictData d)
+        {
+            data.width = d.width; data.height = d.height;
+            data.terrain = d.terrain; data.buildings = d.buildings; data.styles = d.styles; data.decor = d.decor; data.rotation = d.rotation;
+            data.baseX = d.baseX; data.baseY = d.baseY; data.baseW = d.baseW; data.baseH = d.baseH;
+            data.properties = d.properties; data.zones = d.zones; data.squares = d.squares; data.businesses = d.businesses; data.blueprints = d.blueprints;
+            data.districtName = d.name;
+            data.districtSeed = d.seed;
+            data.rivalSquares = new List<SquareData>();
+            foreach (var sq in d.clanSquares)
+            {
+                if (sq.clan == 0) data.rivalSquares.Add(sq);
+                else if (sq.clan - 1 < data.clans.Count) data.clans[sq.clan - 1].squares.Add(sq);
+            }
+        }
+
+        static SaveData Collect(Game game)
         {
             var map = game.Map;
             var terrain = new byte[map.CellCount];
@@ -139,12 +247,11 @@ namespace OSistema.Core
                 data.pawns.Add(d);
             }
 
-            File.WriteAllText(path, JsonUtility.ToJson(data));
+            return data;
         }
 
-        public static Game Load(string path)
+        static Game Restore(SaveData data)
         {
-            var data = JsonUtility.FromJson<SaveData>(File.ReadAllText(path));
             if (data == null || data.version < OldestReadable || data.version > Version)
                 throw new InvalidDataException($"Unsupported save version {data?.version}");
 
@@ -174,7 +281,11 @@ namespace OSistema.Core
             foreach (var z in data.zones)
                 zones.Add(new Zone { Name = z.name, Rect = new RectInt(z.x, z.y, z.w, z.h), Heat = z.heat, Demand = z.demand });
 
-            var game = new Game(data.seed, map, new RectInt(data.baseX, data.baseY, data.baseW, data.baseH), data.ticks, zones, properties);
+            var district = new District(string.IsNullOrEmpty(data.current) ? District.HomeId : data.current,
+                string.IsNullOrEmpty(data.districtName) ? "Quartieri" : data.districtName,
+                data.districtSeed != 0 ? data.districtSeed : data.seed,
+                map, new RectInt(data.baseX, data.baseY, data.baseW, data.baseH), zones, properties);
+            var game = new Game(data.seed, data.ticks, district);
             game.Stock.Cash = data.cash;
             game.Stock.Product = data.product;
             game.Org.Respect = data.respect;
@@ -431,6 +542,36 @@ namespace OSistema.Core
             public List<SquareData> rivalSquares = new List<SquareData>();
             public List<BlueprintData> blueprints = new List<BlueprintData>();
             public List<PawnData> pawns = new List<PawnData>();
+            // Districts (version 11): which one the family is in, and the ones it knows.
+            public string current;
+            public List<DistrictEntry> districts = new List<DistrictEntry>();
+            [NonSerialized] public string districtName;
+            [NonSerialized] public int districtSeed;
+        }
+
+        [Serializable]
+        sealed class DistrictEntry
+        {
+            public string id, name;
+            public int seed;
+        }
+
+        /// <summary>One district's ground: the map and what stands on it.</summary>
+        [Serializable]
+        sealed class DistrictData
+        {
+            public int version;
+            public string id, name;
+            public int seed;
+            public int width, height;
+            public string terrain, buildings, styles, decor, rotation;
+            public int baseX, baseY, baseW, baseH;
+            public List<PropertyData> properties = new List<PropertyData>();
+            public List<ZoneData> zones = new List<ZoneData>();
+            public List<SquareData> squares = new List<SquareData>();
+            public List<BusinessData> businesses = new List<BusinessData>();
+            public List<BlueprintData> blueprints = new List<BlueprintData>();
+            public List<SquareData> clanSquares = new List<SquareData>();
         }
 
         [Serializable]
@@ -462,7 +603,7 @@ namespace OSistema.Core
         [Serializable]
         sealed class SquareData
         {
-            public int x, y, zone, open, close;
+            public int x, y, zone, open, close, clan;
         }
 
         [Serializable]

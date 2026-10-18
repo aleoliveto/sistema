@@ -22,16 +22,24 @@ namespace OSistema.Core
 
         public readonly int Seed;
         public readonly System.Random Rng;
-        public readonly Map Map;
         public readonly TickManager Ticks;
         public readonly GameClock Clock;
-        public readonly Pathfinder Pathfinder;
-        public readonly ConstructionManager Construction;
         public readonly PawnManager Pawns;
+
+        /// <summary>The district the family is in right now: the live map. Everything below forwards to it.</summary>
+        public District District { get; private set; }
+        public Map Map => District.Map;
+        public Pathfinder Pathfinder => District.Pathfinder;
+        public ConstructionManager Construction => District.Construction;
+        public Territory Territory => District.Territory;
+        public PropertyManager Properties => District.Properties;
+        public StreetLife StreetLife => District.StreetLife;
+        public Hospital Hospital => District.Hospital;
+        /// <summary>Interior of the crew's starting apartment.</summary>
+        public RectInt PlayerBase => District.PlayerBase;
         public readonly NpcManager Npcs = new NpcManager();
         public readonly Stock Stock = new Stock();
         public readonly MessageLog Log;
-        public readonly Territory Territory;
         public readonly Organization Org = new Organization();
         public readonly Police Police = new Police();
         public readonly RivalClan Rival = new RivalClan { Id = 0, Colour = ClanColours[0] };
@@ -237,36 +245,34 @@ namespace OSistema.Core
         /// <summary>Floating text over the world (money earned and the like). Presentation only.</summary>
         public event System.Action<Vector2, string> Popup;
         public void PopupAt(Vector2 at, string text) => Popup?.Invoke(at, text);
-        public StreetLife StreetLife { get; private set; }
-        public readonly PropertyManager Properties;
-        public readonly Hospital Hospital;
-
-        /// <summary>Interior of the crew's starting apartment.</summary>
-        public readonly RectInt PlayerBase;
-
         public Game(int seed, Map map, RectInt playerBase, long ticks, IEnumerable<Zone> zones, List<Property> properties)
+            : this(seed, ticks, new District(District.HomeId, "Quartieri", seed, map, playerBase, zones, properties)) { }
+
+        public Game(int seed, long ticks, District district)
         {
             Seed = seed;
             // System.Random can't be saved, so a loaded game reseeds from seed + time.
             Rng = new System.Random(unchecked(seed + (int)ticks));
-            Map = map;
-            PlayerBase = playerBase;
             Ticks = new TickManager();
             Ticks.Restore(ticks);
             Clock = new GameClock(Ticks);
-            Pathfinder = new Pathfinder(Map);
-            Construction = new ConstructionManager(Map);
             Pawns = new PawnManager();
             Log = new MessageLog(Ticks);
-            Territory = new Territory(Map, zones);
-            Properties = new PropertyManager(Map, properties);
-            StreetLife = new StreetLife(this);
-            Hospital = new Hospital(this);
+            Enter(district);
             Clans.Add(Rival);
             ClearNarrowLanes();
             RemoveStrayFurniture();
             Contacts.Setup(this);
             Ticks.OnTick += Tick;
+        }
+
+        /// <summary>Makes a district the live one: the map, its street life and its hospital.</summary>
+        void Enter(District district)
+        {
+            District = district;
+            Org.District = district;
+            district.StreetLife = new StreetLife(this);
+            district.Hospital = new Hospital(this);
         }
 
         public static Game NewGame(int seed, CharacterSetup setup = null)

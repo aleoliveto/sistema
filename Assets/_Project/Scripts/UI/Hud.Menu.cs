@@ -206,6 +206,11 @@ namespace OSistema.UI
                 if (text.Contains("night") && game != null) game.Ticks.Advance((int)(((21.5f - game.Clock.HourF + 24f) % 24f) * Core.GameClock.TicksPerHour));
                 if (text.Contains("rain") && game != null) game.Weather.ForceRain();
                 if (text.Contains("phone") && game != null) ToggleWindow(Window.Phone);
+                if (text.Contains("roundtrip") && game != null)
+                {
+                    try { Debug.Log("[O Sistema] " + Core.SaveSystem.DevRoundTrip(game)); }
+                    catch (Exception e) { Debug.LogError("[O Sistema] ROUNDTRIP FAILED " + e); }
+                }
                 if (text.Contains("map") && game != null) { OSistema.Views.FogOfWar.RevealAllForTesting(); ToggleMap(); }
                 return;
             }
