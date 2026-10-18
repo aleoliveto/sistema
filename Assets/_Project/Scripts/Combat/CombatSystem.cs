@@ -93,13 +93,17 @@ namespace OSistema.Combat
         /// <summary>Who starts shooting at whom.</summary>
         bool WantsToFight(Pawn a, Pawn b, long now)
         {
-            if (a.Faction == b.Faction || !b.IsPresent || b.Health.Downed) return false;
+            if (!b.IsPresent || b.Health.Downed) return false;
+            // Two clans' soldiers: enemies whenever either of them has come looking for a fight.
+            if (a.Faction == Faction.Rival && b.Faction == Faction.Rival)
+                return a.Clan != b.Clan && (a.IsAggressive(now) || b.IsAggressive(now));
+            if (a.Faction == b.Faction) return false;
             if (a.Controlled) return false;   // the player aims and fires himself
             if (a.Faction == Faction.Crew)
             {
                 // Bodyguards fight for the boss: anyone shooting, or anyone the boss is shooting at.
                 if (a.Role == CrewRole.Bodyguard && a.Armed) return b.IsAggressive(now) || now - LastPlayerShotTick < 900;
-                return a.Drafted || (a.Armed && b.IsAggressive(now));
+                return a.Drafted || (a.Armed && (b.IsAggressive(now) || (a.OnOperationUntil > now && b.Faction == Faction.Rival)));
             }
             return a.IsAggressive(now);
         }
@@ -302,8 +306,9 @@ namespace OSistema.Combat
             target.AggressiveUntil = Math.Max(target.AggressiveUntil, now + AggroTicks);
             if (attacker.Faction == Faction.Crew && target.Faction == Faction.Rival)
             {
-                game.Rival.OnCrewAttacked(game);
-                game.Rival.OnRivalAttacked(target, attacker, game);
+                var clan = game.ClanOf(target);
+                clan.OnCrewAttacked(game);
+                clan.OnRivalAttacked(target, attacker, game);
             }
 
             if (target.Faction == Faction.Rival && target.CanAct && (target.Health.Pain > 0.45f || target.Health.BloodLoss > 0.3f))

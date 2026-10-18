@@ -282,7 +282,7 @@ namespace OSistema.Npcs
                         return;
                     }
                     bool rival = npc.Square.Rival;
-                    var pusher = rival ? game.Rival.PusherAt(npc.Square, game) : game.Org.PusherAt(npc.Square, game);
+                    var pusher = rival ? game.Clans[npc.Square.Clan].PusherAt(npc.Square, game) : game.Org.PusherAt(npc.Square, game);
                     if (pusher != null && (rival || game.Stock.Product > 0))
                     {
                         game.Org.Sell(npc.Square, pusher, game);

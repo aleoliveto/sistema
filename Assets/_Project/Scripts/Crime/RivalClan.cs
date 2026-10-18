@@ -20,6 +20,9 @@ namespace OSistema.Crime
         const float NearDistance = 25f;
         const int StartingSoldiers = 8;
 
+        public int Id;               // index in Game.Clans
+        public Color32 Colour;       // on the territory map
+        public float Intel;          // 0..100: how much the family knows about them (names, habits, the boss)
         public string Name;
         public string BossName;
         public float Hostility = 10f;
@@ -38,34 +41,38 @@ namespace OSistema.Crime
 
         public bool OperationActive(Game game)
         {
-            foreach (var p in game.Pawns.Rivals)
-                if (p.IsPresent && (p.Mission == RivalMission.Stesa || p.Mission == RivalMission.Hit)) return true;
+            foreach (var p in Members(game))
+                if (p.IsPresent && (p.Mission == RivalMission.Stesa || p.Mission == RivalMission.Hit || p.Mission == RivalMission.Assault)) return true;
             return false;
         }
 
         // ---------- Setup ----------
 
-        public void Setup(Game game, System.Random rng)
+        /// <summary>Takes a name nobody else in the city has, and claims the given rioni with a piazza in each.</summary>
+        public void Setup(Game game, System.Random rng, IEnumerable<Zone> claim)
         {
-            string surname = Names.Pick(Names.RivalSurnames, rng);
+            string surname;
+            do surname = Names.Pick(Names.RivalSurnames, rng);
+            while (game.Clans.Exists(c => c != this && c.Name == $"Clan {surname}"));
             Name = $"Clan {surname}";
             BossName = $"{Names.Pick(Names.FirstNames, rng)} {surname}";
-
-            // Their territory: the three blocks farthest from the player's basso.
-            var home = game.PlayerBase.center;
-            var zones = new List<Zone>(game.Territory.Zones);
-            zones.Sort((a, b) => (b.Rect.center - home).sqrMagnitude.CompareTo((a.Rect.center - home).sqrMagnitude));
-            foreach (var zone in zones)
-            {
-                if (Squares.Count >= 3) break;
-                var cell = OutdoorCellNear(Vector2Int.RoundToInt(zone.Rect.center), game.Map, zone, game.Territory);
-                if (cell == null) continue;
-                var square = new DrugSquare { Cell = cell.Value, ZoneId = zone.Id, Rival = true, OpenHour = 0, CloseHour = 0 };
-                Squares.Add(square);
-                SpawnPusher(square, game);
-                SpawnLookout(square, game);
-            }
+            foreach (var zone in claim) ClaimZone(zone, game);
         }
+
+        /// <summary>Opens a piazza in a rione, with a pusher and a lookout on it.</summary>
+        public bool ClaimZone(Zone zone, Game game)
+        {
+            var cell = OutdoorCellNear(Vector2Int.RoundToInt(zone.Rect.center), game.Map, zone, game.Territory);
+            if (cell == null) return false;
+            var square = new DrugSquare { Cell = cell.Value, ZoneId = zone.Id, Rival = true, OpenHour = 0, CloseHour = 0, Clan = Id };
+            Squares.Add(square);
+            SpawnPusher(square, game);
+            SpawnLookout(square, game);
+            return true;
+        }
+
+        /// <summary>This clan's people on the map.</summary>
+        public IEnumerable<Pawn> Members(Game game) => game.Pawns.Rivals.Where(p => p.Clan == Id);
 
         static Vector2Int? OutdoorCellNear(Vector2Int center, Map map, Zone zone, Territory territory)
         {
@@ -92,6 +99,7 @@ namespace OSistema.Crime
                 Names.Pick(Names.Nicknames, rng), new Color32((byte)(g - 30), g, (byte)(g - 40), 255), at)
             {
                 Faction = Faction.Rival,
+                Clan = Id,
                 Armed = armed,
                 ShootingSkill = rng.Next(3, 9),
                 IntimidationSkill = rng.Next(3, 9),
@@ -135,7 +143,7 @@ namespace OSistema.Crime
 
         public Pawn PusherAt(DrugSquare square, Game game)
         {
-            foreach (var p in game.Pawns.Rivals)
+            foreach (var p in Members(game))
                 if (p.CanAct && p.Mission == RivalMission.Pusher && p.MissionSquare == square && p.CurrentJob is RivalPostJob post && post.AtPost)
                     return p;
             return null;
@@ -143,6 +151,12 @@ namespace OSistema.Crime
 
         public void OnSoldierDied(Pawn pawn, Game game)
         {
+            Intel = Mathf.Min(100f, Intel + 3f);   // a body talks: phones, papers, who came to the funeral
+            if (pawn == MarkedTarget)
+            {
+                OnTargetKilled(pawn, game);
+                MarkedTarget = null;
+            }
             Soldiers = Mathf.Max(0, Soldiers - 1);
             game.Territory.AddHeat(pawn.Cell, 15f);
             game.Org.AddEvidence(6f, game);
@@ -150,16 +164,17 @@ namespace OSistema.Crime
             if (Soldiers == 0) Collapse(game);
         }
 
-        void Collapse(Game game)
+        public void Collapse(Game game)
         {
             if (Destroyed) return;
             Destroyed = true;
             Squares.Clear();
             Hostility = 0f;
             game.Org.Respect = Mathf.Min(100f, game.Org.Respect + 20f);
-            foreach (var p in game.Pawns.Rivals)
+            foreach (var p in Members(game))
                 if (p.IsPresent) p.Mission = RivalMission.Leave;
-            game.Log.Add($"The {Name} is finished. Their piazze are yours for the taking.", MessageKind.Good);
+            game.Log.Add($"The {Name} is finished. Their rioni are open for whoever takes them.", MessageKind.Good);
+            game.Newspaper.Report(game, 6, $"The end of the {Name}", "Investigators speak of a clan wiped out by its rivals. Nobody in the rione will say a word.");
         }
 
         // ---------- Under fire ----------
@@ -175,7 +190,7 @@ namespace OSistema.Crime
         {
             if (Destroyed || attacker == null) return;
             long now = game.Ticks.TicksGame;
-            foreach (var p in game.Pawns.Rivals)
+            foreach (var p in Members(game))
             {
                 if (!p.CanAct || (p.Position - victim.Position).sqrMagnitude > 12f * 12f) continue;
                 if (p.Mission == RivalMission.Hit || p.Mission == RivalMission.Stesa || p.Mission == RivalMission.Leave) continue;
@@ -219,7 +234,7 @@ namespace OSistema.Crime
             {
                 var sq = Squares[i];
                 int defenders = 0, ours = 0;
-                foreach (var p in game.Pawns.Rivals)
+                foreach (var p in Members(game))
                     if (p.CanAct && p.Mission != RivalMission.Leave && (p.Position - Mover.CellCenter(sq.Cell)).sqrMagnitude < 9f * 9f) defenders++;
                 foreach (var p in game.Pawns.Crew)
                     if (p.CanAct && (p.Position - Mover.CellCenter(sq.Cell)).sqrMagnitude < 5f * 5f) ours++;
@@ -267,7 +282,11 @@ namespace OSistema.Crime
         public void Tick(Game game)
         {
             if (Destroyed) return;
-            if (game.Ticks.TicksGame % 120 == 0) CheckCaptures(game);
+            if (game.Ticks.TicksGame % 120 == 0)
+            {
+                CheckCaptures(game);
+                CheckAssaults(game);
+            }
             int absoluteHour = game.Clock.Day * 24 + game.Clock.Hour;
             if (lastAbsoluteHour < 0) lastAbsoluteHour = absoluteHour;
             else if (absoluteHour != lastAbsoluteHour)
@@ -281,14 +300,28 @@ namespace OSistema.Crime
         {
             if (game.Clock.Hour == 0) OnNewDay(game);
 
-            if (!Warned && Hostility >= 30f)
+            if (Id == 0 && !Warned && Hostility >= 30f)
             {
                 Warned = true;
                 game.Events.Raise(EventCards.RivalWarning(game));
             }
 
-            bool patrolling = game.Pawns.Rivals.Any(p => p.IsPresent && p.Mission == RivalMission.Patrol);
+            bool patrolling = Members(game).Any(p => p.IsPresent && p.Mission == RivalMission.Patrol);
             if (!patrolling && Soldiers >= 3 && game.Rng.NextDouble() < 0.25) SpawnPatrol(game);
+
+            // The other clans: a feud with whoever sits next door.
+            if (!OperationActive(game) && Soldiers >= 4 && game.Rng.NextDouble() < 0.015)
+            {
+                var target = NeighbourSquare(game);
+                if (target.square != null) StartAssault(target.square, game);
+            }
+
+            // Your piazze: when they're angry enough, they come to take one.
+            if (!InTruce(game) && !OperationActive(game) && Hostility >= 55f && Soldiers >= 4 && game.Org.Squares.Count > 0 && game.Rng.NextDouble() < 0.04)
+            {
+                var target = PickTargetSquare(game);
+                if (target != null) StartAssault(target, game);
+            }
 
             if (InTruce(game) || OperationActive(game) || game.Org.Squares.Count == 0) return;
             double roll = game.Rng.NextDouble();
@@ -313,13 +346,220 @@ namespace OSistema.Crime
             // Replace pushers who were killed or ran off, while they still have men.
             foreach (var sq in Squares)
             {
-                bool staffed = game.Pawns.Rivals.Any(p => p.IsPresent && p.Mission == RivalMission.Pusher && p.MissionSquare == sq);
+                bool staffed = Members(game).Any(p => p.IsPresent && p.Mission == RivalMission.Pusher && p.MissionSquare == sq);
                 if (!staffed && Soldiers > 1) SpawnPusher(sq, game);
-                bool watched = game.Pawns.Rivals.Any(p => p.IsPresent && p.Mission == RivalMission.Lookout && p.MissionSquare == sq);
+                bool watched = Members(game).Any(p => p.IsPresent && p.Mission == RivalMission.Lookout && p.MissionSquare == sq);
                 if (!watched && Soldiers > 1) SpawnLookout(sq, game);
             }
 
-            Cash += 300;
+            GatherIntel(game);
+
+            // Money comes in from their piazze; men are hired when there's money.
+            Cash += 100 + 150 * Squares.Count;
+            if (Cash >= 600 && Soldiers < 14 && game.Rng.NextDouble() < 0.5)
+            {
+                Cash -= 400;
+                Soldiers++;
+            }
+
+            // A strong clan grows into an empty rione next to its own.
+            if (Soldiers >= 6 && Squares.Count < 4 && game.Rng.NextDouble() < 0.3)
+            {
+                var zone = EmptyZoneNextDoor(game);
+                if (zone != null && ClaimZone(zone, game))
+                    game.Log.Add($"Word in the street: the {Name} have opened a piazza in {zone.Name}.", MessageKind.Info);
+            }
+        }
+
+        // ---------- What the family does to them ----------
+
+        /// <summary>The man the family is hunting: the boss or one of his lieutenants, out in the open for once.</summary>
+        public Pawn MarkedTarget;
+        public bool MarkedIsBoss;
+
+        public const float IntelForLieutenant = 30f, IntelForBoss = 70f;
+
+        /// <summary>
+        /// With enough information, you know where to find him: at the bar near their piazza, with a
+        /// bodyguard or two. He's put on the map, and the hitman goes after him.
+        /// </summary>
+        public Pawn ExposeTarget(bool boss, Game game)
+        {
+            if (Squares.Count == 0) return null;
+            if (MarkedTarget != null && MarkedTarget.IsPresent) return MarkedTarget;
+            var sq = Squares[game.Rng.Next(Squares.Count)];
+            var spot = OutdoorCellNear(sq.Cell + new Vector2Int(game.Rng.Next(-5, 6), game.Rng.Next(-5, 6)), game.Map, game.Territory.Zones[sq.ZoneId], game.Territory) ?? sq.Cell;
+            var target = SpawnSoldier(spot, RivalMission.Patrol, true, game);
+            if (boss)
+            {
+                var parts = BossName.Split(' ');
+                target.FirstName = parts[0];
+                target.Nickname = "the boss";
+            }
+            target.ShootingSkill = Mathf.Max(target.ShootingSkill, boss ? 7 : 5);
+            for (int i = 0; i < (boss ? 2 : 1); i++)
+            {
+                var guard = SpawnSoldier(spot, RivalMission.Guard, true, game);
+                guard.MissionTarget = target;
+            }
+            MarkedTarget = target;
+            MarkedIsBoss = boss;
+            return target;
+        }
+
+        void OnTargetKilled(Pawn target, Game game)
+        {
+            var zone = game.Territory.ZoneAt(target.Cell);
+            game.Org.AddEvidence(8f, game);
+            if (MarkedIsBoss)
+            {
+                Soldiers = Mathf.Max(0, Soldiers - 3);
+                Hostility = 100f;
+                Intel = Mathf.Max(0f, Intel - 40f);   // a new boss, new habits
+                game.Org.Respect = Mathf.Min(100f, game.Org.Respect + 12f);
+                game.Log.Add($"{BossName} is dead. The {Name} are without a head.", MessageKind.Good, target.Cell);
+                game.Newspaper.Report(game, 9, $"Clan boss shot dead in {zone?.Name ?? "the old town"}", $"{BossName}, the head of the {Name}, was killed in the street in broad daylight. Investigators fear a war.");
+                if (Soldiers <= 3) Collapse(game);
+                else
+                {
+                    BossName = $"{Story.Names.Pick(Story.Names.FirstNames, game.Rng)} {Name.Replace("Clan ", "")}";
+                    game.Log.Add($"{BossName} takes over what's left of the {Name}. They swear revenge.", MessageKind.Bad);
+                }
+            }
+            else
+            {
+                Soldiers = Mathf.Max(0, Soldiers - 1);
+                Hostility = Mathf.Min(100f, Hostility + 30f);
+                game.Org.Respect = Mathf.Min(100f, game.Org.Respect + 5f);
+                game.Log.Add($"One of the {Name}'s lieutenants is dead.", MessageKind.Good, target.Cell);
+                game.Newspaper.Report(game, 5, $"Man shot dead in {zone?.Name ?? "the old town"}", "Known to the police. The neighbours heard nothing.");
+            }
+        }
+
+        /// <summary>Your stesa reached their piazza: their people scatter, customers run, word gets round.</summary>
+        public void OnStesaAgainst(DrugSquare square, Game game)
+        {
+            Hostility = Mathf.Min(100f, Hostility + 15f);
+            game.Org.Respect = Mathf.Min(100f, game.Org.Respect + 3f);
+            game.Territory.AddHeat(square.Cell, 10f);
+            var zone = game.Territory.Zones[square.ZoneId];
+            game.Log.Add($"Stesa over the {Name}'s piazza in {zone.Name}. They'll have heard the message.", MessageKind.Good, square.Cell);
+            foreach (var p in Members(game))
+                if (p.CanAct && !p.Armed && p.MissionSquare == square) p.Mission = RivalMission.Leave;
+            foreach (var npc in game.Npcs.All)
+                if (npc.Kind == Npcs.NpcKind.Customer && npc.Square == square) npc.Despawned = true;
+        }
+
+        /// <summary>Each day: your lookouts near their turf pick up names, faces and habits.</summary>
+        void GatherIntel(Game game)
+        {
+            foreach (var c in game.Pawns.Crew)
+            {
+                if (!c.IsPresent || c.Role != CrewRole.Lookout) continue;
+                foreach (var sq in game.Org.Squares)
+                    if (Squares.Exists(r => (r.Cell - sq.Cell).magnitude < 45f)) { Intel = Mathf.Min(100f, Intel + 1.5f + c.AwarenessSkill * 0.2f); break; }
+            }
+        }
+
+        // ---------- Expansion and war ----------
+
+        Zone EmptyZoneNextDoor(Game game)
+        {
+            foreach (var mine in Squares.ToList())
+            {
+                var home = game.Territory.Zones[mine.ZoneId];
+                foreach (var z in game.Territory.Zones)
+                {
+                    if (z == home || game.ClanOwning(z.Id) != null || game.Org.ControlsZone(z, game)) continue;
+                    var near = new RectInt(home.Rect.x - 4, home.Rect.y - 4, home.Rect.width + 8, home.Rect.height + 8);
+                    if (near.Overlaps(z.Rect)) return z;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>The nearest piazza of another clan, close to one of ours.</summary>
+        (DrugSquare square, RivalClan owner) NeighbourSquare(Game game)
+        {
+            DrugSquare best = null;
+            RivalClan owner = null;
+            float bestD = 45f;
+            foreach (var other in game.Clans)
+            {
+                if (other == this || other.Destroyed) continue;
+                foreach (var theirs in other.Squares)
+                foreach (var mine in Squares)
+                {
+                    float d = (theirs.Cell - mine.Cell).magnitude;
+                    if (d < bestD) { bestD = d; best = theirs; owner = other; }
+                }
+            }
+            return (best, owner);
+        }
+
+        /// <summary>A squad sent to take a piazza: yours, or another clan's.</summary>
+        void StartAssault(DrugSquare target, Game game)
+        {
+            var from = Squares.Count > 0 ? Squares.OrderBy(s => (s.Cell - target.Cell).sqrMagnitude).First().Cell : NearestEntrance(target.Cell, game);
+            int count = Soldiers >= 8 ? 4 : 3;
+            for (int i = 0; i < count; i++)
+            {
+                var p = SpawnSoldier(from, RivalMission.Assault, true, game);
+                p.MissionSquare = target;
+                p.AggressiveUntil = long.MaxValue;
+            }
+            var zone = game.Territory.Zones[target.ZoneId];
+            bool ours = !target.Rival;
+            if (!ours && game.Rng.NextDouble() < 0.5)
+                game.Log.Add($"The {Name} are moving on the {game.Clans[target.Clan].Name}'s piazza in {zone.Name}.", MessageKind.Info, target.Cell);
+        }
+
+        // Assaults on someone else's corner: how long nobody has been there to stop them.
+        readonly Dictionary<DrugSquare, int> attackHeld = new Dictionary<DrugSquare, int>();
+
+        /// <summary>Their squad holds a piazza nobody defends for a minute or two: it changes hands.</summary>
+        void CheckAssaults(Game game)
+        {
+            var targets = new List<DrugSquare>(game.Org.Squares);
+            foreach (var other in game.Clans) if (other != this && !other.Destroyed) targets.AddRange(other.Squares);
+            foreach (var sq in targets)
+            {
+                var at = Mover.CellCenter(sq.Cell);
+                int attackers = Members(game).Count(p => p.CanAct && p.Mission == RivalMission.Assault && p.MissionSquare == sq && (p.Position - at).sqrMagnitude < 5f * 5f);
+                if (attackers == 0) { attackHeld.Remove(sq); continue; }
+                int defenders = sq.Rival
+                    ? game.Clans[sq.Clan].Members(game).Count(p => p.CanAct && p.Mission != RivalMission.Leave && (p.Position - at).sqrMagnitude < 9f * 9f)
+                    : game.Pawns.Crew.Count(p => p.CanAct && (p.Position - at).sqrMagnitude < 9f * 9f);
+                if (defenders > 0) { attackHeld.Remove(sq); continue; }
+                attackHeld.TryGetValue(sq, out int held);
+                held += 120;
+                attackHeld[sq] = held;
+                if (held < 1800) continue;
+                attackHeld.Remove(sq);
+
+                var zone = game.Territory.Zones[sq.ZoneId];
+                if (!sq.Rival)
+                {
+                    game.Org.CloseSquareAt(sq.Cell);
+                    game.Org.Respect = Mathf.Max(0f, game.Org.Respect - 8f);
+                    game.Log.Add($"The {Name} have taken your piazza in {zone.Name}. Nobody was there to stop them.", MessageKind.Bad, sq.Cell);
+                    game.Newspaper.Report(game, 4, $"A drug market changes hands in {zone.Name}", "Residents say new faces are selling on the corner since yesterday.");
+                }
+                else
+                {
+                    var loser = game.Clans[sq.Clan];
+                    loser.Squares.Remove(sq);
+                    loser.Soldiers = Mathf.Max(0, loser.Soldiers - 1);
+                    if (loser.Squares.Count == 0 && loser.Soldiers <= 3) loser.Collapse(game);
+                    game.Log.Add($"The {Name} took the {loser.Name}'s piazza in {zone.Name}.", MessageKind.Info, sq.Cell);
+                }
+                var mine = new DrugSquare { Cell = sq.Cell, ZoneId = sq.ZoneId, Rival = true, OpenHour = 0, CloseHour = 0, Clan = Id };
+                Squares.Add(mine);
+                foreach (var p in Members(game))
+                    if (p.Mission == RivalMission.Assault && p.MissionSquare == sq) p.Mission = RivalMission.Leave;
+                SpawnPusher(mine, game);
+                SpawnLookout(mine, game);
+            }
         }
 
         public bool NearRivalTerritory(DrugSquare square) =>

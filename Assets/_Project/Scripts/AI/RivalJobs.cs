@@ -17,13 +17,13 @@ namespace OSistema.AI
             switch (pawn.Mission)
             {
                 case RivalMission.Pusher:
-                    if (pawn.MissionSquare != null && game.Rival.Squares.Contains(pawn.MissionSquare))
+                    if (pawn.MissionSquare != null && game.ClanOf(pawn).Squares.Contains(pawn.MissionSquare))
                         return new RivalPostJob(pawn, pawn.MissionSquare);
                     pawn.Mission = RivalMission.Leave;
                     return new LeaveMapJob(pawn, game);
                 case RivalMission.Lookout:
-                    if (pawn.MissionSquare != null && game.Rival.Squares.Contains(pawn.MissionSquare))
-                        return new RivalPostJob(pawn, pawn.MissionSquare, game.Rival.LookoutPostFor(pawn.MissionSquare, game), 1);
+                    if (pawn.MissionSquare != null && game.ClanOf(pawn).Squares.Contains(pawn.MissionSquare))
+                        return new RivalPostJob(pawn, pawn.MissionSquare, game.ClanOf(pawn).LookoutPostFor(pawn.MissionSquare, game), 1);
                     pawn.Mission = RivalMission.Leave;
                     return new LeaveMapJob(pawn, game);
                 case RivalMission.Patrol:
@@ -32,6 +32,14 @@ namespace OSistema.AI
                     return new StesaJob(pawn);
                 case RivalMission.Hit:
                     return new HitJob(pawn);
+                case RivalMission.Assault:
+                    if (pawn.MissionSquare != null) return new AssaultJob(pawn);
+                    pawn.Mission = RivalMission.Leave;
+                    return new LeaveMapJob(pawn, game);
+                case RivalMission.Guard:
+                    if (pawn.MissionTarget != null && pawn.MissionTarget.IsPresent) return new GuardJob(pawn);
+                    pawn.Mission = RivalMission.Leave;
+                    return new LeaveMapJob(pawn, game);
                 default:
                     return new LeaveMapJob(pawn, game);
             }
@@ -65,7 +73,7 @@ namespace OSistema.AI
 
         public override bool Tick(Game game)
         {
-            if (!game.Rival.Squares.Contains(Square)) return true;
+            if (!game.ClanOf(Pawn).Squares.Contains(Square)) return true;
             if (!AtPost)
             {
                 var status = walker.Tick(Pawn, game);
@@ -102,7 +110,7 @@ namespace OSistema.AI
 
         public RivalPatrolJob(Pawn pawn, Game game) : base(pawn)
         {
-            var rival = game.Rival;
+            var rival = game.ClanOf(pawn);
             var rng = game.Rng;
             foreach (var sq in rival.Squares)
             {
@@ -174,10 +182,10 @@ namespace OSistema.AI
             {
                 // Through the piazza without stopping, emptying the magazine into the air.
                 firing = true;
-                if (!game.Rival.StesaInProgress)
+                if (!game.ClanOf(Pawn).StesaInProgress)
                 {
-                    game.Rival.StesaInProgress = true;
-                    game.Rival.OnStesa(square, game);
+                    game.ClanOf(Pawn).StesaInProgress = true;
+                    game.ClanOf(Pawn).OnStesa(square, game);
                 }
                 var exit = game.Territory.Entrances[0];
                 foreach (var e in game.Territory.Entrances)
@@ -202,7 +210,7 @@ namespace OSistema.AI
 
             Pawn.Mission = RivalMission.Leave;
             Pawn.AggressiveUntil = game.Ticks.TicksGame + 600;
-            game.Rival.StesaInProgress = false;
+            game.ClanOf(Pawn).StesaInProgress = false;
             return true;
         }
     }
@@ -265,6 +273,68 @@ namespace OSistema.AI
             if (!Pawn.OnScooter) Pawn.Riding = false;
             if (walker == null || (walker.Target - target.Cell).sqrMagnitude > 4)
                 walker = new Walker(target.Cell, adjacent: true, speedMultiplier: 1.15f);
+            if (walker.Tick(Pawn, game) == WalkStatus.Failed) walker = null;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// A squad sent to take a piazza: ride over, spread out round the corner, shoot whoever's there,
+    /// and hold it. Whoever owned it has a minute or two to come and fight back.
+    /// </summary>
+    public sealed class AssaultJob : Job
+    {
+        const int HoldTicks = GameClock.TicksPerHour * 2;
+        Walker walker;
+        int held;
+        Vector2Int spot;
+
+        public AssaultJob(Pawn pawn) : base(pawn) { }
+
+        public override string Label => "Taking a piazza";
+
+        public override bool Tick(Game game)
+        {
+            var sq = Pawn.MissionSquare;
+            bool gone = sq == null || (!sq.Rival && !game.Org.Squares.Contains(sq)) || (sq.Rival && !game.Clans[sq.Clan].Squares.Contains(sq));
+            if (gone || held > HoldTicks || Pawn.Health.Pain > 0.45f)
+            {
+                Pawn.Mission = RivalMission.Leave;
+                return true;
+            }
+            if (walker == null)
+            {
+                // Each takes a spot around the corner.
+                spot = sq.Cell + new Vector2Int(game.Rng.Next(-3, 4), game.Rng.Next(-3, 4));
+                if (!game.Map.InBounds(spot) || !game.Map.IsPassable(spot)) spot = sq.Cell;
+                Pawn.OnScooter = (Pawn.Position - Mover.CellCenter(spot)).magnitude > 14f;
+                walker = new Walker(spot, adjacent: true, speedMultiplier: 1.1f);
+            }
+            var status = walker.Tick(Pawn, game);
+            if (status == WalkStatus.Walking) return false;
+            if (status == WalkStatus.Failed) walker = null;
+            Pawn.OnScooter = false;
+            Pawn.Riding = false;
+            held++;
+            return false;
+        }
+    }
+
+    /// <summary>A bodyguard sticks to the man he protects.</summary>
+    public sealed class GuardJob : Job
+    {
+        Walker walker;
+
+        public GuardJob(Pawn pawn) : base(pawn) { }
+
+        public override string Label => "Guarding";
+
+        public override bool Tick(Game game)
+        {
+            var boss = Pawn.MissionTarget;
+            if (boss == null || !boss.IsPresent) { Pawn.Mission = RivalMission.Leave; return true; }
+            if ((boss.Position - Pawn.Position).sqrMagnitude < 2.5f * 2.5f) { Pawn.StopMoving(); return false; }
+            if (walker == null || (walker.Target - boss.Cell).sqrMagnitude > 4) walker = new Walker(boss.Cell, adjacent: true);
             if (walker.Tick(Pawn, game) == WalkStatus.Failed) walker = null;
             return false;
         }

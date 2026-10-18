@@ -16,7 +16,7 @@ namespace OSistema.Pawns
     public enum Skill { Construction, Cooking, Medicine, Intimidation, Awareness, Shooting }
 
     /// <summary>What a rival clan member on the map is here to do.</summary>
-    public enum RivalMission { Pusher, Stesa, Hit, Leave, Lookout, Patrol }
+    public enum RivalMission { Pusher, Stesa, Hit, Leave, Lookout, Patrol, Assault, Guard }
 
     /// <summary>A crew member. Pure simulation data; PawnView draws it.</summary>
     public sealed class Pawn
@@ -51,6 +51,7 @@ namespace OSistema.Pawns
 
         // Rival clan members only
         public RivalMission Mission;
+        public int Clan;                 // rivals: which clan (index into Game.Clans)
         public DrugSquare MissionSquare;
         public Pawn MissionTarget;
 
@@ -82,6 +83,7 @@ namespace OSistema.Pawns
 
         /// <summary>Focus-fire order from the player (crew) or the mission (rivals).</summary>
         public Pawn ForcedTarget;
+        public long OnOperationUntil;    // on a stesa or a hit: shoots at the other side's people on sight
 
         /// <summary>Real time of the last wound, for the hit flash.</summary>
         public float LastHitTime = -10f;
@@ -331,10 +333,17 @@ namespace OSistema.Pawns
             {
                 bool failed = CurrentJob.Failed;
                 EndCurrentJob(game);
+                // A job that leads straight into another (a stesa into the getaway).
+                if (queued != null) { CurrentJob = queued; queued = null; }
                 // Back off briefly after a failure so an unreachable target isn't re-pathed every tick.
-                if (failed) CurrentJob = new WaitJob(this, 90, "Idle");
+                else if (failed) CurrentJob = new WaitJob(this, 90, "Idle");
             }
         }
+
+        Job queued;
+
+        /// <summary>The job to start as soon as the current one finishes.</summary>
+        public void QueueJob(Job next) => queued = next;
 
         // Rivals live off-map: no needs or mood, only wounds and their mission.
         void TickRival(Game game)

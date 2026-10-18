@@ -93,6 +93,19 @@ namespace OSistema.Core
             };
             foreach (var sq in game.Rival.Squares)
                 data.rivalSquares.Add(new SquareData { x = sq.Cell.x, y = sq.Cell.y, zone = sq.ZoneId });
+            data.rivalIntel = game.Rival.Intel;
+            // Every other clan in the city.
+            for (int i = 1; i < game.Clans.Count; i++)
+            {
+                var c = game.Clans[i];
+                var cd = new ClanData
+                {
+                    name = c.Name, boss = c.BossName, hostility = c.Hostility, soldiers = c.Soldiers, cash = c.Cash,
+                    truce = c.TruceUntilDay, warned = c.Warned, destroyed = c.Destroyed, intel = c.Intel,
+                };
+                foreach (var sq in c.Squares) cd.squares.Add(new SquareData { x = sq.Cell.x, y = sq.Cell.y, zone = sq.ZoneId });
+                data.clans.Add(cd);
+            }
 
             foreach (var p in game.Properties.All)
                 data.properties.Add(new PropertyData
@@ -121,7 +134,8 @@ namespace OSistema.Core
             foreach (var p in game.Pawns.All)
             {
                 var d = ToData(p);
-                d.missionSquare = p.MissionSquare != null ? game.Rival.Squares.IndexOf(p.MissionSquare) : -1;
+                var clan = p.Clan >= 0 && p.Clan < game.Clans.Count ? game.Clans[p.Clan] : game.Rival;
+                d.missionSquare = p.MissionSquare != null ? clan.Squares.IndexOf(p.MissionSquare) : -1;
                 data.pawns.Add(d);
             }
 
@@ -195,6 +209,16 @@ namespace OSistema.Core
             rival.Destroyed = data.rivalDestroyed;
             foreach (var sq in data.rivalSquares)
                 rival.Squares.Add(new DrugSquare { Cell = new Vector2Int(sq.x, sq.y), ZoneId = sq.zone, Rival = true, OpenHour = 0, CloseHour = 0 });
+            rival.Intel = data.rivalIntel;
+            if (data.clans != null)
+                foreach (var cd in data.clans)
+                {
+                    var c = game.AddClan();
+                    c.Name = cd.name; c.BossName = cd.boss; c.Hostility = cd.hostility; c.Soldiers = cd.soldiers; c.Cash = cd.cash;
+                    c.TruceUntilDay = cd.truce; c.Warned = cd.warned; c.Destroyed = cd.destroyed; c.Intel = cd.intel;
+                    foreach (var sq in cd.squares)
+                        c.Squares.Add(new DrugSquare { Cell = new Vector2Int(sq.x, sq.y), ZoneId = sq.zone, Rival = true, OpenHour = 0, CloseHour = 0, Clan = c.Id });
+                }
 
             foreach (var sq in data.squares)
             {
@@ -228,8 +252,9 @@ namespace OSistema.Core
             foreach (var pd in data.pawns)
             {
                 var pawn = FromData(pd);
-                if (pawn.Faction == Faction.Rival && pd.missionSquare >= 0 && pd.missionSquare < rival.Squares.Count)
-                    pawn.MissionSquare = rival.Squares[pd.missionSquare];
+                var own = pawn.Clan >= 0 && pawn.Clan < game.Clans.Count ? game.Clans[pawn.Clan] : rival;
+                if (pawn.Faction == Faction.Rival && pd.missionSquare >= 0 && pd.missionSquare < own.Squares.Count)
+                    pawn.MissionSquare = own.Squares[pd.missionSquare];
                 game.Pawns.Add(pawn);
             }
             // Operation managers and mission targets point at pawns: resolve them once everyone exists.
@@ -300,7 +325,7 @@ namespace OSistema.Core
                 isBoss = p.IsBoss,
                 aggressiveUntil = p.AggressiveUntil,
                 mealsDelivered = p.MealsDelivered,
-                mission = (int)p.Mission,
+                mission = (int)p.Mission, clan = p.Clan,
                 missionTarget = p.MissionTarget?.Id ?? 0,
                 x = p.Cell.x,
                 y = p.Cell.y,
@@ -347,7 +372,7 @@ namespace OSistema.Core
                 IsBoss = d.isBoss,
                 AggressiveUntil = d.aggressiveUntil,
                 MealsDelivered = d.mealsDelivered,
-                Mission = (RivalMission)d.mission,
+                Mission = (RivalMission)d.mission, Clan = d.clan,
                 Bed = d.hasBed ? new Vector2Int(d.bedX, d.bedY) : (Vector2Int?)null,
             };
             p.ScheduleString = d.schedule;
@@ -401,6 +426,8 @@ namespace OSistema.Core
             public float rivalHostility;
             public int rivalSoldiers, rivalCash, rivalTruceUntil;
             public bool rivalWarned, rivalDestroyed;
+            public float rivalIntel;
+            public List<ClanData> clans = new List<ClanData>();
             public List<SquareData> rivalSquares = new List<SquareData>();
             public List<BlueprintData> blueprints = new List<BlueprintData>();
             public List<PawnData> pawns = new List<PawnData>();
@@ -420,6 +447,16 @@ namespace OSistema.Core
             public string name;
             public int x, y, w, h;
             public float heat, demand;
+        }
+
+        [Serializable]
+        sealed class ClanData
+        {
+            public string name, boss;
+            public float hostility, intel;
+            public int soldiers, cash, truce;
+            public bool warned, destroyed;
+            public List<SquareData> squares = new List<SquareData>();
         }
 
         [Serializable]
@@ -457,7 +494,7 @@ namespace OSistema.Core
             public float loyalty;
             public long jailedUntil, lyingLowUntil, hospitalUntil;
             public float[] xp;
-            public int faction, shooting, mealsDelivered, mission, missionTarget, missionSquare = -1;
+            public int faction, shooting, mealsDelivered, mission, missionTarget, missionSquare = -1, clan;
             public bool armed, isBoss;
             public long aggressiveUntil;
             public int x, y;

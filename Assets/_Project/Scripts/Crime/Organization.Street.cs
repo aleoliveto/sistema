@@ -85,7 +85,8 @@ namespace OSistema.Crime
             customer.State = 2;
             customer.Walker = new Walker(customer.Exit, adjacent: false);
             var zone = game.Territory.Zones[DealingCorner.ZoneId];
-            if (!game.Rival.Destroyed && game.Rival.OwnsZone(zone.Id)) game.Rival.Hostility = Mathf.Min(100f, game.Rival.Hostility + 0.6f);
+            var owner = game.ClanOwning(zone.Id);
+            if (owner != null) owner.Hostility = Mathf.Min(100f, owner.Hostility + 0.6f);
             // Selling in front of a policeman.
             var cop = Pursuit.WitnessCop(game, 7f);
             if (cop != null && !game.Pursuit.Active && game.Rng.NextDouble() < 0.7)
@@ -110,7 +111,7 @@ namespace OSistema.Crime
             }
             var zone = game.Territory.Zones[DealingCorner.ZoneId];
             float perHour = 5f * zone.Demand * (0.6f + Respect / 100f) * Mathf.Max(0.2f, 1f - zone.Heat / 150f);
-            if (game.Rival.OwnsZone(zone.Id)) perHour *= 0.6f;
+            if (game.ClanOwning(zone.Id) != null) perHour *= 0.6f;
             if (game.Rng.NextDouble() >= perHour / GameClock.TicksPerHour) return;
             var npc = game.Npcs.SpawnCustomer(DealingCorner, game);
             npc.Mover.Teleport(game.StreetLife.RandomDestinationNear(DealingCorner.Cell, game));

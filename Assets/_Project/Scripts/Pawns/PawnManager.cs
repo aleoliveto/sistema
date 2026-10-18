@@ -90,7 +90,7 @@ namespace OSistema.Pawns
                 $"{pawn.FirstName} {pawn.LastName}, known as {pawn.Nickname}, died of {cause}. Investigators speak of a settling of scores.");
             if (pawn.Faction == Faction.Rival)
             {
-                game.Rival.OnSoldierDied(pawn, game);
+                game.ClanOf(pawn).OnSoldierDied(pawn, game);
                 return;
             }
 

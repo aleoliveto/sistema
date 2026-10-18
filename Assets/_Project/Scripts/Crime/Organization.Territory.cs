@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using OSistema.Core;
+using OSistema.Pawns;
 using OSistema.World;
 using UnityEngine;
 
@@ -12,14 +13,46 @@ namespace OSistema.Crime
     /// </summary>
     public sealed partial class Organization
     {
+        /// <summary>
+        /// A rione is the family's if it's home, or if the family has a foothold there (a house or a
+        /// shop it owns) and a piazza working there (with a pusher on the payroll). Lose either and
+        /// it's just a place you happen to know.
+        /// </summary>
         public bool ControlsZone(Zone zone, Game game)
         {
             if (zone == null) return false;
             if (zone.Rect.Contains(Vector2Int.RoundToInt(game.PlayerBase.center))) return true;
-            foreach (var sq in Squares) if (sq.ZoneId == zone.Id) return true;
+            return HasFoothold(zone, game) && HasWorkingPiazza(zone, game);
+        }
+
+        public bool HasFoothold(Zone zone, Game game)
+        {
             foreach (var p in game.Properties.Owned)
                 if (zone.Rect.Contains(p.Door)) return true;
+            foreach (var b in Businesses)
+                if (b.Status == BusinessStatus.Owned && zone.Rect.Contains(b.Cell)) return true;
             return false;
+        }
+
+        public bool HasWorkingPiazza(Zone zone, Game game)
+        {
+            bool pusher = false;
+            foreach (var c in game.Pawns.Crew) if (c.IsPresent && c.Role == CrewRole.Pusher) pusher = true;
+            if (!pusher) return false;
+            foreach (var sq in Squares) if (sq.ZoneId == zone.Id) return true;
+            return false;
+        }
+
+        /// <summary>How well a rione of yours is held: lookouts and armed crew posted near its piazze.</summary>
+        public int Guards(Zone zone, Game game)
+        {
+            int n = 0;
+            foreach (var c in game.Pawns.Crew)
+            {
+                if (!c.IsPresent || game.Territory.ZoneAt(c.Cell) != zone) continue;
+                if (c.Role == CrewRole.Lookout || c.Role == CrewRole.Bodyguard || c.Armed) n++;
+            }
+            return n;
         }
 
         public List<Zone> Turf(Game game)
@@ -47,16 +80,18 @@ namespace OSistema.Crime
 
         void WarnIfRivalZone(Zone zone, Game game)
         {
-            if (zone == null || game.Rival.Destroyed || !game.Rival.OwnsZone(zone.Id)) return;
-            game.Rival.Hostility = Mathf.Min(100f, game.Rival.Hostility + 25f);
-            game.Log.Add($"You've moved into {zone.Name}, the {game.Rival.Name}'s turf. They'll take it as an insult.", MessageKind.Bad);
+            var owner = zone != null ? game.ClanOwning(zone.Id) : null;
+            if (owner == null) return;
+            owner.Hostility = Mathf.Min(100f, owner.Hostility + 25f);
+            game.Log.Add($"You've moved into {zone.Name}, the {owner.Name}'s turf. They'll take it as an insult.", MessageKind.Bad);
         }
 
         /// <summary>Why pizzo can't be imposed on this business, or null if it can.</summary>
         public string PizzoBlocker(Business b, Game game)
         {
             var zone = game.Territory.ZoneAt(b.Cell);
-            if (zone != null && !game.Rival.Destroyed && game.Rival.OwnsZone(zone.Id)) return $"Pays the {game.Rival.Name}";
+            var clan = zone != null ? game.ClanOwning(zone.Id) : null;
+            if (clan != null) return $"Pays the {clan.Name}";
             if (!ControlsZone(zone, game)) return "Outside your turf";
             return null;
         }

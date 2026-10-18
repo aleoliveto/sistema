@@ -134,6 +134,8 @@ namespace OSistema.UI
             Ui.Text("THE RIONE", head, "title", "gold");
             Ui.Text("   scroll to zoom · drag to move · click to set a waypoint, again to clear", head, "small", "muted");
             Ui.Box("spacer").Into(head);
+            territoryButton = Ui.Btn("Territory", () => { territoryOn = !territoryOn; territoryButton.Toggle("btn--on", territoryOn); }, head, "btn--small");
+            Tip(territoryButton, () => "Who holds each rione. Yours need a house or shop of yours there, and a working piazza with a pusher.");
             Ui.Btn("Close  [M]", ToggleMap, head, "btn--small");
             var mapBody = Ui.Row(panel);
             mapBody.style.alignItems = Align.FlexStart;
@@ -228,6 +230,45 @@ namespace OSistema.UI
         }
 
         const float BigW = 860f, BigH = 600f;
+        Button territoryButton;
+        bool territoryOn;
+        readonly List<(VisualElement box, Label label)> territoryBoxes = new List<(VisualElement, Label)>();
+
+        /// <summary>The rioni tinted by who holds them, with a name and the holder.</summary>
+        void UpdateTerritory(Map map)
+        {
+            var zones = game.Territory.Zones;
+            while (territoryBoxes.Count < zones.Count)
+            {
+                var box = Ui.Box("territory").Into(bigLayer);
+                box.SendToBack();
+                box.pickingMode = PickingMode.Ignore;
+                var label = Ui.Text("", box, "territory__label");
+                territoryBoxes.Add((box, label));
+            }
+            for (int i = 0; i < territoryBoxes.Count; i++)
+            {
+                var (box, label) = territoryBoxes[i];
+                bool show = territoryOn && i < zones.Count;
+                box.Show(show);
+                if (!show) continue;
+                var z = zones[i];
+                box.style.left = z.Rect.x * bigScale;
+                box.style.top = (map.Height - z.Rect.yMax) * bigScale;
+                box.style.width = z.Rect.width * bigScale;
+                box.style.height = z.Rect.height * bigScale;
+                var clan = game.ClanOwning(z.Id);
+                bool mine = game.Org.ControlsZone(z, game);
+                Color c = mine ? new Color(0.91f, 0.76f, 0.42f, 0.32f) : clan != null ? new Color(clan.Colour.r / 255f, clan.Colour.g / 255f, clan.Colour.b / 255f, 0.3f) : new Color(1f, 1f, 1f, 0.04f);
+                box.style.backgroundColor = c;
+                var edge = new Color(c.r, c.g, c.b, 0.9f);
+                box.style.borderTopColor = box.style.borderBottomColor = box.style.borderLeftColor = box.style.borderRightColor = edge;
+                int guards = mine ? game.Org.Guards(z, game) : 0;
+                string holder = mine ? $"<color=#E8C26A>yours</color> · {guards} on guard" : clan != null ? clan.Name : "nobody's";
+                if (!mine && game.Org.HasFoothold(z, game) && !game.Org.HasWorkingPiazza(z, game)) holder += "\n<color=#F2B866>you need a working piazza here</color>";
+                label.text = $"<b>{z.Name}</b>\n{holder}";
+            }
+        }
         VisualElement bigView;
         float bigZoom = 2.5f;
         Vector2 bigPan, bigDragStart, bigPanStart;
@@ -479,6 +520,7 @@ namespace OSistema.UI
             for (int i = bigIconsUsed; i < bigIcons.Count; i++) bigIcons[i].style.display = DisplayStyle.None;
             if (waypoint.HasValue) BigDot(waypoint.Value, "dot--pin", false);
             if (goal.Target.HasValue) BigDot(goal.Target.Value, "dot--goal", false);
+            UpdateTerritory(map);
             if (player != null) BigDot(player.Position, "dot--you", false);
             for (int i = bigDotsUsed; i < bigDots.Count; i++) bigDots[i].style.display = DisplayStyle.None;
             for (int i = bigLabelsUsed; i < bigLabels.Count; i++) bigLabels[i].style.display = DisplayStyle.None;

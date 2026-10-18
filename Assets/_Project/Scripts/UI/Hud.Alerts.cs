@@ -54,6 +54,36 @@ namespace OSistema.UI
                 }
             }
             if (policeAnnounced.Count > 500) policeAnnounced.Clear();
+
+            // Clan squads coming for a piazza, a killing or a stesa: a lookout sees them first, or you do.
+            foreach (var r in game.Pawns.Rivals)
+            {
+                if (!r.IsPresent || policeAnnounced.Contains(-r.Id)) continue;
+                if (r.Mission != RivalMission.Assault && r.Mission != RivalMission.Hit && r.Mission != RivalMission.Stesa) continue;
+                if (r.Mission == RivalMission.Assault && r.MissionSquare != null && r.MissionSquare.Rival) continue;   // their war, not yours
+                Pawn spotter = null;
+                foreach (var c in game.Pawns.Crew)
+                {
+                    if (!c.CanAct || !(c.CurrentJob is PostJob post) || post.Role != CrewRole.Lookout || !post.AtPost) continue;
+                    float range = 12f + 1.2f * c.AwarenessSkill;
+                    if ((c.Position - r.Position).sqrMagnitude <= range * range) { spotter = c; break; }
+                }
+                bool seen = spotter != null || (p != null && FogOfWar.CanSee(r.Position) && (p.Position - r.Position).sqrMagnitude < 14f * 14f);
+                if (!seen) continue;
+                // One warning per squad: mark everyone on the same mission.
+                foreach (var o in game.Pawns.Rivals)
+                    if (o.Clan == r.Clan && o.Mission == r.Mission) policeAnnounced.Add(-o.Id);
+                var clan = game.ClanOf(r);
+                string what = r.Mission == RivalMission.Assault ? "coming to take the piazza" : r.Mission == RivalMission.Hit ? "armed, looking for someone" : "riding in for a stesa";
+                if (spotter != null)
+                {
+                    spotter.Say("police");
+                    SoundManager.PlayAt(AudioSynth.Whistle, spotter.Position, 0.6f);
+                    game.Log.Add($"{spotter.Nickname} whistles: the {clan.Name}, {what}!", MessageKind.Bad, r.Cell);
+                }
+                else game.Log.Add($"Men of the {clan.Name}, {what}.", MessageKind.Bad, r.Cell);
+                FlashAlert($"{clan.Name.ToUpper()}!");
+            }
         }
     }
 }

@@ -204,8 +204,10 @@ namespace OSistema.UI
             }
 
             foreach (var sq in game.Org.Squares) SquareTag(sq, "Piazza", "tag--boss");
-            foreach (var sq in game.Rival.Squares)
-                if (FogOfWar.HasExplored(sq.Cell)) SquareTag(sq, $"{game.Rival.Name} piazza", "tag--rival");
+            foreach (var clan in game.Clans)
+                if (!clan.Destroyed)
+                    foreach (var sq in clan.Squares)
+                        if (FogOfWar.HasExplored(sq.Cell)) SquareTag(sq, $"{clan.Name} piazza", "tag--rival");
 
             for (int i = tagsUsed; i < tags.Count; i++) tags[i].style.display = DisplayStyle.None;
             for (int i = actionsUsed; i < actions.Count; i++) actions[i].box.style.display = DisplayStyle.None;

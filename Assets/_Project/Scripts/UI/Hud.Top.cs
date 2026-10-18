@@ -83,7 +83,7 @@ namespace OSistema.UI
             (_, hostilityFill) = Ui.Bar("", new Color(0.95f, 0.55f, 0.25f), ho, thin: true);
             Tip(fam, () =>
                 $"Evidence against the boss: {game.Org.Evidence:0}/100. At 100 an arrest warrant is issued.\n" +
-                $"{game.Rival.Name}: hostility {game.Rival.Hostility:0}/100, {game.Rival.Soldiers} soldiers. Above 40: stese. Above 70: ambushes.");
+                $"{AngriestClan().Name}: hostility {AngriestClan().Hostility:0}/100, {AngriestClan().Soldiers} soldiers. Above 40: stese. Above 55: they come for your piazze. Above 70: ambushes.");
         }
 
         static void Divider(VisualElement parent) => Ui.Box("divider").Into(parent);
@@ -130,7 +130,17 @@ namespace OSistema.UI
                  org.WarrantActive ? " · <color=#F07A6E>arrest warrant</color>" : "") +
                 (org.PendingPizzini > 0 ? $" · {org.PendingPizzini} pizzini" : "");
             Ui.SetFill(evidenceFill, org.Evidence / 100f);
-            Ui.SetFill(hostilityFill, game.Rival.Destroyed ? 0f : game.Rival.Hostility / 100f);
+            var angriest = AngriestClan();
+            Ui.SetFill(hostilityFill, angriest == null || angriest.Destroyed ? 0f : angriest.Hostility / 100f);
+        }
+
+        /// <summary>The clan most set against the family right now.</summary>
+        OSistema.Crime.RivalClan AngriestClan()
+        {
+            OSistema.Crime.RivalClan best = game.Rival;
+            foreach (var c in game.Clans)
+                if (!c.Destroyed && (best.Destroyed || c.Hostility > best.Hostility)) best = c;
+            return best;
         }
     }
 }

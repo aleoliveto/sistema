@@ -110,6 +110,13 @@ namespace OSistema.World
             TilePainter.PaintCellHi(map, x, y, chunk.Pixels, chunk.Cells.width * Tile, lx * Tile, ly * Tile);
         }
 
+        int RivalSquareCount()
+        {
+            int n = 0;
+            foreach (var c in game.Clans) n += c.Destroyed ? 1000 : c.Squares.Count * 7 + c.Id;
+            return n;
+        }
+
         void OnDestroy()
         {
             if (map != null) map.CellChanged -= OnCellChanged;
@@ -145,7 +152,7 @@ namespace OSistema.World
                 }
             }
 
-            if (game.Construction.Version != drawnBlueprintVersion || game.Org.SquaresVersion != drawnSquaresVersion || game.Rival.Squares.Count != drawnRivalSquares)
+            if (game.Construction.Version != drawnBlueprintVersion || game.Org.SquaresVersion != drawnSquaresVersion || RivalSquareCount() != drawnRivalSquares)
                 RedrawOverlay();
         }
 
@@ -153,9 +160,9 @@ namespace OSistema.World
         {
             drawnBlueprintVersion = game.Construction.Version;
             drawnSquaresVersion = game.Org.SquaresVersion;
-            drawnRivalSquares = game.Rival.Squares.Count;
+            drawnRivalSquares = RivalSquareCount();
             System.Array.Clear(overlayPixels, 0, overlayPixels.Length);
-            foreach (var sq in game.Rival.Squares) overlayPixels[map.Index(sq.Cell.x, sq.Cell.y)] = RivalSquareColor;
+            foreach (var sq in game.RivalSquares) overlayPixels[map.Index(sq.Cell.x, sq.Cell.y)] = RivalSquareColor;
             foreach (var sq in game.Org.Squares)
             {
                 overlayPixels[map.Index(sq.Cell.x, sq.Cell.y)] = SquareColor;

@@ -946,3 +946,5 @@
 .hour-menu__item { width: 60px; margin: 1px; }
 .bigmap__view { width: 860px; height: 600px; overflow: hidden; position: relative; background-color: rgb(18, 17, 16); border-radius: 4px; }
 .bigmap__view .bigmap__image { position: absolute; }
+.territory { position: absolute; border-width: 1px; justify-content: center; align-items: center; }
+.territory__label { font-size: 10px; color: #FFF4DA; -unity-text-align: middle-center; white-space: normal; text-shadow: 1px 1px 0 rgba(0,0,0,0.8); }

@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections.Generic;
 using OSistema.AI;
 using OSistema.Core;
@@ -257,7 +258,7 @@ namespace OSistema.Crime
                 error = $"A {RankName} can run {MaxSquaresForRank} piazza(e). Climb higher for more.";
                 return false;
             }
-            if (game.Rival.Squares.Exists(s => (s.Cell - cell).sqrMagnitude < 64))
+            if (game.RivalSquares.Any(s => (s.Cell - cell).sqrMagnitude < 64))
             {
                 error = "That's the rivals' piazza. Take it by force first.";
                 return false;
@@ -341,13 +342,13 @@ namespace OSistema.Crime
 
         /// <summary>Whether a square (ours or the rivals') is still operating.</summary>
         public bool IsActiveSquare(DrugSquare square, Game game) =>
-            square != null && (square == DealingCorner || Squares.Contains(square) || game.Rival.Squares.Contains(square));
+            square != null && (square == DealingCorner || Squares.Contains(square) || (square.Rival && square.Clan < game.Clans.Count && game.Clans[square.Clan].Squares.Contains(square)));
 
         public void Sell(DrugSquare square, Pawn pusher, Game game)
         {
             if (square.Rival)
             {
-                game.Rival.Cash += Prices.ProductStreet;
+                if (square.Clan < game.Clans.Count) game.Clans[square.Clan].Cash += Prices.ProductStreet;
                 return;
             }
             game.Stock.Product--;
@@ -377,7 +378,7 @@ namespace OSistema.Crime
         void SpawnCustomers(Game game)
         {
             SpawnCornerCustomers(game);
-            if (Squares.Count == 0 && game.Rival.Squares.Count == 0) return;
+            if (Squares.Count == 0 && !game.RivalSquares.Any()) return;
             if (game.Npcs.Count(NpcKind.Customer) >= MaxCustomers) return;
             if (game.Territory.Entrances.Count == 0) return;
 
@@ -387,12 +388,12 @@ namespace OSistema.Crime
                 if (!sq.IsOpenAt(hour)) continue;
                 var zone = game.Territory.Zones[sq.ZoneId];
                 float perHour = 2.4f * zone.Demand * (1f - zone.Heat / 150f) * (0.7f + Respect / 250f);
-                if (game.Rival.NearRivalTerritory(sq)) perHour *= 0.7f; // customers have a choice
+                if (game.Clans.Any(c => !c.Destroyed && c.NearRivalTerritory(sq))) perHour *= 0.7f; // customers have a choice
                 if (game.Rng.NextDouble() < perHour / GameClock.TicksPerHour)
                     game.Npcs.SpawnCustomer(sq, game);
             }
 
-            foreach (var sq in game.Rival.Squares)
+            foreach (var sq in game.RivalSquares.ToList())
             {
                 var zone = game.Territory.Zones[sq.ZoneId];
                 if (game.Rng.NextDouble() < 1.2f * zone.Demand / GameClock.TicksPerHour)

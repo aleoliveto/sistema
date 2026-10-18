@@ -100,6 +100,7 @@ namespace OSistema.AI
                 {
                     if (g.Org.Pay(Prices.EmptyPacks20, g, out var err)) g.Stock.EmptyPacks += 20; else g.Log.Add(err, MessageKind.Bad);
                 });
+                e.Option($"Ask what she knows about the clans · €{OperationCards.InfoPrice}", "Information for a hit: names, faces, where the boss drinks.", g => g.Events.Raise(OperationCards.Information(g)));
                 foreach (var table in new[] { BuildingDefs.RollingTable, BuildingDefs.BaggingTable })
                 {
                     var t = table;

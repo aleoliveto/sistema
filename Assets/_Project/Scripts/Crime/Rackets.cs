@@ -17,6 +17,7 @@ namespace OSistema.Crime
         public long LastLostWarningTick = -100000;
         public int ZoneId;
         public bool Rival;          // run by the rival clan
+        public int Clan;            // which clan (index into Game.Clans), for rival piazze
         public readonly List<Vector2Int> LookoutPosts = new List<Vector2Int>();
         public int SalesToday;
         public int LostToday; // customers who left with nothing

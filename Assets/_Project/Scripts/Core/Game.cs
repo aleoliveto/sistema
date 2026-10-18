@@ -34,7 +34,46 @@ namespace OSistema.Core
         public readonly Territory Territory;
         public readonly Organization Org = new Organization();
         public readonly Police Police = new Police();
-        public readonly RivalClan Rival = new RivalClan();
+        public readonly RivalClan Rival = new RivalClan { Id = 0, Colour = ClanColours[0] };
+
+        /// <summary>
+        /// The clans that split the city between them. The first is the one next door, at odds with you
+        /// from the start (Rival); the others hold their own rioni and fight each other as much as you.
+        /// </summary>
+        public readonly List<RivalClan> Clans = new List<RivalClan>();
+
+        static readonly Color32[] ClanColours =
+        {
+            new Color32(200, 60, 60, 255), new Color32(70, 120, 210, 255), new Color32(160, 90, 200, 255), new Color32(60, 170, 140, 255),
+        };
+
+        public RivalClan AddClan()
+        {
+            var c = new RivalClan { Id = Clans.Count, Colour = ClanColours[Clans.Count % ClanColours.Length] };
+            Clans.Add(c);
+            return c;
+        }
+
+        /// <summary>The clan with a piazza in this rione, if any.</summary>
+        public RivalClan ClanOwning(int zoneId)
+        {
+            foreach (var c in Clans)
+                if (!c.Destroyed && c.OwnsZone(zoneId)) return c;
+            return null;
+        }
+
+        public RivalClan ClanOf(Pawn p) => p != null && p.Clan >= 0 && p.Clan < Clans.Count ? Clans[p.Clan] : Rival;
+
+        /// <summary>Every rival piazza in the city, whoever runs it.</summary>
+        public IEnumerable<DrugSquare> RivalSquares
+        {
+            get
+            {
+                foreach (var c in Clans)
+                    if (!c.Destroyed)
+                        foreach (var s in c.Squares) yield return s;
+            }
+        }
         public readonly CombatSystem Combat = new CombatSystem();
         public readonly EventSystem Events = new EventSystem();
         public readonly ContractBoard Contracts = new ContractBoard();
@@ -223,6 +262,7 @@ namespace OSistema.Core
             Properties = new PropertyManager(Map, properties);
             StreetLife = new StreetLife(this);
             Hospital = new Hospital(this);
+            Clans.Add(Rival);
             ClearNarrowLanes();
             RemoveStrayFurniture();
             Contacts.Setup(this);
@@ -244,7 +284,7 @@ namespace OSistema.Core
             game.Stock.EmptyPacks = 3;
             game.PlaceStarterTable();
             game.SpawnStartingCrew(setup);
-            game.Rival.Setup(game, rng);
+            game.SetupClans(rng);
             game.Favours.Setup(game, rng);
             game.Log.Add($"{game.Player?.FirstName ?? "Gennaro"} is seventeen. He lives with his mother in a basso in the rione, and he wants more.");
             game.Log.Add("WASD to walk, E to talk or use things. Someone with work has a gold ! over their head.");
@@ -276,9 +316,51 @@ namespace OSistema.Core
             Combat.Tick(this);
             Police.Tick(this);
             Org.Tick(this);
-            Rival.Tick(this);
+            foreach (var c in Clans) c.Tick(this);
             Events.Tick(this);
             SocialTick();
+        }
+
+        /// <summary>
+        /// The city broken up: four clans, each holding a pair of rioni far from each other and from the
+        /// family's basso. Everything else is up for grabs.
+        /// </summary>
+        void SetupClans(System.Random rng)
+        {
+            var home = PlayerBase.center;
+            var zones = new List<Zone>(Territory.Zones);
+            var homeZone = Territory.ZoneAt(Vector2Int.RoundToInt(home));
+            zones.Remove(homeZone);
+            // Seeds spread out: each next one as far as possible from home and from the others.
+            var seeds = new List<Zone>();
+            for (int k = 0; k < 4 && zones.Count > 0; k++)
+            {
+                Zone best = null;
+                float bestScore = -1f;
+                foreach (var z in zones)
+                {
+                    float d = (z.Rect.center - home).magnitude * (k == 0 ? 1f : 0.6f);
+                    foreach (var s in seeds) d = Mathf.Min(d, (z.Rect.center - s.Rect.center).magnitude * 1.4f);
+                    if (k == 0 && (z.Rect.center - home).magnitude > 70f) d *= 0.4f;   // the first clan is the one next door
+                    if (d > bestScore) { bestScore = d; best = z; }
+                }
+                seeds.Add(best);
+                zones.Remove(best);
+            }
+            for (int k = 0; k < seeds.Count; k++)
+            {
+                var clan = k == 0 ? Rival : AddClan();
+                // Each clan holds its seed and the nearest free rione to it.
+                Zone second = null;
+                float sd = float.MaxValue;
+                foreach (var z in zones)
+                {
+                    float d = (z.Rect.center - seeds[k].Rect.center).magnitude;
+                    if (d < sd) { sd = d; second = z; }
+                }
+                if (second != null) zones.Remove(second);
+                clan.Setup(this, rng, second != null ? new[] { seeds[k], second } : new[] { seeds[k] });
+            }
         }
 
         // The phone, the neighbours, the rats and the paper all think once an hour.

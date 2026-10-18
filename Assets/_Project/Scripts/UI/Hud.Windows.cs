@@ -179,7 +179,9 @@ namespace OSistema.UI
             SetStatus(BizTab.Supply, $"{game.Stock.Product} doses · {game.Stock.Cigarettes} packs");
             SetStatus(BizTab.Property, $"€{game.Stock.Cash} dirty · €{game.Stock.Clean} clean");
             SetStatus(BizTab.Favours, "the neighbours");
-            SetStatus(BizTab.Rivals, game.Rival.Destroyed ? "destroyed" : game.Rival.Hostility >= 70f ? "<color=#F07A6E>out for blood</color>" : game.Rival.Hostility >= 40f ? "<color=#F2B866>angry</color>" : "watching");
+            int clansLeft = game.Clans.Count(c => !c.Destroyed);
+            var angry = AngriestClan();
+            SetStatus(BizTab.Rivals, clansLeft == 0 ? "the city is yours" : $"{clansLeft} clans · " + (angry.Hostility >= 70f ? "<color=#F07A6E>one wants blood</color>" : angry.Hostility >= 40f ? "<color=#F2B866>one is angry</color>" : "watching"));
         }
 
         void SetStatus(BizTab t, string text)
@@ -222,7 +224,8 @@ namespace OSistema.UI
             }
             int due = org.Businesses.Count(b => b.Status == BusinessStatus.Paying && org.IsDue(b, Organization.WeekOf(game.Clock)));
             if (due > 0 && !collector) list.Add(($"{due} shop{(due == 1 ? "" : "s")} owe this week's pizzo and nobody collects. Go yourself, or name a Collector.", BizTab.Pizzo, false));
-            if (!game.Rival.Destroyed && game.Rival.Hostility >= 70f) list.Add(("The rivals are planning a hit. Arm the crew, keep bodyguards close.", BizTab.Rivals, true));
+            foreach (var c in game.Clans)
+                if (!c.Destroyed && c.Hostility >= 70f) list.Add(($"The {c.Name} want blood. Arm the crew, keep bodyguards and lookouts on your piazze.", BizTab.Rivals, true));
             return list;
         }
 
@@ -367,7 +370,7 @@ namespace OSistema.UI
                 hv.text = $"{zone.Heat:0}";
                 Ui.SetFill(hf, zone.Heat / 100f);
                 Ui.Text($"Today: {sq.SalesToday} sold (€{sq.RevenueToday}) · {sq.LostToday} customers lost · demand {zone.Demand:0.0}" +
-                        (game.Rival.NearRivalTerritory(sq) ? " · <color=#F2B866>competing with the rivals</color>" : ""), bizBody, "small", "wrap");
+                        (game.Clans.Any(c => !c.Destroyed && c.NearRivalTerritory(sq)) ? " · <color=#F2B866>competing with a clan</color>" : ""), bizBody, "small", "wrap");
                 var hours = Ui.Row(bizBody);
                 Ui.Text($"Open {sq.HoursLabel}", hours).style.width = 150;
                 var square = sq;
@@ -497,33 +500,61 @@ namespace OSistema.UI
 
         void RivalsTab()
         {
-            var rival = game.Rival;
-            Ui.Text(rival.Name.ToUpper(), bizBody, "section");
-            if (rival.Destroyed)
+            // The city: who holds what. The game is to put it back together under one family: yours.
+            int total = game.Territory.Zones.Count;
+            int mine = game.Territory.Zones.Count(z => game.Org.ControlsZone(z, game));
+            Ui.Text($"The city is in pieces. You hold <b>{mine}</b> of {total} rioni; the clans hold {game.Clans.Where(c => !c.Destroyed).Sum(c => c.Squares.Select(q => q.ZoneId).Distinct().Count())}. The map's Territory view shows who holds what.", bizBody, "wrap");
+            Ui.Text("A rione is yours with a house or a shop of yours there and a working piazza. Clans come to take undefended piazze: lookouts warn you, armed crew hold the corner. Hold an empty rival piazza for a minute or two and it's yours.", bizBody, "small", "muted", "wrap");
+
+            foreach (var c in game.Clans)
             {
-                Ui.Text("Destroyed. The district is yours for the taking.", bizBody, "good");
-                return;
-            }
-            Ui.Text($"Boss: {rival.BossName} · soldiers: {rival.Soldiers} · piazze: {rival.Squares.Count}", bizBody);
-            var (hv, hf) = Ui.Bar("Hostility", new Color(0.95f, 0.55f, 0.25f), bizBody);
-            hv.text = $"{rival.Hostility:0}";
-            Ui.SetFill(hf, rival.Hostility / 100f);
-            string mood = rival.InTruce(game) ? $"Truce until day {rival.TruceUntilDay}."
-                : rival.Hostility >= RivalClan.HitHostility ? "<color=#F07A6E>They want blood: ambushes are likely.</color>"
-                : rival.Hostility >= RivalClan.StesaHostility ? "<color=#F2B866>Angry: expect shots over your piazze.</color>"
-                : "Watching you.";
-            Ui.Text(mood, bizBody, "wrap");
-            Ui.Text("Your piazze near their territory anger them every day. To take a piazza by force, draft armed crew and right-click their pusher. Every soldier you kill is one they can't replace.", bizBody, "small", "muted", "wrap");
-            Ui.Btn("Send a gift (€500, hostility −25)", Do(() =>
-            {
-                if (!rival.SendGift(500, 25f, game)) game.Log.Add("Not enough cash for a gift.", MessageKind.Bad);
-            }), bizBody).style.alignSelf = Align.FlexStart;
-            foreach (var sq in rival.Squares)
-            {
-                var row = Ui.Box("table-row").Into(bizBody);
-                Ui.Text($"Their piazza in {game.Territory.Zones[sq.ZoneId].Name}", row).style.width = 320;
-                var square = sq;
-                Ui.Btn("Show", () => FocusCamera(Mover.CellCenter(square.Cell)), row, "btn--small");
+                var clan = c;
+                var head = Ui.Row(bizBody);
+                head.style.marginTop = 12;
+                var swatch = Ui.Box().Into(head);
+                swatch.style.width = 12;
+                swatch.style.height = 12;
+                swatch.style.marginRight = 8;
+                swatch.style.backgroundColor = (Color)clan.Colour;
+                Ui.Text(clan.Name.ToUpper(), head, "section").style.marginTop = 0;
+                if (clan.Destroyed)
+                {
+                    Ui.Text("Finished. Their rioni are open.", bizBody, "good", "small");
+                    continue;
+                }
+                bool knowBoss = clan.Intel >= RivalClan.IntelForBoss, knowMen = clan.Intel >= RivalClan.IntelForLieutenant;
+                var rioni = clan.Squares.Select(q => game.Territory.Zones[q.ZoneId].Name).Distinct();
+                Ui.Text($"Boss: {(knowBoss ? clan.BossName : "<color=#A89F8E>nobody will say</color>")} · soldiers: {(knowMen ? clan.Soldiers.ToString() : "<color=#A89F8E>a few</color>")} · rioni: {string.Join(", ", rioni)}", bizBody, "small", "wrap");
+                var bars = Ui.Row(bizBody);
+                var left = Ui.Box("col", "grow").Into(bars);
+                left.style.marginRight = 10;
+                var right = Ui.Box("col", "grow").Into(bars);
+                var (hv, hf) = Ui.Bar("Hostility", new Color(0.95f, 0.55f, 0.25f), left);
+                hv.text = $"{clan.Hostility:0}";
+                Ui.SetFill(hf, clan.Hostility / 100f);
+                var (iv, iff) = Ui.Bar("What you know", new Color(0.55f, 0.75f, 0.95f), right);
+                iv.text = $"{clan.Intel:0}";
+                Ui.SetFill(iff, clan.Intel / 100f);
+                string mood = clan.InTruce(game) ? $"Truce until day {clan.TruceUntilDay}."
+                    : clan.Hostility >= RivalClan.HitHostility ? "<color=#F07A6E>They want blood: ambushes and assaults on your piazze.</color>"
+                    : clan.Hostility >= 55f ? "<color=#F2B866>They'll come for an undefended piazza.</color>"
+                    : clan.Hostility >= RivalClan.StesaHostility ? "<color=#F2B866>Angry: expect shots over your piazze.</color>"
+                    : "Watching.";
+                Ui.Text(mood, bizBody, "small", "wrap");
+                var actions = Ui.Row(bizBody);
+                actions.style.flexWrap = Wrap.Wrap;
+                Ui.Btn("Gift €500 (hostility −25)", Do(() => { if (!clan.SendGift(500, 25f, game)) game.Log.Add("Not enough cash for a gift.", MessageKind.Bad); }), actions, "btn--small");
+                var stesa = Ui.Btn("Order a stesa ▸", () => { game.Events.Raise(OSistema.Story.OperationCards.Stesa(clan, game)); ToggleWindow(Window.Business); }, actions, "btn--small");
+                stesa.SetEnabled(clan.Squares.Count > 0);
+                Tip(stesa, () => "Armed crew ride to one of their piazze and shoot over it.");
+                var hit = Ui.Btn("Order a hit ▸", () => { game.Events.Raise(OSistema.Story.OperationCards.Hit(clan, game)); ToggleWindow(Window.Business); }, actions, "btn--small", "btn--danger");
+                hit.SetEnabled(knowMen);
+                Tip(hit, () => knowMen ? "Send a hitman for one of their lieutenants, or the boss if you know enough." : $"You don't know enough about them yet ({clan.Intel:0}/{RivalClan.IntelForLieutenant:0}). Lookouts near their turf and Nanninella tell you more.");
+                if (clan.Squares.Count > 0)
+                {
+                    var first = clan.Squares[0];
+                    Ui.Btn("Show their piazza", () => FocusCamera(Mover.CellCenter(first.Cell)), actions, "btn--small");
+                }
             }
         }
     }
