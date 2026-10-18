@@ -100,8 +100,50 @@ namespace OSistema.UI
             root.pickingMode = PickingMode.Ignore;
 
             worldLayer = Layer();
+            // Red at the edges of the screen when you're hit, deeper as the guard goes.
+            damageOverlay = Ui.Box("layer").Into(root);
+            damageOverlay.pickingMode = PickingMode.Ignore;
+            damageOverlay.style.backgroundImage = new StyleBackground(DamageVignette());
+            damageOverlay.style.opacity = 0f;
             hudLayer = Layer();
             modalLayer = Layer();
+        }
+
+        VisualElement damageOverlay;
+        float damageFlash;
+
+        static Texture2D vignette;
+
+        static Texture2D DamageVignette()
+        {
+            if (vignette != null) return vignette;
+            const int n = 128;
+            vignette = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+            var px = new Color32[n * n];
+            for (int y = 0; y < n; y++)
+            for (int x = 0; x < n; x++)
+            {
+                float dx = (x + 0.5f) / n * 2f - 1f, dy = (y + 0.5f) / n * 2f - 1f;
+                float r = Mathf.Sqrt(dx * dx * 0.8f + dy * dy * 1.1f);
+                float a = Mathf.Clamp01((r - 0.55f) / 0.6f);
+                px[y * n + x] = new Color32(150, 8, 8, (byte)(a * a * 230));
+            }
+            vignette.SetPixels32(px);
+            vignette.Apply();
+            return vignette;
+        }
+
+        /// <summary>A hit on the player: a flash of red.</summary>
+        public void OnPlayerHurt(Vector2 dir) => damageFlash = 1f;
+
+        void UpdateDamageOverlay()
+        {
+            var p = game?.Player;
+            float guard = p != null ? p.Guard : 1f;
+            float wounded = p != null ? Mathf.Clamp01(p.Health.Pain * 1.2f) : 0f;
+            damageFlash = Mathf.MoveTowards(damageFlash, 0f, Time.unscaledDeltaTime * 3f);
+            float a = Mathf.Max((1f - guard) * 0.7f, wounded * 0.5f) + damageFlash * 0.45f;
+            damageOverlay.style.opacity = Mathf.Clamp01(a);
         }
 
         VisualElement Layer()
@@ -150,6 +192,7 @@ namespace OSistema.UI
 
         void Update()
         {
+            if (damageOverlay != null) UpdateDamageOverlay();
             var kb = Keyboard.current;
             if (kb != null)
             {

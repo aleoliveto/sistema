@@ -85,6 +85,13 @@ namespace OSistema.Pawns
         public Pawn ForcedTarget;
         public long OnOperationUntil;    // on a stesa or a hit: shoots at the other side's people on sight
 
+        /// <summary>
+        /// The player's guard, 0..1: like an action game, the first hits only knock it down (the screen
+        /// reddens); it comes back after a few seconds out of fire. Only when it's gone do bullets wound.
+        /// </summary>
+        public float Guard = 1f;
+        public int BurstLeft;            // shots left in this burst before a pause
+
         /// <summary>Real time of the last wound, for the hit flash.</summary>
         public float LastHitTime = -10f;
         public Vector2 LastHitDir;          // which way the last bullet or punch was going: the body jerks that way

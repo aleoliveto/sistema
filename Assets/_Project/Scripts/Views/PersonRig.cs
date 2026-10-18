@@ -188,7 +188,9 @@ namespace OSistema.Views
             if (hasPos)
             {
                 var delta = position - lastPos;
-                if (delta.sqrMagnitude > 0.00002f) heading = Mathf.Atan2(-delta.x, delta.y) * Mathf.Rad2Deg;
+                // Someone aiming keeps facing the target while they move (strafing), instead of
+                // flipping between the gun and the way they're walking every frame.
+                if (delta.sqrMagnitude > 0.00002f && !aiming) heading = Mathf.Atan2(-delta.x, delta.y) * Mathf.Rad2Deg;
                 speed = dt > 0f ? delta.magnitude / dt : 0f;
             }
             lastPos = position;

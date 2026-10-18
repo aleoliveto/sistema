@@ -243,6 +243,22 @@ namespace OSistema.UI
                     }
                     catch (Exception e) { Debug.LogError("[O Sistema] TRAVEL FAILED " + e); }
                 }
+                // "fight": arm everyone and send a clan hit squad straight at the family, to watch a firefight.
+                if (text.Contains("fight") && game != null)
+                {
+                    game.Stock.Cash += 2000;
+                    for (int i = 0; i < 2; i++) game.Org.Recruit(game, out _);
+                    foreach (var c in game.Pawns.Crew) c.Armed = true;
+                    // Out into the street, where a hit can find him.
+                    var door = game.Properties.All.Find(pr => pr.OwnedByPlayer)?.Door ?? Vector2Int.RoundToInt(game.PlayerBase.center);
+                    foreach (var c in game.Pawns.Crew)
+                        for (int r = 3; r < 8; r++)
+                        {
+                            var spot = door + new Vector2Int(game.Rng.Next(-r, r + 1), game.Rng.Next(-r, r + 1));
+                            if (game.Map.InBounds(spot) && game.Map.IsPassable(spot) && game.Map.GetTerrain(spot.x, spot.y) != World.TerrainType.Floor) { c.Teleport(spot); break; }
+                        }
+                    game.Rival.DebugHit(game);
+                }
                 if (text.Contains("roundtrip") && game != null)
                 {
                     try { Debug.Log("[O Sistema] " + Core.SaveSystem.DevRoundTrip(game)); }

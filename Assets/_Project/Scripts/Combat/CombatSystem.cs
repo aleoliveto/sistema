@@ -85,6 +85,58 @@ namespace OSistema.Combat
                 var target = PickTarget(attacker, game, now);
                 if (target != null) Attack(attacker, target, game, now);
             }
+            if (now % 30 == 0) CrewReact(game, now);
+        }
+
+        /// <summary>The nearest clan gunman who's come for the family, in sight or close.</summary>
+        public static Pawn NearestHostile(Pawn pawn, Game game, float range)
+        {
+            long now = game.Ticks.TicksGame;
+            Pawn best = null;
+            float bestD = range * range;
+            if (pawn.Faction == Faction.Crew)
+            {
+                foreach (var r in game.Pawns.Rivals)
+                {
+                    if (!r.CanAct || !(r.IsAggressive(now) && AfterFamily(r))) continue;
+                    float d = (r.Position - pawn.Position).sqrMagnitude;
+                    if (d < bestD && (d < 36f || HasLineOfSight(game.Map, pawn.Cell, r.Cell))) { bestD = d; best = r; }
+                }
+            }
+            else
+            {
+                foreach (var c in game.Pawns.Crew)
+                {
+                    if (!c.CanAct) continue;
+                    float d = (c.Position - pawn.Position).sqrMagnitude;
+                    if (d < bestD && HasLineOfSight(game.Map, pawn.Cell, c.Cell)) { bestD = d; best = c; }
+                }
+            }
+            return best;
+        }
+
+        /// <summary>
+        /// Shooting on the family's streets: whoever has a gun turns to fight it, whoever hasn't runs
+        /// for home. Nobody keeps selling on the corner while bullets fly.
+        /// </summary>
+        void CrewReact(Game game, long now)
+        {
+            if (now - LastShotTick > 600) return;   // only while there's shooting
+            foreach (var c in game.Pawns.Crew)
+            {
+                if (c.Controlled || !c.CanAct || c.Drafted || c.InMentalBreak(now)) continue;
+                if (c.IsBoss && game.Org.Hiding) continue;
+                var job = c.CurrentJob;
+                if (job is DefendJob || job is FleeJob || job is CrewStesaJob || job is CrewHitJob || job is EngageJob) continue;
+                var threat = NearestHostile(c, game, c.Armed ? 18f : 13f);
+                if (threat == null) continue;
+                if (c.Armed)
+                {
+                    c.ForceJob(new DefendJob(c, threat), game);
+                    if (game.Rng.NextDouble() < 0.4) c.Say("fight");
+                }
+                else c.ForceJob(new FleeJob(c, null, game), game);
+            }
         }
 
         /// <summary>When the player last pulled the trigger: bodyguards join in.</summary>
@@ -143,6 +195,9 @@ namespace OSistema.Combat
             s += p.Health.Pain * 10f + p.Bloom;
             return Mathf.Min(s, 25f);
         }
+
+        /// <summary>The player was hit, from this direction: the screen flashes red.</summary>
+        public event Action<Vector2> PlayerHurt;
 
         /// <summary>The last shot of the player's that drew blood: the HUD flashes a hit marker.</summary>
         public event Action<Vector2, bool> PlayerHit;
@@ -294,12 +349,17 @@ namespace OSistema.Combat
             chance *= 1f - attacker.Health.Pain * 0.5f;
             bool covered = !melee && IsInCover(game.Map, target.Cell, attacker.Position);
             if (covered) chance *= CoverFactor;
+            // Like an action game: the men shooting at you miss a lot, most of all when you're moving.
+            if (target.Controlled) chance *= target.Velocity.sqrMagnitude > 0.5f || target.Riding ? 0.38f : 0.55f;
             chance = Mathf.Clamp(chance, 0.05f, 0.9f);
 
             var rng = game.Rng;
             attacker.AimAt(target);
             if (!melee) attacker.Learn(Skill.Shooting, 3f, game);
-            attacker.NextAttackTick = now + (melee ? 45 : 38 + rng.Next(0, 25));
+            // Bursts: two or three quick shots, then a breath. Reads as fire discipline, not a spasm.
+            if (melee) attacker.NextAttackTick = now + 45;
+            else if (attacker.BurstLeft > 0) { attacker.BurstLeft--; attacker.NextAttackTick = now + 12 + rng.Next(0, 6); }
+            else { attacker.BurstLeft = 1 + rng.Next(0, 2); attacker.NextAttackTick = now + 55 + rng.Next(0, 35); }
             bool hit = rng.NextDouble() < chance;
 
             var to = target.Position;
@@ -341,7 +401,7 @@ namespace OSistema.Combat
             }
         }
 
-        static void Wound(Pawn target, bool melee, Game game, Vector2 dir)
+        void Wound(Pawn target, bool melee, Game game, Vector2 dir)
         {
             target.LastHitTime = Time.unscaledTime;
             target.LastHitDir = dir;
@@ -354,6 +414,18 @@ namespace OSistema.Combat
             if (!target.Controlled && !target.Riding) target.Mover.Slide(dir * (melee ? 0.25f : 0.35f), game.Map);
             if (target.Faction == Faction.Rival && target.CanAct && rng.NextDouble() < 0.6) target.Say("hurt");
 
+            // The player has a guard: hits knock it down first (the screen reddens), it comes back if he
+            // gets out of fire. Only with the guard gone do bullets go in, and not as deep.
+            if (target.Controlled)
+            {
+                PlayerHurt?.Invoke(dir);
+                if (target.Guard > 0.05f)
+                {
+                    target.Guard = Mathf.Max(0f, target.Guard - (melee ? 0.12f : 0.26f));
+                    return;
+                }
+            }
+
             if (melee)
             {
                 target.Health.AddInjury("Bruise", part, 0.05f + (float)rng.NextDouble() * 0.05f, 0f);
@@ -363,6 +435,9 @@ namespace OSistema.Combat
             bool head = part == "Head";
             float severity = head ? 0.7f + (float)rng.NextDouble() * 0.25f : 0.2f + (float)rng.NextDouble() * 0.2f;
             float bleed = head ? 2f : 0.5f + (float)rng.NextDouble() * 0.9f;
+            // Clan soldiers go down in two or three good hits, at once to the head: a fight is quick.
+            if (target.Faction == Faction.Rival) severity = head ? 1.3f : 0.38f + (float)rng.NextDouble() * 0.12f;
+            if (target.Controlled) severity *= 0.5f;
             target.Health.AddInjury("Gunshot wound", part, severity, bleed);
 
             if (target.Faction == Faction.Crew)

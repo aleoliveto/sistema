@@ -621,8 +621,10 @@ namespace OSistema.Input
                     }
                 }
                 p.Heading = Mathf.Atan2(-dir.x, dir.y) * Mathf.Rad2Deg;   // so a scooter starts off the way you were walking
+                p.Velocity = dir.normalized * (step / Mathf.Max(dt, 0.0001f));   // a moving target is harder to hit
                 follow = p;
             }
+            if (!p.Riding && dir == Vector2.zero) p.Velocity = Vector2.zero;
             // Breath: about five seconds of running; once it's gone you can't run until it's back past a third.
             float recover = (p.Needs.Food < 0.25f || p.Needs.Rest < 0.25f) ? 0.05f : 0.09f;
             p.Stamina = Mathf.Clamp01(p.Stamina + (running ? -0.2f : recover * (dir == Vector2.zero ? 1.6f : 1f)) * dt);
@@ -634,6 +636,8 @@ namespace OSistema.Input
             p.AimPoint = Aiming ? (Vector2)ScreenToWorld(mousePos) : (Vector2?)null;
             aimLine.enabled = Aiming;
             p.Bloom = Mathf.MoveTowards(p.Bloom, 0f, 12f * dt);
+            // The guard comes back after a few seconds out of fire.
+            if (Time.unscaledTime - p.LastHitTime > 2.5f) p.Guard = Mathf.MoveTowards(p.Guard, 1f, 0.75f * dt);
             bool reloading = p.ReloadUntil > Time.unscaledTime;
             if (!reloading && p.ReloadUntil > 0f)
             {

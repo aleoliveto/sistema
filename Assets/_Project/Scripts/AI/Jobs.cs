@@ -304,6 +304,8 @@ namespace OSistema.AI
         Walker walker;
         int retarget;
 
+        readonly FightState fight = new FightState();
+
         public EngageJob(Pawn pawn, Pawn target) : base(pawn) => this.target = target;
 
         public override string Label => $"Engaging {target.Nickname}";
@@ -316,16 +318,14 @@ namespace OSistema.AI
                 return true;
             }
 
-            float range = Pawn.Armed ? Combat.CombatSystem.PistolRange - 1f : Combat.CombatSystem.MeleeRange - 0.3f;
-            float dist = (target.Position - Pawn.Position).magnitude;
-            bool clear = !Pawn.Armed || Combat.CombatSystem.HasLineOfSight(game.Map, Pawn.Cell, target.Cell);
-            if (dist <= range && clear)
+            if (Pawn.Armed)
             {
-                Pawn.StopMoving();
-                walker = null;
+                Tactics.Fight(Pawn, target, fight, game);
                 return false;
             }
-
+            // Fists: walk right up to him.
+            float dist = (target.Position - Pawn.Position).magnitude;
+            if (dist <= Combat.CombatSystem.MeleeRange - 0.3f) { Pawn.StopMoving(); walker = null; return false; }
             if (walker == null || --retarget <= 0)
             {
                 walker = new Walker(target.Cell, adjacent: true);

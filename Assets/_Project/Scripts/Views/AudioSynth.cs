@@ -152,6 +152,46 @@ namespace OSistema.Views
             return Clip("ambience", clipped);
         }
 
+        static AudioClip whiz, flesh;
+
+        /// <summary>A bullet going past your ear.</summary>
+        public static AudioClip Whiz => whiz != null ? whiz : whiz = MakeWhiz();
+
+        /// <summary>A bullet going into someone.</summary>
+        public static AudioClip HitFlesh => flesh != null ? flesh : flesh = MakeFlesh();
+
+        static AudioClip MakeWhiz()
+        {
+            var r = new System.Random(77);
+            int n = (int)(Rate * 0.22f);
+            var d = new float[n];
+            float lp = 0f;
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)n;
+                lp += (Noise(r) - lp) * Mathf.Lerp(0.9f, 0.25f, t);           // bright, then duller as it goes
+                float env = Mathf.Sin(Mathf.PI * Mathf.Pow(t, 0.6f));
+                float tone = Mathf.Sin(2f * Mathf.PI * Mathf.Lerp(3200f, 1400f, t) * i / Rate) * 0.3f;
+                d[i] = (lp + tone) * env;
+            }
+            return Clip("whiz", d);
+        }
+
+        static AudioClip MakeFlesh()
+        {
+            var r = new System.Random(19);
+            int n = (int)(Rate * 0.14f);
+            var d = new float[n];
+            float lp = 0f;
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)Rate;
+                lp += (Noise(r) - lp) * 0.2f;
+                d[i] = (Mathf.Sin(2f * Mathf.PI * 95f * t) * 0.9f + lp * 0.8f) * Mathf.Exp(-t * 32f);
+            }
+            return Clip("flesh", d);
+        }
+
         static AudioClip hitMarker;
 
         /// <summary>The sharp tick when your shot lands.</summary>

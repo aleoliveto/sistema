@@ -98,7 +98,8 @@ namespace OSistema.Core
             foreach (var npc in game.Npcs.All) CreateNpcView(npc);
             var combatGo = new GameObject("Combat");
             combatGo.transform.SetParent(worldRoot, false);
-            combatGo.AddComponent<CombatView>().Init(game.Combat);
+            combatGo.AddComponent<CombatView>().Init(game.Combat, game);
+            game.Combat.PlayerHurt += hud.OnPlayerHurt;
             combatGo.AddComponent<SoundManager>().Init(game);
             game.Combat.EngagementStarted += OnEngagement;
             game.Response.Sirens += OnSirens;
@@ -118,6 +119,7 @@ namespace OSistema.Core
             if (Game != null)
             {
                 Game.Combat.EngagementStarted -= OnEngagement;
+                Game.Combat.PlayerHurt -= hud.OnPlayerHurt;
                 Game.Response.Sirens -= OnSirens;
                 Game.Pawns.Added -= CreatePawnView;
                 Game.Npcs.Added -= CreateNpcView;

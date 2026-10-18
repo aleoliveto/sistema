@@ -37,8 +37,11 @@ namespace OSistema.Views
 
         public static CombatView Instance { get; private set; }
 
-        public void Init(CombatSystem system)
+        OSistema.Core.Game game;
+
+        public void Init(CombatSystem system, OSistema.Core.Game g = null)
         {
+            game = g;
             combat = system;
             combat.Shot += OnShot;
             combat.PlayerHit += OnPlayerHit;
@@ -78,16 +81,42 @@ namespace OSistema.Views
             if (!seen) return;
 
             var dir = (shot.To - shot.From).normalized;
-            Spawn(shot.From + dir * 0.4f, Vector2.zero, FlashSeconds, new Color(1f, 0.85f, 0.4f, 1f), 0.45f, 0f, false);
+            Spawn(shot.From + dir * 0.45f, Vector2.zero, FlashSeconds, new Color(1f, 0.85f, 0.4f, 1f), 0.6f, Random.value * 90f, false);
+            Spawn(shot.From + dir * 0.75f, Vector2.zero, FlashSeconds * 0.8f, new Color(1f, 0.95f, 0.7f, 1f), 0.3f, 45f, false);
             MuzzleLight(shot.From + dir * 0.4f);
             Tracer(shot.From + dir * 0.4f, shot.To);
+            // A brass casing flicks out to the right of the gun.
+            var right = new Vector2(dir.y, -dir.x);
+            Spawn(shot.From + dir * 0.2f, right * (2.2f + Random.value) + Random.insideUnitCircle * 0.6f, 0.45f, new Color(0.9f, 0.72f, 0.3f, 1f), 0.07f, Random.value * 90f, true);
 
             if (shot.Hit)
             {
-                Burst(shot.To, BloodColor, 6, 2.5f, 0.35f);
-                Decal(shot.To + Random.insideUnitCircle * 0.25f, 0.35f + Random.value * 0.3f);
+                // Blood sprays out the far side, the way the bullet was going.
+                for (int i = 0; i < 9; i++)
+                    Spawn(shot.To, dir * (1.5f + Random.value * 3f) + Random.insideUnitCircle * 1.2f, 0.25f + Random.value * 0.3f, BloodColor, 0.07f + Random.value * 0.09f, 0f, true);
+                Decal(shot.To + dir * (0.3f + Random.value * 0.4f), 0.35f + Random.value * 0.3f);
+                SoundManager.PlayAt(AudioSynth.HitFlesh, shot.To, 0.55f);
             }
-            else Burst(shot.To, DustColor, shot.InCover ? 7 : 4, 1.8f, 0.3f);
+            else
+            {
+                Burst(shot.To, DustColor, shot.InCover ? 9 : 5, 2.2f, 0.3f);
+                // Sparks off stone.
+                for (int i = 0; i < 3; i++)
+                    Spawn(shot.To, -dir * (1f + Random.value * 2f) + Random.insideUnitCircle * 1.5f, 0.15f, new Color(1f, 0.85f, 0.5f, 1f), 0.04f, 0f, true);
+            }
+
+            // A miss that passes close to the player: the crack of it going by your ear.
+            var me = game?.Player;
+            if (me != null && !shot.Hit && (shot.From - me.Position).sqrMagnitude > 1f)
+            {
+                var seg = shot.To - shot.From;
+                float t = Mathf.Clamp01(Vector2.Dot(me.Position - shot.From, seg) / Mathf.Max(0.0001f, seg.sqrMagnitude));
+                if ((shot.From + seg * t - me.Position).sqrMagnitude < 1.4f * 1.4f)
+                {
+                    SoundManager.PlayUi(AudioSynth.Whiz, 0.5f);
+                    if (shake != null) shake.Kick(me.Position, 0.12f);
+                }
+            }
         }
 
         /// <summary>Your bullet landed: a white X on them (red if they went down), and a tick.</summary>
@@ -104,7 +133,8 @@ namespace OSistema.Views
                 sr.color = c;
                 active.Add(new Fx { Sprite = sr, Born = Time.unscaledTime, Life = 0.28f, Color = c, Fade = true });
             }
-            if (shake != null) shake.Kick(at, downed ? 0.2f : 0.08f);
+            if (shake != null) shake.Kick(at, downed ? 0.3f : 0.08f);
+            if (downed && game != null) game.PopupAt(at + new Vector2(0f, 0.6f), "DOWN");
         }
 
         void Tracer(Vector2 from, Vector2 to)

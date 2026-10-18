@@ -223,8 +223,7 @@ namespace OSistema.AI
 
         Walker walker;
         int ticks;
-        bool soughtCover;
-        bool movingToCover;
+        readonly FightState fight = new FightState();
 
         public HitJob(Pawn pawn) : base(pawn) { }
 
@@ -241,39 +240,20 @@ namespace OSistema.AI
                 return true;
             }
 
-            if (movingToCover)
-            {
-                if (walker != null && walker.Tick(Pawn, game) == WalkStatus.Walking) return false;
-                movingToCover = false;
-                walker = null;
-            }
-
             float dist = (target.Position - Pawn.Position).magnitude;
-            if (dist <= StandOffDistance && CombatSystem.HasLineOfSight(game.Map, Pawn.Cell, target.Cell))
-            {
-                // Professionals: duck behind a car or a wall before trading shots.
-                if (!soughtCover && !CombatSystem.IsInCover(game.Map, Pawn.Cell, target.Position))
-                {
-                    soughtCover = true;
-                    var cover = CombatSystem.FindCover(game.Map, Pawn.Cell, target.Position, 3);
-                    if (cover.HasValue && cover.Value != Pawn.Cell)
-                    {
-                        walker = new Walker(cover.Value, adjacent: false, speedMultiplier: 1.2f);
-                        movingToCover = true;
-                        return false;
-                    }
-                }
-                Pawn.StopMoving();
-                walker = null;
-                return false; // hold and shoot
-            }
-
             // They come on a scooter and get off to do it.
-            Pawn.OnScooter = dist > 12f;
+            Pawn.OnScooter = dist > 14f;
             if (!Pawn.OnScooter) Pawn.Riding = false;
-            if (walker == null || (walker.Target - target.Cell).sqrMagnitude > 4)
-                walker = new Walker(target.Cell, adjacent: true, speedMultiplier: 1.15f);
-            if (walker.Tick(Pawn, game) == WalkStatus.Failed) walker = null;
+            if (Pawn.OnScooter)
+            {
+                if (walker == null || (walker.Target - target.Cell).sqrMagnitude > 9)
+                    walker = new Walker(target.Cell, adjacent: true, speedMultiplier: 1.15f);
+                if (walker.Tick(Pawn, game) == WalkStatus.Failed) walker = null;
+                return false;
+            }
+            walker = null;
+            // Professionals: close in, get behind a car or a wall, and hold there shooting.
+            Tactics.Fight(Pawn, target, fight, game);
             return false;
         }
     }
@@ -288,6 +268,9 @@ namespace OSistema.AI
         Walker walker;
         int held;
         Vector2Int spot;
+
+        Pawn defender;
+        readonly FightState fight = new FightState();
 
         public AssaultJob(Pawn pawn) : base(pawn) { }
 
@@ -317,6 +300,9 @@ namespace OSistema.AI
             Pawn.OnScooter = false;
             Pawn.Riding = false;
             held++;
+            // Someone came to defend the corner: fight him properly.
+            if (defender == null || !defender.IsPresent || defender.Health.Downed) defender = CombatSystem.NearestHostile(Pawn, game, 10f);
+            if (defender != null) Tactics.Fight(Pawn, defender, fight, game);
             return false;
         }
     }
