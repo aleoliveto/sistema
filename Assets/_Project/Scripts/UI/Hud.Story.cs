@@ -149,7 +149,7 @@ namespace OSistema.UI
 
         void BuildCard(GameEvent e)
         {
-            var card = Ui.Box("panel", "card").Into(eventDim);
+            var card = Ui.Box("panel", "card", "fit").Into(eventDim);
             var band = Ui.Box("card__band").Into(card);
             band.style.backgroundColor = CardBands[Mathf.Abs(e.Id.GetHashCode()) % CardBands.Length];
             var face = OSistema.Views.CharacterArt.Face(e.Portrait);
@@ -162,7 +162,7 @@ namespace OSistema.UI
             }
             Ui.Text(e.Title, band, "card__title");
 
-            var body = Ui.Box("card__body").Into(card);
+            var body = Ui.Scroll(card, "card__body");   // a long scene with many options scrolls; the band stays
             // English first; a short saying in dialect only now and then, as flavour.
             if (OSistema.Story.Dialect.Show(e.Neapolitan)) Ui.Text($"“{e.Neapolitan}”", body, "card__sub");
             if (!string.IsNullOrEmpty(e.English)) Ui.Text(OSistema.Story.Dialect.Show(e.Neapolitan) || string.IsNullOrEmpty(e.Neapolitan) ? e.English : $"“{e.English}”", body, "card__quote");
@@ -186,11 +186,11 @@ namespace OSistema.UI
 
         void BuildGameOver()
         {
-            var card = Ui.Box("panel", "card").Into(gameOverDim);
+            var card = Ui.Box("panel", "card", "fit").Into(gameOverDim);
             var band = Ui.Box("card__band").Into(card);
             band.style.backgroundColor = new Color(0.12f, 0.05f, 0.05f);
             Ui.Text("The family is finished", band, "card__title");
-            var body = Ui.Box("card__body").Into(card);
+            var body = Ui.Scroll(card, "card__body");
             Ui.Text(game.Org.GameOverReason, body, "card__text");
             Ui.Text($"Survived {game.Clock.Day} days across {game.Org.Generation} generation(s).", body, "card__sub");
             Ui.Btn("Start a new family", () => OpenMenu(Menu.Creator), body, "option");

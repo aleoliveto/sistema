@@ -107,12 +107,57 @@ namespace OSistema.AI
         static Job TryEat(Pawn pawn, Game game)
         {
             if (!pawn.Needs.Hungry) return null;
-            var map = game.Map;
-            if (game.Stock.Meals > 0 && map.TryFindNearest(BuildingDefs.Pantry, pawn.Cell, out var pantry))
+            var stock = game.Stock;
+            // Home food comes from the family's own pantry, never a shop's or a neighbour's.
+            if (stock.Meals > 0 && TryFindAtHome(game, BuildingDefs.Pantry, pawn.Cell, out var pantry))
                 return new EatJob(pawn, pantry, atShop: false);
-            if (game.Stock.Cash >= Prices.Pizza && map.TryFindNearest(BuildingDefs.PizzeriaCounter, pawn.Cell, out var pizzeria))
+            // Nothing cooked but groceries in: whoever is hungry puts the pot on.
+            if (stock.Meals <= 0 && stock.Groceries > 0 && stock.Cook == null &&
+                TryFindAtHome(game, BuildingDefs.Pantry, pawn.Cell, out _) &&
+                TryFindAtHome(game, BuildingDefs.Stove, pawn.Cell, out var stove))
+                return new CookJob(pawn, stove, game);
+            if (stock.Cash >= Prices.Pizza && TryFindPizzeria(game, pawn.Cell, out var pizzeria))
                 return new EatJob(pawn, pizzeria, atShop: true);
             return null;
+        }
+
+        /// <summary>The nearest piece of this furniture in the family's own homes: not a shop's, not a neighbour's.</summary>
+        public static bool TryFindAtHome(Game game, BuildingDef def, Vector2Int from, out Vector2Int found)
+        {
+            found = default;
+            int best = int.MaxValue;
+            foreach (var c in game.Map.PositionsOf(def))
+            {
+                if (!game.PlayerBase.Contains(c) && !game.Properties.IsOwnedHome(c)) continue;
+                int d = (c - from).sqrMagnitude;
+                if (d < best)
+                {
+                    best = d;
+                    found = c;
+                }
+            }
+            return best != int.MaxValue;
+        }
+
+        /// <summary>The nearest pizzeria counter whose shop is open (not burned, not shut for the night).</summary>
+        public static bool TryFindPizzeria(Game game, Vector2Int from, out Vector2Int found)
+        {
+            found = default;
+            int hour = game.Clock.Hour;
+            if (hour < 8 || hour >= 23) return false;
+            int best = int.MaxValue;
+            foreach (var c in game.Map.PositionsOf(BuildingDefs.PizzeriaCounter))
+            {
+                var shop = game.Org.BusinessAt(c);
+                if (shop != null && shop.Status == BusinessStatus.Closed) continue;
+                int d = (c - from).sqrMagnitude;
+                if (d < best)
+                {
+                    best = d;
+                    found = c;
+                }
+            }
+            return best != int.MaxValue;
         }
 
         static Job TrySleep(Pawn pawn, Game game)
@@ -322,8 +367,8 @@ namespace OSistema.AI
             if (stock.Cook != null || stock.Groceries <= 0) return null;
             if (stock.Meals >= 2 + 2 * game.Pawns.PresentCount) return null;
             var map = game.Map;
-            if (map.PositionsOf(BuildingDefs.Pantry).Count == 0) return null;
-            if (!map.TryFindNearest(BuildingDefs.Stove, pawn.Cell, out var stove)) return null;
+            if (!TryFindAtHome(game, BuildingDefs.Pantry, pawn.Cell, out _)) return null;
+            if (!TryFindAtHome(game, BuildingDefs.Stove, pawn.Cell, out var stove)) return null;
             return new CookJob(pawn, stove, game);
         }
 
@@ -332,7 +377,7 @@ namespace OSistema.AI
             var stock = game.Stock;
             var map = game.Map;
             if (stock.Shopper != null) return null;
-            if (!map.TryFindNearest(BuildingDefs.Pantry, pawn.Cell, out var pantry)) return null;
+            if (!TryFindAtHome(game, BuildingDefs.Pantry, pawn.Cell, out var pantry)) return null;
 
             if (stock.Medicine < 1 && stock.Cash >= Prices.Medicine * 2 + 20 &&
                 map.TryFindNearest(BuildingDefs.FarmaciaCounter, pawn.Cell, out var farmacia))

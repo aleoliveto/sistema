@@ -268,10 +268,10 @@ namespace OSistema.UI
         {
             // A compact card: who, what they're doing, a row of actions, then one tab at a time.
             // Click the header to fold it down to just the name.
-            inspector = Ui.Box("panel", "inspector").Into(hudLayer);
+            inspector = Ui.Box("panel", "inspector", "fit").Into(hudLayer);
 
             inspMulti = Ui.Text("", inspector, "title");
-            inspectorDetail = Ui.Box("col").Into(inspector);
+            inspectorDetail = Ui.Box("col", "fit").Into(inspector);
 
             var head = Ui.Row(inspectorDetail);
             head.AddToClassList("insp-head");
@@ -284,7 +284,7 @@ namespace OSistema.UI
             inspCollapse = Ui.Text("▾", head, "insp-chevron");
             Tip(head, () => inspCollapsed ? "Click to open" : "Click to fold away");
 
-            inspBody = Ui.Box("col").Into(inspectorDetail);
+            inspBody = Ui.Box("col", "fit").Into(inspectorDetail);
             var actions = Ui.Row(inspBody);
             actions.style.flexWrap = Wrap.Wrap;
             actions.style.marginTop = 4;
@@ -306,11 +306,12 @@ namespace OSistema.UI
 
             var tabs = Ui.Row(inspBody);
             tabs.AddToClassList("insp-tabs");
+            var pages = Ui.Scroll(inspBody);   // a long tab scrolls inside the card instead of squashing it
             foreach (InspTab t in Enum.GetValues(typeof(InspTab)))
             {
                 var tt = t;
                 inspTabButtons[t] = Ui.Btn(t.ToString(), () => { inspTab = tt; RefreshAll(); }, tabs, "insp-tab");
-                inspTabBodies[t] = Ui.Box("col", "insp-page").Into(inspBody);
+                inspTabBodies[t] = Ui.Box("col", "insp-page").Into(pages);
             }
 
             // Needs

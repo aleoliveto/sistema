@@ -49,6 +49,8 @@ namespace OSistema.UI
             if (p.Needs.Food < 0.22f)
             {
                 if (s.Meals > 0) return Station(game, p.Cell, BuildingDefs.Pantry, "You're starving: eat something at home (E at the pantry)", "You're starving: buy a pizza");
+                if (s.Groceries > 0 && s.Cook == null && OSistema.AI.JobGiver.TryFindAtHome(game, BuildingDefs.Stove, p.Cell, out _))
+                    return Station(game, p.Cell, BuildingDefs.Stove, "You're starving: cook something at home (E at the stove)", "You're starving: buy a pizza");
                 return Shop(game, p.Cell, ShopKind.Pizzeria, $"You're starving: get a pizza (€{Prices.Pizza})");
             }
             if (p.Needs.Rest < 0.15f) return Station(game, p.Cell, BuildingDefs.Bed, "You're dead on your feet: sleep in your bed (E)", "You're exhausted: find somewhere to sleep");

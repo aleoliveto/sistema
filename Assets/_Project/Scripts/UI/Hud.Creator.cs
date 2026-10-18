@@ -19,13 +19,13 @@ namespace OSistema.UI
             creatorSetup ??= new CharacterSetup();
             var s = creatorSetup;
 
-            var card = Ui.Box("panel", "card", "creator").Into(menuDim);
+            var card = Ui.Box("panel", "card", "creator", "fit").Into(menuDim);
             var band = Ui.Box("card__band").Into(card);
             band.style.backgroundColor = new Color(0.16f, 0.09f, 0.06f);
             Ui.Text("WHO ARE YOU?", band, "menu__title");
             Ui.Text("Seventeen years old, a basso in the rione, and nothing yet. Every family starts with one guaglione.", band, "menu__sub");
 
-            var cols = Ui.Row(Ui.Box("menu__body").Into(card));
+            var cols = Ui.Row(Ui.Scroll(card, "menu__body"));
             cols.style.alignItems = Align.FlexStart;
 
             // ---- Left: face and looks ----
@@ -121,8 +121,9 @@ namespace OSistema.UI
             }
             UpdateSkills();
 
-            var buttons = Ui.Row(right);
-            buttons.style.marginTop = 14;
+            // Back and Start stay in view under the card, whatever the scroll.
+            var buttons = Ui.Row(Ui.Box("card__foot").Into(card));
+            buttons.style.justifyContent = Justify.FlexEnd;
             Ui.Btn("Back", () => OpenMenu(Menu.Title), buttons, "menu-btn");
             var start = Ui.Btn("Start", () =>
             {

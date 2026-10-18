@@ -63,13 +63,13 @@ namespace OSistema.UI
 
         VisualElement MenuCard(string subtitle)
         {
-            var card = Ui.Box("panel", "card", "menu").Into(menuDim);
+            var card = Ui.Box("panel", "card", "menu", "fit").Into(menuDim);
             var band = Ui.Box("card__band").Into(card);
             band.style.backgroundColor = new Color(0.16f, 0.09f, 0.06f);
             band.style.height = 110;
             Ui.Text("'O SISTEMA", band, "menu__title");
             Ui.Text(subtitle, band, "menu__sub");
-            return Ui.Box("menu__body").Into(card);
+            return Ui.Scroll(card, "menu__body");
         }
 
         void BuildTitle()
@@ -249,6 +249,8 @@ namespace OSistema.UI
                     catch (Exception e) { Debug.LogError("[O Sistema] ROUNDTRIP FAILED " + e); }
                 }
                 if (text.Contains("map") && game != null) { OSistema.Views.FogOfWar.RevealAllForTesting(); ToggleMap(); }
+                if (text.Contains("uitour") && game != null) StartUiTour();
+                if (text.Contains("checks") && game != null) StartDevChecks();
                 return;
             }
             OpenMenu(Menu.Title);

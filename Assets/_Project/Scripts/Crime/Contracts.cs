@@ -68,7 +68,7 @@ namespace OSistema.Crime
                 ContractKind.Debt => "Collect the debt for Don Peppe",
                 ContractKind.ScooterTheft => first ? "Steal the scooter" : "Take the scooter to Nanninella",
                 ContractKind.Lookout => "Keep watch on the corner for Don Saverio",
-                ContractKind.Smuggling => first ? "Meet the boat at the lungomare (22:00–04:00)" : "Carry the cases to the basso",
+                ContractKind.Smuggling => first ? "Meet the boat at the lungomare (22:00–04:00)" : "Carry the cases to the marked basso",
                 _ => first ? "Meet the boat at the port" : "Bring the load home",
             };
         }

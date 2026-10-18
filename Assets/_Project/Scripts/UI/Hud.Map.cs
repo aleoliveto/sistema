@@ -147,7 +147,8 @@ namespace OSistema.UI
             bigLayer = Ui.Box("layer").Into(bigImage);
             bigLayer.pickingMode = PickingMode.Ignore;
             // The legend: what each icon means. Hover an icon on the map for its name.
-            var legend = Ui.Box("map-legend").Into(mapBody);
+            // As tall as the map at most; the rest of the legend scrolls instead of running off the panel.
+            var legend = Ui.Scroll(Ui.Box("map-legend", "fit").Into(mapBody));
             Ui.Text("LEGEND", legend, "section");
             foreach (var (glyph, cls, text) in new[]
             {

@@ -38,7 +38,7 @@ namespace OSistema.UI
             Ui.Box("nokia__ear").Into(phoneWindow);
             var brand = Ui.Text("RIONE", phoneWindow, "nokia__brand");
             brand.pickingMode = PickingMode.Ignore;
-            phoneLcd = Ui.Box("nokia__screen").Into(phoneWindow);
+            phoneLcd = Ui.Box("nokia__screen", "fit").Into(phoneWindow);
             phoneStatusLine = Ui.Text("", phoneLcd, "lcd", "lcd__status");
             var scroll = new ScrollView(ScrollViewMode.Vertical).Cls("lcd__body").Into(phoneLcd);
             scroll.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
@@ -391,8 +391,9 @@ namespace OSistema.UI
             else if (pause) paperResumeSpeed = 1;
             else paperResumeSpeed = -1;
 
-            var paper = Ui.Box("paper").Into(paperDim);
-            var close = Ui.Btn("✕  Fold the paper  [Esc]", ClosePaper, paper, "btn--small", "paper__close");
+            // The page scrolls if the screen is short; the close button stays pinned in the corner, on top.
+            var sheet = Ui.Box("paper", "fit").Into(paperDim);
+            var paper = Ui.Scroll(sheet);
             var mast = Ui.Box("paper__mast").Into(paper);
             Ui.Text(Newspaper.Name, mast, "paper__name");
             Ui.Text($"Quotidiano di Napoli e provincia · No. {e.Number} · Domenica, day {e.Day} · €1.50", mast, "paper__dateline");
@@ -411,6 +412,7 @@ namespace OSistema.UI
             var foot = Ui.Box("paper__foot").Into(paper);
             Ui.Text(e.Sidebar, foot, "paper__text", "paper__sidebar", "wrap");
             Ui.Text(e.Brief, foot, "paper__text", "wrap");
+            var close = Ui.Btn("✕  Fold the paper  [Esc]", ClosePaper, sheet, "btn--small", "paper__close");
 
             paperDim.Show(true);
             OSistema.Views.SoundManager.PlayUi(OSistema.Views.AudioSynth.Click, 0.3f);

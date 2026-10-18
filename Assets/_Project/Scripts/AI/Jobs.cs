@@ -69,6 +69,8 @@ namespace OSistema.AI
         {
             target = newTarget;
             started = false;
+            exact = null;
+            repaths = 0;
         }
 
         public WalkStatus Tick(Pawn pawn, Game game)

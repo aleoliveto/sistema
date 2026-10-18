@@ -23,11 +23,12 @@ namespace OSistema.UI
             var items = ShopCards.Items(shop);
             var qty = new int[items.Count];
 
-            var card = Ui.Box("panel", "card", "shop").Into(shopDim);
+            // Band and subtitle on top, the goods in a list that scrolls, the total and Pay always in view.
+            var card = Ui.Box("panel", "card", "shop", "fit").Into(shopDim);
             var band = Ui.Box("card__band").Into(card);
             band.style.backgroundColor = new Color(0.14f, 0.12f, 0.09f);
             Ui.Text(shop.Name, band, "card__title");
-            var body = Ui.Box("card__body").Into(card);
+            var body = Ui.Box("card__body", "card__body--top").Into(card);
             var s = game.Stock;
             Ui.Text(shop.Kind switch
             {
@@ -60,7 +61,10 @@ namespace OSistema.UI
             }
             scooterPictures.Clear();
 
-            var total = Ui.Text("", body, "bold");
+            var list = Ui.Scroll(card, "card__body");
+            list.style.paddingTop = 0;
+            var foot = Ui.Box("card__foot").Into(card);
+            var total = Ui.Text("", foot, "bold", "shop__total");
             Button pay = null;
             void Update()
             {
@@ -74,31 +78,28 @@ namespace OSistema.UI
             for (int i = 0; i < items.Count; i++)
             {
                 int k = i;
-                var row = Ui.Box("table-row").Into(body);
+                // Name, then price and what it's for, then how many are already in storage; the stepper on the right.
+                var row = Ui.Box("table-row", "shop__row").Into(list);
                 if (items[i].Model >= 0)
                 {
                     var pic = Ui.Box("shop__pic").Into(row);
+                    pic.style.flexShrink = 0;
                     scooterPictures.Add((pic, items[i].Model));
                 }
-                var col = Ui.Box("col").Into(row);
-                col.style.width = 260;
-                Ui.Text($"<b>{items[i].Name}</b>", col);
-                Ui.Text($"€{items[i].Price} · {items[i].Note}", col, "small", "muted");
+                var info = Ui.Box("shop__info").Into(row);
+                Ui.Text(items[i].Name, info, "shop__name");
+                Ui.Text($"€{items[i].Price} · {items[i].Note}", info, "small", "muted", "shop__note");
                 if (items[i].Def != null)
-                    Ui.Text($"{s.StoredOf(items[i].Def)} in storage", col, "tiny", "muted");
-                Ui.Box("spacer").Into(row);
-                var n = Ui.Text("0", null, "bold");
-                Ui.Btn("−", () => { if (qty[k] > 0) qty[k]--; n.text = qty[k].ToString(); Update(); }, row, "btn--small");
-                row.Add(n);
-                n.style.width = 30;
-                n.style.unityTextAlign = TextAnchor.MiddleCenter;
-                Ui.Btn("+", () => { if (qty[k] < 50) qty[k]++; n.text = qty[k].ToString(); Update(); }, row, "btn--small");
+                    Ui.Text($"{s.StoredOf(items[i].Def)} in storage", info, "tiny", "muted", "shop__stock");
+                var stepper = Ui.Row(row);
+                stepper.AddToClassList("shop__stepper");
+                var n = Ui.Text("0", null, "bold", "shop__qty");
+                Ui.Btn("−", () => { if (qty[k] > 0) qty[k]--; n.text = qty[k].ToString(); Update(); }, stepper, "btn--small");
+                stepper.Add(n);
+                Ui.Btn("+", () => { if (qty[k] < 50) qty[k]++; n.text = qty[k].ToString(); Update(); }, stepper, "btn--small");
             }
-            body.Add(total);
-            total.style.marginTop = 8;
 
-            var buttons = Ui.Row(body);
-            buttons.style.marginTop = 8;
+            var buttons = Ui.Row(foot);
             pay = Ui.Btn("Pay", () =>
             {
                 int sum = 0;

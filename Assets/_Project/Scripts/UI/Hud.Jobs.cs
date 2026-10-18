@@ -22,7 +22,7 @@ namespace OSistema.UI
 
         void BuildJobsWindow()
         {
-            jobsWindow = Ui.Box("panel", "window").Into(hudLayer);
+            jobsWindow = Ui.Box("panel", "window", "fit").Into(hudLayer);
             jobsWindow.style.width = 620;
             var header = Ui.Box("window__header").Into(jobsWindow);
             Ui.Text("TACCUINO", header, "title", "gold").style.marginRight = 12;

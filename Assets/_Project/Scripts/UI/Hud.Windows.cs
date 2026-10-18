@@ -29,14 +29,14 @@ namespace OSistema.UI
             // Business
             // A sidebar of sections, each with a one-line status; the open section on the right,
             // headed by what it's for.
-            businessWindow = Ui.Box("panel", "window", "window--famiglia").Into(hudLayer);
+            businessWindow = Ui.Box("panel", "window", "window--famiglia", "fit").Into(hudLayer);
             var header = Ui.Box("window__header").Into(businessWindow);
             Ui.Text("FAMIGLIA", header, "title", "gold").style.marginRight = 16;
             Ui.Text("Tab to close", header, "tiny", "muted");
             Ui.Box("spacer").Into(header);
             Ui.Btn("✕", () => ToggleWindow(Window.Business), header, "btn--small");
 
-            var split = Ui.Box("famiglia").Into(businessWindow);
+            var split = Ui.Box("famiglia", "fit").Into(businessWindow);
             var nav = Ui.Box("famiglia__nav").Into(split);
             foreach (BizTab tab in System.Enum.GetValues(typeof(BizTab)))
             {
@@ -49,7 +49,7 @@ namespace OSistema.UI
                 bizTabButtons[t] = item;
             }
 
-            var main = Ui.Box("famiglia__main").Into(split);
+            var main = Ui.Box("famiglia__main", "fit").Into(split);
             var head = Ui.Box("famiglia__head").Into(main);
             bizTitle = Ui.Text("", head, "famiglia__title");
             bizBlurb = Ui.Text("", head, "small", "muted", "wrap");
@@ -59,13 +59,13 @@ namespace OSistema.UI
             businessWindow.Show(false);
 
             // Help
-            helpWindow = Ui.Box("panel", "window").Into(hudLayer);
+            helpWindow = Ui.Box("panel", "window", "fit").Into(hudLayer);
             helpWindow.style.width = 520;
             var hh = Ui.Box("window__header").Into(helpWindow);
             Ui.Text("HOW TO PLAY", hh, "title", "gold");
             Ui.Box("spacer").Into(hh);
             Ui.Btn("✕", () => ToggleWindow(Window.Help), hh, "btn--small");
-            var hb = Ui.Box("window__body").Into(helpWindow);
+            var hb = Ui.Scroll(helpWindow, "window__body");
             Ui.Text(
                 "<b>Walk</b>  WASD · Shift to run\n" +
                 "<b>Use</b>  E: talk, shop, work at a table, do the next step of a lavoretto, eat, sleep\n" +

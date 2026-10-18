@@ -948,3 +948,36 @@
 .bigmap__view .bigmap__image { position: absolute; }
 .territory { position: absolute; border-width: 1px; justify-content: center; align-items: center; }
 .territory__label { font-size: 10px; color: #FFF4DA; -unity-text-align: middle-center; white-space: normal; text-shadow: 1px 1px 0 rgba(0,0,0,0.8); }
+
+/* ---------- Layout safety: nothing squashes, the long part scrolls ----------
+   UI Toolkit shrinks children by default when a column runs out of height, which piles text on text.
+   A panel with a size limit carries "fit": its fixed parts keep their natural height and only the
+   scroll area inside gives way (and scrolls). Modal cards stay between the top bar and the dock. */
+.fit > * { flex-shrink: 0; }
+.fit > .unity-scroll-view, .fit > .fit { flex-shrink: 1; min-height: 0; }
+.scroll { flex-grow: 1; }
+.dim { padding: 52px 16px 76px 16px; }
+.dim > * { max-height: 100%; }
+.table-row, .card__band, .window__header, .famiglia__head, .insp-head, .insp-tabs, .option, .menu-btn { flex-shrink: 0; }
+.card__foot { padding: 8px 18px 14px 18px; border-top-width: 1px; border-top-color: rgba(232, 194, 106, 0.18); }
+.card__body--top { padding-bottom: 6px; }
+.shop__row { min-height: 52px; padding: 6px 0; }
+.shop__info { flex-grow: 1; flex-shrink: 1; min-width: 0; margin-right: 10px; }
+.shop__info > * { flex-shrink: 0; }
+.shop__name { -unity-font-style: bold; font-size: 14px; }
+.shop__note { white-space: normal; margin-top: 1px; }
+.shop__stock { margin-top: 1px; }
+.shop__stepper { flex-shrink: 0; align-items: center; }
+.shop__qty { width: 30px; -unity-text-align: middle-center; }
+.shop__total { margin-bottom: 6px; }
+.paper__scroll { flex-grow: 1; }
+.inspector { flex-direction: column; }
+.map-legend { max-height: 600px; flex-shrink: 0; }
+.bigmap__view { flex-shrink: 0; }
+/* The phone comes out beside the minimap column, not over it. */
+.nokia { right: 306px; }
+/* Settings: a long label wraps beside its control instead of running under it. */
+.setting { flex-shrink: 0; }
+.setting__label { width: 180px; flex-shrink: 0; white-space: normal; margin-right: 10px; }
+.setting > Slider { flex-shrink: 1; min-width: 0; }
+.card__foot .menu-btn { width: 140px; margin-left: 8px; }

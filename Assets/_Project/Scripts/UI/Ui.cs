@@ -28,6 +28,16 @@ namespace OSistema.UI
             return e;
         }
 
+        /// <summary>A vertical scroll area that takes the room its parent has left and scrolls the rest.
+        /// Give the parent "fit" so the fixed parts around it keep their size. Returns where to add content.</summary>
+        public static VisualElement Scroll(VisualElement parent, params string[] contentClasses)
+        {
+            var scroll = new ScrollView(ScrollViewMode.Vertical).Cls("scroll").Into(parent);
+            scroll.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
+            scroll.contentContainer.Cls(contentClasses);
+            return scroll.contentContainer;
+        }
+
         public static Label Text(string text, VisualElement parent, params string[] classes)
         {
             var l = new Label(text).Cls(classes);

@@ -11,7 +11,7 @@ namespace OSistema.AI
         const int EatTicks = 450;
 
         readonly Walker walker;
-        readonly bool atShop;
+        bool atShop;
         int eatLeft = EatTicks;
         bool eating;
 
@@ -32,10 +32,18 @@ namespace OSistema.AI
             if (!eating)
             {
                 var status = walker.Tick(Pawn, game);
+                var stock = game.Stock;
+                // Can't reach the pantry (or it ran out on the way): go for a pizza instead of trying again and again.
+                if (!atShop && (status == WalkStatus.Failed || (status == WalkStatus.Arrived && stock.Meals <= 0)) &&
+                    stock.Cash >= Prices.Pizza && JobGiver.TryFindPizzeria(game, Pawn.Cell, out var pizzeria))
+                {
+                    atShop = true;
+                    walker.Retarget(pizzeria);
+                    return false;
+                }
                 if (status == WalkStatus.Failed) return Fail();
                 if (status == WalkStatus.Walking) return false;
 
-                var stock = game.Stock;
                 if (atShop)
                 {
                     if (stock.Cash < Prices.Pizza) return Fail();

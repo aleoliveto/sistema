@@ -806,32 +806,27 @@ namespace OSistema.Input
         {
             var p = game.Player;
             if (p == null || !p.CanAct) return null;
+            // A lavoretto in hand: do the next step yourself when you're there. This comes first: standing at the
+            // spot with Zio Totonno or a customer nearby must not swallow the E.
+            var job = game.Contracts.ActiveFor(p);
+            if (job != null && !(p.CurrentJob is ContractJob) && AtStep(p, job))
+            {
+                if (job.Kind == ContractKind.Debt)
+                    return new Action { Label = "Knock on the door", Do = () => game.Events.Raise(Story.StreetScenes.Knock(job, p, game)) };
+                return new Action { Label = Contracts.StepLabel(job), Do = () =>
+                {
+                    p.LastInputTick = game.Ticks.TicksGame;
+                    ContractJob.ArriveNow(job);   // you're there: start now, no walking
+                    p.ForceJob(new ContractJob(p, job), game);
+                } };
+            }
+
             var customer = game.Org.WaitingCustomer(game);
             if (customer != null && game.Stock.Product > 0)
                 return new Action { Label = $"Sell a dose · €{Prices.ProductStreet}", Do = () => game.Org.SellToCustomer(customer, game) };
 
             var contact = ContactInReach(out _);
             if (contact != null) return new Action { Label = $"Talk to {contact.Name}", Do = () => OrderTalk(contact) };
-
-            // A lavoretto in hand: do the next step yourself when you're there.
-            var job = game.Contracts.ActiveFor(p);
-            if (job != null && !(p.CurrentJob is ContractJob))
-            {
-                var at = Contracts.StepTarget(job);
-                // Only right at the doorstep, from outside: a step away and the door is yours again.
-                bool outside = game.Map.GetTerrain(p.Cell.x, p.Cell.y) != TerrainType.Floor;
-                if ((Mover.CellCenter(at) - p.Position).sqrMagnitude < 1.6f * 1.6f && (outside || job.Kind == ContractKind.Debt))
-                {
-                    if (job.Kind == ContractKind.Debt)
-                        return new Action { Label = "Knock on the door", Do = () => game.Events.Raise(Story.StreetScenes.Knock(job, p, game)) };
-                    return new Action { Label = Contracts.StepLabel(job), Do = () =>
-                    {
-                        p.LastInputTick = game.Ticks.TicksGame;
-                        ContractJob.ArriveNow(job);   // you're there: start now, no walking
-                        p.ForceJob(new ContractJob(p, job), game);
-                    } };
-                }
-            }
 
             if (Near(p, BuildingDefs.BaggingTable, out var bagT))
             {
@@ -910,14 +905,35 @@ namespace OSistema.Input
             }
             if (game.Stock.Medicine > 0 && Healing.NeedsCare(p) && InOwnedHome(p.Cell))
                 return new Action { Label = $"Treat your wounds ({game.Stock.Medicine} medicine)", Do = () => Healing.WithMedicine(game, p) };
-            if (game.Stock.Meals > 0 && p.Needs.Food < 0.8f && Near(p, BuildingDefs.Pantry, out var pantry))
+            if (game.Stock.Meals > 0 && p.Needs.Food < 0.8f && Near(p, BuildingDefs.Pantry, out var pantry) && InOwnedHome(pantry))
                 return new Action { Label = "Eat something", Do = () => { p.LastInputTick = -1000000; p.ForceJob(new EatJob(p, pantry, atShop: false), game); } };
+            // No meals left but groceries in the pantry: cook them yourself (two meals each).
+            if (game.Stock.Groceries > 0 && game.Stock.Cook == null && game.Stock.Meals < 4 &&
+                Near(p, BuildingDefs.Stove, out var stove) && InOwnedHome(stove))
+                return new Action { Label = $"Cook a meal ({game.Stock.Groceries} groceries in)", Do = () => { p.LastInputTick = -1000000; p.ForceJob(new CookJob(p, stove, game), game); } };
 
             var corner = game.Org.DealingCorner;
             if (corner != null) return new Action { Label = "Leave the corner", Do = () => game.Org.StopDealing(game) };
             if (game.Org.CanDealHere(p, game))
                 return new Action { Label = $"Deal here ({game.Stock.Product} doses on you)", Do = () => game.Org.StartDealing(game) };
             return null;
+        }
+
+        /// <summary>Is the player at the place where the job's next step happens?</summary>
+        bool AtStep(Pawn p, Contract job)
+        {
+            var at = Contracts.StepTarget(job);
+            // Bringing the load home: anywhere in the family's own basso counts.
+            bool home = job.Stage >= 2 || !job.From.HasValue;
+            bool homeTarget = game.PlayerBase.Contains(at) || game.Properties.At(at)?.OwnedByPlayer == true ||
+                              game.Properties.All.Exists(pr => pr.OwnedByPlayer && pr.Door == at);
+            if (home && homeTarget && InOwnedHome(p.Cell)) return true;
+            if ((Mover.CellCenter(at) - p.Position).sqrMagnitude > 2f * 2f) return false;
+            // At the doorstep: outside, or on the door itself (a door cell is floor). Not from inside a stranger's house,
+            // where the door is for breaking out of, not for this.
+            if (p.Cell == at || job.Kind == ContractKind.Debt) return true;
+            var t = game.Map.GetTerrain(p.Cell.x, p.Cell.y);
+            return (t != TerrainType.Floor && t != TerrainType.Marble) || game.Map.GetBuilding(p.Cell) == BuildingDefs.Door;
         }
 
         bool NearShopCounter(Pawn p)

@@ -113,8 +113,9 @@ namespace OSistema.AI
             }
             else if (c.Stage == GoingToDrop || (c.Stage == GoingToPickup && !c.From.HasValue))
             {
+                // Handing it over yourself is a moment, not a wait: a step away and it would never finish.
                 c.Stage = AtDrop;
-                c.Work = c.Kind == ContractKind.Debt ? 300 : 60;
+                c.Work = c.Kind == ContractKind.Debt ? 300 : 5;
             }
         }
 
