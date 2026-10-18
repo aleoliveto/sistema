@@ -86,6 +86,10 @@ namespace OSistema.Core
             roofsGo.transform.SetParent(worldRoot, false);
             roofsGo.AddComponent<RoofView>().Init(game);
 
+            var facadeGo = new GameObject("Facades");
+            facadeGo.transform.SetParent(worldRoot, false);
+            facadeGo.AddComponent<FacadeView>().Init(game.Map);
+
             var laundryGo = new GameObject("Laundry");
             laundryGo.transform.SetParent(worldRoot, false);
             laundryGo.AddComponent<LaundryView>().Init(game.Map);

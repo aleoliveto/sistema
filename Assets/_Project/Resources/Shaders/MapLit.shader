@@ -15,6 +15,7 @@ Shader "OSistema/MapLit"
         _Mat7("Tar", 2D) = "grey" {}
         _Mat8("Cotto", 2D) = "grey" {}
         _Mat9("Cement tiles", 2D) = "grey" {}
+        _Mat10("Plaster", 2D) = "grey" {}
         _Period("Cells per repeat", Float) = 8
         [HideInInspector] _Color("Tint", Color) = (1,1,1,1)
     }
@@ -64,6 +65,7 @@ Shader "OSistema/MapLit"
             TEXTURE2D(_Mat7);
             TEXTURE2D(_Mat8);
             TEXTURE2D(_Mat9);
+            TEXTURE2D(_Mat10);
 
             CBUFFER_START(UnityPerMaterial)
                 half4 _Color;
@@ -93,7 +95,8 @@ Shader "OSistema/MapLit"
                 if (id == 6) return SAMPLE_TEXTURE2D(_Mat6, sampler_Mat1, uv).rgb;
                 if (id == 7) return SAMPLE_TEXTURE2D(_Mat7, sampler_Mat1, uv).rgb;
                 if (id == 8) return SAMPLE_TEXTURE2D(_Mat8, sampler_Mat1, uv).rgb;
-                return SAMPLE_TEXTURE2D(_Mat9, sampler_Mat1, uv).rgb;
+                if (id == 9) return SAMPLE_TEXTURE2D(_Mat9, sampler_Mat1, uv).rgb;
+                return SAMPLE_TEXTURE2D(_Mat10, sampler_Mat1, uv).rgb;
             }
 
             half4 Frag(Varyings i) : SV_Target

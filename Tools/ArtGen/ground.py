@@ -271,11 +271,39 @@ def cement():
     return light(col, z, 0.05, grout * 0.2)
 
 
+def plaster():
+    """
+    Facade plaster, nearly white so the game can tint it with each building's colour: mottled,
+    streaked by rain, cracked, and fallen away in places to the yellow tuff blocks underneath.
+    """
+    mott = (fbm(xx, yy, 8, 5, 91) - 0.5) * 0.16
+    streak = (fbm(xx, yy * 0.125, 64, 3, 92) - 0.5) * 0.12
+    col = np.ones((N, N, 3), np.float32) * (0.93 + mott + streak)[..., None]
+    soot = smooth(0.62, 0.9, fbm(xx, yy, 16, 4, 93)) * 0.18
+    col = col * (1 - soot)[..., None]
+    crack = (1 - smooth(0.0, 0.005, np.abs(fbm(xx, yy, 8, 5, 94) - 0.5))) * smooth(0.55, 0.65, fbm(xx, yy, 4, 2, 95))
+    col = col * (1 - 0.4 * crack)[..., None]
+    # bare patches: courses of tuff blocks (bricks 32 x 16 px)
+    peel = smooth(0.7, 0.72, fbm(xx, yy, 8, 5, 96))
+    bh, bw = 16.0, 32.0
+    row = np.floor(yy / bh)
+    bx = np.floor((xx + (row % 2) * bw / 2) / bw)
+    lx = (xx + (row % 2) * bw / 2) - bx * bw
+    ly = yy - row * bh
+    mortar = 1 - smooth(0.5, 1.6, np.minimum(np.minimum(lx, bw - lx), np.minimum(ly, bh - ly)))
+    tuff = C(214, 186, 128) * (0.85 + 0.22 * hsh(bx % 32, row % 64, 97))[..., None] * (1 - 0.35 * mortar)[..., None]
+    col = col * (1 - peel)[..., None] + tuff * peel[..., None] / C(214, 160, 120)    # undo most of the tint
+    edge = peel * (1 - peel) * 4
+    col = col * (1 - 0.25 * edge)[..., None]
+    z = (1 - peel) * 2 + (fbm(xx, yy, 128, 3, 98) - 0.5) * 0.6 - crack
+    return light(np.clip(col, 0, 1.2) * 0.98, z, 0.03)
+
+
 if __name__ == "__main__":
     out = sys.argv[1]
     os.makedirs(out, exist_ok=True)
     for name, fn in (("basoli", basoli), ("asphalt", asphalt), ("kerb_h", lambda: kerb(True)),
                      ("kerb_v", lambda: kerb(False)), ("slabs", slabs), ("coppi", coppi), ("tar", tar),
-                     ("cotto", cotto), ("cement", cement)):
+                     ("cotto", cotto), ("cement", cement), ("plaster", plaster)):
         save(fn(), os.path.join(out, f"ground_{name}.png"))
         print(name)

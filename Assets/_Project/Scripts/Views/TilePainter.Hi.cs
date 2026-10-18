@@ -99,7 +99,17 @@ namespace OSistema.Views
         // Baked ground materials (Resources/Ground, drawn by OSistema/MapLit): the pixel carries only
         // light (grey 128 = as lit) and, in alpha, which material goes under it.
         public const byte GroundAsphalt = 1, GroundBasoli = 2, GroundKerbH = 3, GroundKerbV = 4, GroundSlabs = 5,
-            GroundCoppi = 6, GroundTar = 7, GroundCotto = 8, GroundCement = 9;
+            GroundCoppi = 6, GroundTar = 7, GroundCotto = 8, GroundCement = 9, GroundPlaster = 10;
+
+        /// <summary>A baked material tinted: the plaster takes each building's colour. Half the tint reads as the tint, as lit.</summary>
+        public static Color32 Tinted(byte id, Color32 tint, float light)
+        {
+            float k = 0.5f * light;
+            return new Color32((byte)Mathf.Clamp(tint.r * k, 0, 255), (byte)Mathf.Clamp(tint.g * k, 0, 255), (byte)Mathf.Clamp(tint.b * k, 0, 255), (byte)(255 - id));
+        }
+
+        /// <summary>The painter's hash noise, so views placing things agree with what's painted.</summary>
+        public static float Noise(int a, int b, int salt) => N(a, b, salt);
 
         public static Color32 Ground(byte id, float light)
         {
@@ -203,103 +213,37 @@ namespace OSistema.Views
 
         // ---------- Facades ----------
 
-        static readonly Color32[] Shutters =
-        {
-            new Color32(58, 96, 70, 255), new Color32(64, 104, 74, 255), new Color32(112, 74, 44, 255), new Color32(150, 146, 136, 255),
-        };
-
         static void PaintWallHi(Map map, int x, int y, byte style, Color32[] buf, int stride, int ox, int oy)
         {
             var plaster = Facades[style % Facades.Length];
             bool wallN = IsWallish(map, x, y + 1), wallS = IsWallish(map, x, y - 1);
             bool wallE = IsWallish(map, x + 1, y), wallW = IsWallish(map, x - 1, y);
             const int faceH = 12;   // the south face, seen at an angle
-            var tuff = Mix(new Color32(176, 160, 122, 255), plaster, 0.35f);
 
             for (int py = 0; py < Hi; py++)
             for (int px = 0; px < Hi; px++)
             {
                 int gx = x * Hi + px, gy = y * Hi + py;
-                float fine = N(gx, gy, 91);
                 Color32 c;
                 bool face = !wallS && py < faceH;
                 if (face)
                 {
-                    // Plaster in shade, streaked by years of rain running down from the top.
-                    float streak = 0.9f + 0.14f * N(gx / 2, 0, 92) * Smooth(gx / 3f, gy / 12f, 93);
-                    c = Shade(plaster, 0.64f * streak * (0.95f + 0.06f * fine));
-                    if (py < 3) c = Shade(new Color32(98, 94, 88, 255), 0.9f + 0.15f * fine);      // a base of piperno
-                    if (py == faceH - 1) c = Shade(plaster, 0.48f);                                // the shadow under the cornice
+                    // The south face, in shade: baked plaster in the building's colour (streaks,
+                    // peeling to tuff), on a base of grey piperno, under the shadow of the cornice.
+                    c = TilePainter.Tinted(GroundPlaster, plaster, 0.66f);
+                    if (py < 3) c = Ground(GroundKerbH, 0.7f);
+                    if (py == faceH - 1) c = TilePainter.Tinted(GroundPlaster, plaster, 0.48f);
                 }
                 else
                 {
                     // The top of the wall, in the sun.
-                    c = Shade(plaster, (0.86f + 0.16f * Smooth(gx / 10f, gy / 10f, 94)) * (0.96f + 0.06f * fine));
-                    // Plaster fallen away, showing the yellow tuff blocks underneath.
-                    float peel = Smooth(gx / 11f, gy / 11f, 95) * (0.7f + 0.3f * Smooth(gx / 40f, gy / 40f, 99));
-                    if (peel > 0.7f)
-                    {
-                        bool mortar = gy % 7 == 0 || (gx + (gy / 7 % 2) * 6) % 12 == 0;
-                        c = mortar ? Shade(tuff, 0.7f) : Shade(tuff, 0.88f + 0.2f * N(gx / 12, gy / 7, 96));
-                    }
-                    else if (peel > 0.68f) c = Shade(c, 0.86f);   // the broken edge of the plaster
+                    c = TilePainter.Tinted(GroundPlaster, plaster, 0.9f + 0.14f * Smooth(gx / 10f, gy / 10f, 94));
                 }
                 // Soft edges where the wall ends.
                 if ((!wallN && py >= Hi - 2) || (!wallW && px < 2) || (!wallE && px >= Hi - 2)) c = Shade(c, 0.72f);
                 buf[(oy + py) * stride + ox + px] = c;
             }
-
-            if (wallS || N(x, y, 19) >= 0.5f) return;
-
-            // A window with wooden persiane, often a little iron balcony with plants.
-            void Px(int px, int py, Color32 c)
-            {
-                if (px < 0 || py < 0 || px >= Hi || py >= Hi) return;
-                buf[(oy + py) * stride + ox + px] = c;
-            }
-            void Box(int x0, int y0, int x1, int y1, Color32 c)
-            {
-                for (int yy = y0; yy <= y1; yy++)
-                for (int xx = x0; xx <= x1; xx++) Px(xx, yy, c);
-            }
-
-            bool lit = N(x, y, 21) < 0.5f;
-            var shutter = Shutters[(int)(N(x, y, 97) * Shutters.Length) % Shutters.Length];
-            Box(10, 3, 21, 10, Shade(plaster, 0.42f));                                   // the recess
-            Box(11, 4, 20, 10, lit ? new Color32(214, 182, 112, 255) : new Color32(36, 44, 58, 255));
-            Box(15, 4, 16, 10, new Color32(70, 60, 50, 255));                            // the mullion
-            bool open = N(x, y, 98) < 0.6f;
-            if (open)
-            {
-                for (int yy = 4; yy <= 10; yy++)
-                {
-                    var slat = yy % 2 == 0 ? shutter : Shade(shutter, 0.72f);
-                    Box(6, yy, 9, yy, slat);
-                    Box(22, yy, 25, yy, slat);
-                }
-            }
-            else
-            {
-                for (int yy = 4; yy <= 10; yy++) Box(11, yy, 20, yy, yy % 2 == 0 ? shutter : Shade(shutter, 0.72f));
-                Box(15, 4, 16, 10, Shade(shutter, 0.6f));
-            }
-            Box(9, 3, 22, 3, Shade(plaster, 1.08f));                                      // the sill
-
-            if (N(x, y, 24) < 0.55f)
-            {
-                var iron = new Color32(34, 32, 32, 255);
-                Box(5, 0, 26, 0, iron);
-                Box(5, 2, 26, 2, iron);
-                for (int xx = 5; xx <= 26; xx += 3) Px(xx, 1, iron);
-                if (N(x, y, 25) < 0.6f)
-                {
-                    Box(6, 1, 8, 2, new Color32(150, 82, 54, 255));
-                    Box(6, 3, 8, 4, new Color32(64, 120, 56, 255));
-                    Px(7, 5, new Color32(204, 54, 64, 255));                                 // geraniums
-                    Box(23, 1, 25, 2, new Color32(150, 82, 54, 255));
-                    Box(23, 3, 25, 4, new Color32(70, 128, 60, 255));
-                }
-            }
+            // Windows and balconies are sprites (FacadeView).
         }
     }
 }
