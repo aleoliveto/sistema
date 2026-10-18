@@ -59,11 +59,12 @@ namespace OSistema.Views
 
         static float N(int a, int b, int salt) => (Hash(a, b, salt) & 0xFFFF) / 65535f;
 
+        // Both keep the first colour's alpha: on the ground, alpha tags a baked material (see Ground).
         static Color32 Shade(Color32 c, float f) =>
-            new Color32((byte)Mathf.Clamp(c.r * f, 0, 255), (byte)Mathf.Clamp(c.g * f, 0, 255), (byte)Mathf.Clamp(c.b * f, 0, 255), 255);
+            new Color32((byte)Mathf.Clamp(c.r * f, 0, 255), (byte)Mathf.Clamp(c.g * f, 0, 255), (byte)Mathf.Clamp(c.b * f, 0, 255), c.a);
 
         static Color32 Mix(Color32 a, Color32 b, float t) =>
-            new Color32((byte)(a.r + (b.r - a.r) * t), (byte)(a.g + (b.g - a.g) * t), (byte)(a.b + (b.b - a.b) * t), 255);
+            new Color32((byte)(a.r + (b.r - a.r) * t), (byte)(a.g + (b.g - a.g) * t), (byte)(a.b + (b.b - a.b) * t), a.a);
 
         // ---------- Entry point ----------
 
@@ -245,7 +246,7 @@ namespace OSistema.Views
                 int i = (oy + py) * stride + ox + px;
                 var c = buf[i];
                 // Shadows are a little cooler than the sunlit stone.
-                buf[i] = new Color32((byte)(c.r * f * 0.94f), (byte)(c.g * f * 0.97f), (byte)Mathf.Min(255, c.b * f * 1.04f), 255);
+                buf[i] = new Color32((byte)(c.r * f * 0.94f), (byte)(c.g * f * 0.97f), (byte)Mathf.Min(255, c.b * f * 1.04f), c.a);
             }
         }
 
@@ -266,7 +267,7 @@ namespace OSistema.Views
                 int i = (oy + py) * stride + ox + px;
                 var c = buf[i];
                 // Dirt is brownish, not grey.
-                buf[i] = new Color32((byte)Mathf.Clamp(c.r * f, 0, 255), (byte)Mathf.Clamp(c.g * (f * 0.98f + 0.02f), 0, 255), (byte)Mathf.Clamp(c.b * (f * 0.95f + 0.05f) - g * 6f, 0, 255), 255);
+                buf[i] = new Color32((byte)Mathf.Clamp(c.r * f, 0, 255), (byte)Mathf.Clamp(c.g * (f * 0.98f + 0.02f), 0, 255), (byte)Mathf.Clamp(c.b * (f * 0.95f + 0.05f) - g * 6f, 0, 255), c.a);
             }
         }
 

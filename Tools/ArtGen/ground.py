@@ -1,0 +1,202 @@
+"""
+Seamless ground materials for the map, 8x8 cells at 128 px per cell (1024 px, repeating).
+Each is pre-lit by the same north-west sun as the painted props (relief only: the game adds
+the shade, shadows and wetness on top). Run: python3 ground.py <out folder>
+
+  ground_asphalt.png   the wider roads: worn asphalt, patches, cracks, oil
+  ground_basoli.png    the vicoli: rows of dark Vesuvian lava blocks, polished by feet
+  ground_kerb_h.png    piperno kerbstones, joints across (for kerbs along an east-west road)
+  ground_kerb_v.png    the same turned (north-south roads)
+  ground_slabs.png     piazze: big pale stone slabs in running bond
+"""
+import os
+import sys
+import numpy as np
+from PIL import Image
+
+P = 1024          # output period in pixels
+SS = 2            # drawn twice the size, then scaled down
+N = P * SS
+yy, xx = np.mgrid[0:N, 0:N].astype(np.float32) / SS   # output pixel units
+
+
+# ---------- tileable noise ----------
+
+def _lattice(seed, n):
+    return np.random.default_rng(seed).random((n, n)).astype(np.float32)
+
+
+def tnoise(x, y, cells, seed):
+    """Value noise with `cells` lattice cells across the period: wraps exactly."""
+    g = _lattice(seed, cells)
+    fx, fy = x / P * cells, y / P * cells
+    xi, yi = np.floor(fx).astype(int), np.floor(fy).astype(int)
+    tx, ty = fx - xi, fy - yi
+    tx, ty = tx * tx * (3 - 2 * tx), ty * ty * (3 - 2 * ty)
+    x0, y0 = xi % cells, yi % cells
+    x1, y1 = (xi + 1) % cells, (yi + 1) % cells
+    a, b = g[y0, x0], g[y0, x1]
+    c, d = g[y1, x0], g[y1, x1]
+    return (a * (1 - tx) + b * tx) * (1 - ty) + (c * (1 - tx) + d * tx) * ty
+
+
+def fbm(x, y, cells, octaves, seed):
+    s, a, tot = 0.0, 1.0, 0.0
+    for o in range(octaves):
+        s = s + tnoise(x, y, cells * 2 ** o, seed * 7 + o) * a
+        tot += a
+        a *= 0.5
+    return s / tot
+
+
+def smooth(e0, e1, v):
+    t = np.clip((v - e0) / (e1 - e0), 0, 1)
+    return t * t * (3 - 2 * t)
+
+
+def hsh(a, b, s=0):
+    a = np.asarray(a).astype(np.int64)
+    b = np.asarray(b).astype(np.int64)
+    h = (a * 73856093) ^ (b * 19349663) ^ (s * 83492791 + 7)
+    h = (h ^ (h >> 13)) * 1274126177
+    return (((h ^ (h >> 16)) & 0xFFFF) / 65535.0).astype(np.float32)
+
+
+def C(*v):
+    return np.array(v, np.float32) / 255
+
+
+def wrap_blur(a, r):
+    """Box blur x3 that wraps round the edges (keeps the tile seamless)."""
+    r = max(1, int(r))
+    for _ in range(3):
+        for ax in (0, 1):
+            acc = np.zeros_like(a)
+            for k in range(-r, r + 1):
+                acc += np.roll(a, k, axis=ax)
+            a = acc / (2 * r + 1)
+    return a
+
+
+# ---------- light (relief only, wraps) ----------
+
+def light(alb, z, gloss, ink=None):
+    gx = (np.roll(z, -1, 1) - np.roll(z, 1, 1)) * 0.5 * SS
+    gy = (np.roll(z, -1, 0) - np.roll(z, 1, 0)) * 0.5 * SS
+    n = np.dstack([-gx, -gy, np.ones_like(z)])
+    n /= np.linalg.norm(n, axis=2, keepdims=True)
+    L = np.array([-0.5, -0.62, 0.6], np.float32)
+    L /= np.linalg.norm(L)
+    ndl = np.clip((n * L).sum(2), 0, 1) / L[2]
+    warm, cool = np.array([1.04, 1.0, 0.94]), np.array([0.66, 0.7, 0.84])
+    t = np.clip(ndl, 0, 1.3)
+    lit = cool * (1 - np.minimum(t, 1))[..., None] + warm * t[..., None]
+    H = L + np.array([0, 0, 1.0], np.float32)
+    H /= np.linalg.norm(H)
+    spec = np.clip((n * H).sum(2), 0, 1) ** 28 * gloss
+    cav = np.clip(1 - np.maximum(wrap_blur(z, 1.5 * SS) - z, 0) * 0.22, 0.55, 1.05)
+    ao = np.clip(1 - np.maximum(wrap_blur(z, 5 * SS) - z, 0) * 0.05, 0.6, 1)
+    col = alb * lit * (cav * ao)[..., None] + spec[..., None] * 0.5
+    if ink is not None:
+        col = col * (1 - ink[..., None] * 0.5)
+    return np.clip(col, 0, 1)
+
+
+def save(col, path):
+    img = Image.fromarray((col * 255).astype(np.uint8), "RGB").resize((P, P), Image.LANCZOS)
+    img.save(path)
+
+
+# ---------- materials ----------
+
+def basoli():
+    rows = 24
+    rh = P / rows
+    row = np.floor(yy / rh)
+    ly = yy - row * rh
+    per_row = 16
+    ln = P / per_row
+    off = hsh(row, 3) * ln
+    wob = (fbm(xx, yy, 32, 2, 5) - 0.5) * 7
+    u = xx + off + wob
+    st = np.floor(u / ln)
+    lx = u - st * ln
+    st = st % per_row
+    d = np.minimum(np.minimum(lx, ln - lx), np.minimum(ly, rh - ly)) - hsh(st, row, 9) * 1.6
+    tone = 0.78 + 0.32 * hsh(st, row, 5)
+    base = C(108, 105, 110) * tone[..., None]
+    pits = smooth(0.8, 0.88, tnoise(xx, yy, 512, 21)) * 0.24
+    grain = (fbm(xx, yy, 256, 2, 22) - 0.5) * 0.2
+    polish = smooth(0.42, 0.78, fbm(xx, yy, 8, 3, 23))
+    col = base * (1 + grain - pits)[..., None]
+    col = col * (1 - 0.1 * polish)[..., None]
+    stain = smooth(0.6, 0.85, fbm(xx, yy, 16, 4, 24)) * 0.18
+    col = col * (1 - stain)[..., None]
+    joint = 1 - smooth(0.5, 2.6, d)
+    col = col * (1 - 0.5 * joint)[..., None] + C(76, 66, 54) * (joint * 0.3)[..., None]
+    z = 4 * np.sqrt(np.clip(smooth(0, 9, d), 0, 1)) - pits * 1.3
+    return light(col, z, 0.12 + 0.45 * polish, joint * 0.2)
+
+
+def asphalt():
+    agg = tnoise(xx, yy, 512, 31)
+    base = C(64, 64, 68) * (0.88 + 0.16 * fbm(xx, yy, 16, 3, 32))[..., None]
+    col = base * (0.9 + 0.2 * agg)[..., None]
+    col = np.where((tnoise(xx, yy, 512, 33) > 0.86)[..., None], col * 1.35, col)     # pale stones
+    patch = smooth(0.62, 0.64, fbm(xx, yy, 6, 3, 34))
+    col = col * (1 - 0.14 * patch)[..., None]                                          # newer tar
+    crack = (1 - smooth(0.0, 0.006, np.abs(fbm(xx, yy, 12, 4, 35) - 0.5))) * smooth(0.6, 0.7, fbm(xx, yy, 4, 2, 37))
+    col = col * (1 - 0.45 * crack)[..., None]
+    oil = smooth(0.66, 0.8, fbm(xx, yy, 24, 3, 36))
+    col = col * (1 - 0.22 * oil)[..., None]
+    z = agg * 0.9 + patch * 0.6 - crack * 1.2
+    return light(col, z, 0.06 + 0.3 * oil)
+
+
+def kerb(horizontal=True):
+    u, v = (xx, yy) if horizontal else (yy, xx)
+    ln = P / 8
+    off = (fbm(u, v, 16, 2, 41) - 0.5) * 6
+    k = np.floor((u + off) / ln)
+    lu = (u + off) - k * ln
+    d = np.minimum(lu, ln - lu)
+    tone = 0.85 + 0.25 * hsh(k % 8, 1, 42)
+    base = C(132, 130, 124) * tone[..., None]
+    speck = (tnoise(xx, yy, 512, 43) > 0.8) * 0.3
+    col = base * (1 - speck + (fbm(xx, yy, 128, 3, 44) - 0.5) * 0.2)[..., None]
+    joint = 1 - smooth(0.5, 2.0, d)
+    col = col * (1 - 0.55 * joint)[..., None]
+    z = 3 * smooth(0, 5, d) + (fbm(xx, yy, 256, 2, 45) - 0.5) * 0.6
+    return light(col, z, 0.08, joint * 0.2)
+
+
+def slabs():
+    n = 12
+    s = P / n
+    col_i = np.floor(xx / s)
+    v = yy + (col_i % 2) * s / 2
+    row_i = np.floor(v / s)
+    lx, ly = xx - col_i * s, v - row_i * s
+    row_i = row_i % n
+    d = np.minimum(np.minimum(lx, s - lx), np.minimum(ly, s - ly))
+    tone = 0.82 + 0.24 * hsh(col_i, row_i, 51)
+    base = C(170, 164, 152) * tone[..., None]
+    veins = 0
+    col = base * (1 + (fbm(xx, yy, 128, 3, 53) - 0.5) * 0.14 - veins * 0.12)[..., None]
+    worn = smooth(0.5, 0.8, fbm(xx, yy, 4, 3, 54))
+    col = col * (1 + 0.08 * worn)[..., None]
+    dirt = smooth(0.62, 0.85, fbm(xx, yy, 16, 4, 55)) * 0.16
+    col = col * (1 - dirt)[..., None]
+    joint = 1 - smooth(0.5, 2.0, d)
+    col = col * (1 - 0.45 * joint)[..., None]
+    z = 2 * smooth(0, 4, d)
+    return light(col, z, 0.1 + 0.3 * worn, joint * 0.2)
+
+
+if __name__ == "__main__":
+    out = sys.argv[1]
+    os.makedirs(out, exist_ok=True)
+    for name, fn in (("basoli", basoli), ("asphalt", asphalt), ("kerb_h", lambda: kerb(True)),
+                     ("kerb_v", lambda: kerb(False)), ("slabs", slabs)):
+        save(fn(), os.path.join(out, f"ground_{name}.png"))
+        print(name)

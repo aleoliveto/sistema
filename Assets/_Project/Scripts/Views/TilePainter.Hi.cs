@@ -96,6 +96,16 @@ namespace OSistema.Views
 
         // ---------- Streets ----------
 
+        // Baked ground materials (Resources/Ground, drawn by OSistema/MapLit): the pixel carries only
+        // light (grey 128 = as lit) and, in alpha, which material goes under it.
+        const byte GroundAsphalt = 1, GroundBasoli = 2, GroundKerbH = 3, GroundKerbV = 4, GroundSlabs = 5;
+
+        static Color32 Ground(byte id, float light)
+        {
+            byte v = (byte)Mathf.Clamp(128f * light, 0f, 255f);
+            return new Color32(v, v, v, (byte)(255 - id));
+        }
+
         static bool Near(Map map, int x, int y, TerrainType t, int px, int py, int reach)
         {
             return (px < reach && IsT(map, x - 1, y, t)) || (px >= Hi - reach && IsT(map, x + 1, y, t)) ||
@@ -110,45 +120,27 @@ namespace OSistema.Views
             {
                 case TerrainType.Road:
                 {
-                    // Worn asphalt: aggregate, repairs, cracks, oil, and a gutter along the kerb.
-                    var c = Shade(new Color32(60, 60, 65, 255), (0.9f + 0.12f * fine) * (0.9f + 0.18f * Smooth(gx / 30f, gy / 30f, 72)));
-                    if (N(gx, gy, 73) < 0.04f) c = Shade(c, 1.25f);                       // pale stones in the mix
-                    if (Smooth(gx / 46f, gy / 46f, 74) > 0.7f) c = Shade(c, 0.86f);        // a patch of newer tar
-                    if (Mathf.Abs(Smooth(gx / 13f, gy / 13f, 75) - 0.5f) < 0.012f) c = Shade(c, 0.6f); // cracks
-                    float oil = Smooth(gx / 9f, gy / 9f, 76);
-                    if (oil > 0.8f) c = Shade(c, 0.78f);
-                    if (Near(map, x, y, TerrainType.Sidewalk, px, py, 3)) c = Shade(new Color32(46, 46, 50, 255), 0.9f + 0.15f * fine);
-                    // A manhole cover now and then.
+                    // Asphalt (baked, sharp): here only the light on it, darker in the gutter by the kerb.
+                    // A manhole cover now and then, painted as it is.
                     if (N(x, y, 77) < 0.015f)
                     {
                         float dx = px - 15.5f, dy = py - 15.5f, d = Mathf.Sqrt(dx * dx + dy * dy);
-                        if (d < 9f) c = d > 8f ? new Color32(36, 36, 38, 255) : ((px + py) % 4 < 2 ? new Color32(70, 68, 66, 255) : new Color32(52, 50, 50, 255));
+                        if (d < 9f) return d > 8f ? new Color32(36, 36, 38, 255) : ((px + py) % 4 < 2 ? new Color32(70, 68, 66, 255) : new Color32(52, 50, 50, 255));
                     }
-                    return c;
+                    return Ground(GroundAsphalt, Near(map, x, y, TerrainType.Sidewalk, px, py, 3) ? 0.78f : 1f);
                 }
                 case TerrainType.Sidewalk:
                 {
-                    // Kerb of grey piperno along the road.
+                    // Kerbstones of grey piperno along the road, running the way the road runs.
                     if (Near(map, x, y, TerrainType.Road, px, py, 5))
                     {
-                        var k = Shade(new Color32(128, 126, 120, 255), 0.88f + 0.16f * Smooth(gx / 5f, gy / 5f, 78) + 0.06f * fine);
-                        if (N(gx, gy, 79) < 0.08f) k = Shade(k, 0.7f);   // dark speckles in the stone
-                        return k;
+                        bool alongX = (py < 5 && IsT(map, x, y - 1, TerrainType.Road)) || (py >= Hi - 5 && IsT(map, x, y + 1, TerrainType.Road));
+                        return Ground(alongX ? GroundKerbH : GroundKerbV, 1f);
                     }
-                    return Basolato(gx, gy, fine);
+                    return Ground(GroundBasoli, 1f);
                 }
                 case TerrainType.Paving:
-                {
-                    // Big pale slabs, polished by feet.
-                    const int sz = 22;
-                    int col = gx / sz, row = (gy + (col % 2) * 11) / sz;
-                    int lx = gx % sz, ly = (gy + (col % 2) * 11) % sz;
-                    if (lx == 0 || ly == 0) return new Color32(96, 92, 86, 255);
-                    var c = Shade(new Color32(162, 156, 146, 255), (0.84f + 0.24f * N(col, row, 80)) * (0.94f + 0.08f * fine));
-                    if (ly == sz - 1 || lx == 1) c = Shade(c, 1.08f);
-                    if (ly == 1 || lx == sz - 1) c = Shade(c, 0.88f);
-                    return c;
-                }
+                    return Ground(GroundSlabs, 1f);
                 case TerrainType.Grass:
                 {
                     float clump = Smooth(gx / 6f, gy / 6f, 81);

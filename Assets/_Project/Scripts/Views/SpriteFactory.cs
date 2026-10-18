@@ -204,6 +204,31 @@ namespace OSistema.Views
             }
         }
 
+        static Material map;
+
+        /// <summary>
+        /// The map's chunks: lit like sprites, with the baked ground materials (Resources/Ground) laid
+        /// under the pixels the painter tagged. Plain lit sprites if the shader is missing.
+        /// </summary>
+        public static Material MapMaterial
+        {
+            get
+            {
+                if (map != null) return map;
+                var shader = Shader.Find("OSistema/MapLit");
+                if (shader == null) return LitMaterial;
+                map = new Material(shader);
+                string[] names = { "asphalt", "basoli", "kerb_h", "kerb_v", "slabs" };
+                for (int i = 0; i < names.Length; i++)
+                {
+                    var t = Resources.Load<Texture2D>("Ground/ground_" + names[i]);
+                    if (t != null) map.SetTexture("_Mat" + (i + 1), t);
+                }
+                map.SetFloat("_Period", 8f);
+                return map;
+            }
+        }
+
         /// <summary>Sprites that ignore 2D lights. Lighting comes from WorldLight.Tint for now.</summary>
         public static Material UnlitMaterial
         {

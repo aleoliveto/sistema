@@ -99,7 +99,7 @@ namespace OSistema.World
             go.transform.localPosition = new Vector3(cells.x, cells.y, 0f);
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = Sprite.Create(chunk.Texture, new Rect(0, 0, chunk.Texture.width, chunk.Texture.height), Vector2.zero, Tile, 0, SpriteMeshType.FullRect);
-            sr.sharedMaterial = SpriteFactory.LitMaterial;
+            sr.sharedMaterial = SpriteFactory.MapMaterial;
             sr.sortingOrder = 0;
             return chunk;
         }
