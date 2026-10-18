@@ -104,6 +104,8 @@ namespace OSistema.Crime
                 ShootingSkill = rng.Next(3, 9),
                 IntimidationSkill = rng.Next(3, 9),
                 Mission = mission,
+                // Gunmen sent to do a job wear a vest; corner boys a plate at most.
+                Armor = !armed ? 0f : mission == RivalMission.Hit || mission == RivalMission.Assault || mission == RivalMission.Stesa ? 100f : 50f,
                 AggressiveUntil = mission == RivalMission.Stesa || mission == RivalMission.Hit ? long.MaxValue : 0,
             };
             game.Pawns.Add(pawn);

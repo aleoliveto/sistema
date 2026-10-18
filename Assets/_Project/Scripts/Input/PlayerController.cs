@@ -636,8 +636,8 @@ namespace OSistema.Input
             p.AimPoint = Aiming ? (Vector2)ScreenToWorld(mousePos) : (Vector2?)null;
             aimLine.enabled = Aiming;
             p.Bloom = Mathf.MoveTowards(p.Bloom, 0f, 12f * dt);
-            // The guard comes back after a few seconds out of fire.
-            if (Time.unscaledTime - p.LastHitTime > 2.5f) p.Guard = Mathf.MoveTowards(p.Guard, 1f, 0.75f * dt);
+            // Home, out of the fight: a fresh vest under the jacket.
+            if (p.Armor < Pawn.MaxArmor && game.PlayerBase.Contains(p.Cell) && game.Ticks.TicksGame - p.LastDamagedTick > 600) p.Armor = Pawn.MaxArmor;
             bool reloading = p.ReloadUntil > Time.unscaledTime;
             if (!reloading && p.ReloadUntil > 0f)
             {

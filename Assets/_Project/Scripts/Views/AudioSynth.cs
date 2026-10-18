@@ -152,6 +152,47 @@ namespace OSistema.Views
             return Clip("ambience", clipped);
         }
 
+        static AudioClip armorBreak, killConfirm;
+
+        /// <summary>Armour giving way: a short glassy crunch.</summary>
+        public static AudioClip ArmorBreak => armorBreak != null ? armorBreak : armorBreak = MakeCrunch();
+
+        /// <summary>The man you shot is down: a deep double tick.</summary>
+        public static AudioClip KillConfirm => killConfirm != null ? killConfirm : killConfirm = MakeKillConfirm();
+
+        static AudioClip MakeCrunch()
+        {
+            var r = new System.Random(8);
+            int n = (int)(Rate * 0.3f);
+            var d = new float[n];
+            float hp = 0f, last = 0f;
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)Rate;
+                float x = Noise(r);
+                hp = 0.85f * (hp + x - last);   // bright, glassy
+                last = x;
+                float crackle = r.NextDouble() < 0.02 ? 1f : 0f;
+                d[i] = (hp * 0.7f + crackle + Mathf.Sin(2f * Mathf.PI * 1900f * t) * 0.2f) * Mathf.Exp(-t * 14f);
+            }
+            return Clip("armorbreak", d);
+        }
+
+        static AudioClip MakeKillConfirm()
+        {
+            int n = (int)(Rate * 0.22f);
+            var d = new float[n];
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)Rate;
+                float a = Mathf.Sin(2f * Mathf.PI * 1600f * t) * Mathf.Exp(-t * 50f);
+                float t2 = t - 0.09f;
+                float b = t2 > 0f ? Mathf.Sin(2f * Mathf.PI * 1100f * t2) * Mathf.Exp(-t2 * 30f) : 0f;
+                d[i] = a * 0.8f + b + Mathf.Sin(2f * Mathf.PI * 90f * t) * 0.4f * Mathf.Exp(-t * 20f);
+            }
+            return Clip("killconfirm", d);
+        }
+
         static AudioClip whiz, flesh;
 
         /// <summary>A bullet going past your ear.</summary>

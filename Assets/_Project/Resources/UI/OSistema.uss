@@ -981,3 +981,11 @@
 .setting__label { width: 180px; flex-shrink: 0; white-space: normal; margin-right: 10px; }
 .setting > Slider { flex-shrink: 1; min-width: 0; }
 .card__foot .menu-btn { width: 140px; margin-left: 8px; }
+
+/* ---------- Combat: armour plates over the health bar, and where the shot came from ---------- */
+.combat-bar { position: absolute; bottom: 70px; left: 50%; translate: -50% 0; width: 250px; align-items: center; }
+.combat-bar__seg { width: 100%; height: 6px; margin-bottom: 3px; background-color: rgba(20, 40, 60, 0.7); border-width: 1px; border-color: rgba(0, 0, 0, 0.6); }
+.combat-bar__segfill { height: 100%; background-color: #6FC3FF; }
+.combat-bar__hp { width: 100%; height: 9px; background-color: rgba(30, 10, 10, 0.75); border-width: 1px; border-color: rgba(0, 0, 0, 0.6); }
+.combat-bar__hpfill { height: 100%; background-color: #F2F2EA; }
+.hurt-arrow { position: absolute; width: 32px; height: 32px; font-size: 28px; color: #FF3B30; -unity-text-align: middle-center; -unity-font-style: bold; text-shadow: 0 0 4px rgba(0,0,0,0.9); }

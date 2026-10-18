@@ -272,7 +272,7 @@ namespace OSistema.Combat
                 OnAttacked(hitPawn, shooter, game, now);
                 if (hit)
                 {
-                    Wound(hitPawn, melee, game, dir);
+                    Wound(hitPawn, melee, game, dir, shooter);
                     PlayerHit?.Invoke(hitPawn.Position, hitPawn.Health.Downed);
                 }
                 if (hit && hitPawn.Faction == Faction.Crew)
@@ -350,7 +350,7 @@ namespace OSistema.Combat
             bool covered = !melee && IsInCover(game.Map, target.Cell, attacker.Position);
             if (covered) chance *= CoverFactor;
             // Like an action game: the men shooting at you miss a lot, most of all when you're moving.
-            if (target.Controlled) chance *= target.Velocity.sqrMagnitude > 0.5f || target.Riding ? 0.38f : 0.55f;
+            if (target.Controlled && (target.Velocity.sqrMagnitude > 0.5f || target.Riding)) chance *= 0.75f;   // a moving target
             chance = Mathf.Clamp(chance, 0.05f, 0.9f);
 
             var rng = game.Rng;
@@ -374,7 +374,7 @@ namespace OSistema.Combat
             if (attacker.Faction == Faction.Crew && rng.NextDouble() < 0.08) attacker.Say("fight");
 
             OnAttacked(target, attacker, game, now);
-            if (hit) Wound(target, melee, game, (target.Position - attacker.Position).normalized);
+            if (hit) Wound(target, melee, game, (target.Position - attacker.Position).normalized, attacker);
             if (hit && target.Faction == Faction.Crew && MessageLog.Trace != null)
                 MessageLog.Trace($"[hit] {target.DisplayName}{(target.IsBoss ? " (boss)" : "")} hit by {attacker.Faction} clan {attacker.Clan} mission {attacker.Mission} target-square-rival {attacker.MissionSquare?.Rival}");
         }
@@ -401,50 +401,79 @@ namespace OSistema.Combat
             }
         }
 
-        void Wound(Pawn target, bool melee, Game game, Vector2 dir)
+        /// <summary>A bullet or a punch landed: who, how much, on armour or flesh, and what it did.</summary>
+        public readonly struct Damage
+        {
+            public readonly Pawn Target, Attacker;
+            public readonly int Amount;
+            public readonly bool OnArmor, Head, ArmorBroke, Down;
+            public Damage(Pawn target, Pawn attacker, int amount, bool onArmor, bool head, bool broke, bool down)
+            {
+                Target = target; Attacker = attacker; Amount = amount; OnArmor = onArmor; Head = head; ArmorBroke = broke; Down = down;
+            }
+        }
+
+        /// <summary>Every hit, for the numbers, the markers and the armour-break crunch.</summary>
+        public event Action<Damage> Damaged;
+
+        // How hard a hit lands: the player's pistol hits harder than the street's; a head shot more again.
+        static int DamageOf(Pawn attacker, bool melee, bool head)
+        {
+            if (melee) return 12;
+            float d = attacker != null && attacker.Controlled ? 34f : 20f + (attacker?.ShootingSkill ?? 3) * 0.8f;
+            return Mathf.RoundToInt(head ? d * 1.6f : d);
+        }
+
+        void Wound(Pawn target, bool melee, Game game, Vector2 dir, Pawn attacker)
         {
             target.LastHitTime = Time.unscaledTime;
             target.LastHitDir = dir;
             var rng = game.Rng;
             string part = PickPart(rng);
             long now = game.Ticks.TicksGame;
+            target.LastDamagedTick = now;
             // Hit: a stumble, a moment before they can shoot back, and a step back from the impact.
-            target.StaggerUntil = now + (melee ? 25 : 45);
-            target.NextAttackTick = System.Math.Max(target.NextAttackTick, now + (melee ? 20 : 40));
-            if (!target.Controlled && !target.Riding) target.Mover.Slide(dir * (melee ? 0.25f : 0.35f), game.Map);
-            if (target.Faction == Faction.Rival && target.CanAct && rng.NextDouble() < 0.6) target.Say("hurt");
+            target.StaggerUntil = now + (melee ? 20 : 30);
+            target.NextAttackTick = System.Math.Max(target.NextAttackTick, now + (melee ? 15 : 25));
+            if (!target.Controlled && !target.Riding) target.Mover.Slide(dir * (melee ? 0.25f : 0.3f), game.Map);
+            if (target.Faction == Faction.Rival && target.CanAct && rng.NextDouble() < 0.4) target.Say("hurt");
+            if (target.Controlled) PlayerHurt?.Invoke(dir);
 
-            // The player has a guard: hits knock it down first (the screen reddens), it comes back if he
-            // gets out of fire. Only with the guard gone do bullets go in, and not as deep.
-            if (target.Controlled)
+            // Armour first, then health. Only when health runs out does it really wound.
+            bool head = !melee && part == "Head";
+            int amount = DamageOf(attacker, melee, head);
+            int left = amount;
+            bool onArmor = target.Armor > 0f && !melee;
+            bool broke = false;
+            if (onArmor)
             {
-                PlayerHurt?.Invoke(dir);
-                if (target.Guard > 0.05f)
-                {
-                    target.Guard = Mathf.Max(0f, target.Guard - (melee ? 0.12f : 0.26f));
-                    return;
-                }
+                float taken = Mathf.Min(target.Armor, left);
+                target.Armor -= taken;
+                left -= Mathf.RoundToInt(taken);
+                broke = target.Armor <= 0f;
             }
+            target.Hp -= left;
+            bool down = target.Hp <= 0f;
+            Damaged?.Invoke(new Damage(target, attacker, amount, onArmor && !broke || (onArmor && left == 0), head, broke, down));
+            if (!down) return;
 
+            target.Hp = 0f;
             if (melee)
             {
-                target.Health.AddInjury("Bruise", part, 0.05f + (float)rng.NextDouble() * 0.05f, 0f);
+                // Beaten down, not shot: bruises that keep him on the ground a while.
+                target.Health.AddInjury("Beating", part, 0.95f, 0f);
                 return;
             }
-
-            bool head = part == "Head";
-            float severity = head ? 0.7f + (float)rng.NextDouble() * 0.25f : 0.2f + (float)rng.NextDouble() * 0.2f;
-            float bleed = head ? 2f : 0.5f + (float)rng.NextDouble() * 0.9f;
-            // Clan soldiers go down in two or three good hits, at once to the head: a fight is quick.
-            if (target.Faction == Faction.Rival) severity = head ? 1.3f : 0.38f + (float)rng.NextDouble() * 0.12f;
-            if (target.Controlled) severity *= 0.5f;
+            float severity = head ? 1.3f : 1.15f;
+            float bleed = head ? 2f : 0.6f + (float)rng.NextDouble() * 0.8f;
+            if (target.Controlled) bleed *= 0.6f;   // time to crawl to cover and call for help
             target.Health.AddInjury("Gunshot wound", part, severity, bleed);
 
             if (target.Faction == Faction.Crew)
             {
                 target.Mood.AddMemory("shot", "Got shot", -10f, now, GameClock.TicksPerDay * 2);
                 target.Say("hurt");
-                game.Log.Add($"{target.DisplayName} was shot in the {part.ToLower()}!", MessageKind.Bad);
+                game.Log.Add($"{target.DisplayName} was shot in the {part.ToLower()} and is down!", MessageKind.Bad);
             }
         }
 

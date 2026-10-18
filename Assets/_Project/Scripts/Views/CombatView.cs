@@ -45,6 +45,7 @@ namespace OSistema.Views
             combat = system;
             combat.Shot += OnShot;
             combat.PlayerHit += OnPlayerHit;
+            combat.Damaged += OnDamaged;
             var cam = Camera.main;
             if (cam != null)
             {
@@ -60,6 +61,7 @@ namespace OSistema.Views
             {
                 combat.Shot -= OnShot;
                 combat.PlayerHit -= OnPlayerHit;
+                combat.Damaged -= OnDamaged;
             }
             if (Instance == this) Instance = null;
         }
@@ -116,6 +118,28 @@ namespace OSistema.Views
                     SoundManager.PlayUi(AudioSynth.Whiz, 0.5f);
                     if (shake != null) shake.Kick(me.Position, 0.12f);
                 }
+            }
+        }
+
+        /// <summary>
+        /// The numbers and the crunch: your hits float their damage (blue on armour, white on flesh,
+        /// yellow to the head); armour that gives way shatters with a crunch; a man you drop gets the
+        /// kill-confirm. Your own armour breaking crunches too.
+        /// </summary>
+        void OnDamaged(CombatSystem.Damage d)
+        {
+            var at = d.Target.Position;
+            bool mine = d.Attacker != null && d.Attacker.Controlled;
+            if (d.ArmorBroke)
+            {
+                for (int i = 0; i < 10; i++)
+                    Spawn(at, Random.insideUnitCircle * 3.5f, 0.4f + Random.value * 0.2f, new Color(0.55f, 0.85f, 1f, 1f), 0.06f + Random.value * 0.05f, Random.value * 90f, true);
+                if (mine || d.Target.Controlled) SoundManager.PlayUi(AudioSynth.ArmorBreak, 0.55f);
+                else SoundManager.PlayAt(AudioSynth.ArmorBreak, at, 0.4f);
+            }
+            if (mine && game != null)
+            {
+                if (d.Down) SoundManager.PlayUi(AudioSynth.KillConfirm, 0.6f);
             }
         }
 

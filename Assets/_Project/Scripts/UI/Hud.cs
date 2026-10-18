@@ -1,6 +1,7 @@
 using System;
 using OSistema.Core;
 using OSistema.Input;
+using OSistema.Pawns;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -133,17 +134,59 @@ namespace OSistema.UI
             return vignette;
         }
 
-        /// <summary>A hit on the player: a flash of red.</summary>
-        public void OnPlayerHurt(Vector2 dir) => damageFlash = 1f;
+        /// <summary>A hit on the player: a flash of red, and an arrow towards whoever fired.</summary>
+        public void OnPlayerHurt(Vector2 dir)
+        {
+            damageFlash = 1f;
+            hurtFrom = -dir;
+            hurtArrowTime = 1f;
+        }
+
+        Vector2 hurtFrom;
+        float hurtArrowTime;
+        VisualElement combatBar, armorFill, healthFill, hurtArrow;
+
+        void BuildCombatBar()
+        {
+            combatBar = Ui.Box("combat-bar").Into(hudLayer);
+            combatBar.pickingMode = PickingMode.Ignore;
+            var vest = Ui.Box("combat-bar__seg").Into(combatBar);
+            armorFill = Ui.Box("combat-bar__segfill").Into(vest);
+            var hp = Ui.Box("combat-bar__hp").Into(combatBar);
+            healthFill = Ui.Box("combat-bar__hpfill").Into(hp);
+            hurtArrow = Ui.Text("▲", hudLayer, "hurt-arrow");
+            hurtArrow.pickingMode = PickingMode.Ignore;
+        }
 
         void UpdateDamageOverlay()
         {
             var p = game?.Player;
-            float guard = p != null ? p.Guard : 1f;
-            float wounded = p != null ? Mathf.Clamp01(p.Health.Pain * 1.2f) : 0f;
+            float hp = p != null ? p.Hp / Pawn.MaxHp : 1f;
             damageFlash = Mathf.MoveTowards(damageFlash, 0f, Time.unscaledDeltaTime * 3f);
-            float a = Mathf.Max((1f - guard) * 0.7f, wounded * 0.5f) + damageFlash * 0.45f;
+            float a = (1f - hp) * 0.75f + damageFlash * 0.4f;
             damageOverlay.style.opacity = Mathf.Clamp01(a);
+
+            if (combatBar == null) BuildCombatBar();
+            combatBar.Show(p != null && p.IsPresent);
+            if (p == null) return;
+            armorFill.parent.Show(p.Armor > 0.5f);
+            armorFill.style.width = Length.Percent(p.Armor / Pawn.MaxArmor * 100f);
+            healthFill.style.width = Length.Percent(hp * 100f);
+            healthFill.style.backgroundColor = hp > 0.5f ? new Color(0.95f, 0.95f, 0.92f) : hp > 0.25f ? new Color(0.95f, 0.65f, 0.3f) : new Color(0.9f, 0.2f, 0.18f);
+
+            // Where the shot came from: an arrow round the middle of the screen, fading.
+            hurtArrowTime = Mathf.MoveTowards(hurtArrowTime, 0f, Time.unscaledDeltaTime * 1.2f);
+            hurtArrow.Show(hurtArrowTime > 0f && hurtFrom.sqrMagnitude > 0.001f);
+            if (hurtArrowTime > 0f)
+            {
+                float ang = Mathf.Atan2(hurtFrom.x, hurtFrom.y) * Mathf.Rad2Deg;
+                var size = root.layout.size;
+                var c = size / 2f + new Vector2(hurtFrom.x, -hurtFrom.y).normalized * Mathf.Min(size.x, size.y) * 0.22f;
+                hurtArrow.style.left = c.x - 16;
+                hurtArrow.style.top = c.y - 16;
+                hurtArrow.style.rotate = new Rotate(Angle.Degrees(ang));
+                hurtArrow.style.opacity = hurtArrowTime;
+            }
         }
 
         VisualElement Layer()

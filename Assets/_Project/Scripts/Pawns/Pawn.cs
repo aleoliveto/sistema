@@ -86,10 +86,21 @@ namespace OSistema.Pawns
         public long OnOperationUntil;    // on a stesa or a hit: shoots at the other side's people on sight
 
         /// <summary>
-        /// The player's guard, 0..1: like an action game, the first hits only knock it down (the screen
-        /// reddens); it comes back after a few seconds out of fire. Only when it's gone do bullets wound.
+        /// Fighting health, Warzone-style: bullets take armour first, then health. Health comes back
+        /// after a few seconds out of fire; armour doesn't (put in a new plate). Only when health runs
+        /// out does a bullet really wound: that's when someone goes down.
         /// </summary>
-        public float Guard = 1f;
+        public float Hp = MaxHp;
+        public const float MaxHp = 100f;
+        public float Armor;                  // a vest, 0..MaxArmor: soaks the first hits, doesn't come back on its own
+        public const float MaxArmor = 100f;
+        public long LastDamagedTick = -100000;
+
+        /// <summary>Health comes back five seconds after the last hit, quickly.</summary>
+        public void RegenHp(long now)
+        {
+            if (Hp < MaxHp && now - LastDamagedTick > 300 && !Health.Downed) Hp = Mathf.Min(MaxHp, Hp + 0.75f);
+        }
         public int BurstLeft;            // shots left in this burst before a pause
 
         /// <summary>Real time of the last wound, for the hit flash.</summary>
@@ -299,6 +310,7 @@ namespace OSistema.Pawns
             if (Dead || InJail || Departed) return;
             long now = game.Ticks.TicksGame;
             UpdateStagger(now);
+            RegenHp(now);
 
             if (InHospital)
             {
@@ -355,6 +367,7 @@ namespace OSistema.Pawns
         // Rivals live off-map: no needs or mood, only wounds and their mission.
         void TickRival(Game game)
         {
+            RegenHp(game.Ticks.TicksGame);
             Health.Tick(this);
             if (Health.IsDeadly)
             {

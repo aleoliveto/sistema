@@ -152,6 +152,7 @@ namespace OSistema.UI
         {
             if (!OSistema.Views.FogOfWar.CanSee(at)) return;
             var label = Ui.Text(text, worldLayer, "tag", text.StartsWith("-") ? "tag--rival" : "popup");
+            label.pickingMode = PickingMode.Ignore;
             popups.Add((label, at, Time.unscaledTime));
         }
 

@@ -573,7 +573,7 @@ namespace OSistema.Core
                 isBoss = p.IsBoss,
                 aggressiveUntil = p.AggressiveUntil,
                 mealsDelivered = p.MealsDelivered,
-                mission = (int)p.Mission, clan = p.Clan,
+                mission = (int)p.Mission, clan = p.Clan, armor = p.Armor,
                 missionTarget = p.MissionTarget?.Id ?? 0,
                 x = p.Cell.x,
                 y = p.Cell.y,
@@ -620,7 +620,7 @@ namespace OSistema.Core
                 IsBoss = d.isBoss,
                 AggressiveUntil = d.aggressiveUntil,
                 MealsDelivered = d.mealsDelivered,
-                Mission = (RivalMission)d.mission, Clan = d.clan,
+                Mission = (RivalMission)d.mission, Clan = d.clan, Armor = d.armor,
                 Bed = d.hasBed ? new Vector2Int(d.bedX, d.bedY) : (Vector2Int?)null,
             };
             p.ScheduleString = d.schedule;
@@ -775,6 +775,7 @@ namespace OSistema.Core
             public long jailedUntil, lyingLowUntil, hospitalUntil;
             public float[] xp;
             public int faction, shooting, mealsDelivered, mission, missionTarget, missionSquare = -1, clan;
+            public float armor;
             public bool armed, isBoss;
             public long aggressiveUntil;
             public int x, y;
