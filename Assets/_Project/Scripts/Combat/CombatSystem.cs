@@ -54,8 +54,19 @@ namespace OSistema.Combat
         public Vector2 LastShotPosition { get; private set; }
         public long LastShotTick { get; private set; } = -100000;
 
+        // When the recent shots were fired: shooting that goes on brings the police (see Response).
+        readonly System.Collections.Generic.Queue<long> recentShots = new System.Collections.Generic.Queue<long>();
+
+        public int ShotsSince(long tick)
+        {
+            while (recentShots.Count > 0 && recentShots.Peek() < tick) recentShots.Dequeue();
+            return recentShots.Count;
+        }
+
         void Fired(Vector2 at, Game game)
         {
+            recentShots.Enqueue(game.Ticks.TicksGame);
+            if (recentShots.Count > 64) recentShots.Dequeue();
             if (game.Ticks.TicksGame - LastShotTick > QuietTicks) EngagementStarted?.Invoke(at);
             LastShotPosition = at;
             LastShotTick = game.Ticks.TicksGame;

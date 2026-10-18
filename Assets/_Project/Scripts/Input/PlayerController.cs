@@ -587,7 +587,19 @@ namespace OSistema.Input
                 if (running) step *= 1.5f;
                 if (Aiming) step *= 0.6f;                         // careful steps with the gun up
                 if (game.Ticks.TicksGame < p.StaggerUntil) step *= 0.45f;
+                var before = p.Position;
+                bool wasLocked = game.Response.IsLocked(p.Cell, game);
                 p.Mover.Slide(dir.normalized * step, game.Map);
+                // Other people's homes are locked: you stop at the door (E to break in).
+                if (!wasLocked && game.Response.IsLocked(p.Cell, game))
+                {
+                    p.Mover.Place(before);
+                    if (Time.unscaledTime > lockedHintUntil)
+                    {
+                        lockedHintUntil = Time.unscaledTime + 3f;
+                        game.PopupAt(p.Position + Vector2.up * 0.7f, "locked");
+                    }
+                }
                 p.Heading = Mathf.Atan2(-dir.x, dir.y) * Mathf.Rad2Deg;   // so a scooter starts off the way you were walking
                 follow = p;
             }
@@ -662,6 +674,8 @@ namespace OSistema.Input
                 }
             }
         }
+
+        float lockedHintUntil;
 
         void StartReload(Pawn p)
         {
@@ -810,6 +824,27 @@ namespace OSistema.Input
                                  : new Action { Label = "Roll a pack of ROSSE", Do = () => hud.OpenRolling() };
             }
 
+            // A locked door next to you: break in. Inside a place you've broken into: turn it over.
+            foreach (var c in GridUtil.CellsAround(p.Cell, 1))
+            {
+                if (!game.Map.InBounds(c) || game.Map.GetBuilding(c) != BuildingDefs.Door || !game.Response.IsLocked(c, game)) continue;
+                var prop = game.Properties.At(c);
+                if (prop == null) continue;
+                return new Action
+                {
+                    Label = prop.Kind == PropertyKind.Shop ? "Break into the shop (noisy)" : "Break in (noisy: someone may call the police)",
+                    Do = () => game.Response.BreakIn(prop, game),
+                };
+            }
+            var inside = game.Properties.At(p.Cell);
+            if (inside != null && !inside.OwnedByPlayer && game.Response.CanRob(inside, game))
+            {
+                bool safe = Near(p, BuildingDefs.Safe, out _);
+                if (safe || Near(p, BuildingDefs.Wardrobe, out _) || Near(p, BuildingDefs.Pantry, out _) || Near(p, BuildingDefs.ShopShelf, out _) ||
+                    (inside.Kind == PropertyKind.Shop && game.Map.GetBuilding(p.Cell) == null && NearShopCounter(p)))
+                    return new Action { Label = safe ? "Crack the safe" : "Turn the place over", Do = () => game.Response.Rob(inside, safe, game) };
+            }
+
             foreach (var b in game.Org.Businesses)
             {
                 if (b.Status == BusinessStatus.Closed) continue;
@@ -853,6 +888,13 @@ namespace OSistema.Input
             if (game.Org.CanDealHere(p, game))
                 return new Action { Label = $"Deal here ({game.Stock.Product} doses on you)", Do = () => game.Org.StartDealing(game) };
             return null;
+        }
+
+        bool NearShopCounter(Pawn p)
+        {
+            foreach (var c in GridUtil.CellsAround(p.Cell, 1))
+                if (game.Map.InBounds(c) && game.Map.GetBuilding(c) is BuildingDef b && b.Shop != ShopKind.None) return true;
+            return false;
         }
 
         bool Near(Pawn p, BuildingDef def, out Vector2Int at)

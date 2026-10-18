@@ -216,11 +216,13 @@ namespace OSistema.Core
         }
 
         public readonly Weather Weather = new Weather();
+        public readonly Crime.Response Response = new Crime.Response();
 
         void Tick()
         {
             if (Org.GameOver) return;
             Weather.Tick(this);
+            Response.Tick(this);
             Pawns.Tick(this);
             StreetLife.Tick(this);
             Hospital.Tick(this);

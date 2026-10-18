@@ -13,7 +13,10 @@ namespace OSistema.Views
 
         readonly Transform root;
         readonly Transform pivot;   // rotates to face the heading
-        readonly SpriteRenderer shadow, body, head, hair, gun, handL, handR;
+        readonly SpriteRenderer shadow, body, head, hair, gun, handL, handR, footL, footR;
+        bool drawnLegs;             // street people are painted with their legs and shoes
+        float idleLook;             // standing still: now and then a look around
+        readonly float lookSeed = Random.value * 100f;
         Vector2 lastPos;
         float heading;              // degrees; 0 = facing north
         bool hasPos;
@@ -55,6 +58,12 @@ namespace OSistema.Views
             head = Part("Head", pivot, SpriteFactory.Head, SpriteFactory.LitMaterial, sortingOrder + 3);
             head.transform.localPosition = new Vector3(0f, 0.02f, 0f);
             hair = Part("Hair", pivot, SpriteFactory.Hair, SpriteFactory.LitMaterial, sortingOrder + 4);
+            // Shoes, under the body: they only show as they step out in front or behind.
+            footL = Part("Foot L", pivot, SpriteFactory.Head, SpriteFactory.LitMaterial, sortingOrder);
+            footR = Part("Foot R", pivot, SpriteFactory.Head, SpriteFactory.LitMaterial, sortingOrder);
+            footL.color = footR.color = new Color(0.13f, 0.11f, 0.1f);
+            footL.transform.localScale = footR.transform.localScale = new Vector3(0.36f, 0.5f, 1f);
+            footL.enabled = footR.enabled = false;
             hair.transform.localPosition = new Vector3(0f, 0.02f, 0f);
             gun.enabled = false;
         }
@@ -86,6 +95,7 @@ namespace OSistema.Views
             var hr = CharacterArt.Sprite("hair", look.Hair);
             if (b == null || h == null || hr == null) return false;
             art = true;
+            drawnLegs = look.Body >= OSistema.Pawns.Look.Street;
             body.sprite = b;
             head.sprite = h;
             hair.sprite = hr;
@@ -142,13 +152,18 @@ namespace OSistema.Views
             body.enabled = visible;
             head.enabled = visible;
             hair.enabled = visible;
-            // The painted bodies have their own arms: the hands only show to hold a gun or the handlebars.
-            bool hands = visible && (!art || aiming || Seated);
+            // The painted bodies have their own arms: the hands show to hold a gun or the handlebars,
+            // and swing at the sides while walking.
+            bool hands = visible && (!art || aiming || Seated || moving > 0.1f);
             handL.enabled = hands;
             handR.enabled = hands;
             if (hat != null) hat.enabled = visible && hat.sprite != null;
             if (neck != null) neck.enabled = visible && neck.sprite != null;
-            if (!visible) gun.enabled = false;
+            if (!visible)
+            {
+                gun.enabled = false;
+                footL.enabled = footR.enabled = false;
+            }
         }
 
         public void SetArmed(bool armed) => gun.enabled = armed && body.enabled;
@@ -175,7 +190,8 @@ namespace OSistema.Views
 
             // Arms swing while walking; both hands come forward when aiming.
             moving = Mathf.MoveTowards(moving, !lying && !Seated && speed > 0.2f ? 1f : 0f, dt * 6f);
-            stride += speed * dt * 9f;
+            // About one full step cycle (left and right) every 1.5 cells.
+            stride += speed * dt * 4.2f;
             float swing = Mathf.Sin(stride) * 0.12f * moving;
             if (Seated && !lying)
             {
@@ -195,12 +211,36 @@ namespace OSistema.Views
                 handR.transform.localPosition = HandRRest - new Vector3(0f, swing, 0f);
                 gun.transform.localPosition = new Vector3(0.3f, 0.32f - swing, 0f);
             }
+            float runAmt = Mathf.Clamp01((speed - 3.5f) / 3f);
             if (art)
             {
-                bool hands = visibleNow && (aiming || Seated) && !lying;
+                bool walking = moving > 0.1f && !Seated;
+                bool hands = visibleNow && (aiming || Seated || walking) && !lying;
                 handL.enabled = hands;
                 handR.enabled = hands;
+                if (walking && !aiming)
+                {
+                    // Arms swing against the legs: left hand forward with the right foot.
+                    float arm = Mathf.Sin(stride) * (0.16f + 0.1f * runAmt) * moving;
+                    handL.transform.localPosition = new Vector3(-0.38f, 0.02f + arm, 0f);
+                    handR.transform.localPosition = new Vector3(0.38f, 0.02f - arm, 0f);
+                    gun.transform.localPosition = new Vector3(0.38f, 0.16f - arm, 0f);
+                }
+                bool feet = visibleNow && !lying && !Seated && !drawnLegs && moving > 0.05f;
+                footL.enabled = footR.enabled = feet;
+                if (feet)
+                {
+                    float reach = (0.2f + 0.14f * runAmt) * moving;
+                    float s = Mathf.Sin(stride);
+                    // A foot lifts (and shrinks a touch) as it swings through.
+                    footL.transform.localPosition = new Vector3(-0.13f, -s * reach, 0f);
+                    footR.transform.localPosition = new Vector3(0.13f, s * reach, 0f);
+                    float liftL = Mathf.Max(0f, Mathf.Cos(stride)) * 0.08f, liftR = Mathf.Max(0f, -Mathf.Cos(stride)) * 0.08f;
+                    footL.transform.localScale = new Vector3(0.36f - liftL, 0.5f - liftL, 1f);
+                    footR.transform.localScale = new Vector3(0.36f - liftR, 0.5f - liftR, 1f);
+                }
             }
+            else footL.enabled = footR.enabled = false;
             aiming = false;
             if (art && !lying)
             {
@@ -213,7 +253,15 @@ namespace OSistema.Views
                 float step = Mathf.Abs(Mathf.Sin(stride)) * 0.05f * amp;
                 body.transform.localRotation = Quaternion.Euler(0f, 0f, 180f + sway);
                 if (neck != null) neck.transform.localRotation = body.transform.localRotation;
-                var headRot = Quaternion.Euler(0f, 0f, 180f - sway * 0.35f);
+                // Standing about: every so often a glance to one side.
+                float look = 0f;
+                if (moving < 0.05f && !Seated)
+                {
+                    idleLook += dt;
+                    float n = Mathf.PerlinNoise(idleLook * 0.35f, lookSeed);
+                    look = n > 0.62f ? (n - 0.62f) * 110f : n < 0.3f ? (n - 0.3f) * 90f : 0f;
+                }
+                var headRot = Quaternion.Euler(0f, 0f, 180f - sway * 0.35f + look);
                 head.transform.localRotation = headRot;
                 hair.transform.localRotation = headRot;
                 if (hat != null) hat.transform.localRotation = headRot;
@@ -223,6 +271,9 @@ namespace OSistema.Views
                 hair.transform.localPosition = lean;
                 if (hat != null) hat.transform.localPosition = lean;
                 body.transform.localScale = new Vector3(1f + breathe, 1f + breathe + step, 1f);
+                // The weight shifts onto each foot in turn.
+                body.transform.localPosition = new Vector3(Mathf.Sin(stride) * 0.025f * amp, 0.03f * run * moving, 0f);
+                if (neck != null) neck.transform.localPosition = body.transform.localPosition;
             }
             else
             {

@@ -91,6 +91,7 @@ namespace OSistema.Core
             combatGo.AddComponent<CombatView>().Init(game.Combat);
             combatGo.AddComponent<SoundManager>().Init(game);
             game.Combat.EngagementStarted += OnEngagement;
+            game.Response.Sirens += OnSirens;
             game.Npcs.Added += CreateNpcView;
 
             controller.Bind(game);
@@ -105,6 +106,7 @@ namespace OSistema.Core
             if (Game != null)
             {
                 Game.Combat.EngagementStarted -= OnEngagement;
+                Game.Response.Sirens -= OnSirens;
                 Game.Pawns.Added -= CreatePawnView;
                 Game.Npcs.Added -= CreateNpcView;
             }
@@ -154,6 +156,8 @@ namespace OSistema.Core
         }
 
         // Shots fired: drop out of fast-forward so the player can react, and say where.
+        void OnSirens(string message) => hud.FlashAlert("SIRENE! POLICE ON THE WAY");
+
         void OnEngagement(Vector2 at)
         {
             if (Game.Ticks.Speed > 1) Game.Ticks.SetSpeed(1);

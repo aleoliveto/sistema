@@ -111,8 +111,11 @@ namespace OSistema.Npcs
             // Naples is busy until late. Fewer people out where there's been shooting recently.
             bool recentGunfire = game.Ticks.TicksGame - game.Combat.LastShotTick < GameClock.TicksPerHour * 2;
             float evening = hour >= 18 && hour < 23 ? 1.15f : 1f; // the evening passeggiata
-            int peopleTarget = lateNight ? 10 : Mathf.RoundToInt(Mathf.Lerp(35f, 110f, day) * evening * (recentGunfire ? 0.35f : 1f));
-            int scooterTarget = lateNight ? 3 : day > 0.3f ? 16 : 9;
+            // Everyone's indoors for the riposo after lunch, and nobody goes out in a downpour who doesn't have to.
+            float riposo = hour >= 14 && hour < 16 ? 0.7f : 1f;
+            float rain = 1f - game.Weather.Rain * 0.65f;
+            int peopleTarget = lateNight ? 6 : Mathf.RoundToInt(Mathf.Lerp(30f, 110f, day) * evening * riposo * rain * (recentGunfire ? 0.35f : 1f));
+            int scooterTarget = Mathf.RoundToInt((lateNight ? 3 : day > 0.3f ? 16 : 9) * (1f - game.Weather.Rain * 0.4f));
 
             if (people < peopleTarget) SpawnPerson(game);
             if (people < peopleTarget - 20) SpawnPerson(game); // catch up quickly at dawn
@@ -162,7 +165,7 @@ namespace OSistema.Npcs
 
             var npc = game.Npcs.Spawn(kind, start, speed, color);
             npc.TripsLeft = rng.Next(1, 4);
-            npc.Exit = Near(doors, d => d, start, 25, rng);
+            npc.Exit = door;   // they live here: out of this door, and back in through it
             npc.Target = DestinationFor(npc, game);
         }
 
@@ -182,12 +185,49 @@ namespace OSistema.Npcs
                     return chair;
                 }
             }
+            // Errands in real shops: bread and ham at the salumeria, a coffee at the bar, lunch at the pizzeria.
+            if (npc.Kind != NpcKind.Child)
+            {
+                int hour = game.Clock.Hour;
+                bool lunch = hour >= 12 && hour < 14, coffee = hour < 11 || (hour >= 16 && hour < 20);
+                if (rng.NextDouble() < (lunch ? 0.55 : 0.35))
+                {
+                    var shop = ShopFor(game, here, lunch ? ShopKind.Pizzeria : coffee && rng.NextDouble() < 0.5 ? ShopKind.Bar : ShopKind.None);
+                    if (shop.HasValue)
+                    {
+                        npc.InShop = true;
+                        return shop.Value;
+                    }
+                }
+            }
             if (npc.Kind == NpcKind.Child && playgrounds.Count > 0 && rng.NextDouble() < 0.75)
             {
                 npc.Playing = true;
                 return Near(playgrounds, c => c, here, 30, rng);
             }
             return RandomDestinationNear(here, game);
+        }
+
+        /// <summary>A free spot inside an open shop near here (a kind, or any if None).</summary>
+        Vector2Int? ShopFor(Game game, Vector2Int near, ShopKind kind)
+        {
+            int hour = game.Clock.Hour;
+            if (hour < 8 || hour >= 21) return null;
+            Crime.Business best = null;
+            float bestD = 30f * 30f;
+            foreach (var b in game.Org.Businesses)
+            {
+                if (b.Status == Crime.BusinessStatus.Closed || (kind != ShopKind.None && b.Kind != kind)) continue;
+                float d = (b.Cell - near).sqrMagnitude;
+                if (d < bestD && game.Rng.NextDouble() < 0.7) { bestD = d; best = b; }
+            }
+            if (best == null) return null;
+            // Somewhere on the shop floor in front of the counter.
+            foreach (var c in GridUtil.CellsAround(best.Cell, 3))
+                if (game.Map.InBounds(c) && game.Map.IsPassable(c) && game.Map.GetBuilding(c) == null &&
+                    game.Map.GetTerrain(c.x, c.y) == TerrainType.Floor && (c - best.Cell).sqrMagnitude >= 2 && game.Rng.NextDouble() < 0.4)
+                    return c;
+            return null;
         }
 
         public Vector2Int RandomDestinationNear(Vector2Int near, Game game)
@@ -324,7 +364,9 @@ namespace OSistema.Npcs
                     else
                     {
                         npc.State = Lingering;
-                        npc.Timer = game.Rng.Next(150, 900);
+                        // Shopping takes a while: the queue, the chat with the owner.
+                        npc.Timer = npc.InShop ? game.Rng.Next(700, 1800) : game.Rng.Next(150, 900);
+                        npc.InShop = false;
                     }
                     return;
                 }
@@ -405,6 +447,7 @@ namespace OSistema.Npcs
         /// <summary>Two officers walking the beat: a few points in a hot zone, then back out.</summary>
         public static void TickPatrol(Npc npc, Game game)
         {
+            if (npc.Responding && game.Ticks.TicksGame % 15 == 0) game.Response.OfficerNear(npc, game);
             npc.Walker ??= new Walker(npc.Target, adjacent: false);
             var status = npc.Walker.Tick(npc.Mover, 1f, game);
             if (status == WalkStatus.Walking) return;
