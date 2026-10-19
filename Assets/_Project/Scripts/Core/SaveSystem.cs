@@ -190,7 +190,7 @@ namespace OSistema.Core
                 clean = game.Stock.Clean,
                 scooters = game.Stock.Scooters, scooterModel = game.Stock.ScooterModel, scooterColour = game.Stock.ScooterColour,
                 cigarettes = game.Stock.Cigarettes,
-                rank = game.Org.Rank,
+                rank = game.Org.Rank, dressed = game.Org.DressedRank,
                 jobsDone = game.Contracts.Completed,
                 evidence = game.Org.Evidence,
                 generation = game.Org.Generation,
@@ -252,7 +252,7 @@ namespace OSistema.Core
                     x = b.Cell.x, y = b.Cell.y, name = b.Name, kind = (int)b.Kind,
                     // Someone sent to impose pizzo is a standing order; keep it.
                     status = (int)b.Status, pizzo = b.WeeklyPizzo, defiance = b.Defiance, lastWeek = b.LastCollectedWeek,
-                    action = (int)b.PendingAction, closedUntil = b.ClosedUntil, counterDef = b.CounterDefId,
+                    action = (int)b.PendingAction, closedUntil = b.ClosedUntil, counterDef = b.CounterDefId, fitted = b.Fitted,
                 });
 
             foreach (var bp in game.Construction.All)
@@ -329,7 +329,7 @@ namespace OSistema.Core
                 od.businesses.Add(new BusinessData
                 {
                     x = b.Cell.x, y = b.Cell.y, name = b.Name, kind = (int)b.Kind, status = (int)b.Status, pizzo = b.WeeklyPizzo, defiance = b.Defiance,
-                    lastWeek = b.LastCollectedWeek, action = (int)b.PendingAction, closedUntil = b.ClosedUntil, counterDef = b.CounterDefId,
+                    lastWeek = b.LastCollectedWeek, action = (int)b.PendingAction, closedUntil = b.ClosedUntil, counterDef = b.CounterDefId, fitted = b.Fitted,
                 });
             foreach (var bp in d.Construction.All)
                 od.blueprints.Add(new BlueprintData { x = bp.Cell.x, y = bp.Cell.y, def = bp.Def.Id, deconstruct = bp.Deconstruct, work = bp.WorkLeft });
@@ -367,7 +367,7 @@ namespace OSistema.Core
                 {
                     Cell = new Vector2Int(b.x, b.y), Name = b.name, Kind = (ShopKind)b.kind, Status = (BusinessStatus)b.status,
                     WeeklyPizzo = b.pizzo, Defiance = b.defiance, LastCollectedWeek = b.lastWeek,
-                    PendingAction = (Retaliation)b.action, ClosedUntil = b.closedUntil, CounterDefId = b.counterDef,
+                    PendingAction = (Retaliation)b.action, ClosedUntil = b.closedUntil, CounterDefId = b.counterDef, Fitted = b.fitted,
                 });
             foreach (var bp in od.blueprints)
             {
@@ -438,6 +438,7 @@ namespace OSistema.Core
             game.Stock.ScooterColour = data.scooterColour;
             game.Stock.Cigarettes = data.cigarettes;
             game.Org.RestoreRank(data.rank);
+            game.Org.DressedRank = data.dressed;
             game.Contracts.Completed = data.jobsDone;
             var org = game.Org;
             org.Evidence = data.evidence;
@@ -486,6 +487,7 @@ namespace OSistema.Core
                     PendingAction = (Retaliation)b.action, ClosedUntil = b.closedUntil,
                     // Version 2 saves didn't store the counter: derive it from the map.
                     CounterDefId = !string.IsNullOrEmpty(b.counterDef) ? b.counterDef : map.GetBuilding(b.x, b.y)?.Id,
+                    Fitted = b.fitted,
                 });
             game.Stock.Groceries = data.groceries;
             game.Stock.Meals = data.meals;
@@ -668,6 +670,7 @@ namespace OSistema.Core
             public List<SquareData> squares = new List<SquareData>();
             public List<BusinessData> businesses = new List<BusinessData>();
             public int pistols, generation, hidingSinceDay, rank, jobsDone, clean, scooters, cigarettes, scooterModel, scooterColour;
+            public int dressed = -1;   // the rank the basso was done up for; older saves: not yet
             public float evidence, leakRisk;
             public bool warrant, hiding;
             public string rivalName, rivalBoss;
@@ -752,6 +755,7 @@ namespace OSistema.Core
             public long closedUntil;
             public string name, counterDef;
             public float defiance;
+            public int fitted = -1;   // older saves: never fitted by the planner, so they're refitted once
         }
 
         [Serializable]

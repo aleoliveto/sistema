@@ -270,6 +270,41 @@ namespace OSistema.World
             Beauty = beauty, Cover = cover, PlaceMode = PlaceMode.Single,
         };
 
+        // ---- Interiors: what the room planner furnishes homes and shops with (RoomPlanner) ----
+        static BuildingDef Deco(string id, string label, float beauty, int w = 1, int h = 1, bool passable = false) =>
+            Sized(Furniture(id, label, new Color32(140, 110, 80, 255), beauty, passable, cover: !passable), w, h);
+
+        public static readonly BuildingDef DoubleBed = Deco("double_bed", "Double bed", 2f, 2, 2, passable: true);
+        public static readonly BuildingDef CheckedTable = Deco("checked_table", "Kitchen table", 1.5f, 2, 1);
+        public static readonly BuildingDef Till = Deco("till", "Till", 0f);
+        public static readonly BuildingDef Newsstand = Deco("newsstand", "Newspapers", 0f);
+        public static readonly BuildingDef GreenSofa = Deco("green_sofa", "Sofa", 3f, 2, 1);
+        public static readonly BuildingDef SlotMachine = Deco("slot_machine", "Slot machine", 0f);
+        public static readonly BuildingDef CigStock = Deco("cig_stock", "Cigarette stock", 0f);
+        public static readonly BuildingDef ClothesRail = Deco("clothes_rail", "Clothes rail", 0.5f);
+        public static readonly BuildingDef CardTable = Deco("card_table", "Card table", 0.5f);
+        public static readonly BuildingDef DrinksFridge = Deco("drinks_fridge", "Drinks fridge", 0f);
+        public static readonly BuildingDef PartsBench = Deco("parts_bench", "Workbench", 0f);
+        public static readonly BuildingDef DiningChair = Deco("dining_chair", "Chair", 0.3f);
+        public static readonly BuildingDef Nightstand = Deco("nightstand", "Bedside table", 0.8f);
+        public static readonly BuildingDef Dresser = Deco("dresser", "Chest of drawers", 1.5f, 2, 1);
+        public static readonly BuildingDef Bookcase = Deco("bookcase", "Bookcase", 1.2f);
+        public static readonly BuildingDef WashingMachine = Deco("washing_machine", "Washing machine", 0.5f);
+        public static readonly BuildingDef FloorLamp = Deco("floor_lamp", "Lamp", 0.8f);
+        public static readonly BuildingDef BarStool = Deco("bar_stool", "Bar stool", 0f);
+        public static readonly BuildingDef WineRack = Deco("wine_rack", "Wine rack", 0.5f);
+        public static readonly BuildingDef FlourSacks = Deco("flour_sacks", "Sacks of flour", 0f);
+        public static readonly BuildingDef GlassVitrine = Deco("glass_vitrine", "Deli counter", 0f, 2, 1);
+        public static readonly BuildingDef PharmacyCabinet = Deco("pharmacy_cabinet", "Pharmacy shelves", 0f);
+        public static readonly BuildingDef JewelCase = Deco("jewel_case", "Jewellery case", 0f);
+        public static readonly BuildingDef DisplayTable = Deco("display_table", "Display table", 0f, 2, 1);
+        public static readonly BuildingDef BreadRack = Deco("bread_rack", "Bread rack", 0f);
+        public static readonly BuildingDef TyreStack = Deco("tyre_stack", "Tyres", 0f);
+        public static readonly BuildingDef Charred = Deco("charred", "Burned wreckage", -2f, passable: true);
+        public static readonly BuildingDef PottedPalm = Deco("potted_palm", "Palm", 1.5f);
+        public static readonly BuildingDef Sideboard = Deco("sideboard", "Sideboard", 2f, 2, 1);
+        public static readonly BuildingDef BurntShelf = Deco("burnt_shelf", "Burned shelves", -1f);
+
         public static readonly BuildingDef[] Buildable =
         {
             Wall, Door, Bed, Table, Stove, Pantry, Bunker,
@@ -288,6 +323,10 @@ namespace OSistema.World
             BaggingTable, RollingTable, MobiliCounter, LussoCounter,
             PizzaOven, CafeTable, ShopShelf, ClothesRack, FruitStall, IceCream, BinBags, Bicycle, Crates, PottedPlants,
             MotoCounter, PartSolid, PartSoft,
+            // Saves store a building as its place in this list: new ones go on the end, never between.
+            DoubleBed, CheckedTable, Till, Newsstand, GreenSofa, SlotMachine, CigStock, ClothesRail, CardTable, DrinksFridge,
+            PartsBench, DiningChair, Nightstand, Dresser, Bookcase, WashingMachine, FloorLamp, BarStool, WineRack, FlourSacks,
+            GlassVitrine, PharmacyCabinet, JewelCase, DisplayTable, BreadRack, TyreStack, Charred, PottedPalm, Sideboard, BurntShelf,
         };
 
         public static BuildingDef ById(string id)

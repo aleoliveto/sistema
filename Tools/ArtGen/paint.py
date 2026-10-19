@@ -94,11 +94,39 @@ class Canvas:
 
     # painting
     def fill(self, d, color, z0=0.0, height=4.0, profile="bevel", bevel=2.0, tex=None, gloss=0.0,
-             line=0.55, clip=None, add_z=False):
+             line=0.55, clip=None, add_z=False, front=0.0, front_tex=None):
         """
         Paint the shape d with color (rgb 0..1, or an HxWx3 array), sitting at z0 with its own
         height profile. tex multiplies the colour (HxW, around 1). clip: only where clip < 0.
+        front: pixels of front face to show below the top, as the painted art does (seen a
+        little from the front), in shade and darker towards the floor.
         """
+        if front > 0:
+            ds = d.copy()
+            n = int(round(front * self.ss))
+            for k in range(1, n + 1):
+                sh = np.full_like(d, 1e3)
+                sh[k:] = d[:-k]
+                ds = np.minimum(ds, sh)
+            fc = np.broadcast_to(np.asarray(color, np.float32), self.col.shape).copy() if np.ndim(color) == 1 else color.copy()
+            if front_tex is not None:
+                fc = fc * front_tex[..., None]
+            # how far down the face: 0 at the top edge, 1 at the floor
+            below = np.clip(-ds - 0.0, 0, None)
+            depth = np.zeros_like(d)
+            for k in range(1, n + 1):
+                sh = np.full_like(d, 1e3)
+                sh[k:] = d[:-k]
+                depth = np.where((sh < 0) & (depth == 0), k / n, depth)
+            fc = fc * (0.68 - 0.22 * depth)[..., None]
+            face = np.clip(0.5 - ds * self.ss, 0, 1) * (d >= -0.01)
+            m = face[..., None]
+            self.col = self.col * (1 - m) + fc * m
+            self.z = np.where(face > 0.5, z0, self.z)
+            self.gloss = self.gloss * (1 - face) + 0.05 * face
+            self.a = np.maximum(self.a, face)
+            band = np.clip(1 - np.abs(ds + 0.35) / 0.55, 0, 1) * face
+            self.line = np.maximum(self.line * (1 - face), band * line)
         cov = np.clip(0.5 - d * self.ss, 0, 1)
         if clip is not None:
             cov = cov * np.clip(0.5 - clip * self.ss, 0, 1)

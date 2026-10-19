@@ -24,6 +24,8 @@ namespace OSistema.Crime
         public string RankName => RankNames[Rank];
         public int MaxCrewForRank => Rank == 0 && Respect < FriendsRespect ? 1 : RankMaxCrew[Rank];
         public int FriendsJoined;
+        /// <summary>The rank the family basso was last done up for (Interiors).</summary>
+        public int DressedRank;
         public int MaxSquaresForRank => RankMaxSquares[Rank];
 
         /// <summary>What it takes to reach the next rank, for the HUD. Null at the top.</summary>

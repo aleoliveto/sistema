@@ -226,7 +226,10 @@ namespace OSistema.World
                         var door = new Vector2Int(west ? lot.xMin : lot.xMax - 1, lot.y + rng.Next(1, lot.height - 1));
                         BuildBuilding(map, lot, partitions: lot.width >= 8, door);
                         AddProperty(lot, door, PropertyKind.Home);
-                        Furnish(map, lot);
+                        // Most families get by; some barely; a few do well.
+                        double f = rng.NextDouble();
+                        var home = properties[properties.Count - 1];
+                        RoomPlanner.FurnishHome(map, home, f < 0.25 ? 0 : f < 0.7 ? 1 : f < 0.95 ? 2 : 3, RoomPlanner.SeedOf(home));
                         if (lot.width >= 6 && lot.height >= 5) shopLots.Add(lot);
                         if (lot.width >= 8 && lot.height >= 7 && lot.width <= 13 && lot.height <= 11) homeLots.Add(lot);
 
@@ -278,73 +281,6 @@ namespace OSistema.World
                 for (int y = lot.y + 1; y < lot.yMax - 1; y++)
                     map.SetBuilding(wx, y, y == doorY ? BuildingDefs.Door : BuildingDefs.Wall);
             }
-        }
-
-        /// <summary>Somebody lives here: beds, a table, a sofa and the TV, the kitchen, a plant, a rug.</summary>
-        void Furnish(Map map, RectInt lot)
-        {
-            // Only along the inside of the outer walls, never next to a door, so rooms stay walkable.
-            var spots = new List<Vector2Int>();
-            for (int y = lot.y + 1; y < lot.yMax - 1; y++)
-            for (int x = lot.x + 1; x < lot.xMax - 1; x++)
-            {
-                bool againstWall = x == lot.x + 1 || x == lot.xMax - 2 || y == lot.y + 1 || y == lot.yMax - 2;
-                if (!againstWall || map.GetBuilding(x, y) != null) continue;
-                bool nearDoor = false;
-                for (int dy = -1; dy <= 1 && !nearDoor; dy++)
-                for (int dx = -1; dx <= 1; dx++)
-                    if (map.GetBuilding(x + dx, y + dy) == BuildingDefs.Door) { nearDoor = true; break; }
-                if (!nearDoor) spots.Add(new Vector2Int(x, y));
-            }
-            for (int i = spots.Count - 1; i > 0; i--)
-            {
-                int j = rng.Next(i + 1);
-                (spots[i], spots[j]) = (spots[j], spots[i]);
-            }
-
-            var items = new List<BuildingDef> { BuildingDefs.Bed, BuildingDefs.Table, BuildingDefs.Wardrobe };
-            if (rng.NextDouble() < 0.6) items.Add(BuildingDefs.Bed);
-            if (rng.NextDouble() < 0.7) items.Add(BuildingDefs.Sofa);
-            if (rng.NextDouble() < 0.6) items.Add(BuildingDefs.Television);
-            if (rng.NextDouble() < 0.6) { items.Add(BuildingDefs.KitchenCounter); items.Add(BuildingDefs.Fridge); }
-            if (rng.NextDouble() < 0.5) items.Add(BuildingDefs.Plant);
-            if (rng.NextDouble() < 0.4) items.Add(BuildingDefs.HomeShrine);
-            if (rng.NextDouble() < 0.4) items.Add(BuildingDefs.Armchair);
-            int max = Mathf.Min(items.Count, spots.Count / 2); // leave some wall free
-            int next = 0;
-            for (int i = 0; i < max; i++)
-            {
-                // Big pieces (a bed is 1x2) try each free spot along the wall, either way round.
-                for (int k = next; k < spots.Count; k++)
-                {
-                    if (!FitsAwayFromDoors(map, items[i], spots[k], k % 2, lot) && !FitsAwayFromDoors(map, items[i], spots[k], (k + 1) % 2, lot)) continue;
-                    int rot = FitsAwayFromDoors(map, items[i], spots[k], k % 2, lot) ? k % 2 : (k + 1) % 2;
-                    Footprint.Place(map, items[i], spots[k], rot);
-                    (spots[k], spots[next]) = (spots[next], spots[k]);
-                    next++;
-                    break;
-                }
-            }
-
-            var mid = Vector2Int.RoundToInt(lot.center);
-            var rugAt = mid - Vector2Int.one;
-            if (rng.NextDouble() < 0.5 && FitsAwayFromDoors(map, BuildingDefs.Rug, rugAt, 0, lot))
-                Footprint.Place(map, BuildingDefs.Rug, rugAt, 0);
-        }
-
-        /// <summary>Fits inside the room, on free floor, and keeps clear of the doors so people can get in.</summary>
-        static bool FitsAwayFromDoors(Map map, BuildingDef d, Vector2Int anchor, int rot, RectInt lot)
-        {
-            var inner = new RectInt(lot.x + 1, lot.y + 1, lot.width - 2, lot.height - 2);
-            if (!Footprint.Fits(map, d, anchor, rot, indoors: true)) return false;
-            foreach (var c in Footprint.Cells(d, anchor, rot))
-            {
-                if (!inner.Contains(c)) return false;
-                for (int dy = -1; dy <= 1; dy++)
-                for (int dx = -1; dx <= 1; dx++)
-                    if (map.InBounds(c.x + dx, c.y + dy) && map.GetBuilding(c.x + dx, c.y + dy) == BuildingDefs.Door) return false;
-            }
-            return true;
         }
 
         void AddProperty(RectInt lot, Vector2Int door, PropertyKind kind)
@@ -546,18 +482,9 @@ namespace OSistema.World
             if (!map.InBounds(door.x - 1, door.y) || !map.IsPassable(door.x - 1, door.y) || map.GetTerrain(door.x - 1, door.y) == TerrainType.Floor)
                 door = new Vector2Int(lot.xMax - 1, lot.y + lot.height / 2);
             BuildBuilding(map, lot, partitions: false, door);
-            properties.Add(new Property { Rect = lot, Door = door, Kind = PropertyKind.Home, OwnedByPlayer = true, Name = "The family basso" });
-
-            // Beds against the back wall, heads to the wall.
-            for (int i = 0; i < 3 && lot.x + 2 + i * 2 < lot.xMax - 1; i++)
-                Footprint.Place(map, BuildingDefs.Bed, new Vector2Int(lot.x + 2 + i * 2, lot.yMax - 3), 0);
-            int kitchenX = door.x == lot.xMin ? lot.xMax - 2 : lot.xMin + 1;
-            map.SetBuilding(kitchenX, lot.y + 1, BuildingDefs.Stove);
-            map.SetBuilding(kitchenX, lot.y + 2, BuildingDefs.Pantry);
-            var mid = Vector2Int.RoundToInt(lot.center);
-            map.SetBuilding(mid.x, mid.y - 1, BuildingDefs.Table);
-            int shrineX = door.x == lot.xMin ? lot.xMin + 1 : lot.xMax - 2;
-            map.SetBuilding(shrineX, lot.y + 1, BuildingDefs.HomeShrine);
+            var home = new Property { Rect = lot, Door = door, Kind = PropertyKind.Home, OwnedByPlayer = true, Name = "The family basso" };
+            properties.Add(home);
+            RoomPlanner.FurnishFamily(map, home, RoomPlanner.SeedOf(home));
         }
 
         void PlaceShops(Map map)
@@ -612,62 +539,16 @@ namespace OSistema.World
         {
             var prop = properties.Find(p => p.Rect.Equals(lot));
             if (prop == null || prop.Kind == PropertyKind.Shop) return false;
-            var mid = Vector2Int.RoundToInt(lot.center);
-            if (map.GetTerrain(mid.x, mid.y) != TerrainType.Floor || map.GetBuilding(mid.x, mid.y) != null) return false;
-            foreach (var c in GridUtil.CellsAround(mid, 1))
-                if (map.GetBuilding(c) == BuildingDefs.Wall) return false;
-            // Out with the family's furniture: this is a shop now.
-            foreach (var c in GridUtil.Cells(prop.Interior, false))
+            // Out with the family's furniture: this is a shop now, fitted out for its trade.
+            int seed = RoomPlanner.SeedOf(prop);
+            var at = RoomPlanner.FitShop(map, prop, counter, 2, seed);
+            if (at == null)
             {
-                var b = map.GetBuilding(c.x, c.y);
-                if (b != null && b != BuildingDefs.Wall && b != BuildingDefs.Door) map.SetBuilding(c.x, c.y, null);
+                RoomPlanner.FurnishHome(map, prop, 1, seed);
+                return false;
             }
-            map.SetBuilding(mid.x, mid.y, counter);
             prop.Kind = PropertyKind.Shop;
-            FitOut(map, prop, counter, mid);
             return true;
-        }
-
-        /// <summary>Furnishes a shop for its trade: tables in a pizzeria, shelves in a salumeria, and so on.</summary>
-        void FitOut(Map map, Property prop, BuildingDef counter, Vector2Int mid)
-        {
-            BuildingDef[] items;
-            if (counter == BuildingDefs.PizzeriaCounter) items = new[] { BuildingDefs.PizzaOven, BuildingDefs.CafeTable, BuildingDefs.CafeTable, BuildingDefs.CafeTable, BuildingDefs.CafeTable, BuildingDefs.Fridge };
-            else if (counter == BuildingDefs.BarCounter) items = new[] { BuildingDefs.IceCream, BuildingDefs.CafeTable, BuildingDefs.CafeTable, BuildingDefs.CafeTable, BuildingDefs.Television, BuildingDefs.ShopShelf };
-            else if (counter == BuildingDefs.SalumeriaCounter) items = new[] { BuildingDefs.ShopShelf, BuildingDefs.ShopShelf, BuildingDefs.Pantry, BuildingDefs.FruitStall, BuildingDefs.Fridge };
-            else if (counter == BuildingDefs.TabaccheriaCounter) items = new[] { BuildingDefs.ShopShelf, BuildingDefs.ShopShelf, BuildingDefs.Plant };
-            else if (counter == BuildingDefs.FarmaciaCounter) items = new[] { BuildingDefs.ShopShelf, BuildingDefs.ShopShelf, BuildingDefs.ShopShelf, BuildingDefs.Plant };
-            else if (counter == BuildingDefs.MacelleriaCounter) items = new[] { BuildingDefs.Fridge, BuildingDefs.Fridge, BuildingDefs.KitchenCounter, BuildingDefs.KitchenCounter };
-            else if (counter == BuildingDefs.MobiliCounter) items = new[] { BuildingDefs.Sofa, BuildingDefs.Armchair, BuildingDefs.Bed, BuildingDefs.Wardrobe, BuildingDefs.Table, BuildingDefs.Rug };
-            else if (counter == BuildingDefs.MotoCounter) items = new[] { BuildingDefs.ParkedScooter, BuildingDefs.ParkedScooter, BuildingDefs.ParkedScooter, BuildingDefs.ParkedScooter, BuildingDefs.Crates };
-            else items = new[] { BuildingDefs.Safe, BuildingDefs.Rug, BuildingDefs.ClothesRack, BuildingDefs.Plant, BuildingDefs.Plant, BuildingDefs.Armchair };
-
-            var r = prop.Interior;
-            int placed = 0;
-            for (int y = r.yMin; y < r.yMax && placed < items.Length; y++)
-            for (int x = r.xMin; x < r.xMax && placed < items.Length; x++)
-            {
-                var c = new Vector2Int(x, y);
-                if (map.GetBuilding(x, y) != null || map.GetTerrain(x, y) != TerrainType.Floor) continue;
-                if ((c - mid).sqrMagnitude <= 2) continue;   // room in front of the counter
-                bool nearDoor = false;
-                foreach (var n in GridUtil.CellsAround(c, 1))
-                    if (map.InBounds(n) && map.GetBuilding(n) == BuildingDefs.Door) nearDoor = true;
-                if (nearDoor) continue;
-                // Tables and chairs in the room; shelves and fridges against the walls.
-                bool againstWall = x == r.xMin || x == r.xMax - 1 || y == r.yMin || y == r.yMax - 1;
-                var item = items[placed];
-                bool roomItem = item == BuildingDefs.Table || item == BuildingDefs.PlasticChair || item == BuildingDefs.Rug || item == BuildingDefs.CafeTable;
-                if (roomItem == againstWall && r.width > 3 && r.height > 3) continue;
-                if (Footprint.IsBig(item))
-                {
-                    int rot = FitsAwayFromDoors(map, item, c, 0, prop.Rect) ? 0 : FitsAwayFromDoors(map, item, c, 1, prop.Rect) ? 1 : -1;
-                    if (rot < 0) continue;
-                    Footprint.Place(map, item, c, rot);
-                }
-                else map.SetBuilding(x, y, item);
-                placed++;
-            }
         }
 
         // ---------- Street furniture ----------

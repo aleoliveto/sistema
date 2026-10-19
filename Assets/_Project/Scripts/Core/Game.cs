@@ -501,6 +501,7 @@ namespace OSistema.Core
             Favours.Hourly(this);
             Informants.Hourly(this);
             Newspaper.Hourly(this);
+            Interiors.Hourly(this);
         }
 
         /// <summary>Names and asking prices for every building, from its rione and its shop.</summary>

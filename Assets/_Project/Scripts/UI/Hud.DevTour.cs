@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using OSistema.Core;
+using OSistema.Crime;
 using OSistema.World;
 using UnityEngine;
 
@@ -13,6 +14,69 @@ namespace OSistema.UI
     public sealed partial class Hud
     {
         void StartUiTour() => StartCoroutine(UiTour());
+
+        void StartInteriorTour() => StartCoroutine(InteriorTour());
+
+        /// <summary>
+        /// Developer switch "interiors": roofs off, fog lifted, and a screenshot of the family basso,
+        /// a few homes and one shop of each trade (persistentDataPath/interiors); then one shop burned,
+        /// squeezed and made a front, to see the fortunes.
+        /// </summary>
+        IEnumerator InteriorTour()
+        {
+            string dir = Path.Combine(Application.persistentDataPath, "interiors");
+            Directory.CreateDirectory(dir);
+            foreach (var f in Directory.GetFiles(dir, "*.png")) File.Delete(f);
+            Application.runInBackground = true;
+            OSistema.Views.RoofView.DevOpenAll = true;
+            var fog = FindAnyObjectByType<OSistema.Views.FogOfWar>();
+            if (fog != null) fog.gameObject.SetActive(false);
+            yield return new WaitForSecondsRealtime(2f);
+            var cam = Camera.main;
+            int n = 0;
+            IEnumerator Shot(Property p, string name)
+            {
+                controller.StopFollowing();
+                var r = p.Rect;
+                cam.orthographicSize = Mathf.Max(r.height * 0.5f + 1f, (r.width * 0.5f + 1f) / cam.aspect);
+                cam.transform.position = new Vector3(r.center.x, r.center.y, cam.transform.position.z);
+                yield return new WaitForSecondsRealtime(0.7f);
+                cam.transform.position = new Vector3(r.center.x, r.center.y, cam.transform.position.z);
+                ScreenCapture.CaptureScreenshot(Path.Combine(dir, $"{n++:00}_{name}.png"));
+                yield return new WaitForSecondsRealtime(0.4f);
+            }
+            var home = game.Properties.At(Vector2Int.RoundToInt(game.PlayerBase.center));
+            if (home != null) yield return Shot(home, "family");
+            int homes = 0;
+            foreach (var p in game.Properties.All)
+            {
+                if (homes >= 4 || p.Kind != PropertyKind.Home || p.OwnedByPlayer || p.Interior.width * p.Interior.height > 100) continue;
+                if (homes > 0 && (p.Rect.center - (Vector2)game.PlayerBase.center).sqrMagnitude > 40 * 40) continue;
+                homes++;
+                yield return Shot(p, $"home_{homes}");
+            }
+            var seen = new HashSet<ShopKind>();
+            Business test = null;
+            foreach (var b in game.Org.Businesses)
+            {
+                if (!seen.Add(b.Kind)) continue;
+                var p = game.Properties.At(b.Cell);
+                if (p == null) continue;
+                test ??= b;
+                yield return Shot(p, $"shop_{b.Kind}");
+            }
+            if (test != null)
+            {
+                var p = game.Properties.At(test.Cell);
+                foreach (var (status, label) in new[] { (BusinessStatus.Closed, "burned"), (BusinessStatus.Paying, "squeezed"), (BusinessStatus.Owned, "front") })
+                {
+                    test.Status = status;
+                    Interiors.Hourly(game);
+                    yield return Shot(p, $"fortune_{test.Kind}_{label}");
+                }
+            }
+            Debug.Log($"[interiors] DONE {n} screenshots in {dir}");
+        }
 
         IEnumerator UiTour()
         {

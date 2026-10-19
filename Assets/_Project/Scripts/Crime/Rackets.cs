@@ -52,6 +52,7 @@ namespace OSistema.Crime
         public Retaliation PendingAction;
         public long ClosedUntil;
         public string CounterDefId;   // restored when a burned shop reopens
+        public int Fitted = 2;        // the fortune its interior was last fitted out for (Interiors.TierOf); -1: never
 
         public string StatusLabel => Status switch
         {

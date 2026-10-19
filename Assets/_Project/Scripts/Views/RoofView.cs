@@ -15,6 +15,9 @@ namespace OSistema.Views
         const int Tile = 32;   // roof texture pixels per cell: twice the ground's, for detail
         const float FadeSpeed = 4f;
 
+        /// <summary>For the dev interiors tour: every roof off.</summary>
+        public static bool DevOpenAll;
+
         sealed class Roof
         {
             public Property Property;     // null for buildings that aren't for sale (the Vele, odd corners)
@@ -439,7 +442,7 @@ namespace OSistema.Views
         {
             foreach (var r in roofs)
             {
-                bool open = r.Property != null && r.Property.OwnedByPlayer;
+                bool open = DevOpenAll || r.Property != null && r.Property.OwnedByPlayer;
                 if (!open)
                 {
                     foreach (var pawn in game.Pawns.Crew)

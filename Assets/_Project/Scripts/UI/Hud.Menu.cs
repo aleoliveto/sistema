@@ -272,6 +272,7 @@ namespace OSistema.UI
                 }
                 if (text.Contains("map") && game != null) { OSistema.Views.FogOfWar.RevealAllForTesting(); ToggleMap(); }
                 if (text.Contains("uitour") && game != null) StartUiTour();
+                if (text.Contains("interiors") && game != null) StartInteriorTour();
                 if (text.Contains("checks") && game != null) StartDevChecks();
                 return;
             }
