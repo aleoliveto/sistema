@@ -45,6 +45,7 @@ namespace OSistema.UI
             worldLayer.Clear();
             tags.Clear();
             bubbles.Clear();
+            actions.Clear();   // the bars went with the layer: build new ones
         }
 
         Label NextTag()

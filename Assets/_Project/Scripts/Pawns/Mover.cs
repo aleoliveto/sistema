@@ -84,6 +84,24 @@ namespace OSistema.Pawns
             return true;
         }
 
+        /// <summary>
+        /// If the mover is wedged against a wall (getting off a scooter hard by a wall), steps it out
+        /// to the nearest spot where it fits.
+        /// </summary>
+        public void Unstick(Map map, float radius = 0.28f)
+        {
+            if (Free(Position, map, radius, false)) return;
+            for (float r = 0.15f; r <= 2.5f; r += 0.15f)
+            for (int k = 0; k < 16; k++)
+            {
+                float a = k * Mathf.PI / 8f;
+                var at = Position + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r;
+                if (!Free(at, map, radius, false)) continue;
+                Place(at);
+                return;
+            }
+        }
+
         /// <summary>Puts the mover exactly somewhere (a passenger on the back of a scooter).</summary>
         public void Place(Vector2 pos)
         {

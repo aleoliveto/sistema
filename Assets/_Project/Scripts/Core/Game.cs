@@ -497,6 +497,7 @@ namespace OSistema.Core
             socialHour = hour;
             if (first) return;
             Phone.Hourly(this);
+            Pawns.ClearBodies(this);
             foreach (var d in Districts) if (d != District) d.LedgerHour(this);
             Favours.Hourly(this);
             Informants.Hourly(this);

@@ -358,6 +358,8 @@ namespace OSistema.Input
                     {
                         var pawn = PawnAt(ScreenToWorld(mousePos));
                         if (pawn != null && !Selected.Contains(pawn)) Selected.Add(pawn);
+                        // Clicking one of your own: what can be done for or with them, in a menu.
+                        if (pawn != null && pawn.Faction == Faction.Crew && !pawn.Dead) hud.ShowPersonMenu(pawn, mousePos);
                         // Clicking a building (that the crew knows about) shows it in the inspector.
                         SelectedProperty = null;
                         if (pawn == null && OSistema.Views.FogOfWar.HasExplored(start))
@@ -776,6 +778,7 @@ namespace OSistema.Input
                 p.Riding = p.OnScooter = false;
                 p.Velocity = Vector2.zero;
                 p.ScooterSpeed = 0f;
+                p.Mover.Unstick(game.Map);   // off by a wall: step clear of it
                 return;
             }
             int inUse = 0;
@@ -907,14 +910,16 @@ namespace OSistema.Input
                 if (owner != null && p.Bed != bed) return new Action { Label = $"{owner.Nickname}'s bed (assign beds in Famiglia)", Do = () => { } };
                 return new Action { Label = "Sleep", Do = () => { p.Bed = bed; p.LastInputTick = -1000000; p.ForceJob(new SleepJob(p, bed, null), game); } };
             }
-            if (game.Stock.Medicine > 0 && Healing.NeedsCare(p) && InOwnedHome(p.Cell))
-                return new Action { Label = $"Treat your wounds ({game.Stock.Medicine} medicine)", Do = () => Healing.WithMedicine(game, p) };
             if (game.Stock.Meals > 0 && p.Needs.Food < 0.8f && Near(p, BuildingDefs.Pantry, out var pantry) && InOwnedHome(pantry))
                 return new Action { Label = "Eat something", Do = () => { p.LastInputTick = -1000000; p.ForceJob(new EatJob(p, pantry, atShop: false), game); } };
             // No meals left but groceries in the pantry: cook them yourself (two meals each).
             if (game.Stock.Groceries > 0 && game.Stock.Cook == null && game.Stock.Meals < 4 &&
                 Near(p, BuildingDefs.Stove, out var stove) && InOwnedHome(stove))
                 return new Action { Label = $"Cook a meal ({game.Stock.Groceries} groceries in)", Do = () => { p.LastInputTick = -1000000; p.ForceJob(new CookJob(p, stove, game), game); } };
+
+            // Wounds: only when nothing more specific is to hand (click yourself for every option).
+            if (game.Stock.Medicine > 0 && Healing.NeedsCare(p) && InOwnedHome(p.Cell))
+                return new Action { Label = $"Treat your wounds ({game.Stock.Medicine} medicine)", Do = () => Healing.WithMedicine(game, p) };
 
             var corner = game.Org.DealingCorner;
             if (corner != null) return new Action { Label = "Leave the corner", Do = () => game.Org.StopDealing(game) };

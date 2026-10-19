@@ -96,7 +96,7 @@ namespace OSistema.Views
                 // Blood sprays out the far side, the way the bullet was going.
                 for (int i = 0; i < 9; i++)
                     Spawn(shot.To, dir * (1.5f + Random.value * 3f) + Random.insideUnitCircle * 1.2f, 0.25f + Random.value * 0.3f, BloodColor, 0.07f + Random.value * 0.09f, 0f, true);
-                Decal(shot.To + dir * (0.3f + Random.value * 0.4f), 0.35f + Random.value * 0.3f);
+                Decal(shot.To + dir * (0.3f + Random.value * 0.4f), 0.55f + Random.value * 0.3f);
                 SoundManager.PlayAt(AudioSynth.HitFlesh, shot.To, 0.55f);
             }
             else
@@ -188,8 +188,11 @@ namespace OSistema.Views
             active.Add(new Fx { Sprite = sr, Velocity = velocity, Born = Time.unscaledTime, Life = life, Color = color, Fade = fade });
         }
 
-        // Blood stays on the basolato. The oldest stains fade away eventually.
-        void Decal(Vector2 at, float size)
+        // Blood on the basolato: irregular splashes, not circles. It darkens and dries over a day,
+        // fades over the next two, and the rain washes it off within the hour.
+        readonly Dictionary<SpriteRenderer, (long born, float alpha)> stains = new Dictionary<SpriteRenderer, (long, float)>();
+
+        void Decal(Vector2 at, float size, bool pool = false)
         {
             SpriteRenderer sr;
             if (decals.Count >= MaxDecals) sr = decals.Dequeue();
@@ -198,19 +201,55 @@ namespace OSistema.Views
                 var go = new GameObject("Blood");
                 go.transform.SetParent(transform, false);
                 sr = go.AddComponent<SpriteRenderer>();
-                sr.sprite = SpriteFactory.Disc;
                 sr.sharedMaterial = SpriteFactory.LitMaterial;
                 sr.sortingOrder = 2;
             }
+            sr.gameObject.SetActive(true);
+            sr.sprite = pool ? BloodSprites.Pool : BloodSprites.Splash;
             sr.transform.position = at;
             sr.transform.rotation = Quaternion.Euler(0f, 0f, Random.value * 360f);
-            sr.transform.localScale = new Vector3(size, size * (0.6f + Random.value * 0.4f), 1f);
-            sr.color = new Color(0.4f, 0.02f, 0.02f, 0.85f);
+            sr.transform.localScale = new Vector3(size, size * (0.75f + Random.value * 0.35f), 1f);
+            float alpha = pool ? 0.8f : 0.7f;
+            sr.color = new Color(0.45f, 0.03f, 0.03f, alpha);
+            stains[sr] = (game != null ? game.Ticks.TicksGame : 0, alpha);
             decals.Enqueue(sr);
         }
 
         /// <summary>A pool of blood under someone who's down.</summary>
-        public void Pool(Vector2 at) => Decal(at, 0.9f);
+        public void Pool(Vector2 at) => Decal(at, 0.75f, pool: true);
+
+        float stainTimer;
+
+        void AgeStains()
+        {
+            if (game == null) return;
+            stainTimer += Time.unscaledDeltaTime;
+            if (stainTimer < 0.5f) return;
+            stainTimer = 0f;
+            long now = game.Ticks.TicksGame;
+            float rain = game.Weather.Rain;
+            float day = OSistema.Core.GameClock.TicksPerDay;
+            var gone = new List<SpriteRenderer>();
+            foreach (var kv in stains)
+            {
+                var sr = kv.Key;
+                if (sr == null) { gone.Add(sr); continue; }
+                float age = (now - kv.Value.born) / day;                         // in days
+                float fade = age < 1f ? 1f - age * 0.35f : Mathf.Max(0f, 0.65f - (age - 1f) * 0.33f);
+                // Rain washes it away: each tick of rain takes some of it.
+                float washed = rain > 0.15f ? Mathf.Clamp01(1f - rain * 0.02f) : 1f;
+                var c = sr.color;
+                // Dried blood goes brown.
+                float dry = Mathf.Clamp01(age);
+                c.r = Mathf.Lerp(0.45f, 0.28f, dry);
+                c.g = Mathf.Lerp(0.03f, 0.06f, dry);
+                c.b = Mathf.Lerp(0.03f, 0.04f, dry);
+                c.a = Mathf.Min(c.a * washed, kv.Value.alpha * fade);
+                sr.color = c;
+                if (c.a < 0.03f) { sr.gameObject.SetActive(false); gone.Add(sr); }
+            }
+            foreach (var sr in gone) stains.Remove(sr);
+        }
 
         void MuzzleLight(Vector2 at)
         {
@@ -245,6 +284,7 @@ namespace OSistema.Views
 
         void LateUpdate()
         {
+            AgeStains();
             float now = Time.unscaledTime;
             float dt = Time.unscaledDeltaTime;
             for (int i = active.Count - 1; i >= 0; i--)

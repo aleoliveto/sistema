@@ -83,7 +83,8 @@ namespace OSistema.Pawns
 
         /// <summary>Focus-fire order from the player (crew) or the mission (rivals).</summary>
         public Pawn ForcedTarget;
-        public long OnOperationUntil;    // on a stesa or a hit: shoots at the other side's people on sight
+        public long OnOperationUntil;
+        public long DiedTick;    // on a stesa or a hit: shoots at the other side's people on sight
 
         /// <summary>
         /// Fighting health, Warzone-style: bullets take armour first, then health. Health comes back

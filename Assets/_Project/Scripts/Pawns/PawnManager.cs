@@ -95,6 +95,7 @@ namespace OSistema.Pawns
         {
             if (pawn.Dead) return;
             pawn.Die(cause, game);
+            pawn.DiedTick = game.Ticks.TicksGame;
 
             var zone = game.Territory.ZoneAt(pawn.Cell);
             game.Newspaper.Report(game, 4, $"Shot dead in {zone?.Name ?? "the rione"}",
@@ -112,6 +113,22 @@ namespace OSistema.Pawns
                 if (!other.IsPresent) continue;
                 other.Mood.AddMemory($"death_{pawn.Id}", $"{pawn.Nickname} died", -15f, now, GameClock.TicksPerDay * 3);
                 if (other.TendedBy == pawn) other.TendedBy = null;
+            }
+        }
+
+        /// <summary>
+        /// The dead don't stay in the street: a few hours later the body is taken away (the police for
+        /// a stranger, the family for one of its own, with a funeral the next morning).
+        /// </summary>
+        public void ClearBodies(Game game)
+        {
+            long now = game.Ticks.TicksGame;
+            foreach (var p in pawns)
+            {
+                if (!p.Dead || p.Departed || now - p.DiedTick < GameClock.TicksPerHour * 3) continue;
+                p.Departed = true;
+                if (p.Faction == Faction.Crew)
+                    game.Log.Add($"{p.Nickname}'s body has been taken to the chapel. The funeral is tomorrow at the parish church.", MessageKind.Info);
             }
         }
 
