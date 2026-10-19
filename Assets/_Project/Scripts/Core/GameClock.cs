@@ -4,10 +4,10 @@ namespace OSistema.Core
 {
     public enum DayPhase { Night, Morning, Afternoon, Evening }
 
-    /// <summary>In-game calendar derived from the tick count. A day is 60,000 ticks (~17 real minutes at 1x).</summary>
+    /// <summary>In-game calendar derived from the tick count. A day is 90,000 ticks (25 real minutes at 1x).</summary>
     public sealed class GameClock
     {
-        public const int TicksPerDay = 60000;
+        public const int TicksPerDay = 90000;
         public const int TicksPerHour = TicksPerDay / 24;
         const int StartHour = 8;
 

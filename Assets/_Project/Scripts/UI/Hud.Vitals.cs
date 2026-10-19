@@ -15,7 +15,7 @@ namespace OSistema.UI
         Label vitalsName, vitalsState, statusTitle, statusText;
         Button statusButton, statusButton2;
 
-        Label vHealth, vFood, vRest, vBreath, vAmmo;
+        Label vHealth, vFood, vRest, vBreath, vAmmo, vArmor;
 
         void BuildVitals()
         {
@@ -24,6 +24,7 @@ namespace OSistema.UI
             topBar.Insert(1, vitals);
             vitalsName = Ui.Text("", vitals, "tiny");
             vHealth = VitalChip(vitals, "♥", "#F07A6E");
+            vArmor = VitalChip(vitals, "VEST", "#9DB8D8");
             vFood = VitalChip(vitals, "FAME", "#F2B866");
             vRest = VitalChip(vitals, "SONNO", "#8FB4F0");
             vBreath = VitalChip(vitals, "FIATO", "#D8D4C8");
@@ -84,8 +85,11 @@ namespace OSistema.UI
             vitalsName.text = "";
             vitalsState.text = (p.Riding ? "ON THE SCOOTER" : game.Org.DealingCorner != null ? "DEALING" : game.Org.CarriedDg > 0 ? $"CARRYING {game.Org.CarriedDg / 10} G" : p.Carrying != null ? $"CARRYING {p.Carrying.ToUpper()}" : "")
                 + (p.Autopilot ? "  · AUTO" : "");
-            float health = 1f - Mathf.Max(p.Health.BloodLoss / 0.6f, p.Health.Pain / 0.8f);
-            vHealth.text = Pct(health);
+            // Health: the worse of the fight (hit points) and the body (blood lost, pain).
+            float health = Mathf.Min(1f - Mathf.Max(p.Health.BloodLoss / 0.6f, p.Health.Pain / 0.8f), p.Hp / Pawn.MaxHp);
+            vHealth.text = health < 0.3f ? $"<color=#F07A6E>{Pct(health)}</color>" : health < 0.6f ? $"<color=#F2B866>{Pct(health)}</color>" : Pct(health);
+            vArmor.parent.Show(p.Armor > 0.5f);
+            vArmor.text = Pct(p.Armor / Pawn.MaxArmor);
             vFood.text = Pct(p.Needs.Food);
             vRest.text = Pct(p.Needs.Rest);
             vBreath.text = p.Winded ? "<color=#F07A6E>out of breath</color>" : Pct(p.Stamina);

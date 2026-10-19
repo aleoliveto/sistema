@@ -166,13 +166,10 @@ namespace OSistema.UI
             float a = (1f - hp) * 0.75f + damageFlash * 0.4f;
             damageOverlay.style.opacity = Mathf.Clamp01(a);
 
+            // Health and the vest live in the top bar now (Hud.Vitals); only the hurt arrow is built here.
             if (combatBar == null) BuildCombatBar();
-            combatBar.Show(p != null && p.IsPresent);
+            combatBar.Show(false);
             if (p == null) return;
-            armorFill.parent.Show(p.Armor > 0.5f);
-            armorFill.style.width = Length.Percent(p.Armor / Pawn.MaxArmor * 100f);
-            healthFill.style.width = Length.Percent(hp * 100f);
-            healthFill.style.backgroundColor = hp > 0.5f ? new Color(0.95f, 0.95f, 0.92f) : hp > 0.25f ? new Color(0.95f, 0.65f, 0.3f) : new Color(0.9f, 0.2f, 0.18f);
 
             // Where the shot came from: an arrow round the middle of the screen, fading.
             hurtArrowTime = Mathf.MoveTowards(hurtArrowTime, 0f, Time.unscaledDeltaTime * 1.2f);

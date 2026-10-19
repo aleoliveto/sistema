@@ -1,3 +1,4 @@
+using OSistema.Core;
 using UnityEngine;
 
 namespace OSistema.Pawns
@@ -11,10 +12,11 @@ namespace OSistema.Pawns
         public const float ExhaustedBelow = 0.1f;
 
         // Per-tick rates. A day is 60,000 ticks.
-        const float FoodDecay = 1f / 105000f;      // empty in ~1.75 days: two good meals a day keep you going
-        const float RestDecay = 1f / 56000f;       // awake for ~0.9 days
-        const float RestInBed = 1f / 18000f;       // a full night's sleep is ~7 hours
-        const float RestOnFloor = 1f / 26000f;
+        // In days, so the body keeps time with the clock however long a day lasts.
+        const float FoodDecay = 1f / (1.75f * GameClock.TicksPerDay);      // empty in ~1.75 days: two good meals a day keep you going
+        const float RestDecay = 1f / (0.93f * GameClock.TicksPerDay);      // awake for ~0.9 days
+        const float RestInBed = 1f / (0.3f * GameClock.TicksPerDay);       // a full night's sleep is ~7 hours
+        const float RestOnFloor = 1f / (0.433f * GameClock.TicksPerDay);
 
         public float Food = 0.8f;
         public float Rest = 0.9f;

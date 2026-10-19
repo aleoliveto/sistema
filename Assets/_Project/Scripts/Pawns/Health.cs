@@ -22,7 +22,7 @@ namespace OSistema.Pawns
     public sealed class Health
     {
         public const string MalnutritionLabel = "Malnutrition";
-        const float PerDay = 1f / 60000f;
+        const float PerDay = 1f / OSistema.Core.GameClock.TicksPerDay;
 
         public readonly List<Injury> Injuries = new List<Injury>();
         public float BloodLoss;
