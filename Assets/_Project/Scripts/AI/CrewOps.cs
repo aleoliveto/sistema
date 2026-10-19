@@ -83,7 +83,20 @@ namespace OSistema.AI
         public override bool Tick(Game game)
         {
             long now = game.Ticks.TicksGame;
-            if (target == null || !target.IsPresent || target.Health.Downed || target.Dead || Pawn.Health.Pain > 0.5f || ++ticks > GameClock.TicksPerHour * 4)
+            // Down but not dead: walk up and finish it. Nobody leaves a witness breathing.
+            if (target != null && !target.Dead && target.Health.Downed && Pawn.Health.Pain <= 0.5f)
+            {
+                float dd = (target.Position - Pawn.Position).magnitude;
+                if (dd < 1.8f)
+                {
+                    game.Combat.Execute(Pawn, target, game);
+                    return false;
+                }
+                if (walker == null || (walker.Target - target.Cell).sqrMagnitude > 1) walker = new Walker(target.Cell, adjacent: true) { Flexible = true };
+                if (walker.Tick(Pawn, game) == WalkStatus.Failed) walker = null;
+                return false;
+            }
+            if (target == null || !target.IsPresent || target.Dead || Pawn.Health.Pain > 0.5f || ++ticks > GameClock.TicksPerHour * 4)
             {
                 Pawn.ForcedTarget = null;
                 Pawn.OnOperationUntil = 0;

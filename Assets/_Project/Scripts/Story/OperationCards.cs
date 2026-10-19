@@ -73,27 +73,42 @@ namespace OSistema.Story
             return e.Option("Not now", "", g => { });
         }
 
-        static GameEvent Hitman(RivalClan clan, bool boss, Game game)
+        /// <summary>
+        /// The hit squad, picked one by one: he'll have bodyguards (two, for a boss), so send at least
+        /// as many. Riding two to a scooter.
+        /// </summary>
+        static GameEvent Hitman(RivalClan clan, bool boss, Game game, System.Collections.Generic.List<Pawn> squad = null)
         {
+            squad ??= new System.Collections.Generic.List<Pawn>();
+            int guards = boss ? 2 : 1;
             var e = new GameEvent
             {
                 Id = "hitman",
-                Title = "Who does it?",
-                English = "He'll have a bodyguard. Send someone who can shoot.",
-                Body = Gunmen(game).Any() ? "" : "Nobody armed and free.",
+                Title = squad.Count == 0 ? "Who goes?" : $"The squad: {string.Join(", ", squad.Select(s => s.Nickname))}",
+                English = squad.Count == 0 ? $"He'll have {guards} bodyguard{(guards > 1 ? "s" : "")}. Send at least as many guns." : "Anyone else?",
+                Body = Gunmen(game).Any(c => !squad.Contains(c)) ? "" : "Nobody else armed and free.",
             };
             foreach (var c in Gunmen(game))
             {
+                if (squad.Contains(c)) continue;
                 var hitman = c;
                 e.Option($"{hitman.DisplayName} · shooting {hitman.ShootingSkill} · loyalty {hitman.Loyalty:0}", "", g =>
                 {
-                    var target = clan.ExposeTarget(boss, g);
-                    if (target == null) { g.Log.Add("Nobody knows where to find him today.", MessageKind.Bad); return; }
-                    hitman.ForceJob(new CrewHitJob(hitman, target), g);
-                    g.Log.Add($"Word is {(boss ? clan.BossName : "one of the " + clan.Name + "'s lieutenants")} is in {g.Territory.ZoneAt(target.Cell)?.Name ?? "their rione"}. {hitman.Nickname} goes for him.", MessageKind.Info, target.Cell);
+                    var next = new System.Collections.Generic.List<Pawn>(squad) { hitman };
+                    if (next.Count >= 4) Launch(clan, boss, next, g);
+                    else g.Events.Raise(Hitman(clan, boss, g, next));
                 });
             }
-            return e.Option("Nobody", "", g => { });
+            if (squad.Count > 0) e.Option($"Go: {squad.Count} of them", squad.Count <= guards ? "Even odds at best." : "", g => Launch(clan, boss, squad, g));
+            return e.Option("Call it off", "", g => { });
+        }
+
+        static void Launch(RivalClan clan, bool boss, System.Collections.Generic.List<Pawn> squad, Game g)
+        {
+            var target = clan.ExposeTarget(boss, g);
+            if (target == null) { g.Log.Add("Nobody knows where to find him today.", MessageKind.Bad); return; }
+            foreach (var h in squad) h.ForceJob(new CrewHitJob(h, target), g);
+            g.Log.Add($"Word is {(boss ? clan.BossName : "one of the " + clan.Name + "'s lieutenants")} is in {g.Territory.ZoneAt(target.Cell)?.Name ?? "their rione"}. {string.Join(", ", squad.Select(s => s.Nickname))} go for him.", MessageKind.Info, target.Cell);
         }
 
         public const int InfoPrice = 250;

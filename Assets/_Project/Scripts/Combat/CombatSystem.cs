@@ -189,11 +189,11 @@ namespace OSistema.Combat
         /// </summary>
         public static float SpreadFor(Pawn p, bool moving, bool running)
         {
-            float s = Mathf.Max(1.2f, 6.5f - 0.5f * p.ShootingSkill);
-            if (moving) s += running ? 9f : 3.5f;
-            if (p.Riding) s += 6f;
-            s += p.Health.Pain * 10f + p.Bloom;
-            return Mathf.Min(s, 25f);
+            float s = Mathf.Max(0.8f, 4f - 0.35f * p.ShootingSkill);
+            if (moving) s += running ? 6f : 2.5f;
+            if (p.Riding) s += 4f;
+            s += p.Health.Pain * 7f + p.Bloom * 0.7f;
+            return Mathf.Min(s, 16f);
         }
 
         /// <summary>The player was hit, from this direction: the screen flashes red.</summary>
@@ -234,6 +234,8 @@ namespace OSistema.Combat
             foreach (var p in game.Pawns.All)
             {
                 if (p == shooter || !p.IsPresent || p.Dead) continue;
+                // No friendly fire: your bullets pass your own people by.
+                if (p.Faction == shooter.Faction) continue;
                 if (Along(from, dir, p.Position, best, out float t)) { best = t; hitPawn = p; }
             }
             foreach (var n in game.Npcs.All)
@@ -492,6 +494,15 @@ namespace OSistema.Combat
         /// Is something solid between the target and the shooter, right next to the target?
         /// Walls, cars, trees, benches, stalls… Shooting from point blank ignores cover.
         /// </summary>
+        /// <summary>The last shot, point blank, into someone already down.</summary>
+        public void Execute(Pawn shooter, Pawn target, Game game)
+        {
+            Shot?.Invoke(new ShotEvent(shooter.Position, target.Position, true, false));
+            Fired(shooter.Position, game);
+            game.Territory.AddHeat(target.Cell, 10f);
+            game.Pawns.Kill(target, "a bullet to the head", game);
+        }
+
         public static bool IsInCover(Map map, Vector2Int target, Vector2 shooter)
         {
             var toShooter = shooter - Mover.CellCenter(target);

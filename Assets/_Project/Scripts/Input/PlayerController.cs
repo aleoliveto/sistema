@@ -553,7 +553,7 @@ namespace OSistema.Input
         void HandlePlayer(Keyboard kb, Mouse mouse, Vector2 mousePos, bool overUi)
         {
             var p = game.Player;
-            if (p == null || !p.CanAct || game.Org.Hiding) { Aiming = false; aimLine.enabled = false; return; }
+            if (p == null || !p.CanAct || game.Org.Hiding) { Aiming = false; aimLine.enabled = false; if (reticle != null) reticle.enabled = false; return; }
             long now = game.Ticks.TicksGame;
 
             var dir = Vector2.zero;
@@ -637,6 +637,7 @@ namespace OSistema.Input
             Aiming = mouse.rightButton.isPressed && !overUi && CurrentTool == Tool.Select;
             p.AimPoint = Aiming ? (Vector2)ScreenToWorld(mousePos) : (Vector2?)null;
             aimLine.enabled = Aiming;
+            if (reticle != null && !Aiming) reticle.enabled = false;
             p.Bloom = Mathf.MoveTowards(p.Bloom, 0f, 12f * dt);
             // Home, out of the fight: a fresh vest under the jacket.
             if (p.Armor < Pawn.MaxArmor && game.PlayerBase.Contains(p.Cell) && game.Ticks.TicksGame - p.LastDamagedTick > 600) p.Armor = Pawn.MaxArmor;
@@ -656,25 +657,32 @@ namespace OSistema.Input
                 var col = !p.Armed ? new Color(1f, 0.9f, 0.6f, 0.6f) : reloading || p.Ammo == 0 ? new Color(0.6f, 0.6f, 0.6f, 0.5f) : new Color(1f, 0.25f, 0.2f, 0.75f);
                 aimLine.startColor = col;
                 aimLine.endColor = new Color(col.r, col.g, col.b, 0.12f);
-                // Armed: a cone showing where the bullet can go. It tightens when you stand still.
+                // A straight line to where you aim, and a ring there: as big as the scatter at that range.
                 var origin = p.Position;
-                var d = (to - origin).normalized;
                 float len = (to - origin).magnitude;
+                aimLine.positionCount = 2;
+                aimLine.SetPosition(0, origin);
+                aimLine.SetPosition(1, to);
+                if (reticle == null)
+                {
+                    reticle = new GameObject("Reticle").AddComponent<LineRenderer>();
+                    reticle.sharedMaterial = OSistema.Views.SpriteFactory.UnlitMaterial;
+                    reticle.loop = true;
+                    reticle.positionCount = 24;
+                    reticle.widthMultiplier = 0.03f;
+                    reticle.sortingOrder = 30;
+                    reticle.useWorldSpace = true;
+                }
+                reticle.enabled = p.Armed;
                 if (p.Armed)
                 {
-                    float a = spread * Mathf.Deg2Rad;
-                    var left = new Vector2(d.x * Mathf.Cos(a) - d.y * Mathf.Sin(a), d.x * Mathf.Sin(a) + d.y * Mathf.Cos(a));
-                    var right = new Vector2(d.x * Mathf.Cos(-a) - d.y * Mathf.Sin(-a), d.x * Mathf.Sin(-a) + d.y * Mathf.Cos(-a));
-                    aimLine.positionCount = 3;
-                    aimLine.SetPosition(0, origin + left * len);
-                    aimLine.SetPosition(1, origin);
-                    aimLine.SetPosition(2, origin + right * len);
-                }
-                else
-                {
-                    aimLine.positionCount = 2;
-                    aimLine.SetPosition(0, origin);
-                    aimLine.SetPosition(1, to);
+                    float r = Mathf.Max(0.12f, Mathf.Tan(spread * Mathf.Deg2Rad) * len);
+                    reticle.startColor = reticle.endColor = col;
+                    for (int i = 0; i < 24; i++)
+                    {
+                        float ang = i * Mathf.PI * 2f / 24f;
+                        reticle.SetPosition(i, new Vector3(to.x + Mathf.Cos(ang) * r, to.y + Mathf.Sin(ang) * r, 0f));
+                    }
                 }
             }
             if (Aiming)
@@ -702,6 +710,7 @@ namespace OSistema.Input
         }
 
         float lockedHintUntil;
+        LineRenderer reticle;
 
         void StartReload(Pawn p)
         {
