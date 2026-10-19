@@ -10,15 +10,11 @@ namespace OSistema.Views
     /// </summary>
     public sealed class LaundryView : MonoBehaviour
     {
-        static readonly Color[] Clothes =
-        {
-            new Color(0.95f, 0.95f, 0.92f), new Color(0.85f, 0.3f, 0.3f), new Color(0.3f, 0.45f, 0.75f),
-            new Color(0.95f, 0.8f, 0.3f), new Color(0.6f, 0.8f, 0.9f), new Color(0.9f, 0.6f, 0.75f),
-            new Color(0.4f, 0.65f, 0.4f),
-        };
-
         /// <summary>How high the lines are strung, in cells: two floors up.</summary>
         const float Height = 2.6f;
+
+        /// <summary>Painted garments in Resources/Laundry (laundry_00 ...), from Tools/ArtGen/laundry.py.</summary>
+        const int GarmentCount = 16;
 
         readonly List<(Transform t, float phase)> swaying = new List<(Transform, float)>();
 
@@ -49,14 +45,30 @@ namespace OSistema.Views
             HeightShadow.Add(line, Height, 0.22f);
             var parts = new List<SpriteRenderer> { line };
 
-            for (float x = x0 + 0.25f; x < x1 - 0.1f; x += 0.35f + (float)rng.NextDouble() * 0.3f)
+            float x = x0 + 0.2f;
+            while (x < x1 - 0.15f)
             {
-                var color = Clothes[rng.Next(Clothes.Length)];
-                var size = new Vector2(0.18f + (float)rng.NextDouble() * 0.16f, 0.22f + (float)rng.NextDouble() * 0.2f);
-                var garment = Part(new Vector2(x, yPos - size.y / 2f), size, color, Overhead.Order + 1);
-                swaying.Add((garment.transform, (float)rng.NextDouble() * 6.28f));
+                // A painted garment, pegged at its top edge and swinging from there.
+                var art = PropArt.Load($"Laundry/laundry_{rng.Next(GarmentCount):00}");
+                if (art == null) break;
+                var size = new Vector2(art.texture.width, art.texture.height) / 128f;   // drawn at 128 px a cell
+                if (x + size.x > x1 + 0.1f) break;
+                var pivot = new GameObject("Peg").transform;
+                pivot.SetParent(transform, false);
+                pivot.position = new Vector3(x + size.x / 2f, yPos, 0f);
+                var go = new GameObject("Garment");
+                go.transform.SetParent(pivot, false);
+                go.transform.localPosition = new Vector3(0f, -size.y / 2f + 0.03f, 0f);
+                float s = Mathf.Max(size.x, size.y);
+                go.transform.localScale = new Vector3(s, s, 1f);
+                var garment = go.AddComponent<SpriteRenderer>();
+                garment.sprite = art;
+                garment.sharedMaterial = SpriteFactory.LitMaterial;
+                garment.sortingOrder = Overhead.Order + 1;
+                swaying.Add((pivot, (float)rng.NextDouble() * 6.28f));
                 HeightShadow.Add(garment, Height - 0.3f);
                 parts.Add(garment);
+                x += size.x + 0.04f + (float)rng.NextDouble() * 0.12f;
             }
             Overhead.Register(new Rect(x0, yPos - 0.6f, x1 - x0, 0.7f), parts.ToArray());
         }

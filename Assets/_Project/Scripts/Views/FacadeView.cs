@@ -12,7 +12,7 @@ namespace OSistema.Views
     /// </summary>
     public sealed class FacadeView : MonoBehaviour
     {
-        const float FaceTop = 12f / 32f;   // the painted south face is the bottom 12 px of the cell (TilePainter)
+        const float FaceTop = TilePainter.FaceHeight / (float)TilePainter.Hi;   // the painted south face (TilePainter)
 
         Map map;
         readonly Dictionary<int, List<GameObject>> built = new Dictionary<int, List<GameObject>>();
@@ -71,7 +71,7 @@ namespace OSistema.Views
             var list = new List<GameObject>();
             bool green = TilePainter.Noise(x, y, 97) < 0.6f, open = TilePainter.Noise(x, y, 98) < 0.6f;
             var window = Sprite(list, $"Facade/facade_window_{(green ? "green" : "brown")}_{(open ? "open" : "shut")}",
-                new Vector2(x + 0.5f, y + FaceTop * 0.55f), 1);
+                new Vector2(x + 0.5f, y + FaceTop * 0.62f), 1);
             if (window == null) return;
 
             // A balcony over the lane, if there's lane under it.

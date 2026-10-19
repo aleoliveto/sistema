@@ -16,6 +16,10 @@ Shader "OSistema/MapLit"
         _Mat8("Cotto", 2D) = "grey" {}
         _Mat9("Cement tiles", 2D) = "grey" {}
         _Mat10("Plaster", 2D) = "grey" {}
+        _Mat11("Grass", 2D) = "grey" {}
+        _Mat12("Earth", 2D) = "grey" {}
+        _Mat13("Floor tiles", 2D) = "grey" {}
+        _Mat14("Marble", 2D) = "grey" {}
         _Period("Cells per repeat", Float) = 8
         [HideInInspector] _Color("Tint", Color) = (1,1,1,1)
     }
@@ -66,6 +70,10 @@ Shader "OSistema/MapLit"
             TEXTURE2D(_Mat8);
             TEXTURE2D(_Mat9);
             TEXTURE2D(_Mat10);
+            TEXTURE2D(_Mat11);
+            TEXTURE2D(_Mat12);
+            TEXTURE2D(_Mat13);
+            TEXTURE2D(_Mat14);
 
             CBUFFER_START(UnityPerMaterial)
                 half4 _Color;
@@ -83,34 +91,42 @@ Shader "OSistema/MapLit"
                 return o;
             }
 
-            half3 Ground(int id, float2 w)
+            half3 Ground(int id, float2 uv, float2 dx, float2 dy)
             {
-                float2 uv = w / _Period;
-                // One sampler for all: same settings (repeat, trilinear).
-                if (id == 1) return SAMPLE_TEXTURE2D(_Mat1, sampler_Mat1, uv).rgb;
-                if (id == 2) return SAMPLE_TEXTURE2D(_Mat2, sampler_Mat1, uv).rgb;
-                if (id == 3) return SAMPLE_TEXTURE2D(_Mat3, sampler_Mat1, uv).rgb;
-                if (id == 4) return SAMPLE_TEXTURE2D(_Mat4, sampler_Mat1, uv).rgb;
-                if (id == 5) return SAMPLE_TEXTURE2D(_Mat5, sampler_Mat1, uv).rgb;
-                if (id == 6) return SAMPLE_TEXTURE2D(_Mat6, sampler_Mat1, uv).rgb;
-                if (id == 7) return SAMPLE_TEXTURE2D(_Mat7, sampler_Mat1, uv).rgb;
-                if (id == 8) return SAMPLE_TEXTURE2D(_Mat8, sampler_Mat1, uv).rgb;
-                if (id == 9) return SAMPLE_TEXTURE2D(_Mat9, sampler_Mat1, uv).rgb;
-                return SAMPLE_TEXTURE2D(_Mat10, sampler_Mat1, uv).rgb;
+                // One sampler for all (same settings: repeat, trilinear), one result.
+                half3 r = half3(0.5, 0.5, 0.5);
+                [branch] if (id == 1) r = SAMPLE_TEXTURE2D_GRAD(_Mat1, sampler_Mat1, uv, dx, dy).rgb;
+                else if (id == 2) r = SAMPLE_TEXTURE2D_GRAD(_Mat2, sampler_Mat1, uv, dx, dy).rgb;
+                else if (id == 3) r = SAMPLE_TEXTURE2D_GRAD(_Mat3, sampler_Mat1, uv, dx, dy).rgb;
+                else if (id == 4) r = SAMPLE_TEXTURE2D_GRAD(_Mat4, sampler_Mat1, uv, dx, dy).rgb;
+                else if (id == 5) r = SAMPLE_TEXTURE2D_GRAD(_Mat5, sampler_Mat1, uv, dx, dy).rgb;
+                else if (id == 6) r = SAMPLE_TEXTURE2D_GRAD(_Mat6, sampler_Mat1, uv, dx, dy).rgb;
+                else if (id == 7) r = SAMPLE_TEXTURE2D_GRAD(_Mat7, sampler_Mat1, uv, dx, dy).rgb;
+                else if (id == 8) r = SAMPLE_TEXTURE2D_GRAD(_Mat8, sampler_Mat1, uv, dx, dy).rgb;
+                else if (id == 9) r = SAMPLE_TEXTURE2D_GRAD(_Mat9, sampler_Mat1, uv, dx, dy).rgb;
+                else if (id == 10) r = SAMPLE_TEXTURE2D_GRAD(_Mat10, sampler_Mat1, uv, dx, dy).rgb;
+                else if (id == 11) r = SAMPLE_TEXTURE2D_GRAD(_Mat11, sampler_Mat1, uv, dx, dy).rgb;
+                else if (id == 12) r = SAMPLE_TEXTURE2D_GRAD(_Mat12, sampler_Mat1, uv, dx, dy).rgb;
+                else if (id == 13) r = SAMPLE_TEXTURE2D_GRAD(_Mat13, sampler_Mat1, uv, dx, dy).rgb;
+                else r = SAMPLE_TEXTURE2D_GRAD(_Mat14, sampler_Mat1, uv, dx, dy).rgb;
+                return r;
             }
 
             half4 Frag(Varyings i) : SV_Target
             {
                 half4 c = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv);
+                // Derivatives outside any branch, for the materials' mip level.
+                float2 guv = i.world / _Period;
+                float2 gdx = ddx(guv), gdy = ddy(guv);
                 int id = (int)round((1.0 - c.a) * 255.0);
                 if (id > 0 && id < 16)
                 {
                     // The light was written as sRGB grey (128 = as lit); in a linear project it
                     // arrives converted, so divide by what 128 becomes, not by a half.
                     #ifdef UNITY_COLORSPACE_GAMMA
-                    c.rgb = Ground(id, i.world) * c.rgb * 2.0;
+                    c.rgb = Ground(id, guv, gdx, gdy) * c.rgb * 2.0;
                     #else
-                    c.rgb = Ground(id, i.world) * c.rgb / 0.21586;
+                    c.rgb = Ground(id, guv, gdx, gdy) * c.rgb / 0.21586;
                     #endif
                     c.a = 1.0;
                 }

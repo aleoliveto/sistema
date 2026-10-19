@@ -225,8 +225,8 @@ namespace OSistema.Views
         {
             // Quick reject: no building mass within reach.
             bool near = false;
-            for (int dy = -2; dy <= 0 && !near; dy++)
-            for (int dx = -2; dx <= 0 && !near; dx++)
+            for (int dy = -3; dy <= 0 && !near; dy++)
+            for (int dx = -3; dx <= 0 && !near; dx++)
                 if ((dx != 0 || dy != 0) && Mass(map, x + dx, y + dy)) near = true;
             if (!near) return;
 
@@ -235,14 +235,14 @@ namespace OSistema.Views
             {
                 int gx = x * sz + px, gy = y * sz + py;
                 int hits = 0;
-                for (int s = 1; s <= 4; s++)
+                for (int s = 1; s <= 6; s++)   // tall palazzi: the shadow reaches well across the lane
                 {
                     int d = s * 6 * sz / Size;
                     int cx = (gx - d) / sz, cy = (gy - (d * 3) / 4) / sz;
                     if (Mass(map, cx, cy)) hits++;
                 }
                 if (hits == 0) continue;
-                float f = 1f - 0.11f * hits;    // up to ~45% darker, softer further out
+                float f = 1f - 0.075f * hits;   // up to ~45% darker, softer further out
                 int i = (oy + py) * stride + ox + px;
                 var c = buf[i];
                 // Shadows are a little cooler than the sunlit stone.

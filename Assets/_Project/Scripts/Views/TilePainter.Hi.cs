@@ -11,6 +11,9 @@ namespace OSistema.Views
     {
         public const int Hi = 32;
 
+        /// <summary>Pixels (of 32) of a wall cell given to its south face: tall palazzi show a lot of face.</summary>
+        public const int FaceHeight = 20;
+
         static readonly Color32[] Full16 = new Color32[Size * Size];
         static readonly Color32[] Bare16 = new Color32[Size * Size];
 
@@ -32,7 +35,7 @@ namespace OSistema.Views
             bool indoor = Indoor(terrain);
             for (int py = 0; py < Hi; py++)
             for (int px = 0; px < Hi; px++)
-                buf[(oy + py) * stride + ox + px] = indoor || terrain == TerrainType.Water
+                buf[(oy + py) * stride + ox + px] = terrain == TerrainType.Water
                     ? TerrainPixel(map, terrain, x, y, px / 2, py / 2, style)
                     : TerrainPixelHi(map, terrain, x, y, px, py);
             AmbientOcclusion(map, x, y, buf, stride, ox, oy, Hi);
@@ -99,7 +102,8 @@ namespace OSistema.Views
         // Baked ground materials (Resources/Ground, drawn by OSistema/MapLit): the pixel carries only
         // light (grey 128 = as lit) and, in alpha, which material goes under it.
         public const byte GroundAsphalt = 1, GroundBasoli = 2, GroundKerbH = 3, GroundKerbV = 4, GroundSlabs = 5,
-            GroundCoppi = 6, GroundTar = 7, GroundCotto = 8, GroundCement = 9, GroundPlaster = 10;
+            GroundCoppi = 6, GroundTar = 7, GroundCotto = 8, GroundCement = 9, GroundPlaster = 10,
+            GroundGrass = 11, GroundEarth = 12, GroundTiles = 13, GroundMarble = 14;
 
         /// <summary>A baked material tinted: the plaster takes each building's colour. Half the tint reads as the tint, as lit.</summary>
         public static Color32 Tinted(byte id, Color32 tint, float light)
@@ -153,20 +157,18 @@ namespace OSistema.Views
                 case TerrainType.Paving:
                     return Ground(GroundSlabs, 1f);
                 case TerrainType.Grass:
+                    return Ground(GroundGrass, 1f);
+                case TerrainType.Floor:
                 {
-                    float clump = Smooth(gx / 6f, gy / 6f, 81);
-                    var c = Shade(new Color32(70, 104, 52, 255), 0.75f + 0.4f * clump);
-                    if (N(gx, gy, 82) < 0.2f) c = Shade(c, 1.2f + 0.2f * fine);    // blades catching the light
-                    if (Smooth(gx / 18f, gy / 18f, 83) > 0.72f) c = Mix(c, new Color32(120, 104, 70, 255), 0.5f); // worn to dirt
-                    return c;
+                    // Glazed tiles in the home's two colours, a checker of half-cell tiles.
+                    byte style = map.GetStyle(x, y);
+                    bool alt = ((gx / 16) + (gy / 16)) % 2 == 0;
+                    return TilePainter.Tinted(GroundTiles, alt ? FloorA[style % FloorA.Length] : FloorB[style % FloorB.Length], 1.05f);
                 }
+                case TerrainType.Marble:
+                    return Ground(GroundMarble, 1f);
                 default:
-                {
-                    // Packed earth with pebbles.
-                    var c = Shade(new Color32(116, 100, 78, 255), 0.84f + 0.24f * Smooth(gx / 5f, gy / 5f, 84) + 0.06f * fine);
-                    if (N(gx, gy, 85) < 0.025f) c = new Color32(150, 140, 124, 255);
-                    return c;
-                }
+                    return Ground(GroundEarth, 1f);   // packed earth with grit and pebbles
             }
         }
 
@@ -218,7 +220,7 @@ namespace OSistema.Views
             var plaster = Facades[style % Facades.Length];
             bool wallN = IsWallish(map, x, y + 1), wallS = IsWallish(map, x, y - 1);
             bool wallE = IsWallish(map, x + 1, y), wallW = IsWallish(map, x - 1, y);
-            const int faceH = 12;   // the south face, seen at an angle
+            const int faceH = FaceHeight;   // the south face, seen at an angle
 
             for (int py = 0; py < Hi; py++)
             for (int px = 0; px < Hi; px++)
@@ -231,7 +233,7 @@ namespace OSistema.Views
                     // The south face, in shade: baked plaster in the building's colour (streaks,
                     // peeling to tuff), on a base of grey piperno, under the shadow of the cornice.
                     c = TilePainter.Tinted(GroundPlaster, plaster, 0.66f);
-                    if (py < 3) c = Ground(GroundKerbH, 0.7f);
+                    if (py < 4) c = Ground(GroundKerbH, 0.7f);
                     if (py == faceH - 1) c = TilePainter.Tinted(GroundPlaster, plaster, 0.48f);
                 }
                 else

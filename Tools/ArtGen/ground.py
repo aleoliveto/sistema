@@ -299,11 +299,77 @@ def plaster():
     return light(np.clip(col, 0, 1.2) * 0.98, z, 0.03)
 
 
+def grass():
+    """Unkempt grass in a courtyard garden: clumps, blades catching the sun, bare worn patches."""
+    clump = fbm(xx, yy, 32, 4, 101)
+    blades = tnoise(xx, yy, 512, 102)
+    col = C(74, 112, 52) * (0.7 + 0.45 * clump)[..., None]
+    col = col * (0.8 + 0.35 * blades)[..., None]
+    dry = smooth(0.55, 0.75, fbm(xx, yy, 8, 3, 103)) * 0.45
+    col = col * (1 - dry)[..., None] + C(150, 136, 82) * dry[..., None]
+    worn = smooth(0.74, 0.8, fbm(xx, yy, 4, 3, 104))
+    col = col * (1 - worn)[..., None] + C(124, 106, 80) * (0.85 + 0.2 * blades)[..., None] * worn[..., None]
+    flowers = (tnoise(xx, yy, 512, 105) > 0.965) * (1 - worn)
+    col = np.where(flowers[..., None] > 0, C(236, 226, 120), col)
+    z = blades * 1.6 + clump * 2 - worn * 1.5
+    return light(col, z, 0.04)
+
+
+def earth():
+    """Packed earth with grit and pebbles, rutted by feet and wheels."""
+    base = C(124, 106, 82) * (0.82 + 0.3 * fbm(xx, yy, 16, 4, 111))[..., None]
+    grit = tnoise(xx, yy, 512, 112)
+    col = base * (0.88 + 0.22 * grit)[..., None]
+    peb = smooth(0.82, 0.86, tnoise(xx, yy, 256, 113))
+    col = col * (1 - peb)[..., None] + C(168, 158, 140) * (0.8 + 0.3 * grit)[..., None] * peb[..., None]
+    damp = smooth(0.6, 0.8, fbm(xx, yy, 8, 3, 114)) * 0.2
+    col = col * (1 - damp)[..., None]
+    z = grit * 0.8 + peb * 2.5
+    return light(col, z, 0.03)
+
+
+def tiles():
+    """Glazed floor tiles of an old basso, nearly white: the game tints them per home (half-cell grid)."""
+    n = 16
+    s = P / n
+    tx, ty = np.floor(xx / s), np.floor(yy / s)
+    lx, ly = xx - tx * s, yy - ty * s
+    tx, ty = tx % n, ty % n
+    d = np.minimum(np.minimum(lx, s - lx), np.minimum(ly, s - ly))
+    col = np.ones((N, N, 3), np.float32) * (0.93 + 0.08 * hsh(tx, ty, 121))[..., None]
+    col = col * (1 + (fbm(xx, yy, 128, 3, 122) - 0.5) * 0.08)[..., None]
+    wear = smooth(0.55, 0.85, fbm(xx, yy, 8, 3, 123)) * 0.12
+    col = col * (1 - wear)[..., None]
+    chip = (tnoise(xx, yy, 512, 124) > 0.97) * 0.25
+    col = col * (1 - chip)[..., None]
+    grout = 1 - smooth(0.6, 2.2, d)
+    col = col * (1 - 0.45 * grout)[..., None]
+    z = 1.2 * smooth(0, 3, d)
+    return light(col, z, 0.35 * (1 - wear * 4), grout * 0.15)
+
+
+def marble():
+    """Polished white marble in big slabs, grey veins."""
+    n = 8
+    s = P / n
+    tx, ty = np.floor(xx / s), np.floor(yy / s)
+    lx, ly = xx - tx * s, yy - ty * s
+    d = np.minimum(np.minimum(lx, s - lx), np.minimum(ly, s - ly))
+    v = fbm(xx, yy, 8, 5, 131)
+    vein = np.exp(-np.abs(v - 0.5) * 60) * 0.35 + np.exp(-np.abs(fbm(xx, yy, 16, 4, 132) - 0.5) * 90) * 0.2
+    col = C(232, 228, 220) * (0.95 + 0.06 * hsh(tx % n, ty % n, 133))[..., None]
+    col = col * (1 - vein)[..., None] + C(120, 120, 126) * vein[..., None]
+    joint = 1 - smooth(0.5, 1.5, d)
+    col = col * (1 - 0.3 * joint)[..., None]
+    return light(col, 0.6 * smooth(0, 2, d), 0.7)
+
+
 if __name__ == "__main__":
     out = sys.argv[1]
     os.makedirs(out, exist_ok=True)
     for name, fn in (("basoli", basoli), ("asphalt", asphalt), ("kerb_h", lambda: kerb(True)),
                      ("kerb_v", lambda: kerb(False)), ("slabs", slabs), ("coppi", coppi), ("tar", tar),
-                     ("cotto", cotto), ("cement", cement), ("plaster", plaster)):
+                     ("cotto", cotto), ("cement", cement), ("plaster", plaster),
+                     ("grass", grass), ("earth", earth), ("tiles", tiles), ("marble", marble)):
         save(fn(), os.path.join(out, f"ground_{name}.png"))
         print(name)
