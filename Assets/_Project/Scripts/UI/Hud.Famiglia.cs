@@ -26,7 +26,6 @@ namespace OSistema.UI
         string rosterSearch = "";
         Pawn famPerson;
         bool searchTyping, searchHooked;
-        bool navBossView, navBuilt;
 
         /// <summary>From Clan up the family is an organisation, and Famiglia shows it as one.</summary>
         bool BossView => game != null && game.Org.Rank >= 2;
@@ -34,7 +33,41 @@ namespace OSistema.UI
         /// <summary>Typing in a search box: the keys aren't for the game.</summary>
         public bool Typing => searchTyping;
 
-        string TabTitle(BizTab t) => t == BizTab.Overview ? (BossView ? "Dashboard" : "Casa") : TabName(t);
+        string TabTitle(BizTab t) => TabName(t);
+
+        /// <summary>
+        /// The three screens on the left, each with its own button on the bottom bar: Casa (how things
+        /// stand, the stash, the money), Famiglia (the people and who answers to whom) and Piazza (the
+        /// street: piazze, pizzo, neighbours, clans). Each holds a few tabs of the one sidebar.
+        /// </summary>
+        enum FamSection { Casa, Famiglia, Piazza }
+
+        static FamSection SectionOf(BizTab t) => t switch
+        {
+            BizTab.Overview or BizTab.Supply or BizTab.Property => FamSection.Casa,
+            BizTab.Crew or BizTab.Organigram => FamSection.Famiglia,
+            _ => FamSection.Piazza,
+        };
+
+        static BizTab FirstTab(FamSection s) => s switch
+        {
+            FamSection.Casa => BizTab.Overview,
+            FamSection.Famiglia => BizTab.Crew,
+            _ => BizTab.Piazze,
+        };
+
+        Icon famIcon;
+        Label famTitle;
+
+        bool SectionOpen(FamSection s) => openWindow == Window.Business && SectionOf(bizTab) == s;
+
+        /// <summary>The bottom bar's Casa, Famiglia and Piazza buttons: open that screen, or close it if it's showing.</summary>
+        void OpenSection(FamSection s)
+        {
+            if (SectionOpen(s)) { ToggleWindow(Window.Business); return; }
+            if (openWindow != Window.Business) ToggleWindow(Window.Business);
+            OpenBizTab(FirstTab(s));
+        }
 
         void OpenFamigliaRoster()
         {
@@ -59,20 +92,25 @@ namespace OSistema.UI
         void RefreshNavOrder()
         {
             bool boss = BossView;
-            famSubtitle.text = boss ? $"{game.Org.RankName} · the organisation, its capi and its turf" : $"{game.Org.RankName} · your guagliuni and your home";
+            var section = SectionOf(bizTab);
+            famTitle.text = section switch { FamSection.Casa => "CASA", FamSection.Famiglia => "FAMIGLIA", _ => "PIAZZA" };
+            famIcon.Set(section switch { FamSection.Casa => IconKind.House, FamSection.Famiglia => IconKind.Business, _ => IconKind.Product });
+            famSubtitle.text = section switch
+            {
+                FamSection.Casa => boss ? $"{game.Org.RankName} · the organisation at a glance, the stash, the money" : $"{game.Org.RankName} · how things stand, the stash, the money",
+                FamSection.Famiglia => boss ? "Your people, the capi, and who answers to whom" : "Your guagliuni: jobs, wages, beds",
+                _ => "The street: piazze, pizzo, the neighbours and the clans",
+            };
             bool organigram = game.Org.Squares.Count > 0 || boss;
+            int shown = 0;
             foreach (var kv in bizTabButtons)
             {
                 bizTabStatus[kv.Key].text = TabName(kv.Key);
-                kv.Value.Show(kv.Key != BizTab.Organigram || organigram);
+                bool show = SectionOf(kv.Key) == section && (kv.Key != BizTab.Organigram || organigram);
+                kv.Value.Show(show);
+                if (show) shown++;
             }
-            if (navBuilt && navBossView == boss) return;
-            navBuilt = true;
-            navBossView = boss;
-            var order = boss
-                ? new[] { BizTab.Overview, BizTab.Organigram, BizTab.Piazze, BizTab.Crew, BizTab.Property, BizTab.Rivals, BizTab.Pizzo, BizTab.Supply, BizTab.Favours }
-                : new[] { BizTab.Overview, BizTab.Crew, BizTab.Supply, BizTab.Organigram, BizTab.Piazze, BizTab.Property, BizTab.Pizzo, BizTab.Favours, BizTab.Rivals };
-            foreach (var t in order) bizTabButtons[t].BringToFront();
+            bizNav.Show(shown > 1);
         }
 
         // ---------- Search box (read straight from the keyboard, like the name fields) ----------

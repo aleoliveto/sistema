@@ -31,12 +31,13 @@ namespace OSistema.UI
             // Sections as tabs along the top; their order follows the family's rank.
             businessWindow = Ui.Box("panel", "sidebar", "fit").Into(hudLayer);
             var header = Ui.Box("window__header", "panel-head").Into(businessWindow);
-            new Icon(IconKind.Business, 30).Into(header).AddToClassList("panel-head__icon");
+            famIcon = new Icon(IconKind.Business, 30).Into(header);
+            famIcon.AddToClassList("panel-head__icon");
             var titles = Ui.Box("col", "grow").Into(header);
-            Ui.Text("FAMIGLIA", titles, "panel-head__title");
+            famTitle = Ui.Text("FAMIGLIA", titles, "panel-head__title");
             famSubtitle = Ui.Text("", titles, "panel-head__tagline");
             Ui.Btn("✕", () => ToggleWindow(Window.Business), header, "btn--small");
-            Tip(header, () => "Tab to close");
+            Tip(header, () => "Esc to close");
 
             bizNav = Ui.Box("sidebar__nav").Into(businessWindow);
             foreach (BizTab tab in System.Enum.GetValues(typeof(BizTab)))
@@ -160,15 +161,15 @@ namespace OSistema.UI
 
         string TabName(BizTab t) => t switch
         {
-            BizTab.Overview => BossView ? "Dashboard" : "Casa",
-            BizTab.Crew => "People",
+            BizTab.Overview => BossView ? "Dashboard" : "Overview",
+            BizTab.Crew => "Crew",
             BizTab.Organigram => "Organigram",
             BizTab.Piazze => "Piazze",
             BizTab.Pizzo => "Pizzo",
-            BizTab.Supply => "Goods & gear",
-            BizTab.Property => "Property & money",
-            BizTab.Favours => "Favours",
-            _ => "Rivals",
+            BizTab.Supply => "Stash",
+            BizTab.Property => "Money & property",
+            BizTab.Favours => "Neighbours",
+            _ => "Clans",
         };
 
         static string TabBlurb(BizTab t) => t switch

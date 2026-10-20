@@ -1383,3 +1383,22 @@
 }
 .art-icon { -unity-background-scale-mode: scale-to-fit; flex-shrink: 0; }
 .stat__icon.art-icon { margin-right: 10px; }
+
+/* v5.1: near-black everywhere; gold only on rims, icons and text */
+.btn--on, .btn:active, .pill--on { color: #F2CF7A; }
+.root .btn--on .tab__label, .root .pill--on, .root .sidebar__tab--on .sidebar__tabname { color: #F2CF7A; }
+.root .btn--on .tab__sub { color: #B9A57A; }
+.roster-row { background-color: rgba(0, 0, 0, 0.35); border-color: rgba(201, 160, 84, 0.12); }
+.roster-row:hover { background-color: rgba(0, 0, 0, 0.5); border-color: rgba(227, 184, 98, 0.45); }
+.roster-row--on { background-color: rgba(0, 0, 0, 0.55); border-color: #E3B862; }
+.field--click:hover { background-color: rgba(0, 0, 0, 0.45); }
+.crew-card { background-color: rgba(10, 8, 6, 0.95); }
+.crew-card--selected { background-color: rgba(10, 8, 6, 0.98); border-color: #E3B862; }
+.goal, .toast, .vitals-bar, .root .crew-bar__head { background-color: rgba(10, 8, 6, 0.95); }
+.rank-card { background-color: rgba(0, 0, 0, 0.4); }
+.attention { background-color: rgba(0, 0, 0, 0.35); }
+.stat-card { background-color: rgba(0, 0, 0, 0.4); }
+.org-node, .org-team, .org-chip { background-color: rgba(0, 0, 0, 0.35); }
+.org-node--boss { background-color: rgba(0, 0, 0, 0.5); }
+.bcard { background-color: rgba(0, 0, 0, 0.35); }
+.hotbar { background-color: rgb(10, 8, 6); }

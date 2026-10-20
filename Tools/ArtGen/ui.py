@@ -147,8 +147,8 @@ def panel_frame():
     """160 px square; slice 28 px each side. Dark worn leather inside, a gilded double rule and corner bosses."""
     S = 160
     c = Canvas(S, S)
-    leather = (0.92 + 0.12 * fbm(c.x, c.y, 26, 3, 21)) * grime(c, 0.18, 30, 22)
-    c.fill(c.box(S / 2, S / 2, S - 4, S - 4, 6), C(24, 19, 14), z0=0, height=1, profile="bevel", bevel=6, tex=leather, line=0.0)
+    leather = (0.94 + 0.08 * fbm(c.x, c.y, 26, 3, 21)) * grime(c, 0.1, 30, 22)
+    c.fill(c.box(S / 2, S / 2, S - 4, S - 4, 6), C(13, 11, 9), z0=0, height=1, profile="bevel", bevel=6, tex=leather, line=0.0)
     rule = cut(c.box(S / 2, S / 2, S - 10, S - 10, 5), c.box(S / 2, S / 2, S - 20, S - 20, 3))
     c.fill(rule, GOLD, z0=1, height=3, profile="dome", bevel=3, tex=gilt(c, 23, 0.95), gloss=0.7, line=0.5)
     hair = cut(c.box(S / 2, S / 2, S - 30, S - 30, 3), c.box(S / 2, S / 2, S - 34, S - 34, 2))
@@ -160,21 +160,19 @@ def panel_frame():
 
 
 def button(state):
-    """96x64; slice 16 px. normal: dark with a gold edge; hover: warmer; active: gold."""
+    """96x64; slice 16 px. Near-black inside always; normal: a dim gold edge; hover: brighter; active: a bright double rim."""
     W, H = 96, 64
     c = Canvas(W, H)
+    base = C(16, 13, 10) if state == "normal" else C(24, 19, 14) if state == "hover" else C(28, 21, 13)
+    tex = (0.95 + 0.06 * fbm(c.x, c.y, 18, 2, 33)) * (1.12 - 0.3 * smooth(0, H, c.y))
+    c.fill(c.box(W / 2, H / 2, W - 4, H - 4, 5), base, z0=0, height=2, profile="bevel", bevel=5, tex=tex, gloss=0.1, line=0.0)
+    rim = 4 if state == "active" else 3
+    edge = cut(c.box(W / 2, H / 2, W - 4, H - 4, 5), c.box(W / 2, H / 2, W - 4 - rim * 2, H - 4 - rim * 2, 4))
+    tone = {"normal": 0.62, "hover": 0.9, "active": 1.15}[state]
+    c.fill(edge, GOLD, z0=2, height=2, profile="dome", bevel=2, tex=gilt(c, 34, tone), gloss=0.7, line=0.3)
     if state == "active":
-        fillc = C(206, 156, 74)
-        tex = gilt(c, 31) * (1.08 - 0.25 * smooth(0, H, c.y))
-        c.fill(c.box(W / 2, H / 2, W - 4, H - 4, 5), fillc, z0=0, height=3, profile="bevel", bevel=5, tex=tex, gloss=0.6, line=0.6)
-        c.fill(cut(c.box(W / 2, H / 2, W - 10, H - 10, 3), c.box(W / 2, H / 2, W - 13, H - 13, 2)), C(250, 222, 150), z0=3, height=1, profile="flat", line=0.0)
-    else:
-        base = C(30, 24, 17) if state == "normal" else C(48, 37, 23)
-        tex = (0.95 + 0.08 * fbm(c.x, c.y, 18, 2, 33)) * (1.12 - 0.3 * smooth(0, H, c.y))
-        c.fill(c.box(W / 2, H / 2, W - 4, H - 4, 5), base, z0=0, height=2, profile="bevel", bevel=5, tex=tex, gloss=0.1, line=0.0)
-        edge = cut(c.box(W / 2, H / 2, W - 4, H - 4, 5), c.box(W / 2, H / 2, W - 8, H - 8, 4))
-        tone = 0.7 if state == "normal" else 1.0
-        c.fill(edge, GOLD, z0=2, height=2, profile="dome", bevel=2, tex=gilt(c, 34, tone), gloss=0.6, line=0.3)
+        hair = cut(c.box(W / 2, H / 2, W - 16, H - 16, 3), c.box(W / 2, H / 2, W - 19, H - 19, 2))
+        c.fill(hair, C(240, 200, 120), z0=1, height=1, profile="flat", line=0.0)
     return c.render(shadow=False)
 
 
@@ -183,7 +181,7 @@ def bar_strip():
     S = 64
     c = Canvas(S, S)
     tex = (0.95 + 0.08 * fbm(c.x, c.y, 20, 3, 41)) * (1.15 - 0.4 * smooth(0, S, c.y))
-    c.fill(c.box(S / 2, S / 2, S + 8, S + 8), C(26, 20, 14), z0=0, height=0, profile="flat", tex=tex, line=0.0)
+    c.fill(c.box(S / 2, S / 2, S + 8, S + 8), C(14, 12, 9), z0=0, height=0, profile="flat", tex=tex, line=0.0)
     c.fill(c.box(S / 2, S - 4, S + 8, 3), GOLD, z0=1, height=2, profile="dome", bevel=1.5, tex=gilt(c, 42, 0.9), gloss=0.6, line=0.2)
     return c.render(shadow=False)
 

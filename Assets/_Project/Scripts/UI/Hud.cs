@@ -240,7 +240,7 @@ namespace OSistema.UI
                 if (!typing)
                 {
                     if (kb.hKey.wasPressedThisFrame || kb.f1Key.wasPressedThisFrame) ToggleWindow(Window.Help);
-                    if (kb.tabKey.wasPressedThisFrame) ToggleWindow(Window.Business);
+                    if (kb.tabKey.wasPressedThisFrame) OpenSection(FamSection.Famiglia);
                     if (kb.bKey.wasPressedThisFrame) ToggleBuildMode();
                     if (kb.jKey.wasPressedThisFrame) ToggleWindow(Window.Jobs);
                     if (kb.pKey.wasPressedThisFrame) ToggleWindow(Window.Phone);

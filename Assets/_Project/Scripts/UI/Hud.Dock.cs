@@ -34,7 +34,7 @@ namespace OSistema.UI
         BuildCat buildCat;
         BuildCat? builtCat;
         VisualElement drawer, drawerCards, dockRoot;
-        Button businessButton, helpButton;
+        Button businessButton, helpButton, casaButton, piazzaButton;
         Label buildHint, drawerNote;
 
         void BuildDock()
@@ -98,14 +98,18 @@ namespace OSistema.UI
 
             // The bar along the bottom: every screen, with its key, and the news on the right.
             var tabs = Ui.Box("hotbar").Into(dockRoot);
-            tabs.style.backgroundImage = new StyleBackground(Ui.Gradient(new Color(0.11f, 0.09f, 0.06f, 0.98f), new Color(0.05f, 0.04f, 0.03f, 0.98f)));
-            businessButton = IconTab(tabs, "FAMIGLIA", IconKind.Business, () => ToggleWindow(Window.Business), "Tab", "your people");
-            Tip(businessButton, () => "Your people, piazze, pizzo, property, money, rivals (Tab).");
+            tabs.style.backgroundImage = new StyleBackground(Ui.Gradient(new Color(0.07f, 0.055f, 0.04f, 0.99f), new Color(0.03f, 0.025f, 0.02f, 0.99f)));
+            casaButton = IconTab(tabs, "CASA", IconKind.House, () => OpenSection(FamSection.Casa), null, "how things stand");
+            Tip(casaButton, () => "How the family is doing, the stash, the money and property.");
+            businessButton = IconTab(tabs, "FAMIGLIA", IconKind.Business, () => OpenSection(FamSection.Famiglia), "Tab", "your people");
+            Tip(businessButton, () => "Your people: jobs, wages, beds, and the organigram (Tab).");
+            piazzaButton = IconTab(tabs, "PIAZZA", IconKind.Product, () => OpenSection(FamSection.Piazza), null, "the street");
+            Tip(piazzaButton, () => "The street: your piazze, the pizzo, the neighbours and the other clans.");
             jobsButton = IconTab(tabs, "TACCUINO", IconKind.Jobs, () => ToggleWindow(Window.Jobs), "J", "lavoretti");
             Tip(jobsButton, () => "Who has work for you and where to find them (J).");
             phoneButton = IconTab(tabs, "PHONE", IconKind.Phone, () => ToggleWindow(Window.Phone), "P", "contacts");
             Tip(phoneButton, () => "The family phone (P): favours, gossip, warnings.");
-            mapButton = IconTab(tabs, "MAP", IconKind.House, () => ToggleMap(), "M", "the city");
+            mapButton = IconTab(tabs, "MAP", IconKind.Paper, () => ToggleMap(), "M", "the city");
             Tip(mapButton, () => "The map of the rione (M). Click anywhere on it to set a waypoint.");
             buildButton = IconTab(tabs, "BUILD", IconKind.Build, ToggleBuildMode, "B", "your home");
             Tip(buildButton, () => "Build and furnish your homes, place work tables, open a piazza (B).");
@@ -167,7 +171,9 @@ namespace OSistema.UI
             drawer.Show(buildMode);
             buildButton.Toggle("btn--on", buildMode);
             mapButton.Toggle("btn--on", mapOpen);
-            businessButton.Toggle("btn--on", openWindow == Window.Business);
+            casaButton.Toggle("btn--on", SectionOpen(FamSection.Casa));
+            businessButton.Toggle("btn--on", SectionOpen(FamSection.Famiglia));
+            piazzaButton.Toggle("btn--on", SectionOpen(FamSection.Piazza));
             helpButton.Toggle("btn--on", openWindow == Window.Help);
 
             bool building = controller.CurrentTool == Tool.Build && controller.CurrentDef != null;
