@@ -7,6 +7,13 @@
 - **Bodyguards:** do Wide and Ahead behave in narrow vicoli? (`BodyguardJob`)
 - **Lavoretti:** Taccuino has no button now (J still opens it). If jobs feel hidden, put the button back until a Lavori board exists.
 
+## 1b. Territory feels broken (reported by the player)
+Today a rione is yours only with a foothold (a property or an owned shop inside it) and a piazza with a pusher (`Organization.ControlsZone`). Taking a rival piazza needs ~7 game hours with none of theirs within 9 cells, and it only becomes yours under the rank's piazza cap (Guaglione 0, Paranza 1, Clan 2, Sistema 3; `RivalClan.CheckCaptures`). Nothing on screen explains any of this.
+- A piazza with a pusher should take the rione on its own; a foothold becomes a bonus (more guards, less heat).
+- Loosen the early piazza cap, or let a captured rival piazza go over it.
+- Say why a rione isn't yours yet (needs a pusher / a foothold / rank cap) on the map and in Piazza.
+- Show a "holding the corner" progress bar while taking a rival piazza.
+
 ## 2. Animation (high value for feel, trailers and screenshots)
 Painted bodies are single images with the arms painted in, so the walk is only a small sway and reads as sliding (`Views/PersonRig.cs`).
 1. **Split the painted body** into torso, two arms and two shoes, painted with `Tools/ArtGen` in the same style. Load them in `CharacterArt` and give them their own transforms in `PersonRig`.
