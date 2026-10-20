@@ -216,6 +216,16 @@ namespace OSistema.Crime
 
         long lastReinforcementTick = -100000;
         readonly Dictionary<DrugSquare, int> emptyFor = new Dictionary<DrugSquare, int>();
+        public const int HoldToTake = 1800;
+
+        /// <summary>The rival piazza the family is holding right now, and how far along (0..1); null if none.</summary>
+        public DrugSquare Holding(out float progress)
+        {
+            progress = 0f;
+            foreach (var kv in emptyFor)
+                if (Squares.Contains(kv.Key)) { progress = Mathf.Clamp01(kv.Value / (float)HoldToTake); return kv.Key; }
+            return null;
+        }
 
         /// <summary>
         /// One of theirs was attacked. The armed ones take cover and shoot back at whoever did it,
@@ -283,7 +293,7 @@ namespace OSistema.Crime
                 emptyFor[sq] = held;
                 if (held == 120)
                     game.Log.Add("Nobody of theirs is left on the corner. Hold it.", MessageKind.Info, sq.Cell);
-                if (held < 1800) continue;
+                if (held < HoldToTake) continue;
 
                 emptyFor.Remove(sq);
                 Squares.RemoveAt(i);

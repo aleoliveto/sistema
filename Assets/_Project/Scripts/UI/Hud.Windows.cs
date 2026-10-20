@@ -284,6 +284,12 @@ namespace OSistema.UI
             if (pushers == 0) Ui.Text("No pushers: nobody sells. Add them in Famiglia › Organigram.", bizBody, "bad", "small");
             if (lookouts == 0) Ui.Text("No lookouts: the police will walk right up to the spot.", bizBody, "warn", "small");
 
+            foreach (var sq in org.Squares)
+            {
+                var why = org.WhyNotHeld(game.Territory.Zones[sq.ZoneId], game);
+                if (why != null) Ui.Text($"{game.Territory.Zones[sq.ZoneId].Name} isn't your turf yet: {why}.", bizBody, "warn", "small", "wrap");
+            }
+
             // One line per piazza, so ten of them still fit.
             var head = Ui.Box("pz-row", "pz-row--head").Into(bizBody);
             foreach (var (t, cls) in new[] { ("RIONE", "pz-name"), ("HOURS", "pz-hours"), ("HEAT", "pz-heat"), ("TODAY", "pz-today"), ("CREW", "pz-crew"), ("", "pz-go") })

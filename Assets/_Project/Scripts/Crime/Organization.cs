@@ -16,7 +16,7 @@ namespace OSistema.Crime
     /// </summary>
     public sealed partial class Organization
     {
-        public const int MaxSquares = 3;
+        public const int MaxSquares = 6;   // piazze you open are capped by rank (RankMaxSquares); taken ones up to this
         public const int MaxCrew = 12;
         public const int ArsonStartHour = 2;  // arson happens in the dead of night
         public const int ArsonEndHour = 5;
@@ -315,9 +315,10 @@ namespace OSistema.Crime
         }
 
         /// <summary>A rival piazza taken by force: same corner, now ours. False if the rank can't run another.</summary>
+        /// <summary>A rival piazza taken by holding its corner. It's yours whatever your rank allows you to open, up to MaxSquares.</summary>
         public bool TakeSquare(DrugSquare rival, Game game)
         {
-            if (Squares.Count >= MaxSquaresForRank || Squares.Count >= MaxSquares) return false;
+            if (Squares.Count >= MaxSquares) return false;
             var square = new DrugSquare { Cell = rival.Cell, ZoneId = rival.ZoneId };
             ComputeLookoutPosts(square, game.Map);
             Squares.Add(square);

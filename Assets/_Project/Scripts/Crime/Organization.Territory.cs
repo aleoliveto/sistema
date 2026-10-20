@@ -14,15 +14,25 @@ namespace OSistema.Crime
     public sealed partial class Organization
     {
         /// <summary>
-        /// A rione is the family's if it's home, or if the family has a foothold there (a house or a
-        /// shop it owns) and a piazza working there (with a pusher on the payroll). Lose either and
-        /// it's just a place you happen to know.
+        /// A rione is the family's if it's home, or if a piazza of the family's is working there (with a
+        /// pusher of its own). A foothold (a house or a shop the family owns there) makes it harder to
+        /// take away: it counts as guards (see Guards), but it isn't needed to hold the turf.
         /// </summary>
         public bool ControlsZone(Zone zone, Game game)
         {
             if (zone == null) return false;
             if (zone.Rect.Contains(Vector2Int.RoundToInt(game.PlayerBase.center))) return true;
-            return HasFoothold(zone, game) && HasWorkingPiazza(zone, game);
+            return HasWorkingPiazza(zone, game);
+        }
+
+        /// <summary>Why a rione with a piazza of yours isn't yours yet, for the Piazza screen; null if it is.</summary>
+        public string WhyNotHeld(Zone zone, Game game)
+        {
+            if (zone == null || ControlsZone(zone, game)) return null;
+            bool piazza = false;
+            foreach (var sq in Squares) if (sq.ZoneId == zone.Id) piazza = true;
+            if (!piazza) return "no piazza of yours there";
+            return "its piazza has no pusher: put one on it";
         }
 
         public bool HasFoothold(Zone zone, Game game)
@@ -34,19 +44,22 @@ namespace OSistema.Crime
             return false;
         }
 
+        /// <summary>A piazza in this rione with a pusher of its own (one placed there, or the only piazza's).</summary>
         public bool HasWorkingPiazza(Zone zone, Game game)
         {
-            bool pusher = false;
-            foreach (var c in game.Pawns.Crew) if (c.IsPresent && c.Role == CrewRole.Pusher) pusher = true;
-            if (!pusher) return false;
-            foreach (var sq in Squares) if (sq.ZoneId == zone.Id) return true;
+            foreach (var c in game.Pawns.Crew)
+            {
+                if (!c.IsPresent || (c.Role != CrewRole.Pusher && c.Role != CrewRole.Capo)) continue;
+                var sq = SquareOf(c, game);
+                if (sq != null && sq.ZoneId == zone.Id) return true;
+            }
             return false;
         }
 
         /// <summary>How well a rione of yours is held: lookouts and armed crew posted near its piazze.</summary>
         public int Guards(Zone zone, Game game)
         {
-            int n = 0;
+            int n = HasFoothold(zone, game) ? 2 : 0;   // a house or a shop of yours: neighbours who'll warn you, a door to run to
             foreach (var c in game.Pawns.Crew)
             {
                 if (!c.IsPresent || game.Territory.ZoneAt(c.Cell) != zone) continue;

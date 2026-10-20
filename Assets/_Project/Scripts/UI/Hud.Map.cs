@@ -417,6 +417,18 @@ namespace OSistema.UI
             string dist = goal.Target.HasValue && player != null ? $"  ·  {Mathf.RoundToInt((goal.Target.Value - player.Position).magnitude * 3f)} m" : "";
             goalLabel.text = string.IsNullOrEmpty(goal.Text) ? "" : $"<color=#E8C26A>▸</color> {goal.Text}{dist}";
             goalLabel.Show(!string.IsNullOrEmpty(goal.Text));
+            // Taking a rival corner: how long until it's yours, in place of the objective.
+            foreach (var clan in game.Clans)
+            {
+                if (clan.Destroyed) continue;
+                var held = clan.Holding(out float progress);
+                if (held == null) continue;
+                int filled = Mathf.RoundToInt(progress * 12f);
+                goalLabel.text = $"<color=#E8C26A>▸</color> Hold the {clan.Name}'s corner: keep your people there, theirs away\n" +
+                                 $"<color=#E8C26A>{new string('█', filled)}</color><color=#4A4238>{new string('█', 12 - filled)}</color>  {progress * 100f:0}%";
+                goalLabel.Show(true);
+                break;
+            }
 
             // The markers in the world, or arrows at the edge of the screen pointing to them.
             UpdateMarker(goalMarker, goal.Target, player, "◆");
