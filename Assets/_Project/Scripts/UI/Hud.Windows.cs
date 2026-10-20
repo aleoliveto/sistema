@@ -516,7 +516,7 @@ namespace OSistema.UI
                 swatch.style.height = 12;
                 swatch.style.marginRight = 8;
                 swatch.style.backgroundColor = (Color)clan.Colour;
-                Ui.Text(clan.Name.ToUpper(), head, "section").style.marginTop = 0;
+                Ui.Text(clan.Name.ToUpper() + (clan.Allied ? "  <color=#8FD18A>· allied</color>" : ""), head, "section").style.marginTop = 0;
                 if (clan.Destroyed)
                 {
                     Ui.Text("Finished. Their rioni are open.", bizBody, "good", "small");
@@ -544,6 +544,14 @@ namespace OSistema.UI
                 var actions = Ui.Row(bizBody);
                 actions.style.flexWrap = Wrap.Wrap;
                 Ui.Btn("Gift €500 (hostility −25)", Do(() => { if (!clan.SendGift(500, 25f, game)) game.Log.Add("Not enough cash for a gift.", MessageKind.Bad); }), actions, "btn--small");
+                if (clan.Allied)
+                    Ui.Btn("Break the pact", Do(() => clan.BreakAlliance(game, "you broke it")), actions, "btn--small", "btn--danger");
+                else
+                {
+                    var pact = Ui.Btn($"Propose a pact · €{RivalClan.AlliancePrice} ({clan.AllianceChance(game) * 100f:0}%)", Do(() => clan.ProposeAlliance(game)), actions, "btn--small");
+                    pact.SetEnabled(clan.Hostility < 30f);
+                    Tip(pact, () => clan.Hostility < 30f ? "Allies leave you alone and go after the clans that hate you. Stay off their turf, and never shoot their people." : "They hate you too much to talk. Bring their hostility under 30 first (gifts, time).");
+                }
                 var stesa = Ui.Btn("Order a stesa ▸", () => { game.Events.Raise(OSistema.Story.OperationCards.Stesa(clan, game)); ToggleWindow(Window.Business); }, actions, "btn--small");
                 stesa.SetEnabled(clan.Squares.Count > 0);
                 Tip(stesa, () => "Armed crew ride to one of their piazze and shoot over it.");

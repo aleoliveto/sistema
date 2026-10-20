@@ -221,6 +221,7 @@ namespace OSistema.Core
             foreach (var sq in game.Rival.Squares)
                 data.rivalSquares.Add(new SquareData { x = sq.Cell.x, y = sq.Cell.y, zone = sq.ZoneId });
             data.rivalIntel = game.Rival.Intel;
+            data.rivalAllied = game.Rival.Allied;
             // Every other clan in the city.
             for (int i = 1; i < game.Clans.Count; i++)
             {
@@ -228,7 +229,7 @@ namespace OSistema.Core
                 var cd = new ClanData
                 {
                     name = c.Name, boss = c.BossName, hostility = c.Hostility, soldiers = c.Soldiers, cash = c.Cash,
-                    truce = c.TruceUntilDay, warned = c.Warned, destroyed = c.Destroyed, intel = c.Intel,
+                    truce = c.TruceUntilDay, warned = c.Warned, destroyed = c.Destroyed, intel = c.Intel, allied = c.Allied,
                 };
                 foreach (var sq in c.Squares) cd.squares.Add(new SquareData { x = sq.Cell.x, y = sq.Cell.y, zone = sq.ZoneId });
                 data.clans.Add(cd);
@@ -459,12 +460,13 @@ namespace OSistema.Core
             foreach (var sq in data.rivalSquares)
                 rival.Squares.Add(new DrugSquare { Cell = new Vector2Int(sq.x, sq.y), ZoneId = sq.zone, Rival = true, OpenHour = 0, CloseHour = 0 });
             rival.Intel = data.rivalIntel;
+            rival.Allied = data.rivalAllied;
             if (data.clans != null)
                 foreach (var cd in data.clans)
                 {
                     var c = game.AddClan();
                     c.Name = cd.name; c.BossName = cd.boss; c.Hostility = cd.hostility; c.Soldiers = cd.soldiers; c.Cash = cd.cash;
-                    c.TruceUntilDay = cd.truce; c.Warned = cd.warned; c.Destroyed = cd.destroyed; c.Intel = cd.intel;
+                    c.TruceUntilDay = cd.truce; c.Warned = cd.warned; c.Destroyed = cd.destroyed; c.Intel = cd.intel; c.Allied = cd.allied;
                     foreach (var sq in cd.squares)
                         c.Squares.Add(new DrugSquare { Cell = new Vector2Int(sq.x, sq.y), ZoneId = sq.zone, Rival = true, OpenHour = 0, CloseHour = 0, Clan = c.Id });
                 }
@@ -678,6 +680,7 @@ namespace OSistema.Core
             public int rivalSoldiers, rivalCash, rivalTruceUntil;
             public bool rivalWarned, rivalDestroyed;
             public float rivalIntel;
+            public bool rivalAllied;
             public List<ClanData> clans = new List<ClanData>();
             public List<SquareData> rivalSquares = new List<SquareData>();
             public List<BlueprintData> blueprints = new List<BlueprintData>();
@@ -738,7 +741,7 @@ namespace OSistema.Core
             public string name, boss;
             public float hostility, intel;
             public int soldiers, cash, truce;
-            public bool warned, destroyed;
+            public bool warned, destroyed, allied;
             public List<SquareData> squares = new List<SquareData>();
         }
 

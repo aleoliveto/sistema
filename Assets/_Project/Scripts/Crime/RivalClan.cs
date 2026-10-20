@@ -23,6 +23,39 @@ namespace OSistema.Crime
         public int Id;               // index in Game.Clans
         public Color32 Colour;       // on the territory map
         public float Intel;          // 0..100: how much the family knows about them (names, habits, the boss)
+        public bool Allied;          // a pact with the family: they leave you alone and go after your enemies
+
+        public const int AlliancePrice = 2000;
+
+        /// <summary>A pact: money on the table, respect behind it. They have to not hate you already.</summary>
+        public float AllianceChance(Game game) => Mathf.Clamp01(0.2f + game.Org.Respect / 120f - Hostility / 60f);
+
+        public bool ProposeAlliance(Game game)
+        {
+            if (Allied || Destroyed) return false;
+            if (!game.Org.Pay(AlliancePrice, game, out var err)) { game.Log.Add(err, MessageKind.Bad); return false; }
+            if (game.Rng.NextDouble() < AllianceChance(game))
+            {
+                Allied = true;
+                Hostility = Mathf.Min(Hostility, 5f);
+                game.Log.Add($"{BossName} shakes your hand. The {Name} are with the family now: stay off their turf and they'll go after your enemies.", MessageKind.Good);
+                game.Newspaper.Report(game, 3, "New understandings in the old town", "Investigators note an unusual calm between two groups that were at each other's throats a month ago.");
+            }
+            else
+            {
+                Hostility = Mathf.Min(100f, Hostility + 10f);
+                game.Log.Add($"{BossName} takes the money and laughs. No deal.", MessageKind.Bad);
+            }
+            return Allied;
+        }
+
+        public void BreakAlliance(Game game, string why)
+        {
+            if (!Allied) return;
+            Allied = false;
+            Hostility = Mathf.Min(100f, Hostility + 50f);
+            game.Log.Add($"The pact with the {Name} is broken: {why}. They won't forget it.", MessageKind.Bad);
+        }
         public string Name;
         public string BossName;
         public float Hostility = 10f;
@@ -270,6 +303,7 @@ namespace OSistema.Crime
         public void OnCrewAttacked(Game game)
         {
             if (Destroyed) return;
+            BreakAlliance(game, "your people opened fire on theirs");
             Hostility = Mathf.Min(100f, Hostility + 6f);
             TruceUntilDay = 0;
             if (!atWar)
@@ -347,6 +381,7 @@ namespace OSistema.Crime
 
         bool CanStrikeFamily(Game game)
         {
+            if (Allied) return false;   // a pact holds
             if (InTruce(game) || game.Org.Squares.Count == 0) return false;
             long now = game.Ticks.TicksGame;
             if (generationSeen != game.Org.Generation)
@@ -385,6 +420,7 @@ namespace OSistema.Crime
                 else if (Squares.Exists(r => (r.Cell - sq.Cell).magnitude < NearDistance)) drift += 4f;
             }
             Hostility = Mathf.Clamp(Hostility + drift, 0f, 100f);
+            if (Allied) Hostility = Mathf.Min(Hostility, 10f);
             if (InTruce(game)) Hostility = Mathf.Min(Hostility, 20f);
 
             // Replace pushers who were killed or ran off, while they still have men.
@@ -531,6 +567,8 @@ namespace OSistema.Crime
             foreach (var other in game.Clans)
             {
                 if (other == this || other.Destroyed) continue;
+                // An ally fights the family's enemies, and leaves the family's other friends alone.
+                if (Allied && (other.Allied || other.Hostility < 40f)) continue;
                 foreach (var theirs in other.Squares)
                 foreach (var mine in Squares)
                 {

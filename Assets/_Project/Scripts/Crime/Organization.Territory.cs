@@ -82,6 +82,7 @@ namespace OSistema.Crime
         {
             var owner = zone != null ? game.ClanOwning(zone.Id) : null;
             if (owner == null) return;
+            owner.BreakAlliance(game, $"you moved into {zone.Name}");
             owner.Hostility = Mathf.Min(100f, owner.Hostility + 25f);
             game.Log.Add($"You've moved into {zone.Name}, the {owner.Name}'s turf. They'll take it as an insult.", MessageKind.Bad);
         }
