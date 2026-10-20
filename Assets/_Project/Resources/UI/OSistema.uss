@@ -1441,3 +1441,50 @@
 .pz-go { margin-left: auto; }
 .pz-hours { width: 128px; }
 .pz-heat { width: 64px; margin-left: 6px; }
+
+/* v7: painted look everywhere else */
+.crew-card, .goal, .toast, .root .crew-bar__head, .diary__row {
+    background-image: resource("UI/Art/button_normal");
+    -unity-slice-left: 16; -unity-slice-right: 16; -unity-slice-top: 16; -unity-slice-bottom: 16;
+    -unity-slice-scale: 0.5;
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+}
+.crew-card:hover { background-image: resource("UI/Art/button_hover"); }
+.crew-card--selected { background-image: resource("UI/Art/button_active"); background-color: rgba(0, 0, 0, 0); }
+.crew-card { padding: 6px 12px; }
+.goal { padding: 8px 14px; border-left-width: 0; }
+.toast { padding: 7px 12px; border-left-width: 0; }
+.toast--bad { color: #F4A79C; }
+.toast--good { color: #B8E3B0; }
+.diary__row { padding: 5px 10px; border-left-width: 0; }
+
+/* Bottom bar icons */
+.hotbar .tab .art-icon { flex-shrink: 0; }
+.hotbar .tab--icon .art-icon { margin: 0; }
+
+/* Build drawer and map headers */
+.root .drawer__title { -unity-font-definition: resource("Fonts/BarlowCondensed-Bold"); font-size: 24px; letter-spacing: 3px; color: #E3B862; }
+.drawer__head .panel-head__icon { margin-right: 10px; }
+.bigmap__head { align-items: center; margin-bottom: 8px; }
+.bigmap { padding: 16px 20px; }
+.map-legend { background-color: rgba(0, 0, 0, 0.35); border-radius: 4px; padding: 6px 10px; }
+
+/* The phone: still the old candybar, in the family's colours */
+.nokia {
+    background-color: rgb(14, 12, 10);
+    border-width: 2px; border-color: #C9A054; border-radius: 26px;
+}
+.root .nokia__brand { -unity-font-definition: resource("Fonts/BarlowCondensed-Bold"); color: #E3B862; letter-spacing: 4px; font-size: 12px; }
+.nokia__ear { background-color: #2A2318; }
+.nokia__screen { border-width: 3px; border-color: #2A2318; }
+.nokia__key, .nokia__soft, .nokia__navkey {
+    background-image: resource("UI/Art/button_normal");
+    -unity-slice-left: 16; -unity-slice-right: 16; -unity-slice-top: 16; -unity-slice-bottom: 16;
+    -unity-slice-scale: 0.5;
+    background-color: rgba(0, 0, 0, 0); border-width: 0;
+}
+.nokia__key:hover, .nokia__soft:hover, .nokia__navkey:hover { background-image: resource("UI/Art/button_hover"); background-color: rgba(0, 0, 0, 0); }
+.nokia__ok { background-image: resource("UI/Art/button_active"); background-color: rgba(0, 0, 0, 0); color: #F2CF7A; }
+.root .nokia__digit { color: #F2CF7A; }
+.root .nokia__letters { color: #9C9180; }

@@ -70,7 +70,8 @@ namespace OSistema.UI
 
             drawer = Ui.Box("panel", "drawer").Into(dockRoot);
             var head = Ui.Box("drawer__head").Into(drawer);
-            Ui.Text("COSTRUISCI", head, "title", "gold").style.marginRight = 14;
+            Ui.ArtIcon("icon_build", 30, head)?.AddToClassList("panel-head__icon");
+            Ui.Text("COSTRUISCI", head, "drawer__title").style.marginRight = 14;
             foreach (BuildCat c in System.Enum.GetValues(typeof(BuildCat)))
             {
                 var cat = c;
@@ -98,22 +99,22 @@ namespace OSistema.UI
             // The bar along the bottom: every screen, with its key, and the news on the right.
             var tabs = Ui.Box("hotbar").Into(dockRoot);
             tabs.style.backgroundImage = new StyleBackground(Ui.Gradient(new Color(0.07f, 0.055f, 0.04f, 0.99f), new Color(0.03f, 0.025f, 0.02f, 0.99f)));
-            casaButton = IconTab(tabs, "CASA", IconKind.House, () => OpenSection(FamSection.Casa), null, "how things stand");
+            casaButton = IconTab(tabs, "CASA", IconKind.House, () => OpenSection(FamSection.Casa), null, "how things stand", "icon_casa");
             Tip(casaButton, () => "How the family is doing, the stash, the money and property.");
-            businessButton = IconTab(tabs, "FAMIGLIA", IconKind.Business, () => OpenSection(FamSection.Famiglia), "Tab", "your people");
+            businessButton = IconTab(tabs, "FAMIGLIA", IconKind.Business, () => OpenSection(FamSection.Famiglia), "Tab", "your people", "icon_crew");
             Tip(businessButton, () => "Your people: jobs, wages, beds, and the organigram (Tab).");
-            piazzaButton = IconTab(tabs, "PIAZZA", IconKind.Product, () => OpenSection(FamSection.Piazza), null, "the street");
+            piazzaButton = IconTab(tabs, "PIAZZA", IconKind.Product, () => OpenSection(FamSection.Piazza), null, "the street", "icon_piazza");
             Tip(piazzaButton, () => "The street: your piazze, the pizzo, the neighbours and the other clans.");
             // The taccuino has no button for now (J still opens it).
             jobsButton = IconTab(new VisualElement(), "TACCUINO", IconKind.Jobs, () => ToggleWindow(Window.Jobs), "J", "lavoretti");
             Tip(jobsButton, () => "Who has work for you and where to find them (J).");
-            phoneButton = IconTab(tabs, "PHONE", IconKind.Phone, () => ToggleWindow(Window.Phone), "P", "contacts");
+            phoneButton = IconTab(tabs, "PHONE", IconKind.Phone, () => ToggleWindow(Window.Phone), "P", "contacts", "icon_phone");
             Tip(phoneButton, () => "The family phone (P): favours, gossip, warnings.");
-            mapButton = IconTab(tabs, "MAP", IconKind.Paper, () => ToggleMap(), "M", "the city");
+            mapButton = IconTab(tabs, "MAP", IconKind.Paper, () => ToggleMap(), "M", "the city", "icon_map");
             Tip(mapButton, () => "The map of the rione (M). Click anywhere on it to set a waypoint.");
-            buildButton = IconTab(tabs, "BUILD", IconKind.Build, ToggleBuildMode, "B", "your home");
+            buildButton = IconTab(tabs, "BUILD", IconKind.Build, ToggleBuildMode, "B", "your home", "icon_build");
             Tip(buildButton, () => "Build and furnish your homes, place work tables, open a piazza (B).");
-            helpButton = IconTab(tabs, "", IconKind.Help, () => ToggleWindow(Window.Help), "H");
+            helpButton = IconTab(tabs, "", IconKind.Help, () => ToggleWindow(Window.Help), "H", null, "icon_help");
             helpButton.AddToClassList("tab--icon");
             Tip(helpButton, () => "Controls and help (H)");
             Ui.Box("spacer").Into(tabs);
@@ -126,10 +127,10 @@ namespace OSistema.UI
             Tip(news, () => "What has happened lately. Click to open the diary.");
         }
 
-        static Button IconTab(VisualElement parent, string label, IconKind icon, System.Action onClick, string key = null, string sub = null)
+        static Button IconTab(VisualElement parent, string label, IconKind icon, System.Action onClick, string key = null, string sub = null, string art = null)
         {
             var b = Ui.Btn("", onClick, parent, "tab");
-            new Icon(icon, sub != null ? 20 : 16).Into(b);
+            if (art == null || Ui.ArtIcon(art, 32, b) == null) new Icon(icon, sub != null ? 20 : 16).Into(b);
             if (label.Length > 0)
             {
                 var col = Ui.Box("col").Into(b);

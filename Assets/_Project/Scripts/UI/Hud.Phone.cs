@@ -36,7 +36,7 @@ namespace OSistema.UI
         {
             phoneWindow = Ui.Box("nokia").Into(hudLayer);
             Ui.Box("nokia__ear").Into(phoneWindow);
-            var brand = Ui.Text("RIONE", phoneWindow, "nokia__brand");
+            var brand = Ui.Text("'O SISTEMA", phoneWindow, "nokia__brand");
             brand.pickingMode = PickingMode.Ignore;
             phoneLcd = Ui.Box("nokia__screen", "fit").Into(phoneWindow);
             phoneStatusLine = Ui.Text("", phoneLcd, "lcd", "lcd__status");

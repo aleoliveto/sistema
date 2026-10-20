@@ -213,6 +213,79 @@ def icon_dose():
     return c.render()
 
 
+def icon_casa():
+    """The basso's door: an arched doorway in a stone surround, the lamp lit."""
+    c = Canvas(128, 128)
+    surround = union(c.box(64, 80, 84, 80, 4), c.circle(64, 44, 42))
+    c.fill(cut(surround, c.box(64, 124, 140, 12)), GOLD, z0=0, height=6, profile="bevel", bevel=6, tex=gilt(c, 61, 0.92), gloss=0.6)
+    door = union(c.box(64, 86, 52, 64, 2), c.circle(64, 54, 26))
+    c.fill(cut(door, c.box(64, 124, 140, 12)), C(70, 46, 26), z0=4, height=3, profile="bevel", bevel=3,
+           tex=0.85 + 0.2 * np.abs(np.sin(c.x * 0.55)), gloss=0.2, line=0.5)
+    c.fill(c.box(64, 84, 3, 60), C(40, 26, 14), z0=7, height=0, profile="flat", line=0.0)
+    c.fill(c.circle(76, 86, 4), GOLD, z0=8, height=3, profile="dome", bevel=4, tex=gilt(c, 62), gloss=0.9)
+    c.fill(c.ellipse(64, 50, 9, 11), C(255, 214, 120), z0=8, height=4, profile="dome", bevel=8, gloss=0.8, line=0.3)
+    return c.render()
+
+
+def icon_piazza():
+    """A fedora: what the street knows you by."""
+    c = Canvas(128, 128)
+    brim = c.ellipse(64, 88, 58, 18)
+    c.fill(brim, C(52, 40, 30), z0=0, height=4, profile="dome", bevel=8, gloss=0.25, tex=0.9 + 0.15 * fbm(c.x, c.y, 6, 2, 63))
+    crown = union(c.ellipse(64, 60, 36, 30), c.box(64, 74, 70, 22, 6))
+    crown = cut(crown, c.ellipse(64, 32, 20, 8))   # the pinch on top
+    c.fill(crown, C(64, 50, 38), z0=3, height=8, profile="dome", bevel=16, gloss=0.25, tex=0.9 + 0.15 * fbm(c.x, c.y, 6, 2, 64))
+    c.fill(c.box(64, 78, 72, 9, 3), GOLD, z0=9, height=2, profile="dome", bevel=3, tex=gilt(c, 65), gloss=0.8, line=0.4)
+    return c.render()
+
+
+def icon_phone():
+    """An old mobile with an aerial: the family phone."""
+    c = Canvas(128, 128)
+    c.fill(c.box(84, 22, 8, 28, 4), C(40, 38, 40), z0=0, height=4, profile="dome", bevel=4, gloss=0.5)
+    c.fill(c.box(64, 70, 54, 100, 12), C(36, 34, 36), z0=0, height=7, profile="dome", bevel=12, gloss=0.6)
+    rim = cut(c.box(64, 70, 54, 100, 12), c.box(64, 70, 48, 94, 10))
+    c.fill(rim, GOLD, z0=6, height=2, profile="dome", bevel=2, tex=gilt(c, 66), gloss=0.7, line=0.3)
+    c.fill(c.box(64, 46, 38, 30, 3), C(150, 178, 110), z0=7, height=0, profile="flat", gloss=0.9, line=0.5)
+    for r in range(3):
+        for k in range(3):
+            c.fill(c.box(50 + k * 14, 78 + r * 11, 10, 7, 2), GOLD, z0=7, height=2, profile="dome", bevel=3, tex=gilt(c, 67 + r, 0.9), gloss=0.6, line=0.3)
+    return c.render()
+
+
+def icon_map():
+    """A folded street map with a pin."""
+    c = Canvas(128, 128)
+    panels = [[(14, 30), (48, 20), (48, 104), (14, 114)], [(48, 20), (80, 30), (80, 114), (48, 104)], [(80, 30), (114, 20), (114, 104), (80, 114)]]
+    for i, pts in enumerate(panels):
+        c.fill(poly(c, pts), C(226, 206, 160), z0=0, height=2, profile="bevel", bevel=2, tex=(0.92 if i == 1 else 1.0) * grime(c, 0.3, 8, 70 + i), gloss=0.1)
+    roads = union(c.box(64, 64, 100, 4), c.box(40, 64, 4, 80, 0, ang=12), c.box(94, 60, 4, 70, 0, ang=-8))
+    c.fill(roads, C(176, 140, 90), z0=2, height=0, profile="flat", clip=poly(c, [(14, 30), (48, 20), (80, 30), (114, 20), (114, 104), (80, 114), (48, 104), (14, 114)]), line=0.0)
+    pin = union(c.circle(78, 44, 13), poly(c, [(68, 50), (88, 50), (78, 72)]))
+    c.fill(pin, C(200, 46, 38), z0=4, height=6, profile="dome", bevel=10, gloss=0.8)
+    c.fill(c.circle(78, 43, 5), C(250, 240, 220), z0=10, height=1, profile="flat", line=0.2)
+    return c.render()
+
+
+def icon_build():
+    """A mason's hammer across a trowel."""
+    c = Canvas(128, 128)
+    c.fill(c.box(64, 70, 12, 96, 5, ang=-35), C(122, 80, 44), z0=0, height=5, profile="dome", bevel=6,
+           tex=0.88 + 0.18 * np.abs(np.sin((c.x + c.y) * 0.7)), gloss=0.3)
+    head = c.box(40, 38, 52, 22, 4, ang=-35)
+    c.fill(head, GOLD, z0=4, height=7, profile="bevel", bevel=6, tex=gilt(c, 71), gloss=0.8)
+    return c.render()
+
+
+def icon_help():
+    """A gold medallion with a question mark."""
+    c = Canvas(128, 128)
+    c.fill(c.circle(64, 64, 52), GOLD_DARK, z0=0, height=6, profile="dome", bevel=12, tex=gilt(c, 72, 0.85), gloss=0.6)
+    q = union(cut(c.ring(64, 48, 18, 10), c.box(46, 58, 30, 22)), c.box(66, 72, 10, 16, 2), c.circle(66, 94, 6))
+    c.fill(q, GOLD, z0=6, height=4, profile="bevel", bevel=3, tex=gilt(c, 73, 1.1), gloss=0.9)
+    return c.render()
+
+
 # ---------- frames: 9-slice ----------
 
 def panel_frame():
@@ -264,7 +337,9 @@ if __name__ == "__main__":
     for name, fn in (("icon_money", icon_money), ("icon_respect", icon_respect), ("icon_heat", icon_heat),
                      ("icon_crew", icon_crew), ("icon_territory", icon_territory), ("icon_supplies", icon_supplies),
                      ("icon_health", icon_health), ("icon_food", icon_food), ("icon_sleep", icon_sleep), ("icon_ammo", icon_ammo),
-                     ("icon_clans", icon_clans), ("icon_rosse", icon_rosse), ("icon_dose", icon_dose)):
+                     ("icon_clans", icon_clans), ("icon_rosse", icon_rosse), ("icon_dose", icon_dose),
+                     ("icon_casa", icon_casa), ("icon_piazza", icon_piazza), ("icon_phone", icon_phone), ("icon_map", icon_map),
+                     ("icon_build", icon_build), ("icon_help", icon_help)):
         save(fn(), out, name)
     save(panel_frame(), out, "frame_panel")
     for st in ("normal", "hover", "active"):

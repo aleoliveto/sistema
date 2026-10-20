@@ -134,8 +134,11 @@ namespace OSistema.UI
             mapDim = Ui.Box("dim").Into(modalLayer);
             var panel = Ui.Box("panel", "bigmap").Into(mapDim);
             var head = Ui.Row(panel);
-            mapTitle = Ui.Text("THE RIONE", head, "title", "gold");
-            Ui.Text("   scroll to zoom · drag to move · click to set a waypoint, again to clear", head, "small", "muted");
+            head.AddToClassList("bigmap__head");
+            Ui.ArtIcon("icon_map", 34, head)?.AddToClassList("panel-head__icon");
+            var titles = Ui.Box("col").Into(head);
+            mapTitle = Ui.Text("THE RIONE", titles, "panel-head__title");
+            Ui.Text("Scroll to zoom · drag to move · click to set a waypoint, again to clear", titles, "panel-head__tagline");
             Ui.Box("spacer").Into(head);
             territoryButton = Ui.Btn("Territory", () => { territoryOn = !territoryOn; territoryButton.Toggle("btn--on", territoryOn); }, head, "btn--small");
             Tip(territoryButton, () => "Who holds each rione. Yours need a house or shop of yours there, and a working piazza with a pusher.");
