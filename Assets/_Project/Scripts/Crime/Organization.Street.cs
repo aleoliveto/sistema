@@ -110,7 +110,7 @@ namespace OSistema.Crime
                 return;
             }
             var zone = game.Territory.Zones[DealingCorner.ZoneId];
-            float perHour = 5f * zone.Demand * (0.6f + Respect / 100f) * Mathf.Max(0.2f, 1f - zone.Heat / 150f);
+            float perHour = 2.5f * zone.Demand * (0.6f + Respect / 100f) * Mathf.Max(0.2f, 1f - zone.Heat / 150f);
             if (game.ClanOwning(zone.Id) != null) perHour *= 0.6f;
             if (game.Rng.NextDouble() >= perHour / GameClock.TicksPerHour) return;
             var npc = game.Npcs.SpawnCustomer(DealingCorner, game);

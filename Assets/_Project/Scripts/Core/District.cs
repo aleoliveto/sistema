@@ -134,7 +134,7 @@ namespace OSistema.Core
                 }
                 if (pusher && sq.IsOpenAt(game.Clock.Hour) && game.Stock.Product > 0)
                 {
-                    int sales = Mathf.Min(game.Stock.Product, Mathf.RoundToInt(2.4f * zone.Demand * (1f - zone.Heat / 150f) * (float)rng.NextDouble() * 2f));
+                    int sales = Mathf.Min(game.Stock.Product, Mathf.RoundToInt(6f * zone.Demand * (1f - zone.Heat / 150f) * (float)rng.NextDouble() * 2f));
                     game.Stock.Product -= sales;
                     game.Stock.Cash += sales * Prices.ProductStreet;
                     sq.SalesToday += sales;
@@ -147,6 +147,7 @@ namespace OSistema.Core
                 if (taker != null && !guarded && rng.NextDouble() < 0.01)
                 {
                     Squares.RemoveAt(i);
+                    game.Org.SquaresVersion++;   // the map redraws without it
                     DormantClanSquares.Add(new DrugSquare { Cell = sq.Cell, ZoneId = sq.ZoneId, Rival = true, OpenHour = 0, CloseHour = 0, Clan = taker.Id });
                     game.Phone.Send(game, OSistema.Social.MsgKind.Info, "A friend in " + Name,
                         null, $"The {taker.Name} took your piazza in {zone.Name}. Nobody was there to stop them.", null);

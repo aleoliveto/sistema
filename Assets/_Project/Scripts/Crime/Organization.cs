@@ -285,6 +285,14 @@ namespace OSistema.Crime
             Squares.Add(square);
             SquaresVersion++;
             game.Log.Add($"Opened a piazza in {zone.Name}. Assign pushers and lookouts, and order product.");
+            // Why it isn't on the territory map yet.
+            if (!ControlsZone(zone, game))
+            {
+                bool foothold = HasFoothold(zone, game), pusher = game.Pawns.Crew.Any(c => c.IsPresent && c.Role == CrewRole.Pusher);
+                string need = !foothold && !pusher ? "a house or shop of yours here, and a pusher on the payroll"
+                    : !foothold ? "a house or shop of yours here (Famiglia › Property)" : "a pusher on the payroll";
+                game.Log.Add($"{zone.Name} isn't yours yet: you also need {need}.", MessageKind.Info, cell);
+            }
             game.Newspaper.Report(game, 2, $"New drug market in {zone.Name}, residents say", "\"They sell on the corner in broad daylight,\" says a pensioner. \"The police drive past and look the other way.\"");
             return true;
         }
@@ -389,7 +397,8 @@ namespace OSistema.Crime
             {
                 if (!sq.IsOpenAt(hour)) continue;
                 var zone = game.Territory.Zones[sq.ZoneId];
-                float perHour = 2.4f * zone.Demand * (1f - zone.Heat / 150f) * (0.7f + Respect / 250f);
+                // A proper piazza with a pusher draws far more than a kid on a corner.
+                float perHour = 6f * zone.Demand * (1f - zone.Heat / 150f) * (0.7f + Respect / 250f);
                 if (game.Clans.Any(c => !c.Destroyed && c.NearRivalTerritory(sq))) perHour *= 0.7f; // customers have a choice
                 if (game.Rng.NextDouble() < perHour / GameClock.TicksPerHour)
                     game.Npcs.SpawnCustomer(sq, game);

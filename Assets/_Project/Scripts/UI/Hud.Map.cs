@@ -272,6 +272,7 @@ namespace OSistema.UI
                 int guards = mine ? game.Org.Guards(z, game) : 0;
                 string holder = mine ? $"<color=#E8C26A>yours</color> · {guards} on guard" : clan != null ? clan.Name : "nobody's";
                 if (!mine && game.Org.HasFoothold(z, game) && !game.Org.HasWorkingPiazza(z, game)) holder += "\n<color=#F2B866>you need a working piazza here</color>";
+                if (!mine && !game.Org.HasFoothold(z, game) && game.Org.Squares.Exists(q => q.ZoneId == z.Id)) holder += "\n<color=#F2B866>your piazza · buy a house or shop here to hold it</color>";
                 label.text = $"<b>{z.Name}</b>\n{holder}";
             }
         }

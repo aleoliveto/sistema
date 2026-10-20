@@ -82,7 +82,7 @@ namespace OSistema.AI
                 if (dist > 30)
                 {
                     int inUse = 0;
-                    foreach (var p in game.Pawns.Crew) if (p.OnScooter) inUse++;
+                    foreach (var p in game.Pawns.Crew) if (p.OnScooter && !p.Pillion) inUse++;
                     if (inUse < game.Stock.Scooters) pawn.OnScooter = true;
                 }
             }

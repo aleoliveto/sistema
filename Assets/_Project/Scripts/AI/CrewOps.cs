@@ -8,6 +8,35 @@ using UnityEngine;
 namespace OSistema.AI
 {
     /// <summary>
+    /// Two to a scooter: the driver rides, the passenger sits behind him and shoots at the other side
+    /// as they go. When the driver stops (to fight, or because they're there) the passenger gets off.
+    /// </summary>
+    public static class Pillion
+    {
+        /// <summary>True while the passenger is riding behind the driver this tick (skip his own walking).</summary>
+        public static bool Ride(Pawn passenger, Pawn driver, Game game)
+        {
+            bool riding = driver != null && driver.CanAct && driver.Riding && !driver.Pillion;
+            if (riding)
+            {
+                passenger.Pillion = true;
+                passenger.OnScooter = passenger.Riding = false;
+                passenger.Heading = driver.Heading;
+                passenger.Mover.Place(driver.Position - driver.Forward * 0.38f);
+                // Shooting from the back of the scooter at any of theirs in range.
+                passenger.OnOperationUntil = game.Ticks.TicksGame + 30;
+                return true;
+            }
+            if (passenger.Pillion)
+            {
+                passenger.Pillion = false;
+                passenger.Mover.Unstick(game.Map);
+            }
+            return false;
+        }
+    }
+
+    /// <summary>
     /// A stesa of your own: ride to a rival piazza on the scooter, empty a few rounds over it (and at
     /// whoever of theirs is standing there), and get out before the sirens. A warning, not a war.
     /// </summary>
@@ -15,14 +44,16 @@ namespace OSistema.AI
     {
         readonly RivalClan clan;
         readonly DrugSquare target;
+        readonly Pawn driver;   // riding on the back of his scooter, or null to ride his own
         Walker walker;
         int shots, timer;
         bool arrived, done;
 
-        public CrewStesaJob(Pawn pawn, RivalClan clan, DrugSquare target) : base(pawn)
+        public CrewStesaJob(Pawn pawn, RivalClan clan, DrugSquare target, Pawn driver = null) : base(pawn)
         {
             this.clan = clan;
             this.target = target;
+            this.driver = driver;
         }
 
         public override string Label => arrived ? "Stesa!" : "Riding to the stesa";
@@ -33,7 +64,9 @@ namespace OSistema.AI
             if (done || Pawn.Health.Pain > 0.5f) return Home(game);
             if (!arrived)
             {
-                Pawn.OnScooter = game.Stock.Scooters > 0;
+                if (driver != null && Pillion.Ride(Pawn, driver, game)) return false;
+                if (driver != null && (Pawn.Position - Mover.CellCenter(target.Cell)).sqrMagnitude < 7f * 7f) { arrived = true; Pawn.OnOperationUntil = now + 600; return false; }
+                Pawn.OnScooter = driver == null && game.Stock.Scooters > 0;
                 walker ??= new Walker(target.Cell, adjacent: true, speedMultiplier: 1.15f) { Flexible = true };
                 var status = walker.Tick(Pawn, game);
                 if (status == WalkStatus.Failed) return Home(game);
@@ -70,12 +103,14 @@ namespace OSistema.AI
     public sealed class CrewHitJob : Job
     {
         readonly Pawn target;
+        readonly Pawn driver;
         Walker walker;
         int ticks;
 
-        public CrewHitJob(Pawn pawn, Pawn target) : base(pawn)
+        public CrewHitJob(Pawn pawn, Pawn target, Pawn driver = null) : base(pawn)
         {
             this.target = target;
+            this.driver = driver;
         }
 
         public override string Label => $"Hunting {target.DisplayName}";
@@ -83,6 +118,7 @@ namespace OSistema.AI
         public override bool Tick(Game game)
         {
             long now = game.Ticks.TicksGame;
+            if (driver != null && Pillion.Ride(Pawn, driver, game)) return false;
             // Down but not dead: walk up and finish it. Nobody leaves a witness breathing.
             if (target != null && !target.Dead && target.Health.Downed && Pawn.Health.Pain <= 0.5f)
             {
@@ -105,7 +141,7 @@ namespace OSistema.AI
                 return true;
             }
             float d = (target.Position - Pawn.Position).magnitude;
-            Pawn.OnScooter = d > 14f && game.Stock.Scooters > 0;
+            Pawn.OnScooter = driver == null && d > 14f && game.Stock.Scooters > 0;
             if (d < 7f && Combat.CombatSystem.HasLineOfSight(game.Map, Pawn.Cell, target.Cell))
             {
                 Pawn.StopMoving();

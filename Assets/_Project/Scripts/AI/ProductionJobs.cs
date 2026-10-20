@@ -204,7 +204,7 @@ namespace OSistema.AI
         bool FreePillionSeat(Game game)
         {
             foreach (var p in game.Pawns.Crew)
-                if (p != Pawn && p.Pillion) return false;
+                if (p != Pawn && p.Pillion && p.CurrentJob is BodyguardJob) return false;   // the boss's seat is taken
             return true;
         }
 

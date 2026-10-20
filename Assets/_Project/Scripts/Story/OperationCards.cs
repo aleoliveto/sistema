@@ -48,7 +48,8 @@ namespace OSistema.Story
                 var gunman = c;
                 e.Option($"{gunman.DisplayName} · shooting {gunman.ShootingSkill}", "", g =>
                 {
-                    gunman.ForceJob(new CrewStesaJob(gunman, clan, square), g);
+                    // The second rider sits behind the first.
+                    gunman.ForceJob(new CrewStesaJob(gunman, clan, square, first), g);
                     if (first == null) g.Events.Raise(Riders(clan, square, gunman, g));
                     else g.Log.Add($"{first.Nickname} and {gunman.Nickname} ride out to the {clan.Name}'s piazza.", MessageKind.Info, square.Cell);
                 });
@@ -107,7 +108,9 @@ namespace OSistema.Story
         {
             var target = clan.ExposeTarget(boss, g);
             if (target == null) { g.Log.Add("Nobody knows where to find him today.", MessageKind.Bad); return; }
-            foreach (var h in squad) h.ForceJob(new CrewHitJob(h, target), g);
+            // Two to a scooter: every second man rides behind the one before him.
+            for (int i = 0; i < squad.Count; i++)
+                squad[i].ForceJob(new CrewHitJob(squad[i], target, i % 2 == 1 ? squad[i - 1] : null), g);
             g.Log.Add($"Word is {(boss ? clan.BossName : "one of the " + clan.Name + "'s lieutenants")} is in {g.Territory.ZoneAt(target.Cell)?.Name ?? "their rione"}. {string.Join(", ", squad.Select(s => s.Nickname))} go for him.", MessageKind.Info, target.Cell);
         }
 
