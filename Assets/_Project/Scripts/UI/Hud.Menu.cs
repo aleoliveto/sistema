@@ -289,6 +289,8 @@ namespace OSistema.UI
                         if (r == Pawns.CrewRole.Bodyguard) p.Health.Injuries.Add(new Pawns.Injury { Label = "Cut", Part = "Arm", Severity = 0.2f, BleedPerDay = 0f, Tended = true, TendQuality = 0.5f });
                     }
                 }
+                // "tired": Gennaro starts with no sleep left, to see the yawns, the heavy eyelids and the collapse.
+                if (text.Contains("tired") && game?.Player != null) game.Player.Needs.Rest = -0.08f;
                 if (text.Contains("uitour") && game != null) StartUiTour();
                 if (text.Contains("interiors") && game != null) StartInteriorTour();
                 if (text.Contains("checks") && game != null) StartDevChecks();

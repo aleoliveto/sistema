@@ -10,6 +10,8 @@ namespace OSistema.Pawns
         public const float RavenousBelow = 0.12f;
         public const float TiredBelow = 0.3f;
         public const float ExhaustedBelow = 0.1f;
+        /// <summary>Rest goes below empty while you stay up: at this, you pass out where you stand (-10 on the 0..100 bar).</summary>
+        public const float Overtired = -0.1f;
 
         // Per-tick rates. A day is 60,000 ticks.
         // In days, so the body keeps time with the clock however long a day lasts.
@@ -29,7 +31,7 @@ namespace OSistema.Pawns
             Food = Mathf.Max(0f, Food - FoodDecay);
             if (pawn.Sleep == SleepState.InBed) Rest = Mathf.Min(1f, Rest + RestInBed);
             else if (pawn.Sleep == SleepState.OnFloor) Rest = Mathf.Min(1f, Rest + RestOnFloor);
-            else Rest = Mathf.Max(0f, Rest - RestDecay);
+            else Rest = Mathf.Max(Overtired, Rest - RestDecay);
         }
 
         public void Eat(float nutrition) => Food = Mathf.Min(1f, Food + nutrition);

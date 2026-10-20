@@ -106,12 +106,17 @@ namespace OSistema.UI
             damageOverlay.pickingMode = PickingMode.Ignore;
             damageOverlay.style.backgroundImage = new StyleBackground(DamageVignette());
             damageOverlay.style.opacity = 0f;
+            // Heavy eyelids when Gennaro is out of sleep: the edges darken, now and then the eyes close.
+            tiredOverlay = Ui.Box("layer").Into(root);
+            tiredOverlay.pickingMode = PickingMode.Ignore;
+            tiredOverlay.style.backgroundColor = new Color(0.02f, 0.015f, 0.01f);
+            tiredOverlay.style.opacity = 0f;
             hudLayer = Layer();
             modalLayer = Layer();
         }
 
-        VisualElement damageOverlay;
-        float damageFlash;
+        VisualElement damageOverlay, tiredOverlay;
+        float damageFlash, blinkTimer = 4f, blink;
 
         static Texture2D vignette;
 
@@ -165,6 +170,7 @@ namespace OSistema.UI
             damageFlash = Mathf.MoveTowards(damageFlash, 0f, Time.unscaledDeltaTime * 3f);
             float a = (1f - hp) * 0.75f + damageFlash * 0.4f;
             damageOverlay.style.opacity = Mathf.Clamp01(a);
+            UpdateTiredOverlay(p);
 
             // Health and the vest live in the top bar now (Hud.Vitals); only the hurt arrow is built here.
             if (combatBar == null) BuildCombatBar();
@@ -184,6 +190,31 @@ namespace OSistema.UI
                 hurtArrow.style.rotate = new Rotate(Angle.Degrees(ang));
                 hurtArrow.style.opacity = hurtArrowTime;
             }
+        }
+
+        void UpdateTiredOverlay(Pawn p)
+        {
+            float rest = p != null && game != null && !p.Riding ? p.Needs.Rest : 1f;
+            bool asleep = p != null && p.Sleep != SleepState.Awake;
+            float dt = Time.unscaledDeltaTime;
+            if (rest > 0.02f || asleep)
+            {
+                blink = Mathf.MoveTowards(blink, asleep && p.PassedOut(game.Ticks.TicksGame) ? 0.85f : 0f, dt * 2f);
+                tiredOverlay.style.opacity = blink;
+                return;
+            }
+            // 0 .. 1 as rest runs from empty to passing out.
+            float depth = Mathf.Clamp01(-rest / -Needs.Overtired);
+            blinkTimer -= dt;
+            if (blinkTimer <= 0f)
+            {
+                blinkTimer = Mathf.Lerp(7f, 2.5f, depth) + UnityEngine.Random.value * 2f;
+                blink = 1f;
+            }
+            blink = Mathf.MoveTowards(blink, 0f, dt * Mathf.Lerp(1.6f, 0.9f, depth));
+            // A curve: quick to close, slower to open; plus a dim veil that thickens.
+            float lid = blink > 0.6f ? 1f - (blink - 0.6f) / 0.4f : blink / 0.6f;
+            tiredOverlay.style.opacity = Mathf.Clamp01(0.08f + 0.2f * depth + lid * (0.55f + 0.35f * depth));
         }
 
         VisualElement Layer()

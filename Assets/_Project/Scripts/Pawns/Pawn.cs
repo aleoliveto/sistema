@@ -300,7 +300,11 @@ namespace OSistema.Pawns
 
         /// <summary>Injuries slow you down; a scooter speeds you up.</summary>
         public bool Riding;              // on the scooter right now: only on streets, never indoors
-        public float SpeedFactor => (1f - Health.Pain * 0.5f) * (Riding ? 2.3f : 1f) * (staggered ? 0.45f : 1f);
+        public float SpeedFactor => (1f - Health.Pain * 0.5f) * (Riding ? 2.3f : 1f) * (staggered ? 0.45f : 1f) * (!Riding && Needs.Rest <= 0f ? 0.55f : 1f);
+
+        /// <summary>Passed out from lack of sleep: on the ground, no input, until then.</summary>
+        public long PassedOutUntil;
+        public bool PassedOut(long now) => now < PassedOutUntil;
         bool staggered;
         public void UpdateStagger(long now) => staggered = now < StaggerUntil;
 
@@ -403,6 +407,21 @@ namespace OSistema.Pawns
                 BreakUntilTick = 0;
                 Mood.AddMemory("vented", "Vented my frustration", 12f, now, GameClock.TicksPerDay);
                 game.Log.Add($"{Nickname} has calmed down.", MessageKind.Good);
+            }
+
+            // No sleep left: yawning, dragging the feet; past the end of it, out cold where you stand.
+            if (Sleep == SleepState.Awake && CanAct && !Riding && !Pillion)
+            {
+                if (Needs.Rest <= Needs.Overtired + 0.0005f)
+                {
+                    PassedOutUntil = now + GameClock.TicksPerHour * 3;
+                    Sleep = SleepState.OnFloor;
+                    ForceJob(new OSistema.AI.SleepJob(this, null, null), game);
+                    game.Log.Add(Controlled ? "Your eyes close on their own. You go down right there, in the street."
+                                            : $"{Nickname} couldn't keep his eyes open and passed out in the street.", MessageKind.Bad, Cell);
+                    return;
+                }
+                if (Needs.Rest <= 0f && game.Rng.NextDouble() < 0.004) Say("yawn");
             }
 
             if (!Controlled && !InMentalBreak(now) && !Drafted && CanAct && Mood.Value < Mood.BreakBelow && game.Rng.NextDouble() < 0.012)

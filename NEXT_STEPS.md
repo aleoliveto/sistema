@@ -7,14 +7,14 @@
 - **Bodyguards:** do Wide and Ahead behave in narrow vicoli? (`BodyguardJob`)
 - **Lavoretti:** Taccuino has no button now (J still opens it). If jobs feel hidden, put the button back until a Lavori board exists.
 
-## 1b. Territory feels broken (reported by the player)
+## 1b. Territory (DONE, 2545b93: check it in play)
 Today a rione is yours only with a foothold (a property or an owned shop inside it) and a piazza with a pusher (`Organization.ControlsZone`). Taking a rival piazza needs ~7 game hours with none of theirs within 9 cells, and it only becomes yours under the rank's piazza cap (Guaglione 0, Paranza 1, Clan 2, Sistema 3; `RivalClan.CheckCaptures`). Nothing on screen explains any of this.
 - A piazza with a pusher should take the rione on its own; a foothold becomes a bonus (more guards, less heat).
 - Loosen the early piazza cap, or let a captured rival piazza go over it.
 - Say why a rione isn't yours yet (needs a pusher / a foothold / rank cap) on the map and in Piazza.
 - Show a "holding the corner" progress bar while taking a rival piazza.
 
-## 1c. Exhaustion (requested)
+## 1c. Exhaustion (DONE: check the pass-out in play with dev switch "tired")
 When Gennaro's sleep (`Needs.Rest`) runs out:
 - **At 0:** he walks really slowly, his vision blurs now and then (a soft blur and darkening pulse over the screen, e.g. in `PostFx`), and he yawns (a bark plus a yawn sound).
 - **Past 0, down to −10:** Rest has to be allowed below zero (or tracked as a separate "overtired" counter). At −10 he passes out where he stands: he drops to the ground, sleeps a few hours, and is vulnerable in the street (police, rivals, pickpockets).

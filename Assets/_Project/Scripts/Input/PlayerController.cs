@@ -596,7 +596,7 @@ namespace OSistema.Input
                     follow = p;
                 }
             }
-            else if (dir != Vector2.zero && live)
+            else if (dir != Vector2.zero && live && !p.PassedOut(now))
             {
                 p.LastInputTick = now;
                 if (p.CurrentJob != null && !(p.CurrentJob is DownedJob)) p.EndCurrentJob(game);

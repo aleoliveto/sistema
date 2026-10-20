@@ -55,6 +55,12 @@ namespace OSistema.Story
                 new Line("Mannaggia!", "Damn it!"),
                 new Line("Aggio fatto 'nu guaio...", "I've made a mess of it..."),
             },
+            ["yawn"] = new[]
+            {
+                new Line("Aaah... nun ce veco cchiù.", "Aaah... I can't see straight."),
+                new Line("Madonna, che suonno.", "God, I'm so tired."),
+                new Line("Mo m'addormo all'erta.", "I'll fall asleep standing up."),
+            },
             ["sulk"] = new[]
             {
                 new Line("Nun me scassate 'o cazz'.", "Leave me the hell alone."),
