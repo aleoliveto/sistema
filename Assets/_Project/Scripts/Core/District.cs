@@ -147,7 +147,7 @@ namespace OSistema.Core
                 if (taker != null && !guarded && rng.NextDouble() < 0.01)
                 {
                     Squares.RemoveAt(i);
-                    game.Org.SquaresVersion++;   // the map redraws without it
+                    game.Org.SquaresChanged();   // so the map redraws without it
                     DormantClanSquares.Add(new DrugSquare { Cell = sq.Cell, ZoneId = sq.ZoneId, Rival = true, OpenHour = 0, CloseHour = 0, Clan = taker.Id });
                     game.Phone.Send(game, OSistema.Social.MsgKind.Info, "A friend in " + Name,
                         null, $"The {taker.Name} took your piazza in {zone.Name}. Nobody was there to stop them.", null);

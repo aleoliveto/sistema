@@ -41,6 +41,9 @@ namespace OSistema.Crime
         /// <summary>Bumped when squares change so the map overlay redraws.</summary>
         public int SquaresVersion { get; private set; }
 
+        /// <summary>Something changed the piazze from outside (a district ticking on its own): redraw.</summary>
+        public void SquaresChanged() => SquaresVersion++;
+
         int lastAbsoluteHour = -1;
 
         public static int WeekOf(GameClock clock) => (clock.Day - 1) / 7;
