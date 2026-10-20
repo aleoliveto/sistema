@@ -337,6 +337,7 @@ namespace OSistema.UI
                 bedBtn = Ui.Btn(BedLabel(p), () => ShowBedMenu(pawn, bedBtn), jobRow, "btn--small");
                 Ui.Btn(p.Armed ? "Disarm" : $"Arm ({game.Stock.Pistols} in stash)", Do(() => ToggleArmed(pawn)), jobRow, "btn--small", p.Armed ? "btn--on" : "x");
                 PersonShifts(p);
+                if (p.Role == CrewRole.Bodyguard) GuardSettings(p);
 
                 Ui.Text("WAGE", bizBody, "section");
                 var wageRow = Ui.Row(bizBody);
@@ -556,6 +557,40 @@ namespace OSistema.UI
             Ui.Btn("Day 09–21", Do(() => pawn.SetWorkHours(9, 21)), row, "btn--small", day ? "btn--on" : "x");
             Ui.Btn("Night 21–09", Do(() => pawn.SetWorkHours(21, 9)), row, "btn--small", night ? "btn--on" : "x");
             if (!day && !night) Ui.Text($"  now {f:00}–{t:00}", row, "tiny");
+        }
+
+        /// <summary>Where a bodyguard stands: a slot round the boss, or a post at home or at a piazza.</summary>
+        void GuardSettings(Pawn p)
+        {
+            var pawn = p;
+            Ui.Text("WHERE THEY STAND", bizBody, "section");
+            var posts = Ui.Row(bizBody);
+            posts.style.flexWrap = Wrap.Wrap;
+            var home = BodyguardJob.HomePost(game, p);
+            Ui.Btn("With the boss", Do(() => pawn.GuardPost = null), posts, "pill", !p.GuardPost.HasValue ? "pill--on" : "x");
+            bool atHome = p.GuardPost.HasValue && game.PlayerBase.Contains(p.GuardPost.Value) == false && home.HasValue && GridUtil.Manhattan(p.GuardPost.Value, home.Value) <= 4 && game.Org.Squares.All(q => GridUtil.Manhattan(q.Cell, p.GuardPost.Value) > 3);
+            var hb = Ui.Btn("At the basso's door", Do(() => pawn.GuardPost = BodyguardJob.HomePost(game, pawn)), posts, "pill", atHome ? "pill--on" : "x");
+            hb.SetEnabled(home.HasValue);
+            foreach (var sq in game.Org.Squares)
+            {
+                var square = sq;
+                bool here = p.GuardPost.HasValue && GridUtil.Manhattan(p.GuardPost.Value, sq.Cell) <= 3;
+                Ui.Btn($"At {ZoneName(sq)}", Do(() => pawn.GuardPost = BodyguardJob.PiazzaPost(game, pawn, square)), posts, "pill", here ? "pill--on" : "x");
+            }
+            if (p.GuardPost.HasValue)
+            {
+                Ui.Text("They hold the post through their shift and shoot at anyone who comes for it.", bizBody, "tiny", "wrap");
+                return;
+            }
+            var slots = Ui.Row(bizBody);
+            slots.style.flexWrap = Wrap.Wrap;
+            Ui.Text("Formation", slots, "small", "muted").style.marginRight = 6;
+            for (int i = 0; i < BodyguardJob.SlotNames.Length; i++)
+            {
+                int slot = i;
+                Ui.Btn(BodyguardJob.SlotNames[i], Do(() => pawn.GuardSlot = slot), slots, "pill", "pill--small", p.GuardSlot == i ? "pill--on" : "x");
+            }
+            Ui.Text("Relative to the way the boss is walking. Close or Behind ride on the back of his scooter; the rest follow on their own.", bizBody, "tiny", "wrap");
         }
 
         // ---------- The organigram ----------

@@ -1,4 +1,5 @@
 using OSistema.Core;
+using OSistema.Crime;
 using OSistema.Pawns;
 using OSistema.World;
 using UnityEngine;
@@ -128,27 +129,48 @@ namespace OSistema.AI
     }
 
     /// <summary>
-    /// Stays close to the boss. When the boss rides, the first bodyguard hops on the back; others take
-    /// the family's other scooters and follow. The combat system makes them shoot when there's trouble.
+    /// Stays close to the boss, in the formation slot the player gave them (close, behind, at his left or
+    /// right, ahead, or wide on the approaches), turned the way the boss is going. When the boss rides,
+    /// one bodyguard hops on the back; others take the family's other scooters and follow. Or, given a
+    /// post (the basso's door, a piazza), they stand there instead. The combat system makes them shoot
+    /// when there's trouble.
     /// </summary>
     public sealed class BodyguardJob : Job
     {
+        public const int SlotClose = 0, SlotBehind = 1, SlotLeft = 2, SlotRight = 3, SlotAhead = 4, SlotWide = 5;
+        public static readonly string[] SlotNames = { "Close", "Behind", "Left", "Right", "Ahead", "Wide" };
+
         Walker walker;
         Vector2Int lastTarget;
+        Vector2 lastBossPos, facing = Vector2.up;
         int wait;
 
         public BodyguardJob(Pawn pawn) : base(pawn) { }
-        public override string Label => Pawn.Pillion ? "On the back of the boss's scooter" : Pawn.OnScooter ? "Riding behind the boss" : "Watching the boss's back";
+        public override string Label => Pawn.GuardPost.HasValue ? "Standing guard" : Pawn.Pillion ? "On the back of the boss's scooter" : Pawn.OnScooter ? "Riding behind the boss" : "Watching the boss's back";
         public override bool IsWork => true;
+
+        /// <summary>Where in the formation this bodyguard stands, relative to the boss: (right, forward) in cells.</summary>
+        static Vector2 SlotOffset(int slot, int id) => slot switch
+        {
+            SlotBehind => new Vector2(0f, -1.6f),
+            SlotLeft => new Vector2(-1.6f, -0.3f),
+            SlotRight => new Vector2(1.6f, -0.3f),
+            SlotAhead => new Vector2(0f, 1.9f),
+            SlotWide => new Vector2(id % 2 == 0 ? -3f : 3f, -1.8f),
+            _ => Vector2.zero,
+        };
 
         public override bool Tick(Game game)
         {
+            if (Pawn.GuardPost.HasValue) return TickPost(game);
             var boss = game.Player;
             if (boss == null || !boss.IsPresent || boss.InJail) return true;
+            int slot = Pawn.GuardSlot;
+            bool closeSlot = slot == SlotClose || slot == SlotBehind;
 
             if (boss.Riding && !boss.StolenScooter)
             {
-                if (Pawn.Pillion || FreePillionSeat(game))
+                if (Pawn.Pillion || (closeSlot && FreePillionSeat(game)))
                 {
                     // On the back: wherever the boss goes, a hand on his shoulder.
                     Pawn.Pillion = true;
@@ -173,23 +195,93 @@ namespace OSistema.AI
                 if (Pawn.OnScooter && !boss.Riding) Pawn.OnScooter = Pawn.Riding = false;
             }
 
-            float d = (boss.Position - Pawn.Position).magnitude;
-            if (d < 2.2f && walker == null)
+            // Which way the boss is heading: the way he last moved (or his scooter's nose).
+            var moved = boss.Position - lastBossPos;
+            if (boss.Riding) facing = boss.Forward;
+            else if (moved.sqrMagnitude > 0.0025f && moved.sqrMagnitude < 4f) facing = moved.normalized;
+            lastBossPos = boss.Position;
+
+            Vector2 spot = boss.Position;
+            if (slot != SlotClose && !boss.Riding)
+            {
+                var o = SlotOffset(slot, Pawn.Id);
+                var right = new Vector2(facing.y, -facing.x);
+                var want = boss.Position + right * o.x + facing * o.y;
+                if (game.Map.IsPassable(Vector2Int.FloorToInt(want))) spot = want;
+            }
+            float d = (spot - Pawn.Position).magnitude;
+            float near = slot == SlotClose || boss.Riding ? 2.2f : 0.9f;
+            if (d < near && walker == null)
             {
                 if (++wait > 120) return true;   // re-think now and then (food, sleep)
                 return false;
             }
             wait = 0;
-            if (walker == null || (boss.Cell - lastTarget).sqrMagnitude > 4)
+            var cell = Vector2Int.FloorToInt(spot);
+            bool adjacent = slot == SlotClose || boss.Riding || cell == boss.Cell;
+            if (walker == null || (cell - lastTarget).sqrMagnitude > (adjacent ? 4 : 1))
             {
-                lastTarget = boss.Cell;
-                walker = new Walker(boss.Cell, adjacent: true, speedMultiplier: Pawn.OnScooter ? 1.25f : 1.2f) { Flexible = true };
+                lastTarget = cell;
+                walker = new Walker(adjacent ? boss.Cell : cell, adjacent: adjacent, speedMultiplier: Pawn.OnScooter ? 1.25f : 1.2f) { Flexible = true };
             }
             bool keepScooter = Pawn.OnScooter;
             var status = walker.Tick(Pawn, game);
             if (keepScooter && boss.Riding) Pawn.OnScooter = true;   // the walker parks it on arrival; we're still following
             if (status != WalkStatus.Walking) walker = null;
             return status == WalkStatus.Failed;
+        }
+
+        /// <summary>A fixed post: walk there and stand, looking out.</summary>
+        bool TickPost(Game game)
+        {
+            if (Pawn.Pillion) { Pawn.Pillion = false; Pawn.Mover.Place(Mover.CellCenter(Pawn.Cell)); }
+            var post = Pawn.GuardPost.Value;
+            if (Pawn.Cell == post && walker == null)
+            {
+                if (++wait > 240) return true;   // re-think now and then (food, sleep)
+                return false;
+            }
+            wait = 0;
+            if (walker == null) walker = new Walker(post, adjacent: false) { Flexible = true };
+            var status = walker.Tick(Pawn, game);
+            if (status != WalkStatus.Walking) walker = null;
+            return status == WalkStatus.Failed;
+        }
+
+        /// <summary>A free cell to stand guard at the basso's door (the n-th guard gets the n-th spot).</summary>
+        public static Vector2Int? HomePost(Game game, Pawn guard)
+        {
+            var home = game.PlayerBase;
+            var spots = new System.Collections.Generic.List<Vector2Int>();
+            for (int x = home.xMin - 1; x <= home.xMax; x++)
+            for (int y = home.yMin - 1; y <= home.yMax; y++)
+            {
+                var c = new Vector2Int(x, y);
+                if (game.Map.GetBuilding(c) != BuildingDefs.Door) continue;
+                foreach (var n in GridUtil.CellsAround(c, 2))
+                    if (!home.Contains(n) && game.Map.IsPassable(n) && game.Map.GetBuilding(n) == null && !spots.Contains(n)) spots.Add(n);
+            }
+            return FreeSpot(game, guard, spots);
+        }
+
+        /// <summary>A free cell two steps off a piazza, to stand guard over it.</summary>
+        public static Vector2Int? PiazzaPost(Game game, Pawn guard, DrugSquare sq)
+        {
+            var spots = new System.Collections.Generic.List<Vector2Int>();
+            foreach (var c in GridUtil.CellsAround(sq.Cell, 3))
+                if (GridUtil.Manhattan(c, sq.Cell) >= 2 && game.Map.IsPassable(c) && game.Map.GetBuilding(c) == null) spots.Add(c);
+            return FreeSpot(game, guard, spots);
+        }
+
+        static Vector2Int? FreeSpot(Game game, Pawn guard, System.Collections.Generic.List<Vector2Int> spots)
+        {
+            foreach (var c in spots)
+            {
+                bool taken = false;
+                foreach (var p in game.Pawns.Crew) if (p != guard && p.GuardPost == c) taken = true;
+                if (!taken) return c;
+            }
+            return spots.Count > 0 ? spots[0] : (Vector2Int?)null;
         }
 
         public override void OnEnd(Game game)

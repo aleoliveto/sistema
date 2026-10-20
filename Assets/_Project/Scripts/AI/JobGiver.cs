@@ -258,7 +258,7 @@ namespace OSistema.AI
 
             if (pawn.Role == CrewRole.Collector) return CollectorDuty(pawn, game);
             if (pawn.Role == CrewRole.Bodyguard)
-                return game.Player != null && game.Player.IsPresent && !game.Player.InJail ? new BodyguardJob(pawn) : null;
+                return pawn.GuardPost.HasValue || (game.Player != null && game.Player.IsPresent && !game.Player.InJail) ? new BodyguardJob(pawn) : null;
             if (pawn.Role == CrewRole.Bagger)
                 return game.Org.CanMakeDose(game) && StationJob.TryFind(pawn, BuildingDefs.BaggingTable, game, out var table) ? new BagJob(pawn, table) : null;
             if (pawn.Role == CrewRole.Roller)
