@@ -35,6 +35,7 @@ namespace OSistema.Crime
         public List<Business> Businesses => District.Businesses;
 
         public int PendingOrderUnits;
+        public int LastPizzinoDay = -1;  // the day the boss last sent word out of Poggioreale
         public int PendingOrderDay;     // delivered at 08:00 on this day
         public int LastPaydayWeek = -1;
 

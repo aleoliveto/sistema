@@ -108,9 +108,24 @@ namespace OSistema.UI
             {
                 long days = (p.JailedUntil - now) / GameClock.TicksPerDay + 1;
                 title = "POGGIOREALE";
-                text = $"{p.DisplayName} is inside for {days} more day{(days == 1 ? "" : "s")}. The family carries on without him: your crew still work their jobs, and the phone still rings.";
-                b1 = "Let the days pass";
-                statusAction = () => game.Ticks.SetSpeed(4);
+                int dayOfWeek = (game.Clock.Day - 1) % 7;          // 0 Monday … 5 Saturday
+                int toSaturday = (5 - dayOfWeek + 7) % 7;
+                bool sentToday = game.Org.LastPizzinoDay == game.Clock.Day;
+                text = $"Inside for {days} more day{(days == 1 ? "" : "s")}. The crew carry on outside, but without product the piazze run dry: send word.\n" +
+                       $"<color=#A89F8E>A pizzino a day goes out through a guard. Colloquio on Saturday{(toSaturday == 0 ? " (today, at 10)" : $" (in {toSaturday} day{(toSaturday == 1 ? "" : "s")})")}.</color>";
+                b1 = sentToday ? "Pizzino sent today" : "Send a pizzino";
+                statusAction = () =>
+                {
+                    if (game.Org.LastPizzinoDay == game.Clock.Day) return;
+                    game.Org.LastPizzinoDay = game.Clock.Day;
+                    // A tapped family gets its notes read now and then.
+                    if (game.Phone.Tapped(game.Ticks.TicksGame) && game.Rng.NextDouble() < 0.25)
+                    {
+                        game.Org.AddEvidence(2f, game);
+                        game.Log.Add("A guard was searched on his way out. Your pizzino is now in a magistrate's file.", MessageKind.Bad);
+                    }
+                    game.Events.Raise(OSistema.Story.JailCards.Orders(game, visit: false));
+                };
             }
             else if (p.InHospital)
             {
@@ -138,6 +153,13 @@ namespace OSistema.UI
                 b2 = "Back to normal speed";
                 statusAction2 = () => game.Ticks.SetSpeed(1);
             }
+            else if (p.InJail)
+            {
+                b2 = "Let the days pass";
+                statusAction2 = () => game.Ticks.SetSpeed(4);
+            }
+            // In jail the box sits at the side, out of the way of the city you're still watching.
+            statusBox.EnableInClassList("status-box--side", p.InJail);
 
             statusBox.Show(title != null);
             if (title == null) return;

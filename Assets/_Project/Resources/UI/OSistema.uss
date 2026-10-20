@@ -990,3 +990,4 @@
 .combat-bar__hpfill { height: 100%; background-color: #F2F2EA; }
 .hurt-arrow { position: absolute; width: 32px; height: 32px; font-size: 28px; color: #FF3B30; -unity-text-align: middle-center; -unity-font-style: bold; text-shadow: 0 0 4px rgba(0,0,0,0.9); }
 .person-menu { min-width: 200px; padding: 6px; }
+.status-box--side { top: auto; bottom: 90px; left: 12px; translate: 0 0; width: 380px; }

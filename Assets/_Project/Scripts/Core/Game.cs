@@ -497,6 +497,10 @@ namespace OSistema.Core
             socialHour = hour;
             if (first) return;
             Phone.Hourly(this);
+            // Saturday morning in Poggioreale: one of the boys comes to visit, and takes orders.
+            var boss = Player;
+            if (boss != null && boss.InJail && (Clock.Day - 1) % 7 == 5 && Clock.Hour == 10)
+                Events.Raise(JailCards.Orders(this, visit: true));
             Pawns.ClearBodies(this);
             foreach (var d in Districts) if (d != District) d.LedgerHour(this);
             Favours.Hourly(this);
