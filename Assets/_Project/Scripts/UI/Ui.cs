@@ -89,6 +89,20 @@ namespace OSistema.UI
         public static void SetFill(VisualElement fill, float t) =>
             fill.style.width = Length.Percent(Mathf.Clamp01(t) * 100f);
 
+        /// <summary>A painted icon from Resources/UI/Art (made by Tools/ArtGen/ui.py), or null if there isn't one.</summary>
+        public static VisualElement ArtIcon(string name, float size, VisualElement parent = null)
+        {
+            var tex = Resources.Load<Texture2D>("UI/Art/" + name);
+            if (tex == null) return null;
+            var e = Box("art-icon");
+            e.style.width = size;
+            e.style.height = size;
+            e.style.backgroundImage = new StyleBackground(tex);
+            e.pickingMode = PickingMode.Ignore;
+            parent?.Add(e);
+            return e;
+        }
+
         public static Color Parse(string hex) => ColorUtility.TryParseHtmlString(hex, out var c) ? c : Color.white;
 
         public static string Hex(Color c) => "#" + ColorUtility.ToHtmlStringRGB(c);

@@ -24,7 +24,6 @@ namespace OSistema.UI
         {
             var bar = Ui.Box("topbar").Into(hudLayer);
             topBar = bar;
-            bar.style.backgroundImage = new StyleBackground(Ui.Gradient(new Color(0.13f, 0.10f, 0.07f, 0.98f), new Color(0.05f, 0.04f, 0.03f, 0.98f)));
 
             // Time and speed
             var clock = Ui.Box("stat", "stat--clock").Into(bar);
@@ -51,23 +50,23 @@ namespace OSistema.UI
             dirtyValue = Stat(bar, IconKind.Dirty, "MONEY", out var moneyCol, () =>
                 $"Dirty €{game.Stock.Cash}: what crime pays. Fine for drugs, guns, wages and small things.\n" +
                 $"Clean €{game.Stock.Clean}: legal income and laundered cash, needed for property and anything from €{OSistema.World.Prices.CleanMoneyThreshold} up.\n" +
-                $"Sunday at 12:00 the crew's mesata comes out: €{game.Org.WeeklyWageBill(game)}.");
+                $"Sunday at 12:00 the crew's mesata comes out: €{game.Org.WeeklyWageBill(game)}.", "icon_money");
             cleanValue = Ui.Text("", moneyCol, "stat__sub");
 
             respectValue = Stat(bar, IconKind.Respect, "RESPECT", out var repCol, () =>
-                $"{game.Org.RankName}. Respect {game.Org.Respect:0}: how much the rione fears and honours the family.\n" + (game.Org.NextRankGoal(game) ?? "The top of the System."));
+                $"{game.Org.RankName}. Respect {game.Org.Respect:0}: how much the rione fears and honours the family.\n" + (game.Org.NextRankGoal(game) ?? "The top of the System."), "icon_respect");
             rankCaption = repCol.Q<Label>(className: "stat__cap");
             rankFill = StatBar(repCol, new Color(0.91f, 0.76f, 0.42f));
 
             heatValue = Stat(bar, IconKind.Paper, "HEAT", out var heatCol, () =>
-                $"Evidence against the boss: {game.Org.Evidence:0}/100. At 100 an arrest warrant is issued. Lie low, launder, keep your hands clean.");
+                $"Evidence against the boss: {game.Org.Evidence:0}/100. At 100 an arrest warrant is issued. Lie low, launder, keep your hands clean.", "icon_heat");
             evidenceFill = StatBar(heatCol, new Color(0.88f, 0.32f, 0.26f));
 
             crewValue = Stat(bar, IconKind.Business, "CREW", out _, () =>
-                $"People in the family, and how many your rank can keep. Wages €{game.Org.WeeklyWageBill(game)} a week.");
+                $"People in the family, and how many your rank can keep. Wages €{game.Org.WeeklyWageBill(game)} a week.", "icon_crew");
 
             turfValue = Stat(bar, IconKind.House, "TERRITORY", out var turfCol, () =>
-                $"Your turf: {string.Join(", ", game.Org.Turf(game).Select(z => z.Name))}\nPiazze {game.Org.Squares.Count}/{game.Org.MaxSquaresForRank} at your rank.");
+                $"Your turf: {string.Join(", ", game.Org.Turf(game).Select(z => z.Name))}\nPiazze {game.Org.Squares.Count}/{game.Org.MaxSquaresForRank} at your rank.", "icon_territory");
             turfSub = Ui.Text("", turfCol, "stat__sub");
 
             threatValue = Stat(bar, IconKind.Pistol, "CLANS", out var threatCol, () =>
@@ -81,7 +80,7 @@ namespace OSistema.UI
             suppliesValue = Stat(bar, IconKind.Product, "SUPPLIES", out var supCol, () =>
                 $"ROSSE packs {game.Stock.Cigarettes} · tobacco {game.Stock.TobaccoG} g, papers {game.Stock.Papers}, empty packs {game.Stock.EmptyPacks}.\n" +
                 $"Doses {game.Stock.Product}, and {game.Stock.BulkDg / 10f:0.0} g still to cut.\n" +
-                $"Meals {game.Stock.Meals} · groceries {game.Stock.Groceries} · medicine {game.Stock.Medicine} · scooters {game.Stock.Scooters}.");
+                $"Meals {game.Stock.Meals} · groceries {game.Stock.Groceries} · medicine {game.Stock.Medicine} · scooters {game.Stock.Scooters}.", "icon_supplies");
             suppliesSub = Ui.Text("", supCol, "stat__sub");
 
             Ui.Box("spacer").Into(bar);
@@ -92,10 +91,12 @@ namespace OSistema.UI
         }
 
         /// <summary>One block of the top bar: an icon, a small caption, a big value. Returns the value label.</summary>
-        Label Stat(VisualElement bar, IconKind icon, string caption, out VisualElement col, System.Func<string> tip)
+        Label Stat(VisualElement bar, IconKind icon, string caption, out VisualElement col, System.Func<string> tip, string art = null)
         {
             var block = Ui.Box("stat").Into(bar);
-            new Icon(icon, 24).Into(block).AddToClassList("stat__icon");
+            var painted = art != null ? Ui.ArtIcon(art, 34, block) : null;
+            if (painted != null) painted.AddToClassList("stat__icon");
+            else new Icon(icon, 24).Into(block).AddToClassList("stat__icon");
             col = Ui.Box("stat__col").Into(block);
             Ui.Text(caption, col, "stat__cap");
             var value = Ui.Text("", col, "stat__value");

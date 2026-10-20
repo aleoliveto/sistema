@@ -1334,3 +1334,52 @@
 .hotbar .tab--icon { width: 52px; }
 .root .sidebar { background-color: rgb(17, 13, 10); }
 .sidebar__tab { flex-grow: 0; flex-basis: auto; width: 18.4%; }
+
+/* =====================================================================
+   v5: painted pieces from Tools/ArtGen/ui.py (Resources/UI/Art), drawn at 2x.
+   Frames and buttons are 9-slice; -unity-slice-scale 0.5 brings them back to screen size.
+   ===================================================================== */
+.panel {
+    background-image: resource("UI/Art/frame_panel");
+    -unity-slice-left: 28; -unity-slice-right: 28; -unity-slice-top: 28; -unity-slice-bottom: 28;
+    -unity-slice-scale: 0.5;
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    padding: 14px 16px;
+}
+.root .sidebar { background-color: rgba(0, 0, 0, 0); border-width: 0; }
+.minimap { background-image: none; background-color: rgb(18, 17, 16); border-width: 2px; border-color: rgba(201, 160, 84, 0.7); padding: 0; }
+
+.btn {
+    background-image: resource("UI/Art/button_normal");
+    -unity-slice-left: 16; -unity-slice-right: 16; -unity-slice-top: 16; -unity-slice-bottom: 16;
+    -unity-slice-scale: 0.5;
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+}
+.btn:hover { background-image: resource("UI/Art/button_hover"); background-color: rgba(0, 0, 0, 0); }
+.btn--on, .btn:active, .pill--on { background-image: resource("UI/Art/button_active"); background-color: rgba(0, 0, 0, 0); color: #24190C; }
+.bcard--on { background-image: resource("UI/Art/button_hover"); }
+.root .btn--on .tab__label, .root .pill--on, .root .sidebar__tab--on .sidebar__tabname { color: #24190C; }
+.root .btn--on .tab__sub { color: #5A4320; }
+.root .hotbar .tab.btn--on { background-color: rgba(0, 0, 0, 0); }
+.hotbar .tab, .hotbar .tab:hover, .news { border-width: 0; }
+.hotbar .tab:hover { background-image: resource("UI/Art/button_hover"); }
+
+.sidebar__tab {
+    background-image: resource("UI/Art/button_normal");
+    -unity-slice-left: 16; -unity-slice-right: 16; -unity-slice-top: 16; -unity-slice-bottom: 16;
+    -unity-slice-scale: 0.5;
+    background-color: rgba(0, 0, 0, 0); border-width: 0;
+}
+.sidebar__tab:hover { background-image: resource("UI/Art/button_hover"); background-color: rgba(0, 0, 0, 0); }
+.sidebar__tab--on { background-image: resource("UI/Art/button_active"); background-color: rgba(0, 0, 0, 0); }
+
+.topbar {
+    background-image: resource("UI/Art/bar_strip");
+    -unity-slice-left: 8; -unity-slice-right: 8; -unity-slice-top: 0; -unity-slice-bottom: 10;
+    -unity-slice-scale: 0.5;
+    border-bottom-width: 0;
+}
+.art-icon { -unity-background-scale-mode: scale-to-fit; flex-shrink: 0; }
+.stat__icon.art-icon { margin-right: 10px; }
