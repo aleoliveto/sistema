@@ -166,7 +166,7 @@ namespace OSistema.UI
             BizTab.Organigram => "Organigram",
             BizTab.Piazze => "Piazze",
             BizTab.Pizzo => "Pizzo",
-            BizTab.Supply => "Stash",
+            BizTab.Supply => "Stash & guns",
             BizTab.Property => "Money & property",
             BizTab.Favours => "Neighbours",
             _ => "Clans",
@@ -276,34 +276,40 @@ namespace OSistema.UI
             var org = game.Org;
             if (org.Squares.Count == 0)
             {
-                Ui.Text("No piazze yet. Open the CRIME tab at the bottom, pick Piazza and click a sidewalk.", bizBody, "muted", "wrap");
+                Ui.Text("No piazze yet. Open Build (B) and use Open piazza on a pavement in your turf.", bizBody, "muted", "wrap");
                 return;
             }
             int pushers = game.Pawns.Crew.Count(p => p.IsPresent && p.Role == CrewRole.Pusher);
             int lookouts = game.Pawns.Crew.Count(p => p.IsPresent && p.Role == CrewRole.Lookout);
-            if (pushers == 0) Ui.Text("No pushers assigned: nobody sells. Set roles in the Crew tab.", bizBody, "bad", "small");
+            if (pushers == 0) Ui.Text("No pushers: nobody sells. Add them in Famiglia › Organigram.", bizBody, "bad", "small");
             if (lookouts == 0) Ui.Text("No lookouts: the police will walk right up to the spot.", bizBody, "warn", "small");
 
+            // One line per piazza, so ten of them still fit.
+            var head = Ui.Box("pz-row", "pz-row--head").Into(bizBody);
+            foreach (var (t, cls) in new[] { ("RIONE", "pz-name"), ("HOURS", "pz-hours"), ("HEAT", "pz-heat"), ("TODAY", "pz-today"), ("CREW", "pz-crew"), ("", "pz-go") })
+                Ui.Text(t, head, "tiny", cls);
             foreach (var sq in org.Squares)
             {
-                var zone = game.Territory.Zones[sq.ZoneId];
-                Ui.Text(zone.Name.ToUpper() + (game.Police.IsRaiding(sq) ? "  ·  RAID" : ""), bizBody, "section");
-                var (hv, hf) = Ui.Bar("Heat", new Color(0.86f, 0.3f, 0.26f), bizBody);
-                hv.text = $"{zone.Heat:0}";
-                Ui.SetFill(hf, zone.Heat / 100f);
-                Ui.Text($"Today: {sq.SalesToday} sold (€{sq.RevenueToday}) · {sq.LostToday} customers lost · demand {zone.Demand:0.0}" +
-                        (game.Clans.Any(c => !c.Destroyed && c.NearRivalTerritory(sq)) ? " · <color=#F2B866>competing with a clan</color>" : ""), bizBody, "small", "wrap");
-                var hours = Ui.Row(bizBody);
-                Ui.Text($"Open {sq.HoursLabel}", hours).style.width = 150;
                 var square = sq;
-                Ui.Text("opens", hours, "small", "muted");
-                Ui.Btn("−", Do(() => square.OpenHour = (square.OpenHour + 23) % 24), hours, "btn--small");
-                Ui.Btn("+", Do(() => square.OpenHour = (square.OpenHour + 1) % 24), hours, "btn--small");
-                Ui.Text("  closes", hours, "small", "muted");
-                Ui.Btn("−", Do(() => square.CloseHour = (square.CloseHour + 23) % 24), hours, "btn--small");
-                Ui.Btn("+", Do(() => square.CloseHour = (square.CloseHour + 1) % 24), hours, "btn--small");
-                Ui.Box("spacer").Into(hours);
-                Ui.Btn("Show", () => FocusCamera(Mover.CellCenter(square.Cell)), hours, "btn--small");
+                var zone = game.Territory.Zones[sq.ZoneId];
+                var row = Ui.Box("pz-row").Into(bizBody);
+                bool raid = game.Police.IsRaiding(sq);
+                Ui.Text(zone.Name + (raid ? "  <color=#F07A6E>RAID</color>" : ""), row, "pz-name", "bold");
+                var hours = Ui.Box("pz-hours").Into(row);
+                Ui.Btn("‹", Do(() => { square.OpenHour = (square.OpenHour + 23) % 24; org.OrganiseShifts(game); }), hours, "btn--small", "pz-step");
+                Ui.Text($"{sq.OpenHour:00}–{sq.CloseHour:00}", hours, "pz-hourtext");
+                Ui.Btn("›", Do(() => { square.CloseHour = (square.CloseHour + 1) % 24; org.OrganiseShifts(game); }), hours, "btn--small", "pz-step");
+                var heat = Ui.Box("pz-heat").Into(row);
+                var track = Ui.Box("fig__track").Into(heat);
+                var fill = Ui.Box("bar__fill").Into(track);
+                fill.style.backgroundColor = zone.Heat >= 60f ? new Color(0.88f, 0.3f, 0.26f) : new Color(0.9f, 0.6f, 0.3f);
+                Ui.SetFill(fill, zone.Heat / 100f);
+                Ui.Text($"€{sq.RevenueToday}", row, "pz-today", "gold");
+                Ui.Text($"{org.CrewOf(sq, game).Count}", row, "pz-crew");
+                Ui.Btn("Show", () => FocusCamera(Mover.CellCenter(square.Cell)), row, "btn--small", "pz-go");
+                Tip(row, () => $"{zone.Name}: open {square.HoursLabel} (‹ opens an hour earlier, › closes an hour later; the rest in Famiglia › Organigram).\n" +
+                               $"Today {square.SalesToday} sold, {square.LostToday} customers lost. Heat {zone.Heat:0}. Demand {zone.Demand:0.0}." +
+                               (game.Clans.Any(c => !c.Destroyed && c.NearRivalTerritory(square)) ? "\nCompeting with a clan nearby." : ""));
             }
         }
 

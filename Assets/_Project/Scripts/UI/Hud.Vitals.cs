@@ -19,17 +19,19 @@ namespace OSistema.UI
 
         void BuildVitals()
         {
-            // Gennaro's body: a few short bars above the hotbar. The figures are on hover.
-            vitals = Ui.Box("vitals-bar").Into(hudLayer);
+            // Gennaro's body, in the top bar: painted icons and short bars. The figures are on hover.
+            vitals = topVitals;
             vitalsName = Ui.Text("", vitals, "tiny");
             vitalsName.Show(false);
-            vHealth = VitalChip(vitals, "♥", "#F07A6E", out vHealthFill);
-            vArmor = VitalChip(vitals, "VEST", "#9DB8D8", out vArmorFill);
-            vFood = VitalChip(vitals, "FAME", "#F2B866", out vFoodFill);
-            vRest = VitalChip(vitals, "SONNO", "#8FB4F0", out vRestFill);
-            vBreath = VitalChip(vitals, "FIATO", "#D8D4C8", out vBreathFill);
-            vAmmo = Ui.Text("", vitals, "chip__value", "vital__ammo");
-            vitalsState = Ui.Text("", vitals, "tiny");
+            vHealth = VitalChip(vitals, "♥", "#F07A6E", "icon_health", out vHealthFill);
+            vArmor = VitalChip(vitals, "VEST", "#9DB8D8", null, out vArmorFill);
+            vFood = VitalChip(vitals, "FAME", "#F2B866", "icon_food", out vFoodFill);
+            vRest = VitalChip(vitals, "SONNO", "#8FB4F0", "icon_sleep", out vRestFill);
+            vBreath = VitalChip(vitals, "FIATO", "#D8D4C8", null, out vBreathFill);
+            var ammo = Ui.Box("fig").Into(vitals);
+            Ui.ArtIcon("icon_ammo", 24, ammo);
+            vAmmo = Ui.Text("", ammo, "fig__value");
+            vitalsState = Ui.Text("", vitals, "t-day");
             Tip(vitals, () =>
             {
                 var p = game?.Player;
@@ -61,11 +63,13 @@ namespace OSistema.UI
 
         VisualElement vHealthFill, vArmorFill, vFoodFill, vRestFill, vBreathFill;
 
-        Label VitalChip(VisualElement parent, string label, string color, out VisualElement fill)
+        Label VitalChip(VisualElement parent, string label, string color, string art, out VisualElement fill)
         {
-            var chip = Ui.Box("vital").Into(parent);
-            var l = Ui.Text($"<color={color}>{label}</color>", chip, "tiny");
-            var track = Ui.Box("vital__track").Into(chip);
+            var chip = Ui.Box("fig").Into(parent);
+            Label l = null;
+            if (art == null || Ui.ArtIcon(art, 26, chip) == null) l = Ui.Text($"<color={color}>{label}</color>", chip, "tiny");
+            else l = Ui.Text("", chip, "tiny");
+            var track = Ui.Box("fig__track").Into(chip);
             fill = Ui.Box("bar__fill").Into(track);
             fill.style.backgroundColor = Ui.Parse(color);
             return l;
@@ -91,7 +95,7 @@ namespace OSistema.UI
             var p = game.Player;
             vitals.Show(p != null);
             if (p == null) return;
-            vitals.Show(!buildMode && openWindow != Window.Business);
+            vitals.Show(true);
             vitalsState.text = (p.Riding ? "ON THE SCOOTER" : game.Org.DealingCorner != null ? "DEALING" : game.Org.CarriedDg > 0 ? $"CARRYING {game.Org.CarriedDg / 10} G" : p.Carrying != null ? $"CARRYING {p.Carrying.ToUpper()}" : "")
                 + (p.Autopilot ? "  · AUTO" : "");
             vitalsState.Show(vitalsState.text.Length > 0);
@@ -108,7 +112,7 @@ namespace OSistema.UI
             vBreath.parent.Show(p.Stamina < 0.98f || p.Winded);
             Ui.SetFill(vBreathFill, p.Stamina);
             vBreathFill.style.backgroundColor = p.Winded ? new Color(0.94f, 0.33f, 0.28f) : new Color(0.85f, 0.83f, 0.78f);
-            vAmmo.Show(p.Armed);
+            vAmmo.parent.Show(p.Armed);
             vAmmo.text = p.ReloadUntil > Time.unscaledTime ? "<color=#A89F8E>reloading</color>"
                 : p.Ammo == 0 ? "<color=#F07A6E>empty · R</color>" : $"{p.Ammo}/{Pawn.MagazineSize}";
 

@@ -141,6 +141,78 @@ def icon_supplies():
     return c.render()
 
 
+def icon_health():
+    c = Canvas(128, 128)
+    heart = union(c.circle(44, 48, 28), c.circle(84, 48, 28), poly(c, [(18, 58), (110, 58), (64, 114)]))
+    grad = smooth(20, 114, c.y)
+    col = C(226, 70, 60)[None, None, :] * (1 - grad[..., None]) + C(150, 26, 26)[None, None, :] * grad[..., None]
+    c.fill(heart, col, z0=0, height=8, profile="dome", bevel=18, gloss=0.8)
+    return c.render()
+
+
+def icon_food():
+    c = Canvas(128, 128)
+    bowl = cut(c.ellipse(64, 70, 54, 44), c.box(64, 30, 140, 60))
+    c.fill(bowl, GOLD, z0=0, height=6, profile="dome", bevel=12, tex=gilt(c, 51), gloss=0.6)
+    c.fill(c.ellipse(64, 62, 52, 12), C(196, 64, 40), z0=4, height=3, profile="dome", bevel=6, gloss=0.5, tex=0.9 + 0.2 * fbm(c.x, c.y, 4, 2, 52))
+    c.fill(c.box(64, 112, 44, 8, 3), GOLD_DARK, z0=0, height=4, profile="bevel", bevel=3, tex=gilt(c, 53, 0.9), gloss=0.5)
+    for x in (48, 64, 80):
+        steam = c.box(x + 4 * np.sin((c.y - 20) / 8), 32, 4, 30, 2)
+        c.fill(steam, C(230, 222, 206), z0=2, height=1, profile="dome", bevel=2, line=0.15)
+    return c.render()
+
+
+def icon_sleep():
+    c = Canvas(128, 128)
+    moon = cut(c.circle(60, 66, 48), c.circle(84, 50, 42))
+    c.fill(moon, GOLD, z0=0, height=7, profile="dome", bevel=16, tex=gilt(c, 54, 1.05), gloss=0.7)
+    for x, y, r in ((96, 86, 6), (104, 30, 4), (80, 104, 3)):
+        c.fill(c.circle(x, y, r), C(240, 220, 160), z0=2, height=3, profile="dome", bevel=r, gloss=0.9, line=0.3)
+    return c.render()
+
+
+def icon_ammo():
+    c = Canvas(128, 128)
+    for x in (40, 64, 88):
+        tip = union(c.ellipse(x, 34, 11, 22), c.box(x, 50, 22, 20))
+        c.fill(c.box(x, 84, 24, 56, 3), GOLD, z0=0, height=5, profile="dome", bevel=10, tex=gilt(c, 55), gloss=0.8)
+        c.fill(cut(tip, c.box(x, 74, 40, 40)), C(176, 112, 70), z0=1, height=6, profile="dome", bevel=10, gloss=0.6)
+    return c.render()
+
+
+def icon_clans():
+    c = Canvas(128, 128)
+    skull = union(c.circle(64, 54, 40), c.box(64, 92, 46, 28, 6))
+    holes = union(c.ellipse(48, 56, 11, 13), c.ellipse(80, 56, 11, 13), poly(c, [(64, 70), (58, 82), (70, 82)]))
+    teeth = union(*[c.box(x, 104, 2.5, 16) for x in (54, 64, 74)])
+    c.fill(cut(cut(skull, holes), teeth), C(222, 210, 186), z0=0, height=7, profile="dome", bevel=16, gloss=0.4,
+           tex=0.95 + 0.08 * fbm(c.x, c.y, 8, 3, 56))
+    c.fill(holes, C(150, 28, 26), z0=-1, height=0, profile="flat", line=0.5)
+    return c.render()
+
+
+def icon_rosse():
+    """A pack of ROSSE: red and white, a couple of cigarettes poking out."""
+    c = Canvas(128, 128)
+    for x in (54, 70):
+        c.fill(c.box(x, 26, 12, 30, 4), C(236, 230, 214), z0=0, height=4, profile="dome", bevel=5, line=0.4)
+        c.fill(c.box(x, 18, 12, 12, 4), C(204, 150, 90), z0=1, height=4, profile="dome", bevel=5, line=0.4)
+    c.fill(c.box(64, 76, 72, 88, 5), C(240, 236, 226), z0=2, height=5, profile="bevel", bevel=6, gloss=0.3)
+    c.fill(c.box(64, 66, 72, 34, 2), C(196, 36, 34), z0=7, height=1, profile="flat", gloss=0.4, line=0.3)
+    c.fill(c.box(64, 40, 72, 8, 2), GOLD, z0=7, height=1, profile="flat", tex=gilt(c, 57), gloss=0.6, line=0.3)
+    return c.render()
+
+
+def icon_dose():
+    """A knotted baggie of white powder."""
+    c = Canvas(128, 128)
+    bag = union(c.ellipse(64, 82, 38, 34), poly(c, [(40, 66), (88, 66), (70, 34), (58, 34)]))
+    c.fill(bag, C(226, 230, 234), z0=0, height=7, profile="dome", bevel=18, gloss=0.9, line=0.45)
+    c.fill(c.ellipse(64, 90, 30, 22), C(246, 244, 240), z0=3, height=4, profile="dome", bevel=12, gloss=0.2, line=0.1)
+    c.fill(c.box(64, 30, 26, 10, 4), GOLD, z0=4, height=4, profile="dome", bevel=5, tex=gilt(c, 58), gloss=0.7)
+    return c.render()
+
+
 # ---------- frames: 9-slice ----------
 
 def panel_frame():
@@ -190,7 +262,9 @@ if __name__ == "__main__":
     out = sys.argv[1] if len(sys.argv) > 1 else "."
     os.makedirs(out, exist_ok=True)
     for name, fn in (("icon_money", icon_money), ("icon_respect", icon_respect), ("icon_heat", icon_heat),
-                     ("icon_crew", icon_crew), ("icon_territory", icon_territory), ("icon_supplies", icon_supplies)):
+                     ("icon_crew", icon_crew), ("icon_territory", icon_territory), ("icon_supplies", icon_supplies),
+                     ("icon_health", icon_health), ("icon_food", icon_food), ("icon_sleep", icon_sleep), ("icon_ammo", icon_ammo),
+                     ("icon_clans", icon_clans), ("icon_rosse", icon_rosse), ("icon_dose", icon_dose)):
         save(fn(), out, name)
     save(panel_frame(), out, "frame_panel")
     for st in ("normal", "hover", "active"):

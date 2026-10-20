@@ -94,7 +94,6 @@ namespace OSistema.UI
             drawer.Show(false);
 
             // Gennaro's bars sit just above the hotbar.
-            if (vitals != null) dockRoot.Add(vitals);
 
             // The bar along the bottom: every screen, with its key, and the news on the right.
             var tabs = Ui.Box("hotbar").Into(dockRoot);
@@ -105,7 +104,8 @@ namespace OSistema.UI
             Tip(businessButton, () => "Your people: jobs, wages, beds, and the organigram (Tab).");
             piazzaButton = IconTab(tabs, "PIAZZA", IconKind.Product, () => OpenSection(FamSection.Piazza), null, "the street");
             Tip(piazzaButton, () => "The street: your piazze, the pizzo, the neighbours and the other clans.");
-            jobsButton = IconTab(tabs, "TACCUINO", IconKind.Jobs, () => ToggleWindow(Window.Jobs), "J", "lavoretti");
+            // The taccuino has no button for now (J still opens it).
+            jobsButton = IconTab(new VisualElement(), "TACCUINO", IconKind.Jobs, () => ToggleWindow(Window.Jobs), "J", "lavoretti");
             Tip(jobsButton, () => "Who has work for you and where to find them (J).");
             phoneButton = IconTab(tabs, "PHONE", IconKind.Phone, () => ToggleWindow(Window.Phone), "P", "contacts");
             Tip(phoneButton, () => "The family phone (P): favours, gossip, warnings.");

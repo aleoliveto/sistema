@@ -1402,3 +1402,42 @@
 .org-node--boss { background-color: rgba(0, 0, 0, 0.5); }
 .bcard { background-color: rgba(0, 0, 0, 0.35); }
 .hotbar { background-color: rgb(10, 8, 6); }
+
+/* v6: the top bar on one line */
+.topbar { height: 48px; padding: 0 6px; -unity-slice-bottom: 10; }
+.tgroup { flex-direction: row; align-items: center; height: 100%; padding: 0 10px; border-right-width: 1px; border-right-color: rgba(201, 160, 84, 0.18); }
+.tgroup--last { border-right-width: 0; }
+.root .t-time { -unity-font-definition: resource("Fonts/BarlowCondensed-Bold"); font-size: 22px; color: #F3E9D2; margin: 0 6px 0 6px; padding: 0; }
+.root .t-day { -unity-font-definition: resource("Fonts/BarlowCondensed-SemiBold"); font-size: 11px; letter-spacing: 1px; color: #9C9180; margin: 0 8px 0 0; padding: 0; }
+.topbar .speed-btn { width: 26px; height: 24px; margin: 0 1px; }
+.fig { flex-direction: row; align-items: center; margin: 0 7px; }
+.fig .art-icon { margin-right: 4px; }
+.root .fig__value { -unity-font-definition: resource("Fonts/BarlowCondensed-Bold"); font-size: 18px; color: #F3E9D2; margin: 0; padding: 0; }
+.fig__track { width: 44px; height: 6px; border-radius: 3px; background-color: rgba(0, 0, 0, 0.65); overflow: hidden; border-width: 1px; border-color: rgba(201, 160, 84, 0.25); }
+.root .t-boss { -unity-font-definition: resource("Fonts/BarlowCondensed-Bold"); font-size: 16px; color: #E8DCC0; margin-right: 10px; }
+.rank { flex-direction: column; align-items: stretch; padding: 3px 8px 4px 8px; border-width: 1px; border-color: #E3B862; border-radius: 3px; background-color: rgba(0, 0, 0, 0.5); }
+.root .rank__name { -unity-font-definition: resource("Fonts/BarlowCondensed-Bold"); font-size: 13px; letter-spacing: 2px; color: #F2CF7A; margin: 0; padding: 0; -unity-text-align: middle-center; }
+.rank__track { height: 3px; margin-top: 2px; border-radius: 2px; background-color: rgba(255, 255, 255, 0.1); overflow: hidden; }
+
+/* Everything below a 48px bar */
+.minimap { top: 56px; }
+.goal { top: 244px; }
+.feed { top: 290px; }
+.crew-bar { top: 56px; }
+.sidebar { top: 48px; }
+.wanted { top: 58px; }
+.vitals-bar { display: none; }
+
+/* Piazze: one line each */
+.pz-row { flex-direction: row; align-items: center; height: 34px; padding: 0 6px; border-bottom-width: 1px; border-bottom-color: rgba(255, 255, 255, 0.06); }
+.pz-row--head { height: 22px; }
+.pz-name { width: 150px; flex-shrink: 1; overflow: hidden; }
+.pz-hours { width: 110px; flex-direction: row; align-items: center; }
+.root .pz-hourtext { font-size: 12px; width: 46px; -unity-text-align: middle-center; }
+.pz-step { width: 20px; padding: 0; }
+.pz-heat { width: 70px; }
+.pz-today { width: 60px; -unity-text-align: middle-right; }
+.pz-crew { width: 44px; -unity-text-align: middle-center; }
+.pz-go { margin-left: auto; }
+.pz-hours { width: 128px; }
+.pz-heat { width: 64px; margin-left: 6px; }
