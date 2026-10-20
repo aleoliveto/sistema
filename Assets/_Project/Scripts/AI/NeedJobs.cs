@@ -110,7 +110,12 @@ namespace OSistema.AI
                 Pawn.Sleep = bed.HasValue ? SleepState.InBed : SleepState.OnFloor;
                 // Lie down in the middle of the bed, not at its foot.
                 if (bed.HasValue && game.Map.GetBuilding(bed.Value) == World.BuildingDefs.Bed)
-                    Pawn.Mover.Place(World.Footprint.Center(World.BuildingDefs.Bed, bed.Value, game.Map.GetRotation(bed.Value.x, bed.Value.y)));
+                {
+                    int rot = game.Map.GetRotation(bed.Value.x, bed.Value.y);
+                    // Toward the pillow end: up the bed, as it was turned.
+                    var up = rot == 0 ? Vector2.up : rot == 1 ? Vector2.left : rot == 2 ? Vector2.down : Vector2.right;
+                    Pawn.Mover.Place(World.Footprint.Center(World.BuildingDefs.Bed, bed.Value, rot) + up * 0.2f);
+                }
                 return false;
             }
 

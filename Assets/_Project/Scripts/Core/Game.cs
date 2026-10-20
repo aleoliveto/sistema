@@ -17,8 +17,8 @@ namespace OSistema.Core
     /// </summary>
     public sealed class Game
     {
-        public const int MapWidth = 200;
-        public const int MapHeight = 150;
+        public const int MapWidth = 240;
+        public const int MapHeight = 180;
 
         public readonly int Seed;
         public readonly System.Random Rng;

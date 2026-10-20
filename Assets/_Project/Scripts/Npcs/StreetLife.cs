@@ -323,8 +323,11 @@ namespace OSistema.Npcs
         static bool GunfireNear(Npc npc, Game game)
         {
             var combat = game.Combat;
-            return game.Ticks.TicksGame - combat.LastShotTick < PanicTicks &&
-                   (combat.LastShotPosition - npc.Mover.Position).sqrMagnitude < PanicRadius * PanicRadius;
+            if (game.Ticks.TicksGame - combat.LastShotTick < PanicTicks &&
+                (combat.LastShotPosition - npc.Mover.Position).sqrMagnitude < PanicRadius * PanicRadius) return true;
+            // A gun pointed down the street is enough to send people running.
+            var p = game.Player;
+            return p != null && p.Armed && p.AimPoint.HasValue && (p.Position - npc.Mover.Position).sqrMagnitude < 9f * 9f;
         }
 
         public static void TickCivilian(Npc npc, Game game)
@@ -363,6 +366,17 @@ namespace OSistema.Npcs
                     }
                     else
                     {
+                        // Someone they know idling nearby: they stop and talk.
+                        foreach (var other in game.Npcs.All)
+                        {
+                            if (other == npc || other.Despawned || other.State != Lingering || other.ChatWith != null) continue;
+                            if (other.Kind != NpcKind.Civilian && other.Kind != NpcKind.Elder) continue;
+                            if ((other.Mover.Position - npc.Mover.Position).sqrMagnitude > 2.6f * 2.6f) continue;
+                            npc.ChatWith = other;
+                            other.ChatWith = npc;
+                            other.Timer = Mathf.Max(other.Timer, 600);
+                            break;
+                        }
                         npc.State = Lingering;
                         // Shopping takes a while: the queue, the chat with the owner.
                         npc.Timer = npc.InShop ? game.Rng.Next(700, 1800) : game.Rng.Next(150, 900);
@@ -374,6 +388,7 @@ namespace OSistema.Npcs
                 case Lingering:
                 {
                     if (--npc.Timer > 0) return;
+                    if (npc.ChatWith != null) { if (npc.ChatWith.ChatWith == npc) npc.ChatWith.ChatWith = null; npc.ChatWith = null; }
                     life.ReleaseChair(npc);
                     npc.Sitting = false;
                     if (--npc.TripsLeft > 0)
@@ -448,6 +463,11 @@ namespace OSistema.Npcs
         public static void TickPatrol(Npc npc, Game game)
         {
             if (npc.Responding && game.Ticks.TicksGame % 15 == 0) game.Response.OfficerNear(npc, game);
+            // A patrol that sees you with a gun out comes for you.
+            var me = game.Player;
+            if (me != null && me.Armed && me.AimPoint.HasValue && !game.Pursuit.Active && game.Ticks.TicksGame % 20 == 0 &&
+                (me.Position - npc.Mover.Position).sqrMagnitude < 10f * 10f && OSistema.Combat.CombatSystem.HasLineOfSight(game.Map, npc.Mover.Cell, me.Cell))
+                game.Pursuit.Start(npc, "A patrol saw you with a gun in your hand.", game);
             npc.Walker ??= new Walker(npc.Target, adjacent: false);
             var status = npc.Walker.Tick(npc.Mover, 1f, game);
             if (status == WalkStatus.Walking) return;

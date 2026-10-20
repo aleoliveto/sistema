@@ -24,6 +24,9 @@ namespace OSistema.Views
         float moving;               // 0 standing .. 1 walking, smoothed
         bool aiming;
 
+        /// <summary>In bed: lie along it, shoulders across the mattress, head to the pillow.</summary>
+        public float? LieAngle;
+
         /// <summary>On a scooter: no walking stride, hands on the handlebar.</summary>
         public bool Seated;
 
@@ -271,7 +274,7 @@ namespace OSistema.Views
 
             root.position = new Vector3(position.x, position.y, 0f);
             float current = pivot.localEulerAngles.z;
-            float target = lying ? heading + 90f : heading;
+            float target = lying ? (LieAngle ?? heading + 90f) : heading;
             pivot.localRotation = Quaternion.Euler(0f, 0f, Mathf.MoveTowardsAngle(current, target, TurnSpeed * dt));
             // Lying figures read flatter and slightly offset, standing ones bob very slightly when moving.
             pivot.localPosition = lying ? new Vector3(0f, -0.1f, 0f) : Vector3.zero;

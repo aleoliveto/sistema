@@ -160,6 +160,9 @@ namespace OSistema.Views
             bool visible = FogOfWar.CanSee(npc.Mover.Position);
             rig.SetVisible(visible);
             if (scooter != null) scooter.enabled = visible;
+            // Stopped for a word: turned to each other, now and then a nod.
+            if (npc.ChatWith != null && !npc.ChatWith.Despawned)
+                rig.LookTowards(npc.ChatWith.Mover.Position - npc.Mover.Position + new Vector2(Mathf.Sin(Time.time * 0.7f + npc.Id) * 0.15f, 0f));
             // Shopkeepers, vendors and contacts standing at their spot look out at the street, not at the wall.
             if ((npc.IsFixture || npc.ContactName != null) && (npc.Mover.Position - standLast).sqrMagnitude < 0.0001f)
             {

@@ -43,7 +43,8 @@ namespace OSistema.Npcs
         public bool Sitting;         // heading for, or sitting on, a chair
         public bool Playing;         // kids running around
         public bool InShop;          // on an errand in a shop
-        public bool Responding;      // police sent to a call (a break-in, a shooting)
+        public bool Responding;
+        public Npc ChatWith;         // two neighbours stopped in the street for a word      // police sent to a call (a break-in, a shooting)
         public string ContactName;   // someone who hands out work (see ContactBook)
 
         public Npc(int id, NpcKind kind, Vector2Int cell, float speed, Color32 color)

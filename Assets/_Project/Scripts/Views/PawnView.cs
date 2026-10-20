@@ -63,6 +63,13 @@ namespace OSistema.Views
             LateUpdate();
         }
 
+        /// <summary>Which way a bed points: its head (the pillow) is "up" when it was placed unturned.</summary>
+        static float BedAngle(Vector2Int bed)
+        {
+            var map = OSistema.Core.GameRunner.CurrentMap;
+            return map != null && map.InBounds(bed) ? map.GetRotation(bed.x, bed.y) * 90f + 180f : 180f;
+        }
+
         void OnDestroy()
         {
             exhaust?.Clear();
@@ -95,6 +102,7 @@ namespace OSistema.Views
             }
 
             bool lying = pawn.Dead || pawn.Health.Downed || pawn.Sleep != SleepState.Awake;
+            rig.LieAngle = pawn.Sleep == SleepState.InBed && pawn.Bed.HasValue && !pawn.Dead && !pawn.Health.Downed ? BedAngle(pawn.Bed.Value) : (float?)null;
             rig.Update(pawn.Position, lying, Time.deltaTime);
             if (pawn.AimTarget != null && !lying) rig.FaceTowards(pawn.AimTarget.Position);
             else if (pawn.AimPoint.HasValue && !lying) rig.FaceTowards(pawn.AimPoint.Value);
