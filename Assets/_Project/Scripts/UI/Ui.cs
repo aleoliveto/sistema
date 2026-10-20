@@ -89,6 +89,8 @@ namespace OSistema.UI
         public static void SetFill(VisualElement fill, float t) =>
             fill.style.width = Length.Percent(Mathf.Clamp01(t) * 100f);
 
+        public static Color Parse(string hex) => ColorUtility.TryParseHtmlString(hex, out var c) ? c : Color.white;
+
         public static string Hex(Color c) => "#" + ColorUtility.ToHtmlStringRGB(c);
 
         /// <summary>A vertical gradient texture for panel backgrounds (top colour to bottom colour).</summary>

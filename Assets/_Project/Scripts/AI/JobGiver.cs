@@ -201,7 +201,11 @@ namespace OSistema.AI
             {
                 case CrewRole.Pusher:
                 case CrewRole.Lookout:
-                    return org.Squares.Exists(s => s.IsOpenAt(hour));
+                case CrewRole.Capo:
+                {
+                    var own = org.SquareOf(pawn, game);
+                    return own != null ? own.IsOpenAt(hour) : org.Squares.Exists(s => s.IsOpenAt(hour));
+                }
                 case CrewRole.Collector:
                     return (hour >= 22 || hour < Organization.ArsonEndHour) &&
                            org.Businesses.Exists(b => b.PendingAction == Retaliation.Burn);
@@ -272,7 +276,14 @@ namespace OSistema.AI
 
             int hour = game.Clock.Hour;
 
-            // Go where you're needed most: the open square with the fewest people in this role.
+            // Your own piazza, if you have one; otherwise where you're needed most.
+            var mine = org.SquareOf(pawn, game);
+            if (mine != null)
+            {
+                if (!mine.IsOpenAt(hour) || game.Police.IsRaiding(mine)) return null;
+                var own = FreePost(mine, pawn, game);
+                return own.HasValue ? new PostJob(pawn, mine, pawn.Role, own.Value) : null;
+            }
             DrugSquare square = null;
             int fewest = int.MaxValue;
             foreach (var sq in org.Squares)
@@ -345,6 +356,13 @@ namespace OSistema.AI
             foreach (var p in game.Pawns.Crew)
                 if (p != pawn && p.CurrentJob is PostJob post && post.Square == square) taken.Add(post.Post);
 
+            if (pawn.Role == CrewRole.Capo)
+            {
+                // The capo keeps an eye on the spot from a step or two away.
+                foreach (var c in GridUtil.CellsAround(square.Cell, 2))
+                    if (!taken.Contains(c) && GridUtil.Manhattan(c, square.Cell) >= 2 && game.Map.IsPassable(c) && game.Map.GetBuilding(c) == null) return c;
+                return null;
+            }
             if (pawn.Role == CrewRole.Pusher)
             {
                 foreach (var c in GridUtil.CellsAround(square.Cell, 1))

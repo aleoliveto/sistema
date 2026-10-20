@@ -38,6 +38,16 @@ namespace OSistema.Crime
             return $"Next: {RankNames[next]} · respect {Respect:0}/{RankRespect[next]:0} · lavoretti {CompletedJobs(game)}/{RankJobs[next]}";
         }
 
+        /// <summary>How far along the way to the next rank, 0..1 (the slower of respect and lavoretti). 1 at the top.</summary>
+        public float RankProgress(Game game)
+        {
+            if (Rank >= RankNames.Length - 1) return 1f;
+            int next = Rank + 1;
+            float r = RankRespect[next] <= 0f ? 1f : Mathf.Clamp01(Respect / RankRespect[next]);
+            float j = RankJobs[next] <= 0 ? 1f : Mathf.Clamp01(CompletedJobs(game) / (float)RankJobs[next]);
+            return Mathf.Min(r, j);
+        }
+
         public static string UnlocksAt(int rank) => rank switch
         {
             1 => "your own piazza, pistols, up to 6 crew",

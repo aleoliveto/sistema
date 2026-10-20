@@ -50,7 +50,7 @@ namespace OSistema.Crime
             foreach (var c in game.Pawns.Crew)
             {
                 if (!c.IsPresent || game.Territory.ZoneAt(c.Cell) != zone) continue;
-                if (c.Role == CrewRole.Lookout || c.Role == CrewRole.Bodyguard || c.Armed) n++;
+                if (c.Role == CrewRole.Lookout || c.Role == CrewRole.Bodyguard || c.Role == CrewRole.Capo || c.Armed) n++;
             }
             return n;
         }

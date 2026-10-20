@@ -78,6 +78,7 @@ namespace OSistema.Crime
                 game.Log.Add("Mammà left a pot of pasta e patate on the stove. \"Mangia, ca si' sicco.\"", MessageKind.Good);
             }
             ReopenBurnedShops(game);
+            OrganiseShifts(game);
             game.Police.HourlyCheck(game);
             LeadershipHourly(game);
             CheckRank(game);
@@ -350,6 +351,10 @@ namespace OSistema.Crime
         {
             foreach (var p in game.Pawns.Crew)
                 if (p.CanAct && p.CurrentJob is PostJob post && post.Square == square && post.Role == CrewRole.Pusher && post.AtPost)
+                    return p;
+            // No pusher on the spot: the capo paranza serves himself.
+            foreach (var p in game.Pawns.Crew)
+                if (p.CanAct && p.CurrentJob is PostJob post && post.Square == square && post.Role == CrewRole.Capo && post.AtPost)
                     return p;
             return null;
         }

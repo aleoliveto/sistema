@@ -11,7 +11,7 @@ namespace OSistema.Pawns
     public enum SleepState { Awake, InBed, OnFloor }
 
     /// <summary>The crew member's job in the clan. Hierarchy comes later; for now it's what they do all day.</summary>
-    public enum CrewRole { General, Pusher, Lookout, Collector, Manager, Bagger, Roller, Bodyguard }
+    public enum CrewRole { General, Pusher, Lookout, Collector, Manager, Bagger, Roller, Bodyguard, Capo }
 
     public enum Skill { Construction, Cooking, Medicine, Intimidation, Awareness, Shooting }
 
@@ -220,6 +220,12 @@ namespace OSistema.Pawns
         public float Heading;            // the player's scooter: degrees, 0 = north, positive = turning left
         public float ScooterSpeed;       // forward speed along the heading, cells per second
         public bool Pillion;             // riding on the back of the boss's scooter
+
+        /// <summary>The piazza a pusher, lookout or capo paranza belongs to (its cell). Null: wherever they're needed.</summary>
+        public Vector2Int? Piazza;
+        /// <summary>Bodyguards: where they stand. Formation slot round the boss (0 = close behind), or a fixed post.</summary>
+        public int GuardSlot;
+        public Vector2Int? GuardPost;
 
         /// <summary>The working day, hour by hour: free time, work (their job), or sleep.</summary>
         public enum Shift : byte { Free, Work, Sleep }

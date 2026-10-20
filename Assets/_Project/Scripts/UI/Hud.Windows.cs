@@ -12,7 +12,7 @@ namespace OSistema.UI
     public sealed partial class Hud
     {
         enum Window { None, Business, Help, Jobs, Phone }
-        enum BizTab { Overview, Crew, Piazze, Pizzo, Supply, Property, Favours, Rivals }
+        enum BizTab { Overview, Crew, Organigram, Piazze, Pizzo, Supply, Property, Favours, Rivals }
 
         Window openWindow;
         BizTab bizTab;
@@ -20,36 +20,35 @@ namespace OSistema.UI
         ScrollView bizScroll;
         readonly System.Collections.Generic.Dictionary<BizTab, VisualElement> bizTabButtons = new System.Collections.Generic.Dictionary<BizTab, VisualElement>();
         readonly System.Collections.Generic.Dictionary<BizTab, Label> bizTabStatus = new System.Collections.Generic.Dictionary<BizTab, Label>();
-        Label bizTitle, bizBlurb;
+        Label bizTitle, bizBlurb, famSubtitle;
+        VisualElement bizNav;
         float bizRefreshTimer;
         bool bizDirty = true;
 
         void BuildWindows()
         {
-            // Business
-            // A sidebar of sections, each with a one-line status; the open section on the right,
-            // headed by what it's for.
-            businessWindow = Ui.Box("panel", "window", "window--famiglia", "fit").Into(hudLayer);
+            // Famiglia: a sidebar down the left, so the city stays in view while you run the family.
+            // Sections as tabs along the top; their order follows the family's rank.
+            businessWindow = Ui.Box("panel", "sidebar", "fit").Into(hudLayer);
             var header = Ui.Box("window__header").Into(businessWindow);
-            Ui.Text("FAMIGLIA", header, "title", "gold").style.marginRight = 16;
-            Ui.Text("Tab to close", header, "tiny", "muted");
-            Ui.Box("spacer").Into(header);
+            var titles = Ui.Box("col", "grow").Into(header);
+            Ui.Text("FAMIGLIA", titles, "title", "gold");
+            famSubtitle = Ui.Text("", titles, "tiny");
             Ui.Btn("✕", () => ToggleWindow(Window.Business), header, "btn--small");
+            Tip(header, () => "Tab to close");
 
-            var split = Ui.Box("famiglia", "fit").Into(businessWindow);
-            var nav = Ui.Box("famiglia__nav").Into(split);
+            bizNav = Ui.Box("sidebar__nav").Into(businessWindow);
             foreach (BizTab tab in System.Enum.GetValues(typeof(BizTab)))
             {
                 var t = tab;
-                var item = Ui.Box("famiglia__item").Into(nav);
-                Ui.Text(TabName(t), item, "famiglia__name").pickingMode = PickingMode.Ignore;
-                bizTabStatus[t] = Ui.Text("", item, "famiglia__status");
-                bizTabStatus[t].pickingMode = PickingMode.Ignore;
+                var item = Ui.Box("sidebar__tab").Into(bizNav);
+                bizTabStatus[t] = Ui.Text(TabName(t), item, "sidebar__tabname");
                 item.RegisterCallback<ClickEvent>(_ => OpenBizTab(t));
+                Tip(item, () => TabStatusText(t));
                 bizTabButtons[t] = item;
             }
 
-            var main = Ui.Box("famiglia__main", "fit").Into(split);
+            var main = Ui.Box("famiglia__main", "fit").Into(businessWindow);
             var head = Ui.Box("famiglia__head").Into(main);
             bizTitle = Ui.Text("", head, "famiglia__title");
             bizBlurb = Ui.Text("", head, "small", "muted", "wrap");
@@ -84,6 +83,7 @@ namespace OSistema.UI
         void ToggleWindow(Window w)
         {
             openWindow = openWindow == w ? Window.None : w;
+            if (searchTyping) SetSearchTyping(false);
             businessWindow.Show(openWindow == Window.Business);
             helpWindow.Show(openWindow == Window.Help);
             jobsWindow.Show(openWindow == Window.Jobs);
@@ -98,7 +98,7 @@ namespace OSistema.UI
         {
             RefreshJobs();
             if (openWindow != Window.Business) return;
-            foreach (var kv in bizTabButtons) kv.Value.Toggle("famiglia__item--on", kv.Key == bizTab);
+            foreach (var kv in bizTabButtons) kv.Value.Toggle("sidebar__tab--on", kv.Key == bizTab);
 
             bizRefreshTimer += RefreshSeconds;
             // Don't rebuild under the mouse while someone is painting shifts.
@@ -111,12 +111,16 @@ namespace OSistema.UI
             var scroll = bizScroll.scrollOffset;
             bizBody.Clear();
             RefreshBizNav();
-            bizTitle.text = TabName(bizTab).ToUpper();
+            RefreshNavOrder();
+            bizTitle.text = TabTitle(bizTab).ToUpper();
             bizBlurb.text = TabBlurb(bizTab);
+            bool detail = bizTab == BizTab.Crew && famPerson != null;
+            bizTitle.parent.Show(!detail);
             switch (bizTab)
             {
-                case BizTab.Overview: OverviewTab(); break;
-                case BizTab.Crew: CrewTab(); break;
+                case BizTab.Overview: if (BossView) DashboardTab(); else OverviewTab(); break;
+                case BizTab.Crew: if (detail) PersonDetail(famPerson); else RosterTab(); break;
+                case BizTab.Organigram: OrganigramTab(); break;
                 case BizTab.Piazze: PiazzeTab(); break;
                 case BizTab.Pizzo: PizzoTab(); break;
                 case BizTab.Supply: SupplyTab(); break;
@@ -129,16 +133,18 @@ namespace OSistema.UI
 
         void OpenBizTab(BizTab t)
         {
+            if (t != BizTab.Crew || bizTab == BizTab.Crew) famPerson = null;
             bizTab = t;
             bizDirty = true;
             if (bizScroll != null) bizScroll.scrollOffset = Vector2.zero;
             RefreshWindows();
         }
 
-        static string TabName(BizTab t) => t switch
+        string TabName(BizTab t) => t switch
         {
-            BizTab.Overview => "Overview",
-            BizTab.Crew => "Crew",
+            BizTab.Overview => BossView ? "Dashboard" : "Casa",
+            BizTab.Crew => "People",
+            BizTab.Organigram => "Organigram",
             BizTab.Piazze => "Piazze",
             BizTab.Pizzo => "Pizzo",
             BizTab.Supply => "Goods & gear",
@@ -150,7 +156,8 @@ namespace OSistema.UI
         static string TabBlurb(BizTab t) => t switch
         {
             BizTab.Overview => "How the family is doing, and what needs you now. Click a line to go there.",
-            BizTab.Crew => "Who works for you: give each guaglione a job, a bed and shifts. Wages are paid on Sunday.",
+            BizTab.Crew => "Everyone in the family. Click someone to set their job, wage and bed.",
+            BizTab.Organigram => "Who answers to whom. Each piazza has a capo paranza who runs its pushers and lookouts, day and night.",
             BizTab.Piazze => "Your drug squares: pushers sell, lookouts whistle when the police come. Watch the heat.",
             BizTab.Pizzo => "Shops on your turf pay for protection. A Collector does the rounds, or you go yourself.",
             BizTab.Supply => "What's in the basso: doses, cigarettes, tools, scooters and guns.",
@@ -172,6 +179,7 @@ namespace OSistema.UI
             }
             int paying = org.Businesses.Count(b => b.Status == BusinessStatus.Paying);
             var problems = Problems();
+            SetStatus(BizTab.Organigram, org.Squares.Count == 0 ? "no piazze yet" : $"{org.Squares.Count} piazz{(org.Squares.Count == 1 ? "a" : "e")}");
             SetStatus(BizTab.Overview, problems.Count == 0 ? "<color=#8FD18A>all quiet</color>" : $"<color=#F2B866>{problems.Count} to look at</color>");
             SetStatus(BizTab.Crew, crew == 0 ? "just you" : $"{crew} guagliun{(crew == 1 ? "e" : "i")}" + (idle > 0 ? $" · <color=#F2B866>{idle} without a job</color>" : ""));
             SetStatus(BizTab.Piazze, org.Squares.Count == 0 ? "none yet" : $"{org.Squares.Count} open");
@@ -184,10 +192,11 @@ namespace OSistema.UI
             SetStatus(BizTab.Rivals, clansLeft == 0 ? "the city is yours" : $"{clansLeft} clans · " + (angry.Hostility >= 70f ? "<color=#F07A6E>one wants blood</color>" : angry.Hostility >= 40f ? "<color=#F2B866>one is angry</color>" : "watching"));
         }
 
-        void SetStatus(BizTab t, string text)
-        {
-            if (bizTabStatus.TryGetValue(t, out var l)) l.text = text;
-        }
+        readonly System.Collections.Generic.Dictionary<BizTab, string> bizStatusText = new System.Collections.Generic.Dictionary<BizTab, string>();
+
+        void SetStatus(BizTab t, string text) => bizStatusText[t] = text;
+
+        string TabStatusText(BizTab t) => bizStatusText.TryGetValue(t, out var s) ? $"{TabTitle(t)}: {s}" : TabTitle(t);
 
         /// <summary>Things that need the boss, most urgent first, each pointing at the section that fixes it.</summary>
         System.Collections.Generic.List<(string text, BizTab tab, bool bad)> Problems()
@@ -214,8 +223,10 @@ namespace OSistema.UI
             if (beds < crew) list.Add(($"{crew - beds} of the crew {(crew - beds == 1 ? "has" : "have")} no bed. Buy one at the Mobilificio and put it down at home.", BizTab.Crew, true));
             if (hungry > 0) list.Add(($"{hungry} of the crew {(hungry == 1 ? "is" : "are")} hungry. Groceries and a stove, or pizza money.", BizTab.Supply, true));
             if (idle > 0) list.Add(($"{idle} of the crew {(idle == 1 ? "has" : "have")} no job. Give them a role.", BizTab.Crew, false));
-            if (org.Squares.Count > 0 && !pusher) list.Add(("Your piazza has no pusher: nobody is selling.", BizTab.Crew, true));
+            if (org.Squares.Count > 0 && !pusher) list.Add(("Your piazza has no pusher: nobody is selling.", BizTab.Organigram, true));
             if (org.Squares.Count > 0 && !lookout) list.Add(("No lookout: nobody will whistle when the police come.", BizTab.Crew, false));
+            int noCapo = org.PiazzeWithoutCapo(game);
+            if (noCapo > 0) list.Add(($"{noCapo} piazz{(noCapo == 1 ? "a has" : "e have")} no capo paranza: nobody runs a night team there.", BizTab.Organigram, false));
             if (org.Squares.Count > 0 && st.Product <= 0) list.Add(("No doses left to sell. Buy from the supplier and bag them.", BizTab.Supply, false));
             foreach (var sq in org.Squares)
             {
@@ -229,42 +240,6 @@ namespace OSistema.UI
             return list;
         }
 
-        void OverviewTab()
-        {
-            var st = game.Stock;
-            var org = game.Org;
-            var cards = Ui.Row(bizBody);
-            cards.style.flexWrap = Wrap.Wrap;
-            void Card(string label, string value, string note)
-            {
-                var c = Ui.Box("stat-card").Into(cards);
-                Ui.Text(label, c, "tiny", "muted");
-                Ui.Text(value, c, "stat-card__value");
-                Ui.Text(note, c, "tiny", "muted", "wrap");
-            }
-            Card("CASH", $"€{st.Cash}", $"+ €{st.Clean} clean");
-            Card("WAGES ON SUNDAY", $"€{org.WeeklyWageBill(game)}", "mesata and family support");
-            Card("RESPECT", $"{org.Respect:0}", "opens doors, scares shopkeepers");
-            Card("EVIDENCE", $"{org.Evidence:0}/100", "at 100, a warrant");
-
-            Ui.Text("NEEDS YOU", bizBody, "section");
-            var problems = Problems();
-            if (problems.Count == 0) Ui.Text("Nothing urgent. Go and make some money.", bizBody, "good");
-            foreach (var (text, tab, bad) in problems)
-            {
-                var row = Ui.Box("attention").Into(bizBody);
-                row.AddToClassList(bad ? "attention--bad" : "attention--warn");
-                Ui.Text(text, row, "wrap", "grow").pickingMode = PickingMode.Ignore;
-                Ui.Text($"{TabName(tab)} ›", row, "small", "gold").pickingMode = PickingMode.Ignore;
-                var t = tab;
-                row.RegisterCallback<ClickEvent>(_ => OpenBizTab(t));
-            }
-
-            Ui.Text("WHAT YOU'RE WORKING ON", bizBody, "section");
-            Ui.Text(Objectives.Current(game, null).Text ?? "Nothing in particular.", bizBody, "wrap");
-            Ui.Text("Lavoretti from contacts are in the Taccuino (J). Shops and contacts are on the map (M).", bizBody, "small", "muted", "wrap");
-        }
-
         /// <summary>Runs an action from a window button and redraws the window straight away.</summary>
         System.Action Do(System.Action a) => () =>
         {
@@ -275,79 +250,7 @@ namespace OSistema.UI
 
         // ---------- Tabs ----------
 
-        void CrewTab()
-        {
-            var org = game.Org;
-            Ui.Text($"Dirty cash <b>€{game.Stock.Cash}</b> · weekly mesata and family support <b>€{org.WeeklyWageBill(game)}</b>, paid Sunday at 12:00", bizBody, "wrap");
-            long now = game.Ticks.TicksGame;
-
-            Ui.Text("Each guaglione works the hours you set (Work ▾ … ▾) and sleeps after. Pushers and lookouts can follow their piazza's hours.", bizBody, "small", "muted", "wrap");
-            Ui.Text("CREW", bizBody, "section");
-            foreach (var p in game.Pawns.Crew.Where(p => !p.Dead))
-            {
-                var row = Ui.Box("table-row").Into(bizBody);
-                Avatar(p, row, big: false);
-                var names = Ui.Box("col").Into(row);
-                names.style.width = 150;
-                Ui.Text(p.IsBoss ? $"<color=#E8C26A>{p.DisplayName}</color>" : $"<b>{p.DisplayName}</b>", names);
-                Ui.Text(ShortStatus(p, now), names, "small", "muted");
-                var pawn = p;
-                Button roleBtn = null;
-                roleBtn = Ui.Btn(RoleLabel(p.Role) + "  ▾", () => ShowRoleMenu(pawn, roleBtn), row, "btn--small");
-                roleBtn.style.width = 150;
-                roleBtn.SetEnabled(!p.Controlled);
-                Button bedBtn = null;
-                bedBtn = Ui.Btn(BedLabel(p), () => ShowBedMenu(pawn, bedBtn), row, "btn--small");
-                bedBtn.style.width = 80;
-                Ui.Btn("−", Do(() => pawn.Wage = Mathf.Max(0, pawn.Wage - 10)), row, "btn--small");
-                Ui.Text($"€{p.Wage}", row).style.width = 44;
-                Ui.Btn("+", Do(() => pawn.Wage = Mathf.Min(1000, pawn.Wage + 10)), row, "btn--small");
-                Ui.Text($"Loyalty {p.Loyalty:0}", row, "small", p.Loyalty < 30 ? "bad" : "muted").style.width = 80;
-                if (!p.Controlled)
-                {
-                    // The working hours: from ▾ to ▾.
-                    var (from, to) = p.WorkHours;
-                    var hoursRow = Ui.Row(bizBody);
-                    hoursRow.style.marginLeft = 48;
-                    hoursRow.style.marginBottom = 4;
-                    Ui.Text("Works", hoursRow, "small", "muted").style.width = 40;
-                    Button fromBtn = null, toBtn = null;
-                    fromBtn = Ui.Btn($"{from:00}:00 ▾", () => ShowHourMenu(fromBtn, h => { pawn.SetWorkHours(h, pawn.WorkHours.to); bizDirty = true; RefreshWindows(); }), hoursRow, "btn--small");
-                    Ui.Text("to", hoursRow, "small", "muted").style.marginLeft = 4;
-                    toBtn = Ui.Btn($"{to:00}:00 ▾", () => ShowHourMenu(toBtn, h => { pawn.SetWorkHours(pawn.WorkHours.from, h); bizDirty = true; RefreshWindows(); }), hoursRow, "btn--small");
-                    var square = (p.Role == CrewRole.Pusher || p.Role == CrewRole.Lookout) && org.Squares.Count > 0 ? org.Squares[0] : null;
-                    if (square != null)
-                        Ui.Btn($"Piazza hours ({square.OpenHour:00}–{square.CloseHour:00})", Do(() => pawn.SetWorkHours(square.OpenHour, square.CloseHour)), hoursRow, "btn--small").style.marginLeft = 8;
-                    var (sf, st) = SleepHours(p);
-                    Ui.Text(sf >= 0 ? $"  sleeps {sf:00}–{st:00}" : "", hoursRow, "tiny");
-                }
-                Ui.Btn(p.Armed ? "Disarm" : "Arm", Do(() => ToggleArmed(pawn)), row, "btn--small", p.Armed ? "btn--on" : "x");
-            }
-            var r = Ui.Row(bizBody);
-            r.style.marginTop = 8;
-            Ui.Btn($"Recruit a guaglione (€{Prices.RecruitBonus})", Do(() =>
-            {
-                if (game.Org.Recruit(game, out var error) == null) game.Log.Add(error, MessageKind.Bad);
-            }), r);
-            if (!game.Pawns.Crew.Any(p => p.IsPresent && p.Role == CrewRole.Collector))
-                Ui.Text("Nobody is collecting pizzo. Give someone the Collector role.", bizBody, "bad", "small");
-        }
-
         bool paintingShifts;
-
-        static (int, int) SleepHours(Pawn p)
-        {
-            for (int h = 0; h < 24; h++)
-                if (p.Schedule[h] == Pawn.Shift.Sleep && p.Schedule[(h + 23) % 24] != Pawn.Shift.Sleep)
-                {
-                    int end = h;
-                    while (p.Schedule[end % 24] == Pawn.Shift.Sleep && end < h + 24) end++;
-                    return (h, end % 24);
-                }
-            return (-1, -1);
-        }
-
-        static string ShiftClass(Pawn.Shift s) => s == Pawn.Shift.Work ? "shift--work" : s == Pawn.Shift.Sleep ? "shift--sleep" : "shift--free";
 
         void PiazzeTab()
         {

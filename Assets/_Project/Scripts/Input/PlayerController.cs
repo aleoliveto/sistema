@@ -189,7 +189,7 @@ namespace OSistema.Input
             Vector2 mousePos = mouse.position.ReadValue();
             bool overUi = hud.IsPointerOver(mousePos);
 
-            if (hud.MenuOpen) return;   // typing a name, or in a menu: the keys aren't for the game
+            if (hud.MenuOpen || hud.Typing) return;   // typing a name, or in a menu: the keys aren't for the game
 
             var player = game.Player;
             // Working at a table or shopping counts as doing something: don't nod off at it.

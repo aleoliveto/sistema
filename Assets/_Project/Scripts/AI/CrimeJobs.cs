@@ -28,6 +28,8 @@ namespace OSistema.AI
 
         public override string Label => Role == CrewRole.Pusher
             ? (AtPost ? "Pushing at the piazza" : "Going to the piazza")
+            : Role == CrewRole.Capo
+            ? (AtPost ? "Running the piazza" : "Going to the piazza")
             : (AtPost ? "Lookout (vedetta) at the piazza" : "Going to the lookout post");
 
         public override bool IsWork => true;
@@ -35,6 +37,7 @@ namespace OSistema.AI
         public override bool Tick(Game game)
         {
             if (!game.Org.Squares.Contains(Square) || !Square.IsOpenAt(game.Clock.Hour)) return true;
+            if (!JobGiver.OnShift(Pawn, game)) return true;   // the other team takes over
 
             if (!AtPost)
             {

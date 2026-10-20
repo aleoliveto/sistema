@@ -1,0 +1,682 @@
+using System.Collections.Generic;
+using System.Linq;
+using OSistema.AI;
+using OSistema.Core;
+using OSistema.Crime;
+using OSistema.Pawns;
+using OSistema.World;
+using UnityEngine;
+using UnityEngine.UIElements;
+
+namespace OSistema.UI
+{
+    /// <summary>
+    /// Famiglia's people: a searchable roster that copes with three guagliuni or thirty, one person's
+    /// page (job, wage, bed, gun), and the two front pages. Early on the front page is personal: your
+    /// guagliuni and your home. From Clan up it becomes the organisation's dashboard: capi, piazze,
+    /// takings, the neighbourhood and the other clans.
+    /// </summary>
+    public sealed partial class Hud
+    {
+        enum RosterFilter { All, Available, Working, Hurt, Street }
+        enum RosterGroup { None, Job, Piazza, Capo }
+
+        RosterFilter rosterFilter;
+        RosterGroup rosterGroup;
+        string rosterSearch = "";
+        Pawn famPerson;
+        bool searchTyping, searchHooked;
+        bool navBossView, navBuilt;
+
+        /// <summary>From Clan up the family is an organisation, and Famiglia shows it as one.</summary>
+        bool BossView => game != null && game.Org.Rank >= 2;
+
+        /// <summary>Typing in a search box: the keys aren't for the game.</summary>
+        public bool Typing => searchTyping;
+
+        string TabTitle(BizTab t) => t == BizTab.Overview ? (BossView ? "Dashboard" : "Casa") : TabName(t);
+
+        void OpenFamigliaRoster()
+        {
+            if (openWindow != Window.Business) ToggleWindow(Window.Business);
+            famPerson = null;
+            bizTab = BizTab.Crew;
+            bizDirty = true;
+            RefreshWindows();
+        }
+
+        void OpenFamigliaPerson(Pawn p)
+        {
+            if (openWindow != Window.Business) ToggleWindow(Window.Business);
+            bizTab = BizTab.Crew;
+            famPerson = p;
+            bizDirty = true;
+            if (bizScroll != null) bizScroll.scrollOffset = Vector2.zero;
+            RefreshWindows();
+        }
+
+        /// <summary>Tab order and names follow the rank: a boss looks at the organisation first.</summary>
+        void RefreshNavOrder()
+        {
+            bool boss = BossView;
+            famSubtitle.text = boss ? $"{game.Org.RankName.ToUpper()} · THE ORGANISATION" : $"{game.Org.RankName.ToUpper()} · YOUR GUAGLIUNI AND YOUR HOME";
+            bool organigram = game.Org.Squares.Count > 0 || boss;
+            foreach (var kv in bizTabButtons)
+            {
+                bizTabStatus[kv.Key].text = TabName(kv.Key);
+                kv.Value.Show(kv.Key != BizTab.Organigram || organigram);
+            }
+            if (navBuilt && navBossView == boss) return;
+            navBuilt = true;
+            navBossView = boss;
+            var order = boss
+                ? new[] { BizTab.Overview, BizTab.Organigram, BizTab.Piazze, BizTab.Crew, BizTab.Property, BizTab.Rivals, BizTab.Pizzo, BizTab.Supply, BizTab.Favours }
+                : new[] { BizTab.Overview, BizTab.Crew, BizTab.Supply, BizTab.Organigram, BizTab.Piazze, BizTab.Property, BizTab.Pizzo, BizTab.Favours, BizTab.Rivals };
+            foreach (var t in order) bizTabButtons[t].BringToFront();
+        }
+
+        // ---------- Search box (read straight from the keyboard, like the name fields) ----------
+
+        void SearchBox(VisualElement parent)
+        {
+            var box = Ui.Box("namefield", "search").Into(parent);
+            var text = Ui.Text("", box, "namefield__text");
+            text.text = rosterSearch.Length == 0 && !searchTyping ? "<color=#7A7468>Search by name or job…</color>"
+                : rosterSearch + (searchTyping ? "<color=#E8C26A>|</color>" : "");
+            box.Toggle("namefield--on", searchTyping);
+            box.RegisterCallback<PointerDownEvent>(e => { SetSearchTyping(true); e.StopPropagation(); });
+            if (rosterSearch.Length > 0)
+                Ui.Btn("✕", () => { rosterSearch = ""; bizDirty = true; RefreshWindows(); }, parent, "btn--small");
+        }
+
+        void SetSearchTyping(bool on)
+        {
+            searchTyping = on;
+            var kb = UnityEngine.InputSystem.Keyboard.current;
+            if (kb != null && on != searchHooked)
+            {
+                if (on) kb.onTextInput += OnSearchTyped; else kb.onTextInput -= OnSearchTyped;
+                searchHooked = on;
+            }
+            bizDirty = true;
+            if (game != null) RefreshWindows();
+        }
+
+        void OnSearchTyped(char c)
+        {
+            if (!searchTyping) return;
+            if (c == '\b' || c == (char)127) { if (rosterSearch.Length > 0) rosterSearch = rosterSearch.Substring(0, rosterSearch.Length - 1); }
+            else if (c == '\r' || c == '\n' || c == '\t' || c == (char)27) { SetSearchTyping(false); return; }
+            else if (!char.IsControl(c) && rosterSearch.Length < 24) rosterSearch += c;
+            bizDirty = true;
+            RefreshWindows();
+        }
+
+        // ---------- The roster ----------
+
+        bool AtHome(Pawn p) => game.PlayerBase.Contains(p.Cell) || game.Properties.IsOwnedHome(p.Cell);
+
+        bool Matches(Pawn p, RosterFilter f) => f switch
+        {
+            RosterFilter.Available => p.CanAct && !p.Controlled && (p.Role == CrewRole.General || !JobGiver.OnShift(p, game)) && p.Health.Healthy,
+            RosterFilter.Working => p.IsPresent && !p.Controlled && p.Role != CrewRole.General && JobGiver.OnShift(p, game) && p.Sleep == SleepState.Awake,
+            RosterFilter.Hurt => !p.Health.Healthy || p.InHospital || p.Health.Downed,
+            RosterFilter.Street => p.IsPresent && !AtHome(p),
+            _ => true,
+        };
+
+        static string FilterName(RosterFilter f) => f switch
+        {
+            RosterFilter.Available => "Disponibili",
+            RosterFilter.Working => "Al lavoro",
+            RosterFilter.Hurt => "Feriti",
+            RosterFilter.Street => "In strada",
+            _ => "Tutti",
+        };
+
+        static string GroupName(RosterGroup g) => g switch
+        {
+            RosterGroup.Job => "by job",
+            RosterGroup.Piazza => "by piazza",
+            RosterGroup.Capo => "by capo",
+            _ => "no groups",
+        };
+
+        string ZoneName(DrugSquare sq) => sq.ZoneId >= 0 && sq.ZoneId < game.Territory.Zones.Count ? game.Territory.Zones[sq.ZoneId].Name : "the piazza";
+
+        /// <summary>The piazza this person works, if any: the one they're posted at, or the one their capo runs.</summary>
+        DrugSquare PiazzaOf(Pawn p)
+        {
+            if (p.CurrentJob is PostJob post) return post.Square;
+            return game.Org.SquareOf(p, game);
+        }
+
+        void RosterTab()
+        {
+            var org = game.Org;
+            long now = game.Ticks.TicksGame;
+            var everyone = game.Pawns.Crew.Where(p => !p.Dead).ToList();
+
+            var top = Ui.Row(bizBody);
+            SearchBox(top);
+
+            var filters = Ui.Row(bizBody);
+            filters.AddToClassList("filter-row");
+            foreach (RosterFilter f in System.Enum.GetValues(typeof(RosterFilter)))
+            {
+                var ff = f;
+                int n = everyone.Count(p => Matches(p, ff));
+                var b = Ui.Btn($"{FilterName(f)} {n}", Do(() => rosterFilter = ff), filters, "pill");
+                b.Toggle("pill--on", rosterFilter == f);
+            }
+            var groups = Ui.Row(bizBody);
+            groups.AddToClassList("filter-row");
+            Ui.Text("Group", groups, "tiny").style.marginRight = 4;
+            foreach (RosterGroup g in System.Enum.GetValues(typeof(RosterGroup)))
+            {
+                if (g == RosterGroup.Piazza && org.Squares.Count == 0) continue;
+                if (g == RosterGroup.Capo && org.Squares.Count < 2) continue;
+                var gg = g;
+                var b = Ui.Btn(GroupName(g), Do(() => rosterGroup = gg), groups, "pill", "pill--small");
+                b.Toggle("pill--on", rosterGroup == g);
+            }
+
+            string q = rosterSearch.Trim().ToLowerInvariant();
+            var shown = everyone.Where(p => Matches(p, rosterFilter) && (q.Length == 0 ||
+                    p.FullName.ToLowerInvariant().Contains(q) || (p.Nickname ?? "").ToLowerInvariant().Contains(q) ||
+                    RoleLabel(p.Role).ToLowerInvariant().Contains(q)))
+                .OrderByDescending(p => p.Controlled).ThenByDescending(p => Attention(p, now) != null).ThenBy(p => p.DisplayName).ToList();
+
+            if (shown.Count == 0) Ui.Text(everyone.Count <= 1 ? "Just you, for now. Respect brings the boys from the vicolo." : "Nobody matches.", bizBody, "muted", "small");
+
+            if (rosterGroup == RosterGroup.None || shown.Count == 0)
+                foreach (var p in shown) RosterRow(p, now);
+            else
+            {
+                var byKey = shown.GroupBy(p => GroupKey(p)).OrderBy(g => g.Key.order);
+                foreach (var g in byKey)
+                {
+                    Ui.Text($"{g.Key.name.ToUpper()}  <color=#A89F8E>{g.Count()}</color>", bizBody, "section");
+                    foreach (var p in g) RosterRow(p, now);
+                }
+            }
+
+            var r = Ui.Row(bizBody);
+            r.style.marginTop = 10;
+            var recruit = Ui.Btn($"Recruit a guaglione (€{Prices.RecruitBonus})", Do(() =>
+            {
+                if (game.Org.Recruit(game, out var error) == null) game.Log.Add(error, MessageKind.Bad);
+            }), r, "btn--small");
+            Tip(recruit, () => $"{everyone.Count}/{org.MaxCrewForRank} at your rank. Wages are paid on Sunday: €{org.WeeklyWageBill(game)} a week now.");
+            Ui.Text($"  €{org.WeeklyWageBill(game)} a week in wages", r, "small", "muted");
+        }
+
+        (int order, string name) GroupKey(Pawn p)
+        {
+            if (p.Controlled || p.IsBoss) return (0, "The boss");
+            switch (rosterGroup)
+            {
+                case RosterGroup.Piazza:
+                {
+                    var sq = PiazzaOf(p);
+                    if (sq != null) return (1 + game.Org.Squares.IndexOf(sq), ZoneName(sq));
+                    return (90, p.Role == CrewRole.General ? "No job" : "Home and other work");
+                }
+                case RosterGroup.Capo:
+                {
+                    var capo = game.Org.CapoOf(p, game);
+                    if (p.Role == CrewRole.Capo) return (10 + p.Id % 1000, $"Capo {p.DisplayName}");
+                    if (capo != null) return (10 + capo.Id % 1000, $"Capo {capo.DisplayName}");
+                    return (2000, "Answer to the boss");
+                }
+                default:
+                    return ((int)p.Role + 1, RoleGroupName(p.Role));
+            }
+        }
+
+        static string RoleGroupName(CrewRole r) => r switch
+        {
+            CrewRole.General => "No job",
+            CrewRole.Pusher => "Pushers",
+            CrewRole.Lookout => "Lookouts",
+            CrewRole.Collector => "Collectors",
+            CrewRole.Manager => "Managers",
+            CrewRole.Bagger => "Baggers",
+            CrewRole.Roller => "Rollers",
+            CrewRole.Bodyguard => "Bodyguards",
+            CrewRole.Capo => "Capi paranza",
+            _ => r.ToString(),
+        };
+
+        void RosterRow(Pawn p, long now)
+        {
+            var row = Ui.Box("roster-row").Into(bizBody);
+            Avatar(p, row, big: false);
+            var names = Ui.Box("col", "grow").Into(row);
+            names.pickingMode = PickingMode.Ignore;
+            string reason = Attention(p, now);
+            Ui.Text((p.IsBoss ? $"<color=#E8C26A>{p.DisplayName}</color> {p.LastName}" : $"<b>{p.DisplayName}</b> {p.LastName}") +
+                    (string.IsNullOrEmpty(p.Nickname) || p.Controlled ? "" : $"  <color=#A89F8E>“{p.Nickname}”</color>"), names, "small");
+            Ui.Text(p.Controlled ? "You" : $"{RoleLabel(p.Role)} · {ShortStatus(p, now)}", names, "tiny");
+            var right = Ui.Box("col").Into(row);
+            right.style.alignItems = Align.FlexEnd;
+            right.pickingMode = PickingMode.Ignore;
+            if (reason != null) Ui.Text(reason, right, "small");
+            if (!p.Controlled) Ui.Text($"€{p.Wage}/wk", right, "tiny");
+            row.style.opacity = p.InJail || p.InHospital ? 0.6f : 1f;
+            var pawn = p;
+            row.RegisterCallback<ClickEvent>(e =>
+            {
+                if (e.clickCount >= 2 && pawn.IsPresent) { FocusCamera(pawn.Position); return; }
+                famPerson = pawn;
+                bizDirty = true;
+                if (bizScroll != null) bizScroll.scrollOffset = Vector2.zero;
+                RefreshWindows();
+            });
+            Tip(row, () => "Click to open · double-click to find them in the city");
+        }
+
+        // ---------- One person ----------
+
+        void PersonDetail(Pawn p)
+        {
+            if (p.Dead || !game.Pawns.Crew.Contains(p)) { famPerson = null; RosterTab(); return; }
+            long now = game.Ticks.TicksGame;
+            var org = game.Org;
+
+            Ui.Btn("‹  Everyone", Do(() => famPerson = null), bizBody, "btn--small", "back-btn");
+
+            var head = Ui.Row(bizBody);
+            head.style.marginTop = 6;
+            Avatar(p, head, big: true);
+            var names = Ui.Box("col", "grow").Into(head);
+            Ui.Text(p.IsBoss ? $"<color=#E8C26A>{p.DisplayName}</color> {p.LastName}" : p.FullName, names, "insp-name");
+            Ui.Text(p.Controlled ? "You" : $"“{p.Nickname}” · {RoleLabel(p.Role)}", names, "subtitle");
+            string job = p.CurrentJob?.Label ?? "Thinking";
+            Ui.Text(ShortStatus(p, now) == job ? job : $"{ShortStatus(p, now)} · {job}", names, "small", "muted");
+            var reason = Attention(p, now);
+            if (reason != null) Ui.Text(reason, names, "small");
+
+            var actions = Ui.Row(bizBody);
+            actions.style.flexWrap = Wrap.Wrap;
+            actions.style.marginTop = 6;
+            var pawn = p;
+            if (p.IsPresent) Ui.Btn("Show", () => { FocusCamera(pawn.Position); }, actions, "btn--small");
+            if (p.CanAct && !p.Controlled)
+            {
+                Ui.Btn("Select", () =>
+                {
+                    controller.Selected.Clear();
+                    controller.SelectProperty(null);
+                    controller.Selected.Add(pawn);
+                    FocusCamera(pawn.Position);
+                    ToggleWindow(Window.Business);
+                }, actions, "btn--small");
+                Ui.Btn("Call over", Do(() =>
+                {
+                    var boss = game.Player;
+                    if (boss != null && pawn.CanAct) pawn.ForceJob(new GotoJob(pawn, boss.Cell, "Coming over"), game);
+                }), actions, "btn--small");
+            }
+            if (p.Health.Downed && !game.Hospital.IsCalled(p))
+                Ui.Btn("Call 118", Do(() => game.Hospital.Call(pawn, game, byPasserby: false)), actions, "btn--small", "btn--danger");
+            if (!p.Health.Healthy && OSistema.Crime.Healing.NeedsCare(p))
+            {
+                var treat = Ui.Btn($"Treat with medicine ({game.Stock.Medicine})", Do(() => TreatWithMedicine(pawn)), actions, "btn--small");
+                treat.SetEnabled(game.Stock.Medicine > 0);
+            }
+
+            if (!p.Controlled)
+            {
+                Ui.Text("WORK", bizBody, "section");
+                var jobRow = Ui.Row(bizBody);
+                jobRow.style.flexWrap = Wrap.Wrap;
+                Button roleBtn = null;
+                roleBtn = Ui.Btn($"Job: {RoleLabel(p.Role)}  ▾", () => ShowRoleMenu(pawn, roleBtn), jobRow, "btn--small");
+                Button bedBtn = null;
+                bedBtn = Ui.Btn(BedLabel(p), () => ShowBedMenu(pawn, bedBtn), jobRow, "btn--small");
+                Ui.Btn(p.Armed ? "Disarm" : $"Arm ({game.Stock.Pistols} in stash)", Do(() => ToggleArmed(pawn)), jobRow, "btn--small", p.Armed ? "btn--on" : "x");
+                PersonShifts(p);
+
+                Ui.Text("WAGE", bizBody, "section");
+                var wageRow = Ui.Row(bizBody);
+                Ui.Btn("−", Do(() => pawn.Wage = Mathf.Max(0, pawn.Wage - 10)), wageRow, "btn--small");
+                Ui.Text($"<b>€{p.Wage}</b> a week", wageRow).style.marginLeft = 6;
+                Ui.Btn("+", Do(() => pawn.Wage = Mathf.Min(1000, pawn.Wage + 10)), wageRow, "btn--small").style.marginLeft = 6;
+                Ui.Text("  paid Sunday at 12:00. A raise buys loyalty; a cut costs it.", wageRow, "tiny");
+            }
+
+            Ui.Text("HOW THEY ARE", bizBody, "section");
+            var (mv, mf) = Ui.Bar("Mood", MoodColor(p.Mood.Value), bizBody);
+            mv.text = $"{p.Mood.Value:0} · {p.Mood.Description}";
+            Ui.SetFill(mf, p.Mood.Value / 100f);
+            if (!p.Controlled)
+            {
+                var (lv, lf) = Ui.Bar("Loyalty", new Color(0.91f, 0.76f, 0.42f), bizBody);
+                lv.text = $"{p.Loyalty:0}";
+                Ui.SetFill(lf, p.Loyalty / 100f);
+            }
+            var needs = Ui.Row(bizBody);
+            var l = Ui.Box("col", "grow").Into(needs);
+            l.style.marginRight = 8;
+            var r = Ui.Box("col", "grow").Into(needs);
+            var (fv, ff) = Ui.Bar("Food", new Color(0.9f, 0.6f, 0.28f), l);
+            fv.text = $"{p.Needs.Food * 100f:0}%";
+            Ui.SetFill(ff, p.Needs.Food);
+            var (rv, rf) = Ui.Bar("Rest", new Color(0.42f, 0.56f, 0.92f), r);
+            rv.text = $"{p.Needs.Rest * 100f:0}%";
+            Ui.SetFill(rf, p.Needs.Rest);
+            if (!p.Health.Healthy)
+                foreach (var inj in p.Health.Injuries.Take(4))
+                    Ui.Text($"{inj.Label} · {inj.Part} {inj.Severity * 100f:0}%{(inj.IsMalnutrition ? "" : inj.Tended ? " <color=#8FD18A>tended</color>" : " <color=#F07A6E>untended</color>")}", bizBody, "thought");
+            foreach (var t in p.Mood.AllThoughts.OrderByDescending(t => Mathf.Abs(t.Value)).Take(4))
+                Ui.Text($"<color={(t.Value >= 0 ? "#8FD18A" : "#F07A6E")}>{t.Value:+0;-0}</color>  {t.Label}", bizBody, "thought");
+
+            Ui.Text("GOOD AT", bizBody, "section");
+            Ui.Text($"Handiwork <b>{p.ConstructionSkill}</b> · Cooking <b>{p.CookingSkill}</b> · Medicine <b>{p.MedicineSkill}</b>\n" +
+                    $"Intimidation <b>{p.IntimidationSkill}</b> · Awareness <b>{p.AwarenessSkill}</b> · Shooting <b>{p.ShootingSkill}</b>", bizBody, "small", "wrap");
+        }
+
+        // ---------- Front pages ----------
+
+        void StatCards(params (string label, string value, string note)[] items)
+        {
+            var cards = Ui.Row(bizBody);
+            cards.style.flexWrap = Wrap.Wrap;
+            foreach (var (label, value, note) in items)
+            {
+                var c = Ui.Box("stat-card").Into(cards);
+                Ui.Text(label, c, "tiny", "muted");
+                Ui.Text(value, c, "stat-card__value");
+                Ui.Text(note, c, "tiny", "muted", "wrap");
+            }
+        }
+
+        void NeedsYou()
+        {
+            Ui.Text("NEEDS YOU", bizBody, "section");
+            var problems = Problems();
+            if (problems.Count == 0) Ui.Text("Nothing urgent. Go and make some money.", bizBody, "good");
+            foreach (var (text, tab, bad) in problems)
+            {
+                var row = Ui.Box("attention").Into(bizBody);
+                row.AddToClassList(bad ? "attention--bad" : "attention--warn");
+                Ui.Text(text, row, "wrap", "grow").pickingMode = PickingMode.Ignore;
+                Ui.Text($"{TabName(tab)} ›", row, "small", "gold").pickingMode = PickingMode.Ignore;
+                var t = tab;
+                row.RegisterCallback<ClickEvent>(_ => OpenBizTab(t));
+            }
+        }
+
+        /// <summary>Early on: you, your guagliuni and the basso.</summary>
+        void OverviewTab()
+        {
+            var st = game.Stock;
+            var org = game.Org;
+            int beds = game.Map.PositionsOf(BuildingDefs.Bed).Count(b => game.PlayerBase.Contains(b) || game.Properties.IsOwnedHome(b));
+            int crew = game.Pawns.Crew.Count(p => !p.Dead);
+            StatCards(("CASH", $"€{st.Cash}", $"+ €{st.Clean} clean"),
+                      ("SUNDAY'S WAGES", $"€{org.WeeklyWageBill(game)}", "the mesata"),
+                      ("HOME", $"{beds} bed{(beds == 1 ? "" : "s")}", $"{crew} to sleep · {st.Meals + st.Groceries * 2} meals"));
+            NeedsYou();
+
+            Ui.Text("YOUR GUAGLIUNI", bizBody, "section");
+            long now = game.Ticks.TicksGame;
+            foreach (var p in game.Pawns.Crew.Where(p => !p.Dead && !p.Controlled)) RosterRow(p, now);
+            if (crew <= 1) Ui.Text("Nobody yet. Make a name for yourself and the boys from the vicolo will call.", bizBody, "small", "muted", "wrap");
+
+            Ui.Text("WHAT YOU'RE WORKING ON", bizBody, "section");
+            Ui.Text(Objectives.Current(game, null).Text ?? "Nothing in particular.", bizBody, "wrap");
+            Ui.Text(org.NextRankGoal(game) ?? "", bizBody, "small", "gold", "wrap");
+            Ui.Text("Lavoretti from contacts are in the Taccuino (J). Shops and contacts are on the map (M).", bizBody, "small", "muted", "wrap");
+        }
+
+        /// <summary>A boss's front page: capi and their piazze, the takings, the neighbourhood, the clans.</summary>
+        void DashboardTab()
+        {
+            var st = game.Stock;
+            var org = game.Org;
+            int today = org.Squares.Sum(s => s.RevenueToday);
+            int pizzo = org.Businesses.Where(b => b.Status == BusinessStatus.Paying).Sum(b => b.WeeklyPizzo);
+            StatCards(("CASH", $"€{st.Cash}", $"+ €{st.Clean} clean"),
+                      ("PIAZZE TODAY", $"€{today}", $"pizzo €{pizzo}/week"),
+                      ("WAGES", $"€{org.WeeklyWageBill(game)}", "every Sunday"),
+                      ("TERRITORY", $"{org.Turf(game).Count} rioni", $"{org.Squares.Count}/{org.MaxSquaresForRank} piazze"));
+            NeedsYou();
+
+            Ui.Text("PIAZZE AND CAPI", bizBody, "section");
+            if (org.Squares.Count == 0) Ui.Text("No piazze. Open one from Build (B).", bizBody, "small", "muted");
+            foreach (var sq in org.Squares)
+            {
+                var square = sq;
+                var zone = game.Territory.Zones[sq.ZoneId];
+                var capo = org.CapoFor(sq, game);
+                var row = Ui.Box("roster-row").Into(bizBody);
+                var col = Ui.Box("col", "grow").Into(row);
+                col.pickingMode = PickingMode.Ignore;
+                Ui.Text($"<b>{zone.Name}</b>  <color=#A89F8E>{sq.HoursLabel}</color>" + (game.Police.IsRaiding(sq) ? "  <color=#F07A6E>RAID</color>" : ""), col, "small");
+                Ui.Text((capo != null ? $"Capo {capo.DisplayName}" : "<color=#F2B866>no capo</color>") +
+                        $" · {org.CrewOf(sq, game).Count} on the crew · heat {zone.Heat:0}", col, "tiny");
+                Ui.Text($"€{sq.RevenueToday}", row, "bold", "gold").pickingMode = PickingMode.Ignore;
+                row.RegisterCallback<ClickEvent>(_ => OpenBizTab(BizTab.Organigram));
+                Tip(row, () => $"Today: {square.SalesToday} sold, {square.LostToday} customers lost. Click for the organigram.");
+            }
+
+            Ui.Text("THE NEIGHBOURHOOD", bizBody, "section");
+            int owed = game.Favours.TotalOwed;
+            int witnesses = game.Favours.S.Neighbours.Count(n => n.Witness);
+            int grudges = game.Favours.S.Neighbours.Count(n => n.Grudge > 0);
+            var hood = Ui.Box("attention").Into(bizBody);
+            Ui.Text($"{owed} favour{(owed == 1 ? "" : "s")} owed to you · {grudges} with a grudge" + (witnesses > 0 ? $" · <color=#F07A6E>{witnesses} talking to the police</color>" : ""), hood, "wrap", "grow").pickingMode = PickingMode.Ignore;
+            Ui.Text("Favours ›", hood, "small", "gold").pickingMode = PickingMode.Ignore;
+            hood.RegisterCallback<ClickEvent>(_ => OpenBizTab(BizTab.Favours));
+
+            Ui.Text("THE OTHER CLANS", bizBody, "section");
+            foreach (var c in game.Clans)
+            {
+                var row = Ui.Box("roster-row").Into(bizBody);
+                var sw = Ui.Box().Into(row);
+                sw.style.width = 10;
+                sw.style.height = 10;
+                sw.style.marginRight = 8;
+                sw.style.backgroundColor = (Color)c.Colour;
+                var col = Ui.Box("col", "grow").Into(row);
+                col.pickingMode = PickingMode.Ignore;
+                string state = c.Destroyed ? "<color=#8FD18A>finished</color>" : c.Allied ? "<color=#8FD18A>allied</color>"
+                    : c.InTruce(game) ? "truce" : c.Hostility >= 70f ? "<color=#F07A6E>want blood</color>" : c.Hostility >= 40f ? "<color=#F2B866>angry</color>" : "watching";
+                Ui.Text($"<b>{c.Name}</b> · {state}", col, "small");
+                if (!c.Destroyed)
+                {
+                    var (_, fill) = Ui.Bar("", new Color(0.95f, 0.55f, 0.25f), col, thin: true);
+                    Ui.SetFill(fill, c.Hostility / 100f);
+                }
+                Ui.Text(c.Destroyed ? "" : $"{c.Squares.Count} piazz{(c.Squares.Count == 1 ? "a" : "e")}", row, "tiny").pickingMode = PickingMode.Ignore;
+                row.RegisterCallback<ClickEvent>(_ => OpenBizTab(BizTab.Rivals));
+            }
+        }
+
+        // ---------- Pick menus ----------
+
+        /// <summary>A small menu under a button: pick one line.</summary>
+        void ShowPickMenu(VisualElement anchor, List<(string label, System.Action act, bool on)> items, string empty = null)
+        {
+            if (roleMenu == null)
+            {
+                roleMenu = Ui.Box("layer").Into(modalLayer);
+                roleMenu.RegisterCallback<PointerDownEvent>(e => { if (e.target == roleMenu) roleMenu.Show(false); });
+            }
+            roleMenu.Clear();
+            roleMenu.Show(true);
+            roleMenu.pickingMode = PickingMode.Position;
+            var list = Ui.Box("panel", "role-menu").Into(roleMenu);
+            var r = anchor.worldBound;
+            var local = roleMenu.WorldToLocal(new Vector2(r.xMin, r.yMax));
+            list.style.left = local.x;
+            list.style.top = local.y + 2;
+            foreach (var (label, act, on) in items)
+            {
+                var a = act;
+                var b = Ui.Btn(label, () => { roleMenu.Show(false); a(); bizDirty = true; RefreshAll(); }, list, "btn--small", "role-menu__item");
+                b.Toggle("btn--on", on);
+            }
+            if (items.Count == 0 && empty != null) Ui.Text(empty, list, "small", "muted", "wrap");
+        }
+
+        // ---------- Shifts on a person's page ----------
+
+        void PersonShifts(Pawn p)
+        {
+            var org = game.Org;
+            var pawn = p;
+            var row = Ui.Row(bizBody);
+            row.style.flexWrap = Wrap.Wrap;
+            row.style.marginTop = 4;
+            if (Organization.PiazzaRole(p.Role) && org.Squares.Count > 0)
+            {
+                var sq = org.SquareOf(p, game);
+                Button piazzaBtn = null;
+                piazzaBtn = Ui.Btn($"Piazza: {(sq != null ? ZoneName(sq) : "unplaced")}  ▾", () =>
+                    ShowPickMenu(piazzaBtn, org.Squares.Select(q => ($"{ZoneName(q)} · {q.HoursLabel}", (System.Action)(() => org.MoveToPiazza(pawn, q, game)), q == sq)).ToList()),
+                    row, "btn--small");
+                piazzaBtn.SetEnabled(org.Squares.Count > 1);
+                if (sq == null) return;
+                int team = org.TeamOf(p, game);
+                var (from, to) = Organization.TeamHours(sq, team < 0 ? 0 : team);
+                var capo = org.CapoFor(sq, game);
+                string who = p.Role == CrewRole.Capo ? "you run this piazza" : capo != null ? $"set by Capo {capo.DisplayName}" : org.IsRun(sq, game) ? "set by the boss" : "nobody in charge";
+                string teamName = team == 1 ? "Night team" : team == 0 ? "Day team" : "Works";
+                Ui.Text($"  {teamName} {from:00}:00–{to:00}:00 · <color=#A89F8E>{who}</color>", row, "small");
+                if (!org.IsRun(sq, game))
+                    Ui.Text("This piazza has no capo: nobody runs a night team. Appoint one in the Organigram.", bizBody, "small", "warn", "wrap");
+                return;
+            }
+            var (f, t) = p.WorkHours;
+            bool day = (f, t) == (9, 21), night = (f, t) == (21, 9);
+            Ui.Text("Shift", row, "small", "muted").style.marginRight = 6;
+            Ui.Btn("Day 09–21", Do(() => pawn.SetWorkHours(9, 21)), row, "btn--small", day ? "btn--on" : "x");
+            Ui.Btn("Night 21–09", Do(() => pawn.SetWorkHours(21, 9)), row, "btn--small", night ? "btn--on" : "x");
+            if (!day && !night) Ui.Text($"  now {f:00}–{t:00}", row, "tiny");
+        }
+
+        // ---------- The organigram ----------
+
+        void OrganigramTab()
+        {
+            var org = game.Org;
+            long now = game.Ticks.TicksGame;
+            var boss = org.Boss(game);
+
+            // The boss at the top.
+            var top = Ui.Box("org-node", "org-node--boss").Into(bizBody);
+            if (boss != null) Avatar(boss, top, big: false);
+            var bc = Ui.Box("col", "grow").Into(top);
+            Ui.Text(boss != null ? $"<color=#E8C26A>{boss.DisplayName}</color> {boss.LastName}" : "No boss", bc, "bold");
+            Ui.Text(org.Squares.Count == 0 ? "No piazze yet: open one from Build (B)." : org.CapoFor(org.Squares[0], game) == null ? $"Runs {ZoneName(org.Squares[0])} himself" : "Il capo", bc, "tiny");
+
+            for (int i = 0; i < org.Squares.Count; i++)
+            {
+                var sq = org.Squares[i];
+                var square = sq;
+                var zone = game.Territory.Zones[sq.ZoneId];
+                var branch = Ui.Box("org-branch").Into(bizBody);
+                var head = Ui.Row(branch);
+                Ui.Text(zone.Name.ToUpper(), head, "section").style.marginTop = 0;
+                Ui.Box("spacer").Into(head);
+                Ui.Text($"€{sq.RevenueToday} today · heat {zone.Heat:0}" + (game.Police.IsRaiding(sq) ? " · <color=#F07A6E>RAID</color>" : ""), head, "tiny");
+
+                // Hours: the one thing the boss sets here.
+                var hours = Ui.Row(branch);
+                Ui.Text("Open", hours, "small", "muted");
+                Ui.Btn("−", Do(() => { square.OpenHour = (square.OpenHour + 23) % 24; org.OrganiseShifts(game); }), hours, "btn--small");
+                Ui.Text($"{sq.OpenHour:00}:00", hours, "bold");
+                Ui.Btn("+", Do(() => { square.OpenHour = (square.OpenHour + 1) % 24; org.OrganiseShifts(game); }), hours, "btn--small");
+                Ui.Text("  to", hours, "small", "muted");
+                Ui.Btn("−", Do(() => { square.CloseHour = (square.CloseHour + 23) % 24; org.OrganiseShifts(game); }), hours, "btn--small");
+                Ui.Text($"{sq.CloseHour:00}:00", hours, "bold");
+                Ui.Btn("+", Do(() => { square.CloseHour = (square.CloseHour + 1) % 24; org.OrganiseShifts(game); }), hours, "btn--small");
+                Ui.Box("spacer").Into(hours);
+                Ui.Btn("Show", () => FocusCamera(Mover.CellCenter(square.Cell)), hours, "btn--small");
+
+                // The capo.
+                var capo = org.CapoFor(sq, game);
+                var capoRow = Ui.Box("org-node").Into(branch);
+                if (capo != null)
+                {
+                    Avatar(capo, capoRow, big: false);
+                    var cc = Ui.Box("col", "grow").Into(capoRow);
+                    Ui.Text($"<b>Capo {capo.DisplayName}</b>", cc, "small");
+                    Ui.Text(ShortStatus(capo, now), cc, "tiny");
+                    var c = capo;
+                    capoRow.RegisterCallback<ClickEvent>(e => { if (!(e.target is Button)) OpenFamigliaPerson(c); });
+                }
+                else
+                {
+                    var cc = Ui.Box("col", "grow").Into(capoRow);
+                    Ui.Text(i == 0 ? "<b>The boss runs it</b>" : "<color=#F2B866><b>No capo paranza</b></color>", cc, "small");
+                    Ui.Text(i == 0 ? "A capo would free you of it." : "Without one there's no night team.", cc, "tiny");
+                }
+                Button appoint = null;
+                appoint = Ui.Btn(capo == null ? "Appoint ▾" : "Replace ▾", () =>
+                {
+                    var candidates = game.Pawns.Crew.Where(p => p.IsPresent && !p.Controlled && !p.IsBoss && p != capo && p.Role != CrewRole.Capo && p.Role != CrewRole.Manager)
+                        .OrderByDescending(p => p.Loyalty + p.IntimidationSkill * 4f + p.AwarenessSkill * 2f).ToList();
+                    ShowPickMenu(appoint, candidates.Select(p => ($"{p.DisplayName} · {RoleLabel(p.Role)} · loyalty {p.Loyalty:0}", (System.Action)(() => org.AppointCapo(p, square, game)), false)).ToList(),
+                        "Nobody free to put in charge. Recruit someone first.");
+                }, capoRow, "btn--small");
+                Tip(appoint, () => "A capo paranza runs the piazza: splits its crew into a day and a night team, and serves the customers himself when no pusher is on the spot. Loyal, hard men make the best capi.");
+
+                // The crew, by team.
+                var crew = org.CrewOf(sq, game);
+                bool split = Organization.SplitsShifts(sq) && org.IsRun(sq, game);
+                var teams = Ui.Row(branch);
+                teams.style.alignItems = Align.FlexStart;
+                for (int t = 0; t < (split ? 2 : 1); t++)
+                {
+                    var col = Ui.Box("org-team", "grow").Into(teams);
+                    var (from, to) = Organization.TeamHours(sq, t);
+                    Ui.Text(split ? $"{(t == 0 ? "DAY" : "NIGHT")}  {from:00}–{to:00}" : $"CREW  {from:00}–{to:00}", col, "tiny");
+                    int tt = t;
+                    foreach (var p in crew.Where(p => { int team = org.TeamOf(p, game); return !split || team == tt || team < 0; }))
+                    {
+                        var chip = Ui.Box("org-chip").Into(col);
+                        Ui.Text($"{(p.Role == CrewRole.Pusher ? "◆" : "◎")} {p.DisplayName}" + (Attention(p, now) is string a ? $"  {a}" : ""), chip, "small");
+                        var pp = p;
+                        chip.RegisterCallback<ClickEvent>(_ => OpenFamigliaPerson(pp));
+                        Tip(chip, () => $"{RoleLabel(pp.Role)} · {ShortStatus(pp, now)}" + (org.TeamOf(pp, game) < 0 && split ? "\nAlone in this job here: works the day shift." : ""));
+                    }
+                }
+                var addRow = Ui.Row(branch);
+                foreach (var role in new[] { CrewRole.Pusher, CrewRole.Lookout })
+                {
+                    var rr = role;
+                    Button add = null;
+                    add = Ui.Btn(role == CrewRole.Pusher ? "+ Pusher ▾" : "+ Lookout ▾", () =>
+                    {
+                        var free = game.Pawns.Crew.Where(p => p.IsPresent && !p.Controlled && !p.IsBoss && (p.Role == CrewRole.General || (Organization.PiazzaRole(p.Role) && p.Role != CrewRole.Capo && org.SquareOf(p, game) != square)))
+                            .OrderBy(p => p.Role != CrewRole.General).ToList();
+                        ShowPickMenu(add, free.Select(p => ($"{p.DisplayName} · {(p.Role == CrewRole.General ? "no job" : $"{RoleLabel(p.Role)} at {(org.SquareOf(p, game) is DrugSquare o ? ZoneName(o) : "?")}")}",
+                            (System.Action)(() => { p.Role = rr; org.MoveToPiazza(p, square, game); }), false)).ToList(), "Nobody free. Recruit, or take someone off another job.");
+                    }, addRow, "btn--small");
+                }
+                Ui.Text($"  {crew.Count(p => p.Role == CrewRole.Pusher)} pushers · {crew.Count(p => p.Role == CrewRole.Lookout)} lookouts", addRow, "tiny");
+            }
+
+            // Everyone else answers straight to the boss.
+            var others = game.Pawns.Crew.Where(p => !p.Dead && !p.Controlled && !Organization.PiazzaRole(p.Role)).ToList();
+            if (others.Count > 0)
+            {
+                var branch = Ui.Box("org-branch").Into(bizBody);
+                Ui.Text("WITH THE BOSS", branch, "section").style.marginTop = 0;
+                var wrap = Ui.Row(branch);
+                wrap.style.flexWrap = Wrap.Wrap;
+                foreach (var p in others.OrderBy(p => p.Role))
+                {
+                    var chip = Ui.Box("org-chip").Into(wrap);
+                    Ui.Text($"{p.DisplayName} <color=#A89F8E>{RoleLabel(p.Role).Split(' ')[0].ToLower()}</color>", chip, "small");
+                    var pp = p;
+                    chip.RegisterCallback<ClickEvent>(_ => OpenFamigliaPerson(pp));
+                }
+            }
+        }
+    }
+}

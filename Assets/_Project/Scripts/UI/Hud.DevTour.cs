@@ -104,10 +104,10 @@ namespace OSistema.UI
             steps.Add(("phone", () => ToggleWindow(Window.Phone), () => ToggleWindow(Window.Phone)));
             steps.Add(("help", () => ToggleWindow(Window.Help), () => ToggleWindow(Window.Help)));
             steps.Add(("map", ToggleMap, ToggleMap));
-            foreach (var t in new[] { DockTab.Furnish, DockTab.Crime, DockTab.Build, DockTab.Orders })
+            foreach (var t in new[] { BuildCat.Tutto, BuildCat.Vita, BuildCat.Magazzino })
             {
                 var tab = t;
-                steps.Add(($"build_{tab}", () => { buildMode = true; openTab = tab; RefreshDock(); }, () => { }));
+                steps.Add(($"build_{tab}", () => { buildMode = true; buildCat = tab; RefreshDock(); }, () => { }));
             }
             steps.Add(("build_close", ToggleBuildMode, () => { }));
             steps.Add(("pause", () => OpenMenu(Menu.Pause), () => { }));

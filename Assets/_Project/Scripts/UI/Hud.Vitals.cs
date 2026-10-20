@@ -19,23 +19,23 @@ namespace OSistema.UI
 
         void BuildVitals()
         {
-            // Gennaro's body, in the top bar next to the clock.
-            vitals = Ui.Box("topbar__section", "vitals-strip").Into(topBar);
-            topBar.Insert(1, vitals);
+            // Gennaro's body: a few short bars above the hotbar. The figures are on hover.
+            vitals = Ui.Box("vitals-bar").Into(hudLayer);
             vitalsName = Ui.Text("", vitals, "tiny");
-            vHealth = VitalChip(vitals, "♥", "#F07A6E");
-            vArmor = VitalChip(vitals, "VEST", "#9DB8D8");
-            vFood = VitalChip(vitals, "FAME", "#F2B866");
-            vRest = VitalChip(vitals, "SONNO", "#8FB4F0");
-            vBreath = VitalChip(vitals, "FIATO", "#D8D4C8");
-            vAmmo = VitalChip(vitals, "COLPI", "#E8C26A");
+            vitalsName.Show(false);
+            vHealth = VitalChip(vitals, "♥", "#F07A6E", out vHealthFill);
+            vArmor = VitalChip(vitals, "VEST", "#9DB8D8", out vArmorFill);
+            vFood = VitalChip(vitals, "FAME", "#F2B866", out vFoodFill);
+            vRest = VitalChip(vitals, "SONNO", "#8FB4F0", out vRestFill);
+            vBreath = VitalChip(vitals, "FIATO", "#D8D4C8", out vBreathFill);
+            vAmmo = Ui.Text("", vitals, "chip__value", "vital__ammo");
             vitalsState = Ui.Text("", vitals, "tiny");
             Tip(vitals, () =>
             {
                 var p = game?.Player;
                 if (p == null) return "";
-                return "♥ health: wounds and blood loss. FAME: hunger, eat at home (E at the pantry) or a pizza.\n" +
-                       "SONNO: energy, sleep in your bed (E). FIATO: breath, running with Shift uses it up.\n" +
+                return $"♥ health {VitalHealth(p) * 100f:0}%: wounds and blood loss.\nFAME {p.Needs.Food * 100f:0}%: hunger, eat at home (E at the pantry) or a pizza.\n" +
+                       $"SONNO {p.Needs.Rest * 100f:0}%: energy, sleep in your bed (E). FIATO {p.Stamina * 100f:0}%: breath, running with Shift uses it up.\n" +
                        (p.Autopilot ? "Z: Gennaro looks after himself when you leave him be." : "Z: let Gennaro look after himself when you leave him be.") +
                        (p.Health.NeedsTending ? "\nYou're bleeding: someone has to tend the wound." : "");
             });
@@ -59,14 +59,23 @@ namespace OSistema.UI
             wanted.Show(false);
         }
 
-        Label VitalChip(VisualElement parent, string label, string color)
+        VisualElement vHealthFill, vArmorFill, vFoodFill, vRestFill, vBreathFill;
+
+        Label VitalChip(VisualElement parent, string label, string color, out VisualElement fill)
         {
-            var chip = Ui.Box("chip").Into(parent);
-            Ui.Text($"<color={color}>{label}</color>", chip, "tiny");
-            var v = Ui.Text("", chip, "chip__value");
-            v.style.marginLeft = 4;
-            return v;
+            var chip = Ui.Box("vital").Into(parent);
+            var l = Ui.Text($"<color={color}>{label}</color>", chip, "tiny");
+            var track = Ui.Box("vital__track").Into(chip);
+            fill = Ui.Box("bar__fill").Into(track);
+            fill.style.backgroundColor = Ui.Parse(color);
+            return l;
         }
+
+        static float VitalHealth(Pawn p) =>
+            Mathf.Min(1f - Mathf.Max(p.Health.BloodLoss / 0.6f, p.Health.Pain / 0.8f), p.Hp / Pawn.MaxHp);
+
+        static Color VitalColor(float v, Color normal) =>
+            v < 0.2f ? new Color(0.94f, 0.33f, 0.28f) : v < 0.4f ? new Color(0.95f, 0.72f, 0.4f) : normal;
 
         static string Pct(float v)
         {
@@ -82,18 +91,24 @@ namespace OSistema.UI
             var p = game.Player;
             vitals.Show(p != null);
             if (p == null) return;
-            vitalsName.text = "";
+            vitals.Show(!buildMode);
             vitalsState.text = (p.Riding ? "ON THE SCOOTER" : game.Org.DealingCorner != null ? "DEALING" : game.Org.CarriedDg > 0 ? $"CARRYING {game.Org.CarriedDg / 10} G" : p.Carrying != null ? $"CARRYING {p.Carrying.ToUpper()}" : "")
                 + (p.Autopilot ? "  · AUTO" : "");
-            // Health: the worse of the fight (hit points) and the body (blood lost, pain).
-            float health = Mathf.Min(1f - Mathf.Max(p.Health.BloodLoss / 0.6f, p.Health.Pain / 0.8f), p.Hp / Pawn.MaxHp);
-            vHealth.text = health < 0.3f ? $"<color=#F07A6E>{Pct(health)}</color>" : health < 0.6f ? $"<color=#F2B866>{Pct(health)}</color>" : Pct(health);
+            vitalsState.Show(vitalsState.text.Length > 0);
+            float health = VitalHealth(p);
+            Ui.SetFill(vHealthFill, health);
+            vHealthFill.style.backgroundColor = VitalColor(health, new Color(0.94f, 0.48f, 0.43f));
             vArmor.parent.Show(p.Armor > 0.5f);
-            vArmor.text = Pct(p.Armor / Pawn.MaxArmor);
-            vFood.text = Pct(p.Needs.Food);
-            vRest.text = Pct(p.Needs.Rest);
-            vBreath.text = p.Winded ? "<color=#F07A6E>out of breath</color>" : Pct(p.Stamina);
-            vAmmo.parent.Show(p.Armed);
+            Ui.SetFill(vArmorFill, p.Armor / Pawn.MaxArmor);
+            Ui.SetFill(vFoodFill, p.Needs.Food);
+            vFoodFill.style.backgroundColor = VitalColor(p.Needs.Food, new Color(0.95f, 0.72f, 0.4f));
+            Ui.SetFill(vRestFill, p.Needs.Rest);
+            vRestFill.style.backgroundColor = VitalColor(p.Needs.Rest, new Color(0.56f, 0.71f, 0.94f));
+            // Breath only matters while running.
+            vBreath.parent.Show(p.Stamina < 0.98f || p.Winded);
+            Ui.SetFill(vBreathFill, p.Stamina);
+            vBreathFill.style.backgroundColor = p.Winded ? new Color(0.94f, 0.33f, 0.28f) : new Color(0.85f, 0.83f, 0.78f);
+            vAmmo.Show(p.Armed);
             vAmmo.text = p.ReloadUntil > Time.unscaledTime ? "<color=#A89F8E>reloading</color>"
                 : p.Ammo == 0 ? "<color=#F07A6E>empty · R</color>" : $"{p.Ammo}/{Pawn.MagazineSize}";
 

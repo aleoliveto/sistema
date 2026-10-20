@@ -595,6 +595,8 @@ namespace OSistema.Core
                 lookHat = p.Look?.Hat ?? -1, lookNeck = p.Look?.Neck ?? -1, lookFace = p.Look?.Face ?? -1,
                 bedX = p.Bed?.x ?? 0,
                 bedY = p.Bed?.y ?? 0,
+                hasPiazza = p.Piazza.HasValue, piazzaX = p.Piazza?.x ?? 0, piazzaY = p.Piazza?.y ?? 0,
+                guardSlot = p.GuardSlot, hasGuardPost = p.GuardPost.HasValue, guardPostX = p.GuardPost?.x ?? 0, guardPostY = p.GuardPost?.y ?? 0,
             };
             foreach (var i in p.Health.Injuries)
                 d.injuries.Add(new InjuryData { label = i.Label, part = i.Part, severity = i.Severity, bleed = i.BleedPerDay, tended = i.Tended, quality = i.TendQuality });
@@ -626,6 +628,9 @@ namespace OSistema.Core
                 MealsDelivered = d.mealsDelivered,
                 Mission = (RivalMission)d.mission, Clan = d.clan, Armor = d.armor,
                 Bed = d.hasBed ? new Vector2Int(d.bedX, d.bedY) : (Vector2Int?)null,
+                Piazza = d.hasPiazza ? new Vector2Int(d.piazzaX, d.piazzaY) : (Vector2Int?)null,
+                GuardSlot = d.guardSlot,
+                GuardPost = d.hasGuardPost ? new Vector2Int(d.guardPostX, d.guardPostY) : (Vector2Int?)null,
             };
             p.ScheduleString = d.schedule;
             if (d.hasLook) p.Look = new Look { Body = d.lookBody, Head = d.lookHead, Hair = d.lookHair, Hat = d.lookHat, Neck = d.lookNeck, Face = d.lookFace };
@@ -773,6 +778,8 @@ namespace OSistema.Core
         [Serializable]
         sealed class PawnData
         {
+            public bool hasPiazza, hasGuardPost;
+            public int piazzaX, piazzaY, guardSlot, guardPostX, guardPostY;
             public int id;
             public string firstName, lastName, nickname;
             public byte shirtR, shirtG, shirtB;

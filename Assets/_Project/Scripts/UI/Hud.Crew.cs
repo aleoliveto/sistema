@@ -45,6 +45,7 @@ namespace OSistema.UI
             CrewRole.Bagger => "Bagger (cuts and bags doses)",
             CrewRole.Roller => "Roller (makes ROSSE)",
             CrewRole.Bodyguard => "Bodyguard",
+            CrewRole.Capo => "Capo paranza",
             _ => "General",
         };
 
@@ -68,11 +69,12 @@ namespace OSistema.UI
             list.style.top = local.y + 2;
             foreach (CrewRole role in Enum.GetValues(typeof(CrewRole)))
             {
-                if (role == CrewRole.Manager) continue;   // appointed from the property panel
+                if (role == CrewRole.Manager || role == CrewRole.Capo) continue;   // appointed from the property panel / the organigram
                 var rr = role;
                 var b = Ui.Btn(RoleLabel(role), () =>
                 {
                     p.Role = rr;
+                    if (Crime.Organization.PiazzaRole(rr)) game.Org.OrganiseShifts(game);
                     roleMenu.Show(false);
                     bizDirty = true;
                     RefreshAll();
@@ -161,7 +163,7 @@ namespace OSistema.UI
             var roles = (CrewRole[])Enum.GetValues(typeof(CrewRole));
             // Managers are appointed from the property panel, so the cycle skips that role.
             do p.Role = roles[(Array.IndexOf(roles, p.Role) + 1) % roles.Length];
-            while (p.Role == CrewRole.Manager);
+            while (p.Role == CrewRole.Manager || p.Role == CrewRole.Capo);
         }
 
         static Color MoodColor(float mood) =>
@@ -169,45 +171,88 @@ namespace OSistema.UI
 
         // ---------- Crew bar ----------
 
+        Label crewHead;
+        VisualElement crewCards;
+
         void BuildCrewBar()
         {
+            // Only the people who need you: hurt, bleeding, idle, in trouble, breaking down.
+            // Everyone else is in Famiglia (Tab).
             crewBar = Ui.Box("crew-bar").Into(hudLayer);
             crewBar.pickingMode = PickingMode.Ignore;
+            crewHead = Ui.Text("", crewBar, "crew-bar__head");
+            crewHead.pickingMode = PickingMode.Position;
+            crewHead.RegisterCallback<ClickEvent>(_ => { OpenFamigliaRoster(); });
+            Tip(crewHead, () => "The whole family: click to open Famiglia (Tab).");
+            crewCards = Ui.Box("col").Into(crewBar);
+            crewCards.pickingMode = PickingMode.Ignore;
+        }
+
+        /// <summary>Why this person needs the boss right now, worst first; null when they're fine.</summary>
+        string Attention(Pawn p, long now)
+        {
+            if (p.Dead || p.Controlled) return null;
+            if (p.Health.Downed) return "<color=#F07A6E>Down</color>";
+            if (p.Health.BleedRatePerDay > 0.01f && OSistema.Crime.Healing.NeedsCare(p)) return "<color=#F07A6E>Bleeding</color>";
+            if (p.InMentalBreak(now)) return "<color=#F07A6E>Breakdown</color>";
+            if (p.InJail) return "<color=#F07A6E>In Poggioreale</color>";
+            if (p.Drafted) return "<color=#F07A6E>Fighting</color>";
+            if (p.InHospital) return "<color=#F2B866>In hospital</color>";
+            if (!p.Health.Healthy) return "<color=#F2B866>Hurt</color>";
+            if (p.Mood.Value < Mood.BreakBelow + 8f) return "<color=#F2B866>On the edge</color>";
+            if (p.Needs.Food < 0.1f) return "<color=#F2B866>Starving</color>";
+            if (p.Loyalty < 25f) return "<color=#F2B866>Disloyal</color>";
+            if (p.Role == CrewRole.General && !p.IsBoss && p.IsPresent) return "<color=#E8C26A>No job</color>";
+            return null;
         }
 
         void RefreshCrewBar()
         {
-            var crew = game.Pawns.Crew.Where(p => !p.Dead).ToList();
+            long now = game.Ticks.TicksGame;
+            var crew = new List<Pawn>();
+            int total = 0;
+            foreach (var p in game.Pawns.Crew)
+            {
+                if (p.Dead) continue;
+                total++;
+                if (Attention(p, now) != null) crew.Add(p);
+            }
+            bool famigliaOpen = openWindow == Window.Business;
+            crewBar.Show(!famigliaOpen);
+            crewHead.text = total <= 1 ? "" : crew.Count == 0
+                ? $"FAMIGLIA  {total}  <color=#8FD18A>·  all well</color>"
+                : $"FAMIGLIA  {total}  <color=#F2B866>·  {crew.Count} need{(crew.Count == 1 ? "s" : "")} you</color>";
+            crewHead.Show(total > 1);
             string signature = string.Join(",", crew.Select(p => p.Id));
             if (signature != crewSignature)
             {
                 crewSignature = signature;
-                crewBar.Clear();
+                crewCards.Clear();
                 cards.Clear();
                 foreach (var p in crew) cards[p.Id] = CreateCard(p);
             }
 
-            long now = game.Ticks.TicksGame;
             foreach (var p in crew)
             {
                 var card = cards[p.Id];
                 card.Name.text = p.IsBoss ? $"<color=#E8C26A>{p.DisplayName}</color>" : p.DisplayName;
-                card.Status.text = ShortStatus(p, now);
+                card.Status.text = Attention(p, now);
                 Ui.SetFill(card.MoodFill, p.Mood.Value / 100f);
                 card.MoodFill.style.backgroundColor = MoodColor(p.Mood.Value);
+                card.MoodFill.parent.Show(p.Mood.Value < 40f);
                 float health = Mathf.Clamp01(1f - Mathf.Max(p.Health.Pain, p.Health.BloodLoss));
                 Ui.SetFill(card.HealthFill, health);
                 card.HealthFill.style.backgroundColor = health > 0.4f ? new Color(0.92f, 0.65f, 0.3f) : new Color(0.86f, 0.3f, 0.26f);
                 card.HealthFill.parent.Show(health < 0.97f);
                 card.Root.Toggle("crew-card--selected", controller.Selected.Contains(p));
                 card.Root.Toggle("crew-card--drafted", p.Drafted);
-                card.Root.style.opacity = p.InJail || p.InHospital ? 0.45f : 1f;
+                card.Root.style.opacity = p.InJail || p.InHospital ? 0.6f : 1f;
             }
         }
 
         CrewCard CreateCard(Pawn p)
         {
-            var card = new CrewCard { Root = Ui.Box("crew-card").Into(crewBar) };
+            var card = new CrewCard { Root = Ui.Box("crew-card").Into(crewCards) };
             card.Avatar = Avatar(p, card.Root, big: false);
             var col = Ui.Box("col", "grow").Into(card.Root);
             card.Name = Ui.Text("", col, "crew-card__name");
@@ -217,7 +262,7 @@ namespace OSistema.UI
 
             card.Root.RegisterCallback<ClickEvent>(e =>
             {
-                if (p.InJail || p.InHospital || p.Dead) return;
+                if (p.InJail || p.InHospital || p.Dead) { OpenFamigliaPerson(p); return; }
                 bool additive = Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
                 if (!additive) controller.Selected.Clear();
                 controller.SelectProperty(null);
@@ -372,7 +417,7 @@ namespace OSistema.UI
         {
             int count = controller.Selected.Count;
             var property = controller.SelectedProperty;
-            inspector.Show(count > 0 || property != null);
+            inspector.Show((count > 0 || property != null) && openWindow != Window.Business);
             propertyPanel.Show(count == 0 && property != null);
             if (count == 0)
             {

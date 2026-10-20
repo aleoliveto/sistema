@@ -9,7 +9,7 @@ namespace OSistema.Core
     {
         public const int TicksPerDay = 90000;
         public const int TicksPerHour = TicksPerDay / 24;
-        const int StartHour = 8;
+        public const int StartHour = 8;
 
         static readonly string[] Weekdays = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
 

@@ -236,7 +236,7 @@ namespace OSistema.UI
             var kb = Keyboard.current;
             if (kb != null)
             {
-                bool typing = MinigameOpen || openMenu != Menu.None;
+                bool typing = MinigameOpen || openMenu != Menu.None || searchTyping;
                 if (!typing)
                 {
                     if (kb.hKey.wasPressedThisFrame || kb.f1Key.wasPressedThisFrame) ToggleWindow(Window.Help);
@@ -249,6 +249,9 @@ namespace OSistema.UI
                 }
             }
             if (game == null) return;
+            // A click out in the city ends typing in a search box.
+            if (searchTyping && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && !IsPointerOver(Mouse.current.position.ReadValue()))
+                SetSearchTyping(false);
 
             refreshTimer += Time.unscaledDeltaTime;
             if (refreshTimer >= RefreshSeconds)

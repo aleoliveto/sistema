@@ -9,7 +9,7 @@ namespace OSistema.UI
     /// <summary>Notification feed, event cards and the game-over screen.</summary>
     public sealed partial class Hud
     {
-        const int FeedMax = 3;
+        const int FeedMax = 2;
 
         static readonly Color[] CardBands =
         {
@@ -22,10 +22,52 @@ namespace OSistema.UI
         VisualElement eventDim, gameOverDim;
         GameEvent shownEvent;
 
+        VisualElement toastBox, diaryBox;
+        Label diaryHead;
+        bool diaryOpen;
+        int diaryVersion = -1, diarySeen;
+
         void BuildFeed()
         {
+            // Under the objective: a folded diary of what happened, and the latest news popping in below it.
             feed = Ui.Box("feed").Into(hudLayer);
             feed.pickingMode = PickingMode.Ignore;
+            diaryHead = Ui.Text("", feed, "diary__head");
+            diaryHead.pickingMode = PickingMode.Position;
+            diaryHead.RegisterCallback<ClickEvent>(_ => { diaryOpen = !diaryOpen; diaryVersion = -1; RefreshFeed(); });
+            Tip(diaryHead, () => diaryOpen ? "Fold the diary away." : "What has happened lately. Click to open.");
+            var scroll = new ScrollView(ScrollViewMode.Vertical).Cls("panel", "diary").Into(feed);
+            scroll.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
+            diaryBox = scroll.contentContainer;
+            scroll.Show(false);
+            toastBox = Ui.Box("col").Into(feed);
+            toastBox.pickingMode = PickingMode.Ignore;
+        }
+
+        void RefreshDiary()
+        {
+            int unseen = diaryOpen ? 0 : System.Math.Min(game.Log.All.Count, game.Log.Version - diarySeen);
+            if (diaryOpen) diarySeen = game.Log.Version;
+            diaryHead.text = (diaryOpen ? "▾ DIARIO" : "▸ DIARIO") + (unseen > 0 ? $"  <color=#A89F8E>{unseen} new</color>" : "");
+            diaryBox.parent.parent.Show(diaryOpen);
+            toastBox.Show(!diaryOpen);
+            if (!diaryOpen || diaryVersion == game.Log.Version) return;
+            diaryVersion = game.Log.Version;
+            diaryBox.Clear();
+            var all = game.Log.All;
+            for (int i = all.Count - 1; i >= 0 && i >= all.Count - 25; i--)
+            {
+                var m = all[i];
+                var row = Ui.Box("diary__row").Into(diaryBox);
+                if (m.Kind == MessageKind.Good) row.AddToClassList("toast--good");
+                if (m.Kind == MessageKind.Bad) row.AddToClassList("toast--bad");
+                long abs = m.Tick + GameClock.StartHour * GameClock.TicksPerHour;
+                long day = abs / GameClock.TicksPerDay + 1;
+                int hour = (int)(abs % GameClock.TicksPerDay / GameClock.TicksPerHour);
+                Ui.Text($"<color=#A89F8E>D{day} {hour:00}h</color>  {m.Text}", row, "small", "wrap");
+                var at = m.Location;
+                if (at.HasValue) row.RegisterCallback<ClickEvent>(_ => FocusCamera(new Vector2(at.Value.x + 0.5f, at.Value.y + 0.5f)));
+            }
         }
 
         // Messages queue up and come in one at a time, each staying long enough to read,
@@ -43,12 +85,15 @@ namespace OSistema.UI
             {
                 feedGame = game;
                 feedVersion = game.Log.Version;
+                diarySeen = feedVersion;
+                diaryVersion = -1;
                 toastQueue.Clear();
                 foreach (var t in toasts) t.label.RemoveFromHierarchy();
                 toasts.Clear();
                 // A new or loaded game: show its opening lines.
                 foreach (var m in game.Log.All.Skip(System.Math.Max(0, game.Log.All.Count - 3))) toastQueue.Enqueue(m);
             }
+            RefreshDiary();
             if (game.Log.Version != feedVersion)
             {
                 int fresh = System.Math.Min(game.Log.Version - feedVersion, game.Log.All.Count);
@@ -83,7 +128,7 @@ namespace OSistema.UI
                 lastToastAt = now;
                 var m = toastQueue.Dequeue();
                 var toast = Ui.Text(m.Text, null, "toast");
-                feed.Insert(0, toast);
+                toastBox.Insert(0, toast);
                 toast.pickingMode = PickingMode.Position;
                 if (m.Kind == MessageKind.Good) toast.AddToClassList("toast--good");
                 if (m.Kind == MessageKind.Bad) toast.AddToClassList("toast--bad");

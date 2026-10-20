@@ -7,10 +7,14 @@ using UnityEngine.UIElements;
 
 namespace OSistema.UI
 {
-    /// <summary>The bottom dock: tabs (Build, Furnish, Crime, Orders) opening a row of tools.</summary>
+    /// <summary>
+    /// The bottom of the screen: the hotbar (every screen, with its key), and Build (B) as a drawer that
+    /// slides up above it: category tabs, big cards with a picture and a price, and the few tools
+    /// (piazza, move, put away) at the side.
+    /// </summary>
     public sealed partial class Hud
     {
-        enum DockTab { None, Build, Furnish, Crime, Orders }
+        enum BuildCat { Tutto, Vita, Cucina, Magazzino, Sicurezza, Decorazioni }
 
         sealed class ToolEntry
         {
@@ -19,74 +23,84 @@ namespace OSistema.UI
             public Color Swatch;
             public Tool Tool;
             public BuildingDef Def;
-            public System.Action Action;  // for buttons that aren't tools
+            public BuildCat Cat;
             public Button Button;
-            public Label Price;
+            public Label Price, Stock;
         }
 
-        VisualElement dockTools;
-        readonly Dictionary<DockTab, List<ToolEntry>> toolsByTab = new Dictionary<DockTab, List<ToolEntry>>();
-        readonly Dictionary<DockTab, Button> tabButtons = new Dictionary<DockTab, Button>();
-        DockTab openTab;
-        DockTab builtTab = DockTab.None;
+        readonly List<ToolEntry> buildItems = new List<ToolEntry>();
+        readonly List<ToolEntry> buildTools = new List<ToolEntry>();
+        readonly Dictionary<BuildCat, Button> catButtons = new Dictionary<BuildCat, Button>();
+        BuildCat buildCat;
+        BuildCat? builtCat;
+        VisualElement drawer, drawerCards, dockRoot;
         Button businessButton, helpButton;
-        Label buildHint;
+        Label buildHint, drawerNote;
 
         void BuildDock()
         {
-            toolsByTab[DockTab.Build] = new List<ToolEntry>
-            {
-                new ToolEntry { Label = "Open piazza", Tool = Tool.Square, Swatch = new Color(0.8f, 0.25f, 0.9f), Tip = "Click a pavement in your turf to open a drug square. Give crew the pusher and lookout jobs, and keep doses in stock." },
-            };
-            toolsByTab[DockTab.Furnish] = new List<ToolEntry>
-            {
-                Def(BuildingDefs.Bed, "Everyone wants a bed of their own."),
-                Def(BuildingDefs.Table, "Gives cover in a firefight, too."),
-                Def(BuildingDefs.Stove, "Cook groceries into meals."),
-                Def(BuildingDefs.Pantry, "Stores meals and supplies. Needed to cook and shop."),
-                Def(BuildingDefs.Sofa, "Somewhere to collapse after a long day."),
-                Def(BuildingDefs.Armchair, "For the boss."),
-                Def(BuildingDefs.Television, "The crew watches Napoli on it in the afternoon. Good for morale."),
-                Def(BuildingDefs.Wardrobe, "Somewhere to hang the good suit."),
-                Def(BuildingDefs.KitchenCounter, "A proper kitchen."),
-                Def(BuildingDefs.Fridge, "Cold beer, cold water."),
-                Def(BuildingDefs.Plant, "A bit of green."),
-                Def(BuildingDefs.Rug, "A rug from the market."),
-                Def(BuildingDefs.Safe, "Where the money sleeps."),
-                Def(BuildingDefs.HomeShrine, "A little altar to the Madonna. Everyone feels watched over."),
-                Def(BuildingDefs.Bunker, "A hidden room under the floor for the boss's latitanza. Searches rarely find it."),
-            };
-            toolsByTab[DockTab.Crime] = new List<ToolEntry>
-            {
-                Def(BuildingDefs.BaggingTable, "Where 'a roba is cut and bagged into half-gram doses. E to work at it, or give someone the Bagger job."),
-                Def(BuildingDefs.RollingTable, "Where ROSSE are rolled and boxed. E to work at it, or give someone the Roller job."),
-            };
-            toolsByTab[DockTab.Orders] = new List<ToolEntry>
-            {
-                new ToolEntry { Label = "Move", Tool = Tool.Move, Swatch = new Color(0.6f, 0.8f, 0.95f), Tip = "Click a piece of furniture in your home to pick it up, then click where it goes (Q / E to turn it). Free." },
-                new ToolEntry { Label = "Put away", Tool = Tool.Deconstruct, Swatch = new Color(0.9f, 0.3f, 0.25f), Tip = "Click or drag over furniture in your homes to put it back in storage. Walls and doors are knocked down for half what they cost." },
-                new ToolEntry { Label = "Close piazza", Tool = Tool.Cancel, Swatch = new Color(0.95f, 0.65f, 0.3f), Tip = "Click a piazza of yours to close it." },
-            };
+            void Item(BuildingDef def, BuildCat cat, string tip) =>
+                buildItems.Add(new ToolEntry { Label = def.Label, Tool = Tool.Build, Def = def, Swatch = def.Color, Cat = cat, Tip = tip });
+            Item(BuildingDefs.Bed, BuildCat.Vita, "Everyone wants a bed of their own.");
+            Item(BuildingDefs.Sofa, BuildCat.Vita, "Somewhere to collapse after a long day.");
+            Item(BuildingDefs.Armchair, BuildCat.Vita, "For the boss.");
+            Item(BuildingDefs.Television, BuildCat.Vita, "The crew watches Napoli on it in the afternoon. Good for morale.");
+            Item(BuildingDefs.Wardrobe, BuildCat.Vita, "Somewhere to hang the good suit.");
+            Item(BuildingDefs.Stove, BuildCat.Cucina, "Cook groceries into meals.");
+            Item(BuildingDefs.Pantry, BuildCat.Cucina, "Stores meals and supplies. Needed to cook and shop.");
+            Item(BuildingDefs.KitchenCounter, BuildCat.Cucina, "A proper kitchen.");
+            Item(BuildingDefs.Fridge, BuildCat.Cucina, "Cold beer, cold water.");
+            Item(BuildingDefs.Table, BuildCat.Cucina, "Gives cover in a firefight, too.");
+            Item(BuildingDefs.RollingTable, BuildCat.Magazzino, "Where ROSSE are rolled and boxed. E to work at it, or give someone the Roller job.");
+            Item(BuildingDefs.BaggingTable, BuildCat.Magazzino, "Where 'a roba is cut and bagged into half-gram doses. E to work at it, or give someone the Bagger job.");
+            Item(BuildingDefs.Safe, BuildCat.Sicurezza, "Where the money sleeps.");
+            Item(BuildingDefs.Bunker, BuildCat.Sicurezza, "A hidden room under the floor for the boss's latitanza. Searches rarely find it.");
+            Item(BuildingDefs.Plant, BuildCat.Decorazioni, "A bit of green.");
+            Item(BuildingDefs.Rug, BuildCat.Decorazioni, "A rug from the market.");
+            Item(BuildingDefs.HomeShrine, BuildCat.Decorazioni, "A little altar to the Madonna. Everyone feels watched over.");
 
-            var dock = Ui.Box("dock").Into(hudLayer);
-            dock.pickingMode = PickingMode.Ignore;
-            buildHint = Ui.Text("", dock, "build-hint");
-            dockTools = Ui.Box("panel", "dock__tools").Into(dock);
-            buildTabs = Ui.Box("panel", "dock__tabs").Into(dock);
-            buildTitle = Ui.Text("", buildTabs, "small", "muted");
-            buildTitle.style.marginRight = 10;
-            AddTab(buildTabs, DockTab.Furnish, "HOME", IconKind.Furnish);
-            AddTab(buildTabs, DockTab.Crime, "WORK", IconKind.Crime);
-            AddTab(buildTabs, DockTab.Build, "PIAZZA", IconKind.Product);
-            AddTab(buildTabs, DockTab.Orders, "MOVE", IconKind.Orders);
-            buildTabs.style.marginBottom = 4;
+            buildTools.Add(new ToolEntry { Label = "Open piazza", Tool = Tool.Square, Swatch = new Color(0.8f, 0.25f, 0.9f), Tip = "Click a pavement in your turf to open a drug square. Give crew the pusher and lookout jobs, and keep doses in stock." });
+            buildTools.Add(new ToolEntry { Label = "Close piazza", Tool = Tool.Cancel, Swatch = new Color(0.95f, 0.65f, 0.3f), Tip = "Click a piazza of yours to close it." });
+            buildTools.Add(new ToolEntry { Label = "Move", Tool = Tool.Move, Swatch = new Color(0.6f, 0.8f, 0.95f), Tip = "Click a piece of furniture in your home to pick it up, then click where it goes (Q / E to turn it). Free." });
+            buildTools.Add(new ToolEntry { Label = "Put away", Tool = Tool.Deconstruct, Swatch = new Color(0.9f, 0.3f, 0.25f), Tip = "Click or drag over furniture in your homes to put it back in storage. Walls and doors are knocked down for half what they cost." });
+
+            dockRoot = Ui.Box("dock").Into(hudLayer);
+            dockRoot.pickingMode = PickingMode.Ignore;
+            buildHint = Ui.Text("", dockRoot, "build-hint");
+
+            drawer = Ui.Box("panel", "drawer").Into(dockRoot);
+            var head = Ui.Box("drawer__head").Into(drawer);
+            Ui.Text("COSTRUISCI", head, "title", "gold").style.marginRight = 14;
+            foreach (BuildCat c in System.Enum.GetValues(typeof(BuildCat)))
+            {
+                var cat = c;
+                catButtons[c] = Ui.Btn(c.ToString(), () => { buildCat = cat; RefreshDock(); }, head, "pill");
+            }
+            Ui.Box("spacer").Into(head);
+            foreach (var t in buildTools)
+            {
+                var entry = t;
+                t.Button = Ui.Btn(t.Label, () => { controller.SetTool(entry.Tool); RefreshDock(); }, head, "btn--small", "drawer__tool");
+                Tip(t.Button, () => entry.Tip);
+            }
+            Ui.Btn("✕", ToggleBuildMode, head, "btn--small").style.marginLeft = 8;
+            var scroll = new ScrollView(ScrollViewMode.Horizontal).Cls("drawer__scroll").Into(drawer);
+            scroll.verticalScrollerVisibility = ScrollerVisibility.Hidden;
+            scroll.horizontalScrollerVisibility = ScrollerVisibility.Auto;
+            drawerCards = scroll.contentContainer;
+            drawerCards.AddToClassList("drawer__cards");
+            drawerNote = Ui.Text("", drawer, "tiny");
+            drawer.Show(false);
+
+            // Gennaro's bars sit just above the hotbar.
+            if (vitals != null) dockRoot.Add(vitals);
 
             // The hotbar: every screen, with its key.
-            var tabs = Ui.Box("panel", "dock__tabs").Into(dock);
+            var tabs = Ui.Box("panel", "dock__tabs").Into(dockRoot);
             buildButton = IconTab(tabs, "BUILD", IconKind.Build, ToggleBuildMode, "B");
             Tip(buildButton, () => "Build and furnish your homes, place work tables, open a piazza (B).");
             businessButton = IconTab(tabs, "FAMIGLIA", IconKind.Business, () => ToggleWindow(Window.Business), "Tab");
-            Tip(businessButton, () => "Crew and their jobs, piazze, pizzo, property, money, rivals (Tab).");
+            Tip(businessButton, () => "Your people, piazze, pizzo, property, money, rivals (Tab).");
             jobsButton = IconTab(tabs, "TACCUINO", IconKind.Jobs, () => ToggleWindow(Window.Jobs), "J");
             Tip(jobsButton, () => "Who has work for you and where to find them (J).");
             phoneButton = IconTab(tabs, "PHONE", IconKind.Phone, () => ToggleWindow(Window.Phone), "P");
@@ -96,20 +110,6 @@ namespace OSistema.UI
             helpButton = IconTab(tabs, "", IconKind.Help, () => ToggleWindow(Window.Help), "H");
             helpButton.style.minWidth = 36;
             Tip(helpButton, () => "Controls and help (H)");
-
-        }
-
-        ToolEntry Def(BuildingDef def, string tip) =>
-            new ToolEntry { Label = def.Label, Tool = Tool.Build, Def = def, Swatch = def.Color, Tip = tip };
-
-        void AddTab(VisualElement parent, DockTab tab, string label, IconKind icon)
-        {
-            tabButtons[tab] = IconTab(parent, label, icon, () =>
-            {
-                openTab = openTab == tab ? DockTab.None : tab;
-                if (openTab == DockTab.None) controller.SetTool(Tool.Select);
-                RefreshDock();
-            });
         }
 
         static Button IconTab(VisualElement parent, string label, IconKind icon, System.Action onClick, string key = null)
@@ -121,8 +121,6 @@ namespace OSistema.UI
             return b;
         }
 
-        VisualElement buildTabs;
-        Label buildTitle;
         readonly Dictionary<BuildingDef, Texture2D> previews = new Dictionary<BuildingDef, Texture2D>();
 
         Texture2D PreviewOf(BuildingDef def)
@@ -144,26 +142,16 @@ namespace OSistema.UI
         void ToggleBuildMode()
         {
             buildMode = !buildMode;
-            openTab = buildMode ? DockTab.Furnish : DockTab.None;
             if (!buildMode) controller.SetTool(Tool.Select);
             RefreshDock();
         }
 
         void RefreshDock()
         {
-            if (!buildMode && openTab != DockTab.None) buildMode = true;
-            buildTabs.Show(buildMode);
+            drawer.Show(buildMode);
+            dockRoot.Toggle("dock--sidebar", openWindow == Window.Business);
             buildButton.Toggle("btn--on", buildMode);
             mapButton.Toggle("btn--on", mapOpen);
-            foreach (var kv in tabButtons) kv.Value.Toggle("btn--on", kv.Key == openTab);
-            buildTitle.text = openTab switch
-            {
-                DockTab.Furnish => "Put down furniture from storage (buy it at the Mobilificio) · Q / E turn · right-click to stop",
-                DockTab.Crime => "Work tables from storage (Nanninella sells them) · E to work at one, or give someone the job",
-                DockTab.Build => "Open a piazza on a pavement in your turf",
-                DockTab.Orders => "Move furniture · put it back in storage · close a piazza",
-                _ => "",
-            };
             businessButton.Toggle("btn--on", openWindow == Window.Business);
             helpButton.Toggle("btn--on", openWindow == Window.Help);
 
@@ -176,51 +164,51 @@ namespace OSistema.UI
                     (rotatable ? $" · <color=#E8C26A>Q / E</color> rotate ({controller.PlacementRotation * 90}°)" : " · drag to draw") +
                     " · right-click to stop";
 
-            dockTools.Show(openTab != DockTab.None);
-            if (openTab == DockTab.None) return;
+            if (!buildMode) return;
+            foreach (var kv in catButtons) kv.Value.Toggle("pill--on", kv.Key == buildCat);
+            foreach (var t in buildTools) t.Button.Toggle("btn--on", controller.CurrentTool == t.Tool);
 
-            if (builtTab != openTab)
+            if (builtCat != buildCat || game == null)
             {
-                builtTab = openTab;
-                dockTools.Clear();
-                foreach (var entry in toolsByTab[openTab]) entry.Button = ToolButton(entry);
+                builtCat = buildCat;
+                drawerCards.Clear();
+                foreach (var entry in buildItems)
+                    if (buildCat == BuildCat.Tutto || entry.Cat == buildCat) entry.Button = ItemCard(entry);
+                    else entry.Button = null;
             }
-
-            foreach (var entry in toolsByTab[openTab])
+            drawerNote.text = "Furniture comes from the Mobilificio, work tables from Nanninella; what you've bought waits in storage. Q / E turn · right-click to stop.";
+            foreach (var entry in buildItems)
             {
-                bool active = entry.Action == null && controller.CurrentTool == entry.Tool && controller.CurrentDef == entry.Def;
-                entry.Button.Toggle("btn--on", active);
-                if (entry.Price != null && entry.Def != null) entry.Price.text = PriceTag(entry.Def);
+                if (entry.Button == null) continue;
+                bool active = controller.CurrentTool == entry.Tool && controller.CurrentDef == entry.Def;
+                entry.Button.Toggle("bcard--on", active);
+                int stored = game.Stock.StoredOf(entry.Def);
+                bool inPlace = BuildingDef.BuiltInPlace(entry.Def);
+                entry.Button.Toggle("bcard--none", !inPlace && stored == 0);
+                entry.Stock.text = inPlace ? "build" : stored > 0 ? $"×{stored}" : "0";
+                entry.Price.text = $"€{BuildingDef.CostOf(entry.Def)}";
             }
         }
 
-        string PriceTag(BuildingDef d) => BuildingDef.BuiltInPlace(d) ? $"€{BuildingDef.CostOf(d)}"
-            : game.Stock.StoredOf(d) > 0 ? $"×{game.Stock.StoredOf(d)}" : "<color=#7A7468>none</color>";
-
-        Button ToolButton(ToolEntry entry)
+        Button ItemCard(ToolEntry entry)
         {
             var b = Ui.Btn("", () =>
             {
-                if (entry.Action != null) entry.Action();
-                else controller.SetTool(entry.Tool, entry.Def);
+                controller.SetTool(entry.Tool, entry.Def);
                 RefreshDock();
-            }, dockTools, "tool");
-            var swatch = Ui.Box("tool__swatch").Into(b);
-            swatch.pickingMode = PickingMode.Ignore;
-            if (entry.Def != null && game != null)
-            {
-                swatch.AddToClassList("tool__picture");
-                swatch.style.backgroundImage = new StyleBackground(PreviewOf(entry.Def));
-            }
-            else swatch.style.backgroundColor = entry.Swatch;
-            Ui.Text(entry.Label, b, "tool__label");
-            if (entry.Def != null) entry.Price = Ui.Text(PriceTag(entry.Def), b, "tool__price");
-            Tip(b, () => entry.Def == null ? entry.Tip
-                : BuildingDef.BuiltInPlace(entry.Def)
-                    ? $"{entry.Tip}\nCost €{BuildingDef.CostOf(entry.Def)}, paid where you put it."
-                    : $"{entry.Tip}\n{game.Stock.StoredOf(entry.Def)} in storage. " +
-                      (entry.Def == BuildingDefs.BaggingTable || entry.Def == BuildingDefs.RollingTable ? "Nanninella sells them" : "Buy more at the Mobilificio (on the map)") +
-                      $"{(entry.Def.Beauty > 0 ? $" · makes a home nicer (+{entry.Def.Beauty:0.#})" : "")}");
+            }, drawerCards, "bcard");
+            var pic = Ui.Box("bcard__pic").Into(b);
+            pic.pickingMode = PickingMode.Ignore;
+            if (game != null) pic.style.backgroundImage = new StyleBackground(PreviewOf(entry.Def));
+            else pic.style.backgroundColor = entry.Swatch;
+            entry.Stock = Ui.Text("", b, "bcard__stock");
+            Ui.Text(entry.Label, b, "bcard__name");
+            entry.Price = Ui.Text("", b, "bcard__price");
+            Tip(b, () => BuildingDef.BuiltInPlace(entry.Def)
+                ? $"{entry.Tip}\nCost €{BuildingDef.CostOf(entry.Def)}, paid where you put it."
+                : $"{entry.Tip}\n{game.Stock.StoredOf(entry.Def)} in storage. " +
+                  (entry.Def == BuildingDefs.BaggingTable || entry.Def == BuildingDefs.RollingTable ? "Nanninella sells them" : "Buy more at the Mobilificio (on the map)") +
+                  $" for €{BuildingDef.CostOf(entry.Def)}{(entry.Def.Beauty > 0 ? $" · makes a home nicer (+{entry.Def.Beauty:0.#})" : "")}");
             return b;
         }
     }
