@@ -92,7 +92,9 @@ namespace OSistema.Views
                 }
                 dropPos[i] = p;
                 sr.transform.position = new Vector3(p.x, p.y, 0f);
-                if (!sr.enabled) sr.enabled = true;
+                // No rain under a roof: hide the streak while it's over a building.
+                bool show = !Indoors(p);
+                if (sr.enabled != show) sr.enabled = show;
             }
 
             // Splashes: a quick ring that grows and fades. More of them the harder it rains.
@@ -116,8 +118,19 @@ namespace OSistema.Views
 
         int nextSplash;
 
+        static bool Indoors(Vector2 at)
+        {
+            var map = OSistema.Core.GameRunner.CurrentMap;
+            if (map == null) return false;
+            int x = Mathf.FloorToInt(at.x), y = Mathf.FloorToInt(at.y);
+            if (!map.InBounds(x, y)) return false;
+            var t = map.GetTerrain(x, y);
+            return t == OSistema.World.TerrainType.Floor || t == OSistema.World.TerrainType.Marble || map.GetBuilding(x, y) == OSistema.World.BuildingDefs.Wall;
+        }
+
         void Splash(Vector2 at)
         {
+            if (Indoors(at)) return;
             int i = nextSplash++ % Splashes;
             splashAge[i] = 0f;
             splashes[i].transform.position = new Vector3(at.x, at.y, 0f);
