@@ -191,6 +191,23 @@ Triggered when a warrant is issued for the boss.
 - Outside, the clan may stay loyal, replace you, or split.
 - Exits: trial outcomes (lawyer quality, evidence, witness intimidation), sentence served, death inside.
 
+### 7.2b Poggioreale as a playable map (planned)
+Today, prison is a screen: a pizzino a day, a colloquio on Saturdays, the lawyer. The plan is a real map:
+- **The jail as a district:** cell blocks, the yard (*l'aria*), the canteen, the chapel, the visiting room, the infirmary. You walk it like the rione.
+- **People:** cellmates, other clans' men (some at war with you, some open to a pact), the old bosses who run the wings, guards who can be bought, and *pentiti* kept apart.
+- **Missions inside:** carry a message between wings, settle a debt in the yard, protect a new boy, get a phone smuggled in, find out who is talking to the magistrate.
+- **New friends and connections:** whoever you help inside can become a contact, a supplier or a recruit when you're both out. Enemies made inside follow you out too.
+- **The outside goes on:** pizzini and colloqui stay, now as things you do in person (the visiting room, the guard who carries notes).
+- **Art needed:** cell, bunk, toilet, yard wall and fence, canteen tables, chapel pews, visiting-room glass, guards' uniforms, inmates' clothes.
+
+### 7.1b Latitanza abroad (planned, later)
+When the warrant can't be beaten at home, run: a flight to **South America** (an invented port city, never a real cartel). A new district with its own rules:
+- **A new start with nothing:** no turf, no name, a little money wired by the family, a language you barely speak.
+- **The link home:** orders to the family by burner and courier, with long delays; the family may hold, split or replace you.
+- **Local people:** a fixer, a landlord, a bar, local crews who want to know who you are; the risk of extradition if you're careless.
+- **Ways back:** the warrant lapses, a lawyer gets it annulled, or you're caught and flown home to Poggioreale.
+- **Art needed:** a whole new set: colonial streets and houses, a port, tropical plants, a different style of furniture (rattan, ceiling fans, hammocks), local cars and scooters, people and police.
+
 ### 7.3 Family layer
 - Wife or husband, mother, children, siblings as semi-controllable NPCs.
 - Women historically took over clans when the men were jailed. **The widow or sister can become the heir.**
@@ -275,6 +292,12 @@ One rival clan with AI, a tactical ambush, latitanza bunker mode, a first set of
 
 ### Milestone 4 — Early Access
 Prison mode, scissione, pentiti, 2 eras, storyteller choices, family layer, more content.
+
+### Next up (as of October 2026)
+- Districts phase 3 and beyond (see DISTRICTS_PLAN.md).
+- Poggioreale as a playable map (7.2b): after districts, since it's built as one.
+- Walk, sit, sleep and ride animation from new art sheets (ART_PROMPTS.md, sheet 12 onward).
+- Latitanza abroad (7.1b): after Poggioreale.
 
 ### Milestone 5 — 1.0 and beyond
 Third era, modding / Workshop, more districts and businesses, polish.
