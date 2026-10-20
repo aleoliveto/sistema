@@ -90,33 +90,49 @@ namespace OSistema.UI
             drawerCards = scroll.contentContainer;
             drawerCards.AddToClassList("drawer__cards");
             drawerNote = Ui.Text("", drawer, "tiny");
+            drawerNote.Show(false);   // the same advice is on each card's tooltip
             drawer.Show(false);
 
             // Gennaro's bars sit just above the hotbar.
             if (vitals != null) dockRoot.Add(vitals);
 
-            // The hotbar: every screen, with its key.
-            var tabs = Ui.Box("panel", "dock__tabs").Into(dockRoot);
-            buildButton = IconTab(tabs, "BUILD", IconKind.Build, ToggleBuildMode, "B");
-            Tip(buildButton, () => "Build and furnish your homes, place work tables, open a piazza (B).");
-            businessButton = IconTab(tabs, "FAMIGLIA", IconKind.Business, () => ToggleWindow(Window.Business), "Tab");
+            // The bar along the bottom: every screen, with its key, and the news on the right.
+            var tabs = Ui.Box("hotbar").Into(dockRoot);
+            tabs.style.backgroundImage = new StyleBackground(Ui.Gradient(new Color(0.11f, 0.09f, 0.06f, 0.98f), new Color(0.05f, 0.04f, 0.03f, 0.98f)));
+            businessButton = IconTab(tabs, "FAMIGLIA", IconKind.Business, () => ToggleWindow(Window.Business), "Tab", "your people");
             Tip(businessButton, () => "Your people, piazze, pizzo, property, money, rivals (Tab).");
-            jobsButton = IconTab(tabs, "TACCUINO", IconKind.Jobs, () => ToggleWindow(Window.Jobs), "J");
+            jobsButton = IconTab(tabs, "TACCUINO", IconKind.Jobs, () => ToggleWindow(Window.Jobs), "J", "lavoretti");
             Tip(jobsButton, () => "Who has work for you and where to find them (J).");
-            phoneButton = IconTab(tabs, "PHONE", IconKind.Phone, () => ToggleWindow(Window.Phone), "P");
+            phoneButton = IconTab(tabs, "PHONE", IconKind.Phone, () => ToggleWindow(Window.Phone), "P", "contacts");
             Tip(phoneButton, () => "The family phone (P): favours, gossip, warnings.");
-            mapButton = IconTab(tabs, "MAP", IconKind.House, () => ToggleMap(), "M");
+            mapButton = IconTab(tabs, "MAP", IconKind.House, () => ToggleMap(), "M", "the city");
             Tip(mapButton, () => "The map of the rione (M). Click anywhere on it to set a waypoint.");
+            buildButton = IconTab(tabs, "BUILD", IconKind.Build, ToggleBuildMode, "B", "your home");
+            Tip(buildButton, () => "Build and furnish your homes, place work tables, open a piazza (B).");
             helpButton = IconTab(tabs, "", IconKind.Help, () => ToggleWindow(Window.Help), "H");
-            helpButton.style.minWidth = 36;
+            helpButton.AddToClassList("tab--icon");
             Tip(helpButton, () => "Controls and help (H)");
+            Ui.Box("spacer").Into(tabs);
+            var news = Ui.Btn("", () => { diaryOpen = !diaryOpen; diaryVersion = -1; RefreshFeed(); }, tabs, "news");
+            Ui.Box("news__dot").Into(news).pickingMode = PickingMode.Ignore;
+            var nc = Ui.Box("col", "grow").Into(news);
+            nc.pickingMode = PickingMode.Ignore;
+            newsTitle = Ui.Text("NEWS", nc, "news__title");
+            newsText = Ui.Text("", nc, "news__text");
+            Tip(news, () => "What has happened lately. Click to open the diary.");
         }
 
-        static Button IconTab(VisualElement parent, string label, IconKind icon, System.Action onClick, string key = null)
+        static Button IconTab(VisualElement parent, string label, IconKind icon, System.Action onClick, string key = null, string sub = null)
         {
             var b = Ui.Btn("", onClick, parent, "tab");
-            new Icon(icon, 16).Into(b);
-            if (label.Length > 0) Ui.Text(label, b, "tab__label");
+            new Icon(icon, sub != null ? 20 : 16).Into(b);
+            if (label.Length > 0)
+            {
+                var col = Ui.Box("col").Into(b);
+                col.pickingMode = PickingMode.Ignore;
+                Ui.Text(label, col, "tab__label");
+                if (sub != null) Ui.Text(sub, col, "tab__sub");
+            }
             if (key != null) Ui.Text(key, b, "tab__key");
             return b;
         }
@@ -149,7 +165,6 @@ namespace OSistema.UI
         void RefreshDock()
         {
             drawer.Show(buildMode);
-            dockRoot.Toggle("dock--sidebar", openWindow == Window.Business);
             buildButton.Toggle("btn--on", buildMode);
             mapButton.Toggle("btn--on", mapOpen);
             businessButton.Toggle("btn--on", openWindow == Window.Business);
@@ -203,7 +218,13 @@ namespace OSistema.UI
             else pic.style.backgroundColor = entry.Swatch;
             entry.Stock = Ui.Text("", b, "bcard__stock");
             Ui.Text(entry.Label, b, "bcard__name");
-            entry.Price = Ui.Text("", b, "bcard__price");
+            var foot = Ui.Box("bcard__foot").Into(b);
+            foot.pickingMode = PickingMode.Ignore;
+            entry.Price = Ui.Text("", foot, "bcard__price");
+            var sz = entry.Def.Size;
+            Ui.Text($"{sz.x}×{sz.y}", foot, "tiny");
+            string perk = entry.Def.Beauty > 0 ? $"Comfort +{entry.Def.Beauty:0.#}" : entry.Def.Cover ? "Cover in a fight" : entry.Cat == BuildCat.Magazzino ? "Work station" : null;
+            if (perk != null) Ui.Text(perk, b, "bcard__perk");
             Tip(b, () => BuildingDef.BuiltInPlace(entry.Def)
                 ? $"{entry.Tip}\nCost €{BuildingDef.CostOf(entry.Def)}, paid where you put it."
                 : $"{entry.Tip}\n{game.Stock.StoredOf(entry.Def)} in storage. " +

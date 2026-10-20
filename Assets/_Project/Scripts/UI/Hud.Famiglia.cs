@@ -59,7 +59,7 @@ namespace OSistema.UI
         void RefreshNavOrder()
         {
             bool boss = BossView;
-            famSubtitle.text = boss ? $"{game.Org.RankName.ToUpper()} · THE ORGANISATION" : $"{game.Org.RankName.ToUpper()} · YOUR GUAGLIUNI AND YOUR HOME";
+            famSubtitle.text = boss ? $"{game.Org.RankName} · the organisation, its capi and its turf" : $"{game.Org.RankName} · your guagliuni and your home";
             bool organigram = game.Org.Squares.Count > 0 || boss;
             foreach (var kv in bizTabButtons)
             {
@@ -248,21 +248,55 @@ namespace OSistema.UI
             _ => r.ToString(),
         };
 
+        static string RoleShort(CrewRole r) => r switch
+        {
+            CrewRole.Pusher => "Pusher",
+            CrewRole.Lookout => "Lookout",
+            CrewRole.Collector => "Collector",
+            CrewRole.Manager => "Manager",
+            CrewRole.Bagger => "Bagger",
+            CrewRole.Roller => "Roller",
+            CrewRole.Bodyguard => "Bodyguard",
+            CrewRole.Capo => "Capo",
+            _ => "No job",
+        };
+
+        /// <summary>Where someone is, in two words and a colour: for the dot on their row.</summary>
+        (string text, string css) Presence(Pawn p, long now)
+        {
+            if (p.InJail) return ("Inside", "dot-bad");
+            if (p.InHospital) return ("Hospital", "dot-warn");
+            if (p.Health.Downed) return ("Down", "dot-bad");
+            if (p.Sleep != SleepState.Awake) return ("Asleep", "dot-off");
+            if (!p.Controlled && p.Role != CrewRole.General && JobGiver.OnShift(p, game)) return ("On shift", "dot-warn");
+            return AtHome(p) ? ("At home", "dot-good") : ("Out", "dot-good");
+        }
+
         void RosterRow(Pawn p, long now)
         {
             var row = Ui.Box("roster-row").Into(bizBody);
-            Avatar(p, row, big: false);
+            row.Toggle("roster-row--on", p == famPerson);
+            Avatar(p, row, big: false).AddToClassList("avatar--row");
             var names = Ui.Box("col", "grow").Into(row);
             names.pickingMode = PickingMode.Ignore;
+            Ui.Text(p.IsBoss ? $"<color=#E8C26A>{p.DisplayName}</color>" : p.DisplayName, names, "roster__name");
             string reason = Attention(p, now);
-            Ui.Text((p.IsBoss ? $"<color=#E8C26A>{p.DisplayName}</color> {p.LastName}" : $"<b>{p.DisplayName}</b> {p.LastName}") +
-                    (string.IsNullOrEmpty(p.Nickname) || p.Controlled ? "" : $"  <color=#A89F8E>“{p.Nickname}”</color>"), names, "small");
-            Ui.Text(p.Controlled ? "You" : $"{RoleLabel(p.Role)} · {ShortStatus(p, now)}", names, "tiny");
-            var right = Ui.Box("col").Into(row);
-            right.style.alignItems = Align.FlexEnd;
-            right.pickingMode = PickingMode.Ignore;
-            if (reason != null) Ui.Text(reason, right, "small");
-            if (!p.Controlled) Ui.Text($"€{p.Wage}/wk", right, "tiny");
+            Ui.Text(reason ?? (p.Controlled ? "You" : ShortStatus(p, now)), names, "roster__status");
+            var (lv, lf) = Ui.Bar("", p.Loyalty < 30f ? new Color(0.88f, 0.4f, 0.3f) : new Color(0.45f, 0.75f, 0.45f), names, thin: true);
+            Ui.SetFill(lf, (p.Controlled ? 100f : p.Loyalty) / 100f);
+            lf.parent.AddToClassList("roster__bar");
+            if (!p.Controlled)
+            {
+                var info = Ui.Box("col", "roster__info").Into(row);
+                info.pickingMode = PickingMode.Ignore;
+                Ui.Text(RoleShort(p.Role), info, "role-chip");
+                Ui.Text($"€{p.Wage}/wk", info, "roster__wage");
+            }
+            var (ptext, pcss) = Presence(p, now);
+            var pres = Ui.Box("presence").Into(row);
+            pres.pickingMode = PickingMode.Ignore;
+            Ui.Box("presence__dot", pcss).Into(pres).pickingMode = PickingMode.Ignore;
+            Ui.Text(ptext, pres, "presence__text");
             row.style.opacity = p.InJail || p.InHospital ? 0.6f : 1f;
             var pawn = p;
             row.RegisterCallback<ClickEvent>(e =>
@@ -278,100 +312,95 @@ namespace OSistema.UI
 
         // ---------- One person ----------
 
+        /// <summary>A line on someone's page: label on the left, value on the right, a chevron when it opens something.</summary>
+        VisualElement Field(string label, string value, System.Action<VisualElement> onClick = null)
+        {
+            var row = Ui.Box("field").Into(bizBody);
+            Ui.Text(label, row, "field__label");
+            Ui.Text(value, row, "field__value");
+            if (onClick != null)
+            {
+                Ui.Text("›", row, "field__chev");
+                row.AddToClassList("field--click");
+                row.RegisterCallback<ClickEvent>(e => { if (!(e.target is Button)) onClick(row); });
+            }
+            return row;
+        }
+
+        void Tile(VisualElement grid, string glyph, string label, System.Action act, bool danger = false)
+        {
+            var b = Ui.Btn("", act, grid, "tile");
+            if (danger) b.AddToClassList("btn--danger");
+            Ui.Text(glyph, b, "tile__glyph");
+            Ui.Text(label, b, "tile__label");
+        }
+
         void PersonDetail(Pawn p)
         {
             if (p.Dead || !game.Pawns.Crew.Contains(p)) { famPerson = null; RosterTab(); return; }
             long now = game.Ticks.TicksGame;
-            var org = game.Org;
-
-            Ui.Btn("‹  Everyone", Do(() => famPerson = null), bizBody, "btn--small", "back-btn");
-
-            var head = Ui.Row(bizBody);
-            head.style.marginTop = 6;
-            Avatar(p, head, big: true);
-            var names = Ui.Box("col", "grow").Into(head);
-            Ui.Text(p.IsBoss ? $"<color=#E8C26A>{p.DisplayName}</color> {p.LastName}" : p.FullName, names, "insp-name");
-            Ui.Text(p.Controlled ? "You" : $"“{p.Nickname}” · {RoleLabel(p.Role)}", names, "subtitle");
-            string job = p.CurrentJob?.Label ?? "Thinking";
-            Ui.Text(ShortStatus(p, now) == job ? job : $"{ShortStatus(p, now)} · {job}", names, "small", "muted");
-            var reason = Attention(p, now);
-            if (reason != null) Ui.Text(reason, names, "small");
-
-            var actions = Ui.Row(bizBody);
-            actions.style.flexWrap = Wrap.Wrap;
-            actions.style.marginTop = 6;
             var pawn = p;
-            if (p.IsPresent) Ui.Btn("Show", () => { FocusCamera(pawn.Position); }, actions, "btn--small");
+
+            var head = Ui.Box("person-head").Into(bizBody);
+            Avatar(p, head, big: true).AddToClassList("avatar--hero");
+            var names = Ui.Box("col", "grow").Into(head);
+            Ui.Text(p.IsBoss ? $"{p.DisplayName}" : p.FirstName + " " + p.LastName, names, "person__name");
+            Ui.Text(p.Controlled ? "The boss" : $"“{p.Nickname}” · {RoleLabel(p.Role)}", names, "person__role");
+            string job = p.CurrentJob?.Label ?? "Thinking";
+            Ui.Text(Attention(p, now) ?? job, names, "person__status");
+            Ui.Btn("✕", Do(() => famPerson = null), head, "btn--small", "person__close");
+
+            var (mv, mf) = Ui.Bar("Morale", MoodColor(p.Mood.Value), bizBody);
+            mv.text = $"{p.Mood.Value:0}% · {p.Mood.Description}";
+            Ui.SetFill(mf, p.Mood.Value / 100f);
+            if (!p.Controlled)
+            {
+                var (lv, lf) = Ui.Bar("Loyalty", new Color(0.45f, 0.75f, 0.45f), bizBody);
+                lv.text = $"{p.Loyalty:0}%";
+                Ui.SetFill(lf, p.Loyalty / 100f);
+
+                Ui.Text("WORK", bizBody, "section");
+                Field("Job", RoleLabel(p.Role), at => ShowRoleMenu(pawn, at));
+                PersonShifts(p);
+                Field("Bed", BedLabel(p).Replace(" ▾", ""), at => ShowBedMenu(pawn, at));
+                var wage = Field("Weekly wage", $"€{p.Wage}");
+                Ui.Btn("−", Do(() => pawn.Wage = Mathf.Max(0, pawn.Wage - 10)), wage, "btn--small", "field__btn");
+                Ui.Btn("+", Do(() => pawn.Wage = Mathf.Min(1000, pawn.Wage + 10)), wage, "btn--small", "field__btn");
+                Field("Gun", p.Armed ? "Pistol" : $"None · {game.Stock.Pistols} in the stash", _ => { ToggleArmed(pawn); bizDirty = true; RefreshWindows(); });
+                if (p.Role == CrewRole.Bodyguard) GuardSettings(p);
+            }
+
+            Ui.Text("QUICK ACTIONS", bizBody, "section");
+            var grid = Ui.Box("tiles").Into(bizBody);
+            if (p.IsPresent) Tile(grid, "◎", "Show", () => FocusCamera(pawn.Position));
             if (p.CanAct && !p.Controlled)
             {
-                Ui.Btn("Select", () =>
+                Tile(grid, "☝", "Select", () =>
                 {
                     controller.Selected.Clear();
                     controller.SelectProperty(null);
                     controller.Selected.Add(pawn);
                     FocusCamera(pawn.Position);
                     ToggleWindow(Window.Business);
-                }, actions, "btn--small");
-                Ui.Btn("Call over", Do(() =>
+                });
+                Tile(grid, "↩", "Call over", Do(() =>
                 {
                     var boss = game.Player;
                     if (boss != null && pawn.CanAct) pawn.ForceJob(new GotoJob(pawn, boss.Cell, "Coming over"), game);
-                }), actions, "btn--small");
+                }));
             }
-            if (p.Health.Downed && !game.Hospital.IsCalled(p))
-                Ui.Btn("Call 118", Do(() => game.Hospital.Call(pawn, game, byPasserby: false)), actions, "btn--small", "btn--danger");
-            if (!p.Health.Healthy && OSistema.Crime.Healing.NeedsCare(p))
-            {
-                var treat = Ui.Btn($"Treat with medicine ({game.Stock.Medicine})", Do(() => TreatWithMedicine(pawn)), actions, "btn--small");
-                treat.SetEnabled(game.Stock.Medicine > 0);
-            }
+            if (p.Health.Downed && !game.Hospital.IsCalled(p)) Tile(grid, "✚", "Call 118", Do(() => game.Hospital.Call(pawn, game, byPasserby: false)), danger: true);
+            if (!p.Health.Healthy && OSistema.Crime.Healing.NeedsCare(p) && game.Stock.Medicine > 0) Tile(grid, "✚", $"Medicine ({game.Stock.Medicine})", Do(() => TreatWithMedicine(pawn)));
 
-            if (!p.Controlled)
+            if (!p.Health.Healthy || p.Mood.AllThoughts.Any())
             {
-                Ui.Text("WORK", bizBody, "section");
-                var jobRow = Ui.Row(bizBody);
-                jobRow.style.flexWrap = Wrap.Wrap;
-                Button roleBtn = null;
-                roleBtn = Ui.Btn($"Job: {RoleLabel(p.Role)}  ▾", () => ShowRoleMenu(pawn, roleBtn), jobRow, "btn--small");
-                Button bedBtn = null;
-                bedBtn = Ui.Btn(BedLabel(p), () => ShowBedMenu(pawn, bedBtn), jobRow, "btn--small");
-                Ui.Btn(p.Armed ? "Disarm" : $"Arm ({game.Stock.Pistols} in stash)", Do(() => ToggleArmed(pawn)), jobRow, "btn--small", p.Armed ? "btn--on" : "x");
-                PersonShifts(p);
-                if (p.Role == CrewRole.Bodyguard) GuardSettings(p);
-
-                Ui.Text("WAGE", bizBody, "section");
-                var wageRow = Ui.Row(bizBody);
-                Ui.Btn("−", Do(() => pawn.Wage = Mathf.Max(0, pawn.Wage - 10)), wageRow, "btn--small");
-                Ui.Text($"<b>€{p.Wage}</b> a week", wageRow).style.marginLeft = 6;
-                Ui.Btn("+", Do(() => pawn.Wage = Mathf.Min(1000, pawn.Wage + 10)), wageRow, "btn--small").style.marginLeft = 6;
-                Ui.Text("  paid Sunday at 12:00. A raise buys loyalty; a cut costs it.", wageRow, "tiny");
+                Ui.Text("ON THEIR MIND", bizBody, "section");
+                if (!p.Health.Healthy)
+                    foreach (var inj in p.Health.Injuries.Take(4))
+                        Ui.Text($"{inj.Label} · {inj.Part} {inj.Severity * 100f:0}%{(inj.IsMalnutrition ? "" : inj.Tended ? " <color=#8FD18A>tended</color>" : " <color=#F07A6E>untended</color>")}", bizBody, "thought");
+                foreach (var t in p.Mood.AllThoughts.OrderByDescending(t => Mathf.Abs(t.Value)).Take(4))
+                    Ui.Text($"<color={(t.Value >= 0 ? "#8FD18A" : "#F07A6E")}>{t.Value:+0;-0}</color>  {t.Label}", bizBody, "thought");
             }
-
-            Ui.Text("HOW THEY ARE", bizBody, "section");
-            var (mv, mf) = Ui.Bar("Mood", MoodColor(p.Mood.Value), bizBody);
-            mv.text = $"{p.Mood.Value:0} · {p.Mood.Description}";
-            Ui.SetFill(mf, p.Mood.Value / 100f);
-            if (!p.Controlled)
-            {
-                var (lv, lf) = Ui.Bar("Loyalty", new Color(0.91f, 0.76f, 0.42f), bizBody);
-                lv.text = $"{p.Loyalty:0}";
-                Ui.SetFill(lf, p.Loyalty / 100f);
-            }
-            var needs = Ui.Row(bizBody);
-            var l = Ui.Box("col", "grow").Into(needs);
-            l.style.marginRight = 8;
-            var r = Ui.Box("col", "grow").Into(needs);
-            var (fv, ff) = Ui.Bar("Food", new Color(0.9f, 0.6f, 0.28f), l);
-            fv.text = $"{p.Needs.Food * 100f:0}%";
-            Ui.SetFill(ff, p.Needs.Food);
-            var (rv, rf) = Ui.Bar("Rest", new Color(0.42f, 0.56f, 0.92f), r);
-            rv.text = $"{p.Needs.Rest * 100f:0}%";
-            Ui.SetFill(rf, p.Needs.Rest);
-            if (!p.Health.Healthy)
-                foreach (var inj in p.Health.Injuries.Take(4))
-                    Ui.Text($"{inj.Label} · {inj.Part} {inj.Severity * 100f:0}%{(inj.IsMalnutrition ? "" : inj.Tended ? " <color=#8FD18A>tended</color>" : " <color=#F07A6E>untended</color>")}", bizBody, "thought");
-            foreach (var t in p.Mood.AllThoughts.OrderByDescending(t => Mathf.Abs(t.Value)).Take(4))
-                Ui.Text($"<color={(t.Value >= 0 ? "#8FD18A" : "#F07A6E")}>{t.Value:+0;-0}</color>  {t.Label}", bizBody, "thought");
 
             Ui.Text("GOOD AT", bizBody, "section");
             Ui.Text($"Handiwork <b>{p.ConstructionSkill}</b> · Cooking <b>{p.CookingSkill}</b> · Medicine <b>{p.MedicineSkill}</b>\n" +
@@ -409,6 +438,19 @@ namespace OSistema.UI
             }
         }
 
+        /// <summary>The next rank as a checklist, and what it opens up.</summary>
+        void RankCard()
+        {
+            var org = game.Org;
+            var items = org.RankChecklist(game);
+            if (items.Count == 0) return;
+            var card = Ui.Box("rank-card").Into(bizBody);
+            Ui.Text(Organization.RankNames[org.Rank + 1].ToUpper(), card, "rank-card__title");
+            foreach (var (text, done) in items)
+                Ui.Text(done ? $"<color=#8FD18A>✓</color>  {text}" : $"<color=#7A7468>○</color>  {text}", card, done ? "small" : "small");
+            Ui.Text($"Opens up: {Organization.UnlocksAt(org.Rank + 1)}", card, "tiny", "wrap");
+        }
+
         /// <summary>Early on: you, your guagliuni and the basso.</summary>
         void OverviewTab()
         {
@@ -428,7 +470,7 @@ namespace OSistema.UI
 
             Ui.Text("WHAT YOU'RE WORKING ON", bizBody, "section");
             Ui.Text(Objectives.Current(game, null).Text ?? "Nothing in particular.", bizBody, "wrap");
-            Ui.Text(org.NextRankGoal(game) ?? "", bizBody, "small", "gold", "wrap");
+            RankCard();
             Ui.Text("Lavoretti from contacts are in the Taccuino (J). Shops and contacts are on the map (M).", bizBody, "small", "muted", "wrap");
         }
 
@@ -529,34 +571,28 @@ namespace OSistema.UI
         {
             var org = game.Org;
             var pawn = p;
-            var row = Ui.Row(bizBody);
-            row.style.flexWrap = Wrap.Wrap;
-            row.style.marginTop = 4;
             if (Organization.PiazzaRole(p.Role) && org.Squares.Count > 0)
             {
                 var sq = org.SquareOf(p, game);
-                Button piazzaBtn = null;
-                piazzaBtn = Ui.Btn($"Piazza: {(sq != null ? ZoneName(sq) : "unplaced")}  ▾", () =>
-                    ShowPickMenu(piazzaBtn, org.Squares.Select(q => ($"{ZoneName(q)} · {q.HoursLabel}", (System.Action)(() => org.MoveToPiazza(pawn, q, game)), q == sq)).ToList()),
-                    row, "btn--small");
-                piazzaBtn.SetEnabled(org.Squares.Count > 1);
+                if (org.Squares.Count > 1)
+                    Field("Piazza", sq != null ? ZoneName(sq) : "not placed", at =>
+                        ShowPickMenu(at, org.Squares.Select(q => ($"{ZoneName(q)} · {q.HoursLabel}", (System.Action)(() => org.MoveToPiazza(pawn, q, game)), q == sq)).ToList()));
+                else if (sq != null) Field("Piazza", ZoneName(sq));
                 if (sq == null) return;
                 int team = org.TeamOf(p, game);
                 var (from, to) = Organization.TeamHours(sq, team < 0 ? 0 : team);
                 var capo = org.CapoFor(sq, game);
-                string who = p.Role == CrewRole.Capo ? "you run this piazza" : capo != null ? $"set by Capo {capo.DisplayName}" : org.IsRun(sq, game) ? "set by the boss" : "nobody in charge";
-                string teamName = team == 1 ? "Night team" : team == 0 ? "Day team" : "Works";
-                Ui.Text($"  {teamName} {from:00}:00–{to:00}:00 · <color=#A89F8E>{who}</color>", row, "small");
+                string who = p.Role == CrewRole.Capo ? "you run it" : capo != null ? $"Capo {capo.DisplayName}" : org.IsRun(sq, game) ? "the boss" : "nobody";
+                string teamName = team == 1 ? "Night" : "Day";
+                Field("Shift", $"{teamName} ({from:00}:00–{to:00}:00) · <color=#A89F8E>{who}</color>", _ => OpenBizTab(BizTab.Organigram));
                 if (!org.IsRun(sq, game))
                     Ui.Text("This piazza has no capo: nobody runs a night team. Appoint one in the Organigram.", bizBody, "small", "warn", "wrap");
                 return;
             }
             var (f, t) = p.WorkHours;
-            bool day = (f, t) == (9, 21), night = (f, t) == (21, 9);
-            Ui.Text("Shift", row, "small", "muted").style.marginRight = 6;
-            Ui.Btn("Day 09–21", Do(() => pawn.SetWorkHours(9, 21)), row, "btn--small", day ? "btn--on" : "x");
-            Ui.Btn("Night 21–09", Do(() => pawn.SetWorkHours(21, 9)), row, "btn--small", night ? "btn--on" : "x");
-            if (!day && !night) Ui.Text($"  now {f:00}–{t:00}", row, "tiny");
+            bool night = (f, t) == (21, 9);
+            Field("Shift", night ? "Night (21:00–09:00)" : (f, t) == (9, 21) ? "Day (09:00–21:00)" : $"{f:00}:00–{t:00}:00",
+                _ => { if (night) pawn.SetWorkHours(9, 21); else pawn.SetWorkHours(21, 9); bizDirty = true; RefreshWindows(); });
         }
 
         /// <summary>Where a bodyguard stands: a slot round the boss, or a post at home or at a piazza.</summary>

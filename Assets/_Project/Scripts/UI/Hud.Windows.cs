@@ -30,10 +30,11 @@ namespace OSistema.UI
             // Famiglia: a sidebar down the left, so the city stays in view while you run the family.
             // Sections as tabs along the top; their order follows the family's rank.
             businessWindow = Ui.Box("panel", "sidebar", "fit").Into(hudLayer);
-            var header = Ui.Box("window__header").Into(businessWindow);
+            var header = Ui.Box("window__header", "panel-head").Into(businessWindow);
+            new Icon(IconKind.Business, 30).Into(header).AddToClassList("panel-head__icon");
             var titles = Ui.Box("col", "grow").Into(header);
-            Ui.Text("FAMIGLIA", titles, "title", "gold");
-            famSubtitle = Ui.Text("", titles, "tiny");
+            Ui.Text("FAMIGLIA", titles, "panel-head__title");
+            famSubtitle = Ui.Text("", titles, "panel-head__tagline");
             Ui.Btn("✕", () => ToggleWindow(Window.Business), header, "btn--small");
             Tip(header, () => "Tab to close");
 
@@ -116,10 +117,27 @@ namespace OSistema.UI
             bizBlurb.text = TabBlurb(bizTab);
             bool detail = bizTab == BizTab.Crew && famPerson != null;
             bizTitle.parent.Show(!detail);
+            businessWindow.Toggle("sidebar--wide", detail);
             switch (bizTab)
             {
                 case BizTab.Overview: if (BossView) DashboardTab(); else OverviewTab(); break;
-                case BizTab.Crew: if (detail) PersonDetail(famPerson); else RosterTab(); break;
+                case BizTab.Crew:
+                    if (detail)
+                    {
+                        // The roster stays on the left, the person's page opens beside it.
+                        var cols = Ui.Row(bizBody);
+                        cols.style.alignItems = Align.FlexStart;
+                        var left = Ui.Box("col", "roster-col").Into(cols);
+                        var right = Ui.Box("col", "detail-col").Into(cols);
+                        var keep = bizBody;
+                        bizBody = left;
+                        RosterTab();
+                        bizBody = right;
+                        PersonDetail(famPerson);
+                        bizBody = keep;
+                    }
+                    else RosterTab();
+                    break;
                 case BizTab.Organigram: OrganigramTab(); break;
                 case BizTab.Piazze: PiazzeTab(); break;
                 case BizTab.Pizzo: PizzoTab(); break;

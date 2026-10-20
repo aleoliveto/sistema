@@ -276,6 +276,19 @@ namespace OSistema.UI
                     catch (Exception e) { Debug.LogError("[O Sistema] ROUNDTRIP FAILED " + e); }
                 }
                 if (text.Contains("map") && game != null) { OSistema.Views.FogOfWar.RevealAllForTesting(); ToggleMap(); }
+                // "crew": a few guagliuni straight away (one idle, one hurt), to look at the people screens.
+                if (text.Contains("crew") && game != null)
+                {
+                    game.Org.Respect = System.Math.Max(game.Org.Respect, 16f);
+                    var roles = new[] { Pawns.CrewRole.Roller, Pawns.CrewRole.Pusher, Pawns.CrewRole.General, Pawns.CrewRole.Bodyguard };
+                    foreach (var r in roles)
+                    {
+                        var p = game.Org.Recruit(game, out _, free: true);
+                        if (p == null) break;
+                        p.Role = r;
+                        if (r == Pawns.CrewRole.Bodyguard) p.Health.Injuries.Add(new Pawns.Injury { Label = "Cut", Part = "Arm", Severity = 0.2f, BleedPerDay = 0f, Tended = true, TendQuality = 0.5f });
+                    }
+                }
                 if (text.Contains("uitour") && game != null) StartUiTour();
                 if (text.Contains("interiors") && game != null) StartInteriorTour();
                 if (text.Contains("checks") && game != null) StartDevChecks();

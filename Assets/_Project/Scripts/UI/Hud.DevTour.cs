@@ -99,6 +99,7 @@ namespace OSistema.UI
                 var tab = t;
                 steps.Add(($"famiglia_{tab}", () => { if (openWindow != Window.Business) ToggleWindow(Window.Business); OpenBizTab(tab); }, () => { }));
             }
+            steps.Add(("famiglia_person", (System.Action)(() => { var who = System.Linq.Enumerable.FirstOrDefault(game.Pawns.Crew, c => !c.Dead && !c.Controlled) ?? game.Player; if (who != null) OpenFamigliaPerson(who); }), () => { }));
             steps.Add(("famiglia_close", () => ToggleWindow(Window.Business), () => { }));
             steps.Add(("taccuino", () => ToggleWindow(Window.Jobs), () => ToggleWindow(Window.Jobs)));
             steps.Add(("phone", () => ToggleWindow(Window.Phone), () => ToggleWindow(Window.Phone)));

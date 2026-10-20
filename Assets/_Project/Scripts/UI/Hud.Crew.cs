@@ -254,6 +254,7 @@ namespace OSistema.UI
         {
             var card = new CrewCard { Root = Ui.Box("crew-card").Into(crewCards) };
             card.Avatar = Avatar(p, card.Root, big: false);
+            card.Avatar.AddToClassList("avatar--card");
             var col = Ui.Box("col", "grow").Into(card.Root);
             card.Name = Ui.Text("", col, "crew-card__name");
             card.Status = Ui.Text("", col, "crew-card__status");

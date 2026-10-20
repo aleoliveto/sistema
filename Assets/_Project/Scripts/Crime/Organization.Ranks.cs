@@ -38,6 +38,17 @@ namespace OSistema.Crime
             return $"Next: {RankNames[next]} · respect {Respect:0}/{RankRespect[next]:0} · lavoretti {CompletedJobs(game)}/{RankJobs[next]}";
         }
 
+        /// <summary>What the next rank asks, as a checklist: (line, done). Empty at the top.</summary>
+        public System.Collections.Generic.List<(string text, bool done)> RankChecklist(Game game)
+        {
+            var list = new System.Collections.Generic.List<(string, bool)>();
+            if (Rank >= RankNames.Length - 1) return list;
+            int next = Rank + 1;
+            list.Add(($"Respect {Mathf.Min(Respect, RankRespect[next]):0}/{RankRespect[next]:0}", Respect >= RankRespect[next]));
+            list.Add(($"Lavoretti done {Mathf.Min(CompletedJobs(game), RankJobs[next])}/{RankJobs[next]}", CompletedJobs(game) >= RankJobs[next]));
+            return list;
+        }
+
         /// <summary>How far along the way to the next rank, 0..1 (the slower of respect and lavoretti). 1 at the top.</summary>
         public float RankProgress(Game game)
         {

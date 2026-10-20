@@ -91,7 +91,7 @@ namespace OSistema.UI
             var p = game.Player;
             vitals.Show(p != null);
             if (p == null) return;
-            vitals.Show(!buildMode);
+            vitals.Show(!buildMode && openWindow != Window.Business);
             vitalsState.text = (p.Riding ? "ON THE SCOOTER" : game.Org.DealingCorner != null ? "DEALING" : game.Org.CarriedDg > 0 ? $"CARRYING {game.Org.CarriedDg / 10} G" : p.Carrying != null ? $"CARRYING {p.Carrying.ToUpper()}" : "")
                 + (p.Autopilot ? "  · AUTO" : "");
             vitalsState.Show(vitalsState.text.Length > 0);

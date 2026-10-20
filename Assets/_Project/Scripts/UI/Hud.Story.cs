@@ -22,7 +22,8 @@ namespace OSistema.UI
         VisualElement eventDim, gameOverDim;
         GameEvent shownEvent;
 
-        VisualElement toastBox, diaryBox;
+        VisualElement toastBox, diaryBox, diaryScroll;
+        Label newsTitle, newsText;
         Label diaryHead;
         bool diaryOpen;
         int diaryVersion = -1, diarySeen;
@@ -36,7 +37,9 @@ namespace OSistema.UI
             diaryHead.pickingMode = PickingMode.Position;
             diaryHead.RegisterCallback<ClickEvent>(_ => { diaryOpen = !diaryOpen; diaryVersion = -1; RefreshFeed(); });
             Tip(diaryHead, () => diaryOpen ? "Fold the diary away." : "What has happened lately. Click to open.");
-            var scroll = new ScrollView(ScrollViewMode.Vertical).Cls("panel", "diary").Into(feed);
+            diaryHead.Show(false);   // the News box in the bottom bar opens it now
+            var scroll = new ScrollView(ScrollViewMode.Vertical).Cls("panel", "diary").Into(hudLayer);
+            diaryScroll = scroll;
             scroll.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
             diaryBox = scroll.contentContainer;
             scroll.Show(false);
@@ -44,13 +47,26 @@ namespace OSistema.UI
             toastBox.pickingMode = PickingMode.Ignore;
         }
 
+        static string Clip(string s, int n)
+        {
+            s = System.Text.RegularExpressions.Regex.Replace(s ?? "", "<[^>]*>", "");
+            return s.Length > n ? s.Substring(0, n - 1) + "…" : s;
+        }
+
         void RefreshDiary()
         {
             int unseen = diaryOpen ? 0 : System.Math.Min(game.Log.All.Count, game.Log.Version - diarySeen);
             if (diaryOpen) diarySeen = game.Log.Version;
             diaryHead.text = (diaryOpen ? "▾ DIARIO" : "▸ DIARIO") + (unseen > 0 ? $"  <color=#A89F8E>{unseen} new</color>" : "");
-            diaryBox.parent.parent.Show(diaryOpen);
-            toastBox.Show(!diaryOpen);
+            diaryScroll.Show(diaryOpen);
+            if (newsTitle != null)
+            {
+                newsTitle.text = unseen > 0 ? $"NEWS ({unseen})" : "NEWS";
+                newsTitle.parent.parent.Toggle("news--unread", unseen > 0);
+                newsTitle.parent.parent.Toggle("btn--on", diaryOpen);
+                var all0 = game.Log.All;
+                newsText.text = all0.Count > 0 ? Clip(all0[all0.Count - 1].Text, 46) : "";
+            }
             if (!diaryOpen || diaryVersion == game.Log.Version) return;
             diaryVersion = game.Log.Version;
             diaryBox.Clear();
