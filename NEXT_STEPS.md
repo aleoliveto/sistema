@@ -14,6 +14,12 @@ Today a rione is yours only with a foothold (a property or an owned shop inside 
 - Say why a rione isn't yours yet (needs a pusher / a foothold / rank cap) on the map and in Piazza.
 - Show a "holding the corner" progress bar while taking a rival piazza.
 
+## 1c. Exhaustion (requested)
+When Gennaro's sleep (`Needs.Rest`) runs out:
+- **At 0:** he walks really slowly, his vision blurs now and then (a soft blur and darkening pulse over the screen, e.g. in `PostFx`), and he yawns (a bark plus a yawn sound).
+- **Past 0, down to −10:** Rest has to be allowed below zero (or tracked as a separate "overtired" counter). At −10 he passes out where he stands: he drops to the ground, sleeps a few hours, and is vulnerable in the street (police, rivals, pickpockets).
+- Apply the same to crew (slow and yawning), so the shift system and beds matter.
+
 ## 2. Animation (high value for feel, trailers and screenshots)
 Painted bodies are single images with the arms painted in, so the walk is only a small sway and reads as sliding (`Views/PersonRig.cs`).
 1. **Split the painted body** into torso, two arms and two shoes, painted with `Tools/ArtGen` in the same style. Load them in `CharacterArt` and give them their own transforms in `PersonRig`.
