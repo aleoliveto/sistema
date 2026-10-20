@@ -379,7 +379,7 @@ namespace OSistema.UI
 
             Ui.Text("ROSSE · CIGARETTES", bizBody, "section");
             Ui.Text($"Packs ready: <b>{st.Cigarettes}</b> (quality {st.PackQuality * 100f:0}%, about €{org.PackPrice(game)} each) · tobacco {st.TobaccoG} g · papers {st.Papers} · empty packs {st.EmptyPacks}", bizBody, "small", "wrap");
-            Ui.Text("Tobacco and papers from the tabaccaio, empty packs from Nanninella. Roll them at a rolling table (E), or give someone the Roller job. Zio Totonno buys up to 20 packs a day; a deposito sells many more.", bizBody, "small", "muted", "wrap");
+            Ui.Text($"Tobacco and papers from the tabaccaio, empty packs from Nanninella. Roll them at a rolling table (E), or give someone the Roller job. Zio Totonno buys up to {Crime.Organization.TotonnoDailyPacks} packs a day; a deposito sells many more.", bizBody, "small", "muted", "wrap");
             Ui.Text("GEAR", bizBody, "section");
             Ui.Text($"{(st.DigitalScale ? "✓" : "✗")} digital scale   {(st.HeatSealer ? "✓" : "✗")} heat sealer   {(st.RollingMachine ? "✓" : "✗")} rolling machine   · Nanninella sells them.", bizBody, "small");
 

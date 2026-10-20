@@ -15,6 +15,8 @@ namespace OSistema.Crime
     {
         public int CarriedDg;            // product on the boss, not yet home
         public int TotonnoPacksDay, TotonnoPacksToday;
+        /// <summary>How many packs Totonno takes a day: enough that rolling pays the first week's bills.</summary>
+        public const int TotonnoDailyPacks = 25;
         long lastCarryCheck;
         float lastQualityWarning = -999f;
 
@@ -122,7 +124,7 @@ namespace OSistema.Crime
             s.Cigarettes++;
         }
 
-        public int PackPrice(Game game) => Mathf.Max(1, Mathf.RoundToInt(Prices.PackStreet * (0.55f + 0.6f * game.Stock.PackQuality)));
+        public int PackPrice(Game game) => Mathf.Max(1, Mathf.RoundToInt(Prices.PackStreet * (0.5f + 0.7f * game.Stock.PackQuality)));
         public int TotonnoPrice(Game game) => Mathf.Max(1, PackPrice(game) - 1);
         public int TotonnoWants(Game game)
         {
@@ -131,7 +133,7 @@ namespace OSistema.Crime
                 TotonnoPacksDay = game.Clock.Day;
                 TotonnoPacksToday = 0;
             }
-            return Mathf.Max(0, 20 - TotonnoPacksToday);
+            return Mathf.Max(0, TotonnoDailyPacks - TotonnoPacksToday);
         }
 
         public void SellPacksToTotonno(Game game)

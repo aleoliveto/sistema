@@ -401,11 +401,11 @@ namespace OSistema.Core
             var game = new Game(seed, map, playerBase, 0, Territory.FromBlocks(zoneRects, rng), properties);
             game.Org.BuildBusinesses(map, rng);
             game.NameProperties();
-            game.Stock.Cash = 40; // what a seventeen-year-old has in his pocket
-            // Mamma's basso has an old rolling table and the end of a pouch: enough for a few packs.
-            game.Stock.TobaccoG = 45;
-            game.Stock.Papers = 60;
-            game.Stock.EmptyPacks = 3;
+            game.Stock.Cash = 60; // what a seventeen-year-old has in his pocket
+            // Mamma's basso has an old rolling table, a pouch and a stack of boxes: ten packs for Totonno, to start.
+            game.Stock.TobaccoG = 140;
+            game.Stock.Papers = 200;
+            game.Stock.EmptyPacks = 10;
             game.PlaceStarterTable();
             game.SpawnStartingCrew(setup);
             if (game.Player != null) game.Player.Armor = Pawn.MaxArmor;   // a vest under the jacket

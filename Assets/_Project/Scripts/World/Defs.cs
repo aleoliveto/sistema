@@ -345,7 +345,7 @@ namespace OSistema.World
         public const int Medicine = 20;
         public const int ProductWholesale = 12; // per unit, from the supplier
         public const int ProductStreet = 20;    // per unit, at the piazza
-        public const int RecruitBonus = 250;
+        public const int RecruitBonus = 200;
         public const int JailedFamilySupport = 150; // weekly, per crew member inside
         public const int Pistol = 600;
         public const int Scooter = 900;
@@ -377,7 +377,7 @@ namespace OSistema.World
         public const int Papers200 = 4;         // papers and filters for ten packs
         public const int EmptyPacks20 = 6;      // ROSSE packs from Nanninella's printer
         public const int TobaccoPerPack = 14;   // grams in a pack of 20
-        public const int PackStreet = 4;
+        public const int PackStreet = 7;        // a good pack of ROSSE: ~€2 of tobacco, papers and box
         public const int DigitalScale = 120;
         public const int HeatSealer = 90;
         public const int RollingMachine = 150;

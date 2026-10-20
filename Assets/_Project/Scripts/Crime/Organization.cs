@@ -71,11 +71,16 @@ namespace OSistema.Crime
             if (clock.Hour == 0) OnNewDay(game);
             if (clock.Hour == 8 && PendingOrderUnits > 0 && clock.Day >= PendingOrderDay) DeliverOrder(game);
             if (clock.Hour == 12 && clock.IsPayday && LastPaydayWeek != WeekOf(clock)) Payday(game);
-            // Mammà: whatever her son gets up to, nobody in her basso goes hungry.
-            if (clock.Hour == 13 && Generation == 1 && game.Stock.Meals < 2)
+            // Mammà: whatever her son gets up to, nobody in her basso goes hungry. Lunch and dinner,
+            // half rations for a big crew: enough to stop anyone starving, not enough to live on.
+            if ((clock.Hour == 13 || clock.Hour == 20) && Generation == 1)
             {
-                game.Stock.Meals += 3;
-                game.Log.Add("Mammà left a pot of pasta e patate on the stove. \"Mangia, ca si' sicco.\"", MessageKind.Good);
+                int want = Mathf.Max(3, game.Pawns.PresentCount / 2);
+                if (game.Stock.Meals < want)
+                {
+                    game.Stock.Meals = want;
+                    if (clock.Hour == 13) game.Log.Add("Mammà left a pot of pasta e patate on the stove. \"Mangia, ca si' sicco.\"", MessageKind.Good);
+                }
             }
             ReopenBurnedShops(game);
             OrganiseShifts(game);
@@ -193,6 +198,13 @@ namespace OSistema.Crime
                     p.Loyalty = Mathf.Max(0f, p.Loyalty - 12f);
                     p.Mood.AddMemory("unpaid", "Didn't get my mesata", -15f, now, GameClock.TicksPerDay * 4);
                     p.Say("unpaid");
+                    // Unpaid and fed up: they walk, rather than stay and starve with you.
+                    if (!p.IsBoss && !p.Controlled && p.Loyalty < 20f)
+                    {
+                        p.EndCurrentJob(game);
+                        p.Departed = true;
+                        game.Log.Add($"{p.DisplayName} didn't get paid again and walked out. One mouth fewer to feed.", MessageKind.Bad);
+                    }
                 }
             }
 
@@ -237,7 +249,7 @@ namespace OSistema.Crime
                 IntimidationSkill = rng.Next(1, 9),
                 AwarenessSkill = rng.Next(1, 9),
                 ShootingSkill = rng.Next(1, 9),
-                Wage = 120,
+                Wage = 100,
                 Loyalty = 45f + rng.Next(0, 20),
             };
             if (!free) game.Stock.Cash -= Prices.RecruitBonus; // a signing bonus, in cash

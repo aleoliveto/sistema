@@ -92,7 +92,7 @@ namespace OSistema.AI
             if (contact.Name == ContactBook.Totonno && game.Stock.Cigarettes > 0 && game.Org.TotonnoWants(game) > 0)
             {
                 int n = System.Math.Min(game.Stock.Cigarettes, game.Org.TotonnoWants(game));
-                e.Option($"Sell him {n} packs of ROSSE · €{n * game.Org.TotonnoPrice(game)}", "He sells them under the counter. Up to 20 packs a day.", g => g.Org.SellPacksToTotonno(g));
+                e.Option($"Sell him {n} packs of ROSSE · €{n * game.Org.TotonnoPrice(game)}", $"He sells them under the counter. Up to {OSistema.Crime.Organization.TotonnoDailyPacks} packs a day.", g => g.Org.SellPacksToTotonno(g));
             }
             if (contact.Name == ContactBook.Nanninella)
             {
