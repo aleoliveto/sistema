@@ -135,7 +135,7 @@ def main(torsos, arms, out, prefix, first=0, body_w=BODY_W):
     print(len(lines), "figures cut")
 
 
-if __name__ == "__main__" and len(sys.argv) > 1 and sys.argv[1] == "legs":
+if __name__ == "__main__" and len(sys.argv) > 1 and sys.argv[1] in ("legs", "heads", "hair"):
     pass
 elif __name__ == "__main__":
     main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4] if len(sys.argv) > 4 else "", int(sys.argv[5]) if len(sys.argv) > 5 else 0,
@@ -175,3 +175,70 @@ def legs(sheet, out):
 if __name__ == "__main__" and len(sys.argv) > 1 and sys.argv[1] == "legs":
     # python3 cut_people.py legs <sheet_legs_walk> <out dir>
     legs(sys.argv[2], sys.argv[3])
+
+
+# ---------- heads and hair, fitted to the old heads' place so the bodies' neck still fits ----------
+
+HEAD_BOX = (73, 77, 182, 192)   # the old heads' bounding box on the canvas: ears to ears, crown to nose tip
+HAIRLINE_Y = 178                # where the old hair stops at the forehead
+
+
+def fit(cell_img, box, scale=None):
+    """Scale an image so its own bounding box fills `box` (by width), centred on it; or by a given scale."""
+    a = np.array(cell_img)
+    b = bbox(a)
+    if b is None:
+        return None, None
+    x0, y0, x1, y1 = b
+    s = scale or (box[2] - box[0]) / (x1 - x0 + 1)
+    return s, b
+
+
+def heads(sheet, out, prefix=""):
+    for i, cell in enumerate(cells(sheet)):
+        s, b = fit(cell, HEAD_BOX)
+        if s is None:
+            continue
+        x0, y0, x1, y1 = b
+        cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+        tx, ty = (HEAD_BOX[0] + HEAD_BOX[2]) / 2, (HEAD_BOX[1] + HEAD_BOX[3]) / 2
+        place(cell, s, (cx, cy), (tx, ty)).save(os.path.join(out, f"{prefix}head_{i:02d}.png"))
+    print("heads cut")
+
+
+def no_skin(img):
+    """Hair sheets paint some scalp (balding, shaved, partings): take the skin out so any head shows through."""
+    a = np.array(img).astype(np.float32)
+    r, g, b = a[..., 0], a[..., 1], a[..., 2]
+    mx = np.maximum(np.maximum(r, g), b)
+    mn = np.minimum(np.minimum(r, g), b)
+    sat = (mx - mn) / np.maximum(mx, 1)
+    skin = (r > g) & (g > b) & (r - b > 30)
+    k = np.clip((mx - 110) / 40, 0, 1) * np.clip((sat - 0.18) / 0.12, 0, 1) * skin
+    a[..., 3] *= 1 - k
+    return Image.fromarray(a.astype(np.uint8))
+
+
+def hair(sheet, heads_sheet, out, prefix=""):
+    # One scale for every style: the heads sheet tells how big ChatGPT drew a head.
+    widths = [bbox(np.array(c))[2] - bbox(np.array(c))[0] for c in cells(heads_sheet) if bbox(np.array(c)) is not None]
+    s = (HEAD_BOX[2] - HEAD_BOX[0]) / float(np.median(widths))
+    for i, cell in enumerate(cells(sheet)):
+        cell = no_skin(cell)
+        a = np.array(cell)
+        b = bbox(a)
+        if b is None:
+            continue
+        x0, y0, x1, y1 = b
+        # Centred across; the hairline (the bottom of the hair, at the front) at the forehead.
+        place(cell, s, ((x0 + x1) / 2, y1), ((HEAD_BOX[0] + HEAD_BOX[2]) / 2, HAIRLINE_Y)).save(os.path.join(out, f"{prefix}hair_{i:02d}.png"))
+    print("hair cut")
+
+
+if __name__ == "__main__" and len(sys.argv) > 1 and sys.argv[1] == "heads":
+    # python3 cut_people.py heads <sheet_heads> <out dir>
+    heads(sys.argv[2], sys.argv[3])
+
+if __name__ == "__main__" and len(sys.argv) > 1 and sys.argv[1] == "hair":
+    # python3 cut_people.py hair <sheet_hair> <sheet_heads> <out dir> [prefix]
+    hair(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5] if len(sys.argv) > 5 else "")
