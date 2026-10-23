@@ -18,9 +18,11 @@ namespace OSistema.Pawns
         static readonly int[] CasualBodies = { 0, 2, 4, 5, 6, 7, 8, 10, 12, 13 };
         static readonly int[] TracksuitBodies = { 1, 5, 11 };
         static readonly int[] OldBodies = { 8, 9, 14 };
-        static readonly int[] YoungHair = { 0, 1, 2, 3, 4, 7, 8, 9, 10, 11, 15 };
-        static readonly int[] OldHair = { 5, 6, 12, 13 };
-        static readonly int[] ShortHair = { 0, 2, 8, 10, 14 };
+        // The men's hair sheet: 0 buzz, 1 crop, 2 slicked, 3 side parting, 4 curls, 5 fade, 6 receding, 7 horseshoe,
+        // 8 shaved, 9 bun, 10 tied back, 11 spiky, 12 grey short, 13 grey comb-over, 14 mullet (not used), 15 mohawk.
+        static readonly int[] YoungHair = { 0, 1, 2, 3, 4, 5, 9, 10, 11, 15 };
+        static readonly int[] OldHair = { 6, 7, 8, 12, 13 };
+        static readonly int[] ShortHair = { 0, 1, 2, 3, 5, 8 };
         static readonly int[] YoungFaces = { 0, 4, 6, 9, 14 };
         static readonly int[] OldFaces = { 5, 11, 13, 15 };
 
@@ -79,7 +81,9 @@ namespace OSistema.Pawns
 
         static readonly int[] YoungWomenBodies = { 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 14, 15 };
         static readonly int[] OldWomenBodies = { 0, 1, 8, 13 };
-        static readonly int[] YoungWomenHair = { 0, 1, 2, 3, 6, 7, 8, 9, 10, 12, 13, 14, 15 };
+        // The women's hair sheet: 0 long, 1 long curly, 2 ponytail, 3 low bun, 4 grey bun, 5 grey perm, 6 bob, 7 blonde,
+        // 8 red curls, 9 braid, 10 wavy, 11 headscarf, 12 pixie, 13 half-up, 14 big curls and 15 slick ponytail (not used).
+        static readonly int[] YoungWomenHair = { 0, 1, 2, 3, 6, 7, 8, 9, 10, 12, 13 };
         static readonly int[] OldWomenHair = { 4, 5, 11 };
         static readonly int[] YoungWomenFaces = { 0, 2, 6, 8, 10 };
         static readonly int[] OldWomenFaces = { 1, 3, 5, 11, 12, 13, 14 };

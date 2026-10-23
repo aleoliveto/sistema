@@ -57,7 +57,8 @@ namespace OSistema.UI
             Picker(left, "Face", () => s.Look.Face, v => s.Look.Face = v, CharacterArt.Count("face"), false, Refresh);
             Picker(left, "Clothes", () => s.Look.Body, v => s.Look.Body = v, CharacterArt.Count("body"), false, Refresh);
             Picker(left, "Skin", () => s.Look.Head, v => s.Look.Head = v, CharacterArt.Count("head"), false, Refresh);
-            Picker(left, "Hair", () => s.Look.Hair, v => s.Look.Hair = v, CharacterArt.Count("hair"), false, Refresh);
+            // Style 15 (the mullet) is out: stepping onto it goes on past it, whichever way you're going.
+            Picker(left, "Hair", () => s.Look.Hair, v => s.Look.Hair = v == 14 ? (s.Look.Hair == 13 ? 15 : 13) : v, CharacterArt.Count("hair"), false, Refresh);
             Picker(left, "Hat", () => s.Look.Hat, v => s.Look.Hat = v, CharacterArt.Count("hat"), true, Refresh);
             Picker(left, "Chain", () => s.Look.Neck, v => s.Look.Neck = v, CharacterArt.Count("neck"), true, Refresh);
             Refresh();
