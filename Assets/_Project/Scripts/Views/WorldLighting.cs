@@ -51,7 +51,7 @@ namespace OSistema.Views
             game = g;
             cam = Camera.main;
 
-            foreach (var light in FindObjectsByType<Light2D>(FindObjectsSortMode.None))
+            foreach (var light in FindObjectsByType<Light2D>())
                 if (light.lightType == Light2D.LightType.Global) global = light;
             if (global == null)
             {

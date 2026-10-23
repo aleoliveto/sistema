@@ -105,7 +105,6 @@ namespace OSistema.UI
             bizRefreshTimer += RefreshSeconds;
             // Don't rebuild under the mouse while someone is painting shifts.
             bool holding = UnityEngine.InputSystem.Mouse.current != null && UnityEngine.InputSystem.Mouse.current.leftButton.isPressed;
-            if (!holding) paintingShifts = false;
             if (!bizDirty && (bizRefreshTimer < 1f || holding)) return;
             bizRefreshTimer = 0f;
             bizDirty = false;
@@ -282,7 +281,6 @@ namespace OSistema.UI
 
         // ---------- Tabs ----------
 
-        bool paintingShifts;
 
         void PiazzeTab()
         {

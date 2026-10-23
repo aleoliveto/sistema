@@ -23,7 +23,7 @@ namespace OSistema.World
         {
             var map = new Map(width, height);
             zones = new List<RectInt>();
-            const int water = 14, quayTop = 24, warehouseTop = 61, mainRoadY = 61;
+            const int water = 14, quayTop = 24, mainRoadY = 61;
 
             // ---- The sea and the piers ----
             Fill(map, new RectInt(0, 0, width, water), TerrainType.Water);

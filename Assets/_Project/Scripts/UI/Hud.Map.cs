@@ -504,20 +504,6 @@ namespace OSistema.UI
             }
             Markers(BigDot);
             bigLabelsUsed = 0;
-            void BigLabel(Vector2 w, string text, string cls = null)
-            {
-                if (bigLabelsUsed >= bigLabels.Count)
-                {
-                    var l = Ui.Text("", bigLayer, "map-label");
-                    l.pickingMode = PickingMode.Ignore;
-                    bigLabels.Add(l);
-                }
-                var label = bigLabels[bigLabelsUsed++];
-                label.style.display = DisplayStyle.Flex;
-                label.text = text;
-                label.style.left = w.x * bigScale + 6;
-                label.style.top = (map.Height - w.y) * bigScale - 7;
-            }
             // Every place you know, with its icon and name: people, shops, home.
             bigIconsUsed = 0;
             foreach (var pl in places)

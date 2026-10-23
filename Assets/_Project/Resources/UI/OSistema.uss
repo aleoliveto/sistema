@@ -1342,7 +1342,6 @@
 .panel {
     background-image: resource("UI/Art/frame_panel");
     -unity-slice-left: 28; -unity-slice-right: 28; -unity-slice-top: 28; -unity-slice-bottom: 28;
-    -unity-slice-scale: 0.5;
     background-color: rgba(0, 0, 0, 0);
     border-width: 0;
     padding: 14px 16px;
@@ -1353,7 +1352,6 @@
 .btn {
     background-image: resource("UI/Art/button_normal");
     -unity-slice-left: 16; -unity-slice-right: 16; -unity-slice-top: 16; -unity-slice-bottom: 16;
-    -unity-slice-scale: 0.5;
     background-color: rgba(0, 0, 0, 0);
     border-width: 0;
 }
@@ -1369,7 +1367,6 @@
 .sidebar__tab {
     background-image: resource("UI/Art/button_normal");
     -unity-slice-left: 16; -unity-slice-right: 16; -unity-slice-top: 16; -unity-slice-bottom: 16;
-    -unity-slice-scale: 0.5;
     background-color: rgba(0, 0, 0, 0); border-width: 0;
 }
 .sidebar__tab:hover { background-image: resource("UI/Art/button_hover"); background-color: rgba(0, 0, 0, 0); }
@@ -1378,7 +1375,6 @@
 .topbar {
     background-image: resource("UI/Art/bar_strip");
     -unity-slice-left: 8; -unity-slice-right: 8; -unity-slice-top: 0; -unity-slice-bottom: 10;
-    -unity-slice-scale: 0.5;
     border-bottom-width: 0;
 }
 .art-icon { -unity-background-scale-mode: scale-to-fit; flex-shrink: 0; }
@@ -1446,7 +1442,6 @@
 .crew-card, .goal, .toast, .root .crew-bar__head, .diary__row {
     background-image: resource("UI/Art/button_normal");
     -unity-slice-left: 16; -unity-slice-right: 16; -unity-slice-top: 16; -unity-slice-bottom: 16;
-    -unity-slice-scale: 0.5;
     background-color: rgba(0, 0, 0, 0);
     border-width: 0;
 }
@@ -1481,7 +1476,6 @@
 .nokia__key, .nokia__soft, .nokia__navkey {
     background-image: resource("UI/Art/button_normal");
     -unity-slice-left: 16; -unity-slice-right: 16; -unity-slice-top: 16; -unity-slice-bottom: 16;
-    -unity-slice-scale: 0.5;
     background-color: rgba(0, 0, 0, 0); border-width: 0;
 }
 .nokia__key:hover, .nokia__soft:hover, .nokia__navkey:hover { background-image: resource("UI/Art/button_hover"); background-color: rgba(0, 0, 0, 0); }

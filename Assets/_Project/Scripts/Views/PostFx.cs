@@ -16,7 +16,7 @@ namespace OSistema.Views
             if (data != null) data.renderPostProcessing = true;
 
             // Domain reload is off: a volume from the last Play session may still be around. Rebuild it.
-            foreach (var old in Object.FindObjectsByType<Volume>(FindObjectsSortMode.None))
+            foreach (var old in Object.FindObjectsByType<Volume>())
                 if (old.name == "Film look") Object.Destroy(old.gameObject);
 
             var go = new GameObject("Film look");
