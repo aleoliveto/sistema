@@ -34,6 +34,16 @@ namespace OSistema.Views
             return $"{prefix}{kind}_{n:00}";
         }
 
+        /// <summary>Domain reload is off: start every Play with empty caches, so re-cut art and arms.txt are read fresh.</summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetCaches()
+        {
+            sprites.Clear();
+            textures.Clear();
+            counts.Clear();
+            armInfo = null;
+        }
+
         public static Texture2D Texture(string kind, int i)
         {
             if (i < 0) return null;

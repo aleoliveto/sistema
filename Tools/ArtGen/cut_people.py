@@ -19,7 +19,8 @@ from PIL import Image
 CANVAS = 256
 BODY_W = 196            # the old bodies' width on the canvas
 NECK = (128, 112)       # where the head sits on the canvas
-ARM_LEN = 0.70          # arm length, as a fraction of the torso's width
+ARM_THICK = 0.23        # arm thickness, as a fraction of the torso's width (the old painted arms)
+ARM_HIDDEN = 0.30       # how much of the arm's top is tucked under the sleeve
 
 
 def cells(path):
@@ -93,14 +94,21 @@ def main(torsos, arms, out, prefix, first=0):
         # The arm: its own scale so it's ARM_LEN of the torso's width long; pivot near its rounded top.
         a = np.array(ac)
         aw, ah = ab[2] - ab[0] + 1, ab[3] - ab[1] + 1
-        ascale = (BODY_W * ARM_LEN) / ah
+        ascale = (BODY_W * ARM_THICK) / aw
         arm_w = aw * ascale
-        pivot_src = ((ab[0] + ab[2]) / 2, ab[1] + aw * 0.45)
-        px = left_edge + arm_w * 0.5
-        rx = right_edge - arm_w * 0.5
-        py = row
-        arm_l = place(ac, ascale, pivot_src, (px, py))
-        arm_r = place(ac.transpose(Image.FLIP_LEFT_RIGHT), ascale, (ac.width - pivot_src[0], pivot_src[1]), (rx, py))
+        pivot_src = ((ab[0] + ab[2]) / 2, ab[1] + ah * ARM_HIDDEN)
+        px = left_edge + arm_w * 0.42
+        rx = right_edge - arm_w * 0.42
+        # The arm's top starts just inside the shoulder's outline at that point, so it never shows above it.
+        def col_top(x):
+            col = np.where(t[:, int(round(x)), 3] > 60)[0]
+            return col.min() if len(col) else row
+        drop = (pivot_src[1] - ab[1]) * ascale
+        py = max(col_top(px), col_top(rx)) + 14 + drop
+        # ChatGPT draws the arm with the thumb on the outside: as it comes, it's a right arm. Mirror it for the left.
+        flip = ac.transpose(Image.FLIP_LEFT_RIGHT)
+        arm_l = place(flip, ascale, (ac.width - pivot_src[0], pivot_src[1]), (px, py))
+        arm_r = place(ac, ascale, pivot_src, (rx, py))
         key = f"{prefix}body_{first + i:02d}"
         torso.save(os.path.join(out, key + "_torso.png"))
         arm_l.save(os.path.join(out, key + "_arml.png"))
