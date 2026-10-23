@@ -1,0 +1,3681 @@
+fileFormatVersion: 2
+guid: e97cd3be3d6284aa29c4d213db97319a
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 1300093331868030131
+    second: sheet_arms_men_0
+  - first:
+      213: 1286947625033124644
+    second: sheet_arms_men_1
+  - first:
+      213: 3340748817702811727
+    second: sheet_arms_men_2
+  - first:
+      213: -861849145949819623
+    second: sheet_arms_men_3
+  - first:
+      213: 7944530654748207396
+    second: sheet_arms_men_4
+  - first:
+      213: -7754616684157103224
+    second: sheet_arms_men_5
+  - first:
+      213: 6364959358371833114
+    second: sheet_arms_men_6
+  - first:
+      213: -8339140606048801045
+    second: sheet_arms_men_7
+  - first:
+      213: -334841680243991512
+    second: sheet_arms_men_8
+  - first:
+      213: -8926982757061447929
+    second: sheet_arms_men_9
+  - first:
+      213: 1318439134308461478
+    second: sheet_arms_men_10
+  - first:
+      213: 3064607943183728650
+    second: sheet_arms_men_11
+  - first:
+      213: 8645307280411816724
+    second: sheet_arms_men_12
+  - first:
+      213: 2161280064384298617
+    second: sheet_arms_men_13
+  - first:
+      213: 5513036203691959709
+    second: sheet_arms_men_14
+  - first:
+      213: -6905815562204661938
+    second: sheet_arms_men_15
+  - first:
+      213: 1327893229129512838
+    second: sheet_arms_men_16
+  - first:
+      213: -3049236878805304520
+    second: sheet_arms_men_17
+  - first:
+      213: 5903582243389618438
+    second: sheet_arms_men_18
+  - first:
+      213: 542368265228076388
+    second: sheet_arms_men_19
+  - first:
+      213: 7625133010827173948
+    second: sheet_arms_men_20
+  - first:
+      213: 2753308897415424695
+    second: sheet_arms_men_21
+  - first:
+      213: 3674821395260932964
+    second: sheet_arms_men_22
+  - first:
+      213: -2566966372101972363
+    second: sheet_arms_men_23
+  - first:
+      213: -5779392682014669494
+    second: sheet_arms_men_24
+  - first:
+      213: 2708561651435510109
+    second: sheet_arms_men_25
+  - first:
+      213: -4682860852677631131
+    second: sheet_arms_men_26
+  - first:
+      213: -7324333501652627685
+    second: sheet_arms_men_27
+  - first:
+      213: 4607985607977363763
+    second: sheet_arms_men_28
+  - first:
+      213: -5393220796728844440
+    second: sheet_arms_men_29
+  - first:
+      213: -2724938904608061860
+    second: sheet_arms_men_30
+  - first:
+      213: 5817989774853612268
+    second: sheet_arms_men_31
+  - first:
+      213: -4553386459078962318
+    second: sheet_arms_men_32
+  - first:
+      213: -654930300166020333
+    second: sheet_arms_men_33
+  - first:
+      213: -5961846953323605203
+    second: sheet_arms_men_34
+  - first:
+      213: -2697207295652341242
+    second: sheet_arms_men_35
+  - first:
+      213: 2618790300429173805
+    second: sheet_arms_men_36
+  - first:
+      213: 267230994954177945
+    second: sheet_arms_men_37
+  - first:
+      213: -3659629991632965089
+    second: sheet_arms_men_38
+  - first:
+      213: 6182342849362398810
+    second: sheet_arms_men_39
+  - first:
+      213: 3872113979811160016
+    second: sheet_arms_men_40
+  - first:
+      213: 3853983285134807770
+    second: sheet_arms_men_41
+  - first:
+      213: -3534352097778455539
+    second: sheet_arms_men_42
+  - first:
+      213: -8374674000349268796
+    second: sheet_arms_men_43
+  - first:
+      213: -3893745821368459730
+    second: sheet_arms_men_44
+  - first:
+      213: 3076328277562032059
+    second: sheet_arms_men_45
+  - first:
+      213: -5327459704760728150
+    second: sheet_arms_men_46
+  - first:
+      213: 3242132124299826624
+    second: sheet_arms_men_47
+  - first:
+      213: -387557107428549752
+    second: sheet_arms_men_48
+  - first:
+      213: -2643159218749891837
+    second: sheet_arms_men_49
+  - first:
+      213: 8671649299427501994
+    second: sheet_arms_men_50
+  - first:
+      213: -1098464913677192759
+    second: sheet_arms_men_51
+  - first:
+      213: -5450863890559172798
+    second: sheet_arms_men_52
+  - first:
+      213: -7376043157247042717
+    second: sheet_arms_men_53
+  - first:
+      213: -5191801709933518587
+    second: sheet_arms_men_54
+  - first:
+      213: -7286990488236223973
+    second: sheet_arms_men_55
+  - first:
+      213: 9118763105913188906
+    second: sheet_arms_men_56
+  - first:
+      213: -560031245478964712
+    second: sheet_arms_men_57
+  - first:
+      213: -6211952303234270446
+    second: sheet_arms_men_58
+  - first:
+      213: -5036199571661189683
+    second: sheet_arms_men_59
+  - first:
+      213: 2432398735634534941
+    second: sheet_arms_men_60
+  - first:
+      213: 8433720060399816487
+    second: sheet_arms_men_61
+  - first:
+      213: -8472444014769764569
+    second: sheet_arms_men_62
+  - first:
+      213: 2280731454856863508
+    second: sheet_arms_men_63
+  - first:
+      213: 7133899094600226740
+    second: sheet_arms_men_64
+  - first:
+      213: -1853583058006223585
+    second: sheet_arms_men_65
+  - first:
+      213: -6486642530616635528
+    second: sheet_arms_men_66
+  - first:
+      213: 7950663748658011749
+    second: sheet_arms_men_67
+  - first:
+      213: -5251662067846847809
+    second: sheet_arms_men_68
+  - first:
+      213: -2046458965899947324
+    second: sheet_arms_men_69
+  - first:
+      213: -5229672266736021470
+    second: sheet_arms_men_70
+  - first:
+      213: -4131209666705152881
+    second: sheet_arms_men_71
+  - first:
+      213: 7341858756473731495
+    second: sheet_arms_men_72
+  - first:
+      213: -5595678278486934438
+    second: sheet_arms_men_73
+  - first:
+      213: -2824292774492308308
+    second: sheet_arms_men_74
+  - first:
+      213: -9123346587546505393
+    second: sheet_arms_men_75
+  - first:
+      213: 1542006075624471547
+    second: sheet_arms_men_76
+  - first:
+      213: 6371300678791741525
+    second: sheet_arms_men_77
+  - first:
+      213: -551136301082792128
+    second: sheet_arms_men_78
+  - first:
+      213: 4916489336889145522
+    second: sheet_arms_men_79
+  - first:
+      213: 5920601633067208356
+    second: sheet_arms_men_80
+  - first:
+      213: 8832398200803095769
+    second: sheet_arms_men_81
+  - first:
+      213: 3942306048473756967
+    second: sheet_arms_men_82
+  - first:
+      213: -6281564837296305042
+    second: sheet_arms_men_83
+  - first:
+      213: -7143556874169892266
+    second: sheet_arms_men_84
+  - first:
+      213: -8433909630533531744
+    second: sheet_arms_men_85
+  - first:
+      213: 5093650819630965013
+    second: sheet_arms_men_86
+  - first:
+      213: -3532564132565663541
+    second: sheet_arms_men_87
+  - first:
+      213: -5070266796921956695
+    second: sheet_arms_men_88
+  - first:
+      213: -7994108645877749023
+    second: sheet_arms_men_89
+  - first:
+      213: 4381520852314648681
+    second: sheet_arms_men_90
+  - first:
+      213: 5096517009807909614
+    second: sheet_arms_men_91
+  - first:
+      213: -8935223145693036223
+    second: sheet_arms_men_92
+  - first:
+      213: -6848204147459064227
+    second: sheet_arms_men_93
+  - first:
+      213: 7449899917371155527
+    second: sheet_arms_men_94
+  - first:
+      213: -2456019230592292070
+    second: sheet_arms_men_95
+  - first:
+      213: 427219667419757589
+    second: sheet_arms_men_96
+  - first:
+      213: 8277177087224173430
+    second: sheet_arms_men_97
+  - first:
+      213: 8501747763578026167
+    second: sheet_arms_men_98
+  - first:
+      213: 2485567350177127909
+    second: sheet_arms_men_99
+  - first:
+      213: 1670197803882281734
+    second: sheet_arms_men_100
+  - first:
+      213: 4656628129875027595
+    second: sheet_arms_men_101
+  - first:
+      213: 265411395832445796
+    second: sheet_arms_men_102
+  - first:
+      213: -2106126712330126203
+    second: sheet_arms_men_103
+  - first:
+      213: 6379330247914516228
+    second: sheet_arms_men_104
+  - first:
+      213: -6904291221892443974
+    second: sheet_arms_men_105
+  - first:
+      213: -8638846926452955151
+    second: sheet_arms_men_106
+  - first:
+      213: 1900470243815228987
+    second: sheet_arms_men_107
+  - first:
+      213: 2121878205758774776
+    second: sheet_arms_men_108
+  - first:
+      213: 4813476910653083693
+    second: sheet_arms_men_109
+  - first:
+      213: 5924028231578870694
+    second: sheet_arms_men_110
+  - first:
+      213: -6097628261175781951
+    second: sheet_arms_men_111
+  - first:
+      213: -8673194594643072375
+    second: sheet_arms_men_112
+  - first:
+      213: -1575962643899632180
+    second: sheet_arms_men_113
+  - first:
+      213: -9184967894472358256
+    second: sheet_arms_men_114
+  - first:
+      213: -1044813572336766979
+    second: sheet_arms_men_115
+  - first:
+      213: 2645313740630046895
+    second: sheet_arms_men_116
+  - first:
+      213: 8353147483772205443
+    second: sheet_arms_men_117
+  - first:
+      213: -8760057045337090912
+    second: sheet_arms_men_118
+  - first:
+      213: 7434765791762598297
+    second: sheet_arms_men_119
+  - first:
+      213: 8439762949577525066
+    second: sheet_arms_men_120
+  - first:
+      213: -7541775210217763201
+    second: sheet_arms_men_121
+  - first:
+      213: 9199734067852348282
+    second: sheet_arms_men_122
+  - first:
+      213: -8882754409639733859
+    second: sheet_arms_men_123
+  - first:
+      213: -2276546204229204382
+    second: sheet_arms_men_124
+  - first:
+      213: 2050943265486737097
+    second: sheet_arms_men_125
+  - first:
+      213: 6470113792973192898
+    second: sheet_arms_men_126
+  - first:
+      213: 4184336063083338058
+    second: sheet_arms_men_127
+  - first:
+      213: -2421739904117152578
+    second: sheet_arms_men_128
+  - first:
+      213: 3945130654247290785
+    second: sheet_arms_men_129
+  - first:
+      213: -1440879710818491584
+    second: sheet_arms_men_130
+  - first:
+      213: -5929428094909379939
+    second: sheet_arms_men_131
+  - first:
+      213: -4495717205484983321
+    second: sheet_arms_men_132
+  - first:
+      213: 6022215275650442160
+    second: sheet_arms_men_133
+  - first:
+      213: 8277400555274742729
+    second: sheet_arms_men_134
+  - first:
+      213: 5869853428084977464
+    second: sheet_arms_men_135
+  - first:
+      213: 8607716895703321299
+    second: sheet_arms_men_136
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: sheet_arms_men_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 779
+        width: 323
+        height: 460
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3b419d44ffbda0210800000000000000
+      internalID: 1300093331868030131
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_1
+      rect:
+        serializedVersion: 2
+        x: 295
+        y: 1164
+        width: 56
+        height: 74
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 42bc1a2eb082cd110800000000000000
+      internalID: 1286947625033124644
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_2
+      rect:
+        serializedVersion: 2
+        x: 329
+        y: 793
+        width: 373
+        height: 446
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f487bf28959bc5e20800000000000000
+      internalID: 3340748817702811727
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_3
+      rect:
+        serializedVersion: 2
+        x: 721
+        y: 949
+        width: 166
+        height: 292
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 91defad94c81a04f0800000000000000
+      internalID: -861849145949819623
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_4
+      rect:
+        serializedVersion: 2
+        x: 866
+        y: 843
+        width: 335
+        height: 398
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 429e77fd984a04e60800000000000000
+      internalID: 7944530654748207396
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_5
+      rect:
+        serializedVersion: 2
+        x: 102
+        y: 1137
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8839f732631126490800000000000000
+      internalID: -7754616684157103224
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_6
+      rect:
+        serializedVersion: 2
+        x: 104
+        y: 1132
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a152d8d30d0e45850800000000000000
+      internalID: 6364959358371833114
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_7
+      rect:
+        serializedVersion: 2
+        x: 309
+        y: 1128
+        width: 22
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: beeec6c2dcb654c80800000000000000
+      internalID: -8339140606048801045
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_8
+      rect:
+        serializedVersion: 2
+        x: 553
+        y: 1130
+        width: 15
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 82cdf0114476a5bf0800000000000000
+      internalID: -334841680243991512
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_9
+      rect:
+        serializedVersion: 2
+        x: 571
+        y: 1130
+        width: 13
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 70fa059ca7cfc1480800000000000000
+      internalID: -8926982757061447929
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_10
+      rect:
+        serializedVersion: 2
+        x: 46
+        y: 1107
+        width: 9
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6abed6248690c4210800000000000000
+      internalID: 1318439134308461478
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_11
+      rect:
+        serializedVersion: 2
+        x: 54
+        y: 1107
+        width: 17
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a008e45ffaca78a20800000000000000
+      internalID: 3064607943183728650
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_12
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 1082
+        width: 30
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4137b0faa2d4af770800000000000000
+      internalID: 8645307280411816724
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_13
+      rect:
+        serializedVersion: 2
+        x: 311
+        y: 1104
+        width: 18
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 97e62c184c86efd10800000000000000
+      internalID: 2161280064384298617
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_14
+      rect:
+        serializedVersion: 2
+        x: 587
+        y: 1116
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d956deac73d328c40800000000000000
+      internalID: 5513036203691959709
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_15
+      rect:
+        serializedVersion: 2
+        x: 323
+        y: 1067
+        width: 20
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e473d62b55d9920a0800000000000000
+      internalID: -6905815562204661938
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_16
+      rect:
+        serializedVersion: 2
+        x: 342
+        y: 1082
+        width: 13
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 68739ed3bdf9d6210800000000000000
+      internalID: 1327893229129512838
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_17
+      rect:
+        serializedVersion: 2
+        x: 595
+        y: 1084
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 83bf9cad63feea5d0800000000000000
+      internalID: -3049236878805304520
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_18
+      rect:
+        serializedVersion: 2
+        x: 70
+        y: 1036
+        width: 9
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 609ba8795ccbde150800000000000000
+      internalID: 5903582243389618438
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_19
+      rect:
+        serializedVersion: 2
+        x: 317
+        y: 1050
+        width: 24
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4654d5a4011e68700800000000000000
+      internalID: 542368265228076388
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_20
+      rect:
+        serializedVersion: 2
+        x: 327
+        y: 1050
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c30657bd21ae1d960800000000000000
+      internalID: 7625133010827173948
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_21
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 1035
+        width: 17
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7ba6e53cad7b53620800000000000000
+      internalID: 2753308897415424695
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_22
+      rect:
+        serializedVersion: 2
+        x: 625
+        y: 1026
+        width: 7
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4638885c6969ff230800000000000000
+      internalID: 3674821395260932964
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_23
+      rect:
+        serializedVersion: 2
+        x: 979
+        y: 1036
+        width: 7
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 57e1d785fad406cd0800000000000000
+      internalID: -2566966372101972363
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_24
+      rect:
+        serializedVersion: 2
+        x: 985
+        y: 1030
+        width: 19
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a45060be9f87bcfa0800000000000000
+      internalID: -5779392682014669494
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_25
+      rect:
+        serializedVersion: 2
+        x: 319
+        y: 1018
+        width: 16
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d591f0ea87eb69520800000000000000
+      internalID: 2708561651435510109
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_26
+      rect:
+        serializedVersion: 2
+        x: 325
+        y: 1002
+        width: 22
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 56321978dd2230fb0800000000000000
+      internalID: -4682860852677631131
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_27
+      rect:
+        serializedVersion: 2
+        x: 400
+        y: 1027
+        width: 11
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b1f80897c7dba5a90800000000000000
+      internalID: -7324333501652627685
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_28
+      rect:
+        serializedVersion: 2
+        x: 975
+        y: 987
+        width: 37
+        height: 56
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3396a9d0f7ad2ff30800000000000000
+      internalID: 4607985607977363763
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_29
+      rect:
+        serializedVersion: 2
+        x: 1154
+        y: 927
+        width: 85
+        height: 112
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 86f5ab7824e6725b0800000000000000
+      internalID: -5393220796728844440
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_30
+      rect:
+        serializedVersion: 2
+        x: 563
+        y: 971
+        width: 19
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c56c13ce0821f2ad0800000000000000
+      internalID: -2724938904608061860
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_31
+      rect:
+        serializedVersion: 2
+        x: 583
+        y: 988
+        width: 11
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ce2210d00e6adb050800000000000000
+      internalID: 5817989774853612268
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_32
+      rect:
+        serializedVersion: 2
+        x: 1147
+        y: 988
+        width: 6
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 273568de32f1fc0c0800000000000000
+      internalID: -4553386459078962318
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_33
+      rect:
+        serializedVersion: 2
+        x: 1152
+        y: 991
+        width: 7
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 313e6f9ac5839e6f0800000000000000
+      internalID: -654930300166020333
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_34
+      rect:
+        serializedVersion: 2
+        x: 88
+        y: 964
+        width: 10
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d23d6ed78c3434da0800000000000000
+      internalID: -5961846953323605203
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_35
+      rect:
+        serializedVersion: 2
+        x: 255
+        y: 947
+        width: 19
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 60adc094148919ad0800000000000000
+      internalID: -2697207295652341242
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_36
+      rect:
+        serializedVersion: 2
+        x: 279
+        y: 970
+        width: 9
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d24c15e37efc75420800000000000000
+      internalID: 2618790300429173805
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_37
+      rect:
+        serializedVersion: 2
+        x: 563
+        y: 970
+        width: 7
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 99dc73f8c2565b300800000000000000
+      internalID: 267230994954177945
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_38
+      rect:
+        serializedVersion: 2
+        x: 1204
+        y: 953
+        width: 13
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f12f95389e1663dc0800000000000000
+      internalID: -3659629991632965089
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_39
+      rect:
+        serializedVersion: 2
+        x: 78
+        y: 945
+        width: 22
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a5e0ce7e0181cc550800000000000000
+      internalID: 6182342849362398810
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_40
+      rect:
+        serializedVersion: 2
+        x: 1182
+        y: 951
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0dfd77836238cb530800000000000000
+      internalID: 3872113979811160016
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_41
+      rect:
+        serializedVersion: 2
+        x: 86
+        y: 939
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ad2d0c8e0691c7530800000000000000
+      internalID: 3853983285134807770
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_42
+      rect:
+        serializedVersion: 2
+        x: 94
+        y: 931
+        width: 8
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d0c22cc2e7573fec0800000000000000
+      internalID: -3534352097778455539
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_43
+      rect:
+        serializedVersion: 2
+        x: 129
+        y: 640
+        width: 105
+        height: 294
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4c47b7b1e5e27cb80800000000000000
+      internalID: -8374674000349268796
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_44
+      rect:
+        serializedVersion: 2
+        x: 263
+        y: 921
+        width: 9
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e2edbaf2ec2a6f9c0800000000000000
+      internalID: -3893745821368459730
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_45
+      rect:
+        serializedVersion: 2
+        x: 426
+        y: 618
+        width: 198
+        height: 317
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bbff294f44051ba20800000000000000
+      internalID: 3076328277562032059
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_46
+      rect:
+        serializedVersion: 2
+        x: 631
+        y: 586
+        width: 222
+        height: 346
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aa58786ef9f0116b0800000000000000
+      internalID: -5327459704760728150
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_47
+      rect:
+        serializedVersion: 2
+        x: 965
+        y: 919
+        width: 9
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c516cf4dfd5efc20800000000000000
+      internalID: 3242132124299826624
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_48
+      rect:
+        serializedVersion: 2
+        x: 971
+        y: 915
+        width: 23
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 88b1b893dde1f9af0800000000000000
+      internalID: -387557107428549752
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_49
+      rect:
+        serializedVersion: 2
+        x: 999
+        y: 634
+        width: 154
+        height: 300
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 30b1d91d1bc915bd0800000000000000
+      internalID: -2643159218749891837
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_50
+      rect:
+        serializedVersion: 2
+        x: 1208
+        y: 913
+        width: 27
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aa7242de713e75870800000000000000
+      internalID: 8671649299427501994
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_51
+      rect:
+        serializedVersion: 2
+        x: 313
+        y: 761
+        width: 22
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9c17a0e1bf771c0f0800000000000000
+      internalID: -1098464913677192759
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_52
+      rect:
+        serializedVersion: 2
+        x: 555
+        y: 763
+        width: 37
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 24f7734eb24aa54b0800000000000000
+      internalID: -5450863890559172798
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_53
+      rect:
+        serializedVersion: 2
+        x: 874
+        y: 722
+        width: 74
+        height: 72
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 36bd65414d703a990800000000000000
+      internalID: -7376043157247042717
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_54
+      rect:
+        serializedVersion: 2
+        x: 938
+        y: 746
+        width: 44
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 501a5272ad303f7b0800000000000000
+      internalID: -5191801709933518587
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_55
+      rect:
+        serializedVersion: 2
+        x: 88
+        y: 740
+        width: 14
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b12970352c86fda90800000000000000
+      internalID: -7286990488236223973
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_56
+      rect:
+        serializedVersion: 2
+        x: 104
+        y: 734
+        width: 10
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a22b4e64bba5c8e70800000000000000
+      internalID: 9118763105913188906
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_57
+      rect:
+        serializedVersion: 2
+        x: 111
+        y: 730
+        width: 11
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8125b16ac8e5a38f0800000000000000
+      internalID: -560031245478964712
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_58
+      rect:
+        serializedVersion: 2
+        x: 329
+        y: 650
+        width: 98
+        height: 94
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 21b3d04ea46bac9a0800000000000000
+      internalID: -6211952303234270446
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_59
+      rect:
+        serializedVersion: 2
+        x: 932
+        y: 726
+        width: 10
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dcd09292c23db1ab0800000000000000
+      internalID: -5036199571661189683
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_60
+      rect:
+        serializedVersion: 2
+        x: 1163
+        y: 519
+        width: 78
+        height: 239
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d121b9d33cd91c120800000000000000
+      internalID: 2432398735634534941
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_61
+      rect:
+        serializedVersion: 2
+        x: 104
+        y: 725
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 72f873f06b79a0570800000000000000
+      internalID: 8433720060399816487
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_62
+      rect:
+        serializedVersion: 2
+        x: 940
+        y: 730
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7278348be05db6a80800000000000000
+      internalID: -8472444014769764569
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_63
+      rect:
+        serializedVersion: 2
+        x: 954
+        y: 710
+        width: 10
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 41f9dc2ac29c6af10800000000000000
+      internalID: 2280731454856863508
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_64
+      rect:
+        serializedVersion: 2
+        x: 958
+        y: 658
+        width: 38
+        height: 74
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4b79025fd63b00360800000000000000
+      internalID: 7133899094600226740
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_65
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 695
+        width: 40
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f155bd98700c646e0800000000000000
+      internalID: -1853583058006223585
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_66
+      rect:
+        serializedVersion: 2
+        x: 102
+        y: 721
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 87f87a17cf0daf5a0800000000000000
+      internalID: -6486642530616635528
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_67
+      rect:
+        serializedVersion: 2
+        x: 265
+        y: 618
+        width: 54
+        height: 108
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 56e16531e8e665e60800000000000000
+      internalID: 7950663748658011749
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_68
+      rect:
+        serializedVersion: 2
+        x: 946
+        y: 720
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fb2689d7c295e17b0800000000000000
+      internalID: -5251662067846847809
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_69
+      rect:
+        serializedVersion: 2
+        x: 954
+        y: 719
+        width: 6
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4c2de12c9648993e0800000000000000
+      internalID: -2046458965899947324
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_70
+      rect:
+        serializedVersion: 2
+        x: 850
+        y: 662
+        width: 37
+        height: 45
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 220dc7908c87c67b0800000000000000
+      internalID: -5229672266736021470
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_71
+      rect:
+        serializedVersion: 2
+        x: 948
+        y: 706
+        width: 12
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f84216b32befaa6c0800000000000000
+      internalID: -4131209666705152881
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_72
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 554
+        width: 108
+        height: 142
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7a935b2e3a583e560800000000000000
+      internalID: 7341858756473731495
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_73
+      rect:
+        serializedVersion: 2
+        x: 110
+        y: 674
+        width: 16
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a5cba6db0482852b0800000000000000
+      internalID: -5595678278486934438
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_74
+      rect:
+        serializedVersion: 2
+        x: 577
+        y: 673
+        width: 9
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cacfea27fa81ec8d0800000000000000
+      internalID: -2824292774492308308
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_75
+      rect:
+        serializedVersion: 2
+        x: 587
+        y: 675
+        width: 7
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f4fa48ebd9c536180800000000000000
+      internalID: -9123346587546505393
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_76
+      rect:
+        serializedVersion: 2
+        x: 872
+        y: 441
+        width: 60
+        height: 264
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bfb371b1b5e466510800000000000000
+      internalID: 1542006075624471547
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_77
+      rect:
+        serializedVersion: 2
+        x: 884
+        y: 654
+        width: 17
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5504694f5386b6850800000000000000
+      internalID: 6371300678791741525
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_78
+      rect:
+        serializedVersion: 2
+        x: 536
+        y: 642
+        width: 6
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 04f23274478f958f0800000000000000
+      internalID: -551136301082792128
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_79
+      rect:
+        serializedVersion: 2
+        x: 898
+        y: 650
+        width: 9
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2b8f543d001ea3440800000000000000
+      internalID: 4916489336889145522
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_80
+      rect:
+        serializedVersion: 2
+        x: 528
+        y: 634
+        width: 8
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4ae819b01d33a2250800000000000000
+      internalID: 5920601633067208356
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_81
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 304
+        width: 183
+        height: 319
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9d4faa91e5bf29a70800000000000000
+      internalID: 8832398200803095769
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_82
+      rect:
+        serializedVersion: 2
+        x: 289
+        y: 25
+        width: 321
+        height: 600
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 725f62fb672e5b630800000000000000
+      internalID: 3942306048473756967
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_83
+      rect:
+        serializedVersion: 2
+        x: 352
+        y: 580
+        width: 31
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e6c8e57cf0663d8a0800000000000000
+      internalID: -6281564837296305042
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_84
+      rect:
+        serializedVersion: 2
+        x: 563
+        y: 280
+        width: 125
+        height: 317
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 652cd420fdcfcdc90800000000000000
+      internalID: -7143556874169892266
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_85
+      rect:
+        serializedVersion: 2
+        x: 583
+        y: 588
+        width: 21
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0a78d4430ebb4fa80800000000000000
+      internalID: -8433909630533531744
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_86
+      rect:
+        serializedVersion: 2
+        x: 699
+        y: 318
+        width: 196
+        height: 306
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5112bf1ee6840b640800000000000000
+      internalID: 5093650819630965013
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_87
+      rect:
+        serializedVersion: 2
+        x: 1005
+        y: 332
+        width: 140
+        height: 294
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bc0432443afc9fec0800000000000000
+      internalID: -3532564132565663541
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_88
+      rect:
+        serializedVersion: 2
+        x: 287
+        y: 561
+        width: 14
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9a6520d263bc2a9b0800000000000000
+      internalID: -5070266796921956695
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_89
+      rect:
+        serializedVersion: 2
+        x: 882
+        y: 544
+        width: 13
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1eae39a8a883f0190800000000000000
+      internalID: -7994108645877749023
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_90
+      rect:
+        serializedVersion: 2
+        x: 926
+        y: 562
+        width: 14
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9607e2a300a4ecc30800000000000000
+      internalID: 4381520852314648681
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_91
+      rect:
+        serializedVersion: 2
+        x: 938
+        y: 538
+        width: 40
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ee22659c7377ab640800000000000000
+      internalID: 5096517009807909614
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_92
+      rect:
+        serializedVersion: 2
+        x: 924
+        y: 521
+        width: 12
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1414e1cc3e5bff380800000000000000
+      internalID: -8935223145693036223
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_93
+      rect:
+        serializedVersion: 2
+        x: 289
+        y: 483
+        width: 18
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d5e78597c9a46f0a0800000000000000
+      internalID: -6848204147459064227
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_94
+      rect:
+        serializedVersion: 2
+        x: 26
+        y: 365
+        width: 66
+        height: 86
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 744ae1be08c536760800000000000000
+      internalID: 7449899917371155527
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_95
+      rect:
+        serializedVersion: 2
+        x: 297
+        y: 426
+        width: 40
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a1ba407b5877aedd0800000000000000
+      internalID: -2456019230592292070
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_96
+      rect:
+        serializedVersion: 2
+        x: 321
+        y: 385
+        width: 10
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 51c7d95260acde500800000000000000
+      internalID: 427219667419757589
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_97
+      rect:
+        serializedVersion: 2
+        x: 555
+        y: 391
+        width: 9
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 673dffad4b07ed270800000000000000
+      internalID: 8277177087224173430
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_98
+      rect:
+        serializedVersion: 2
+        x: 681
+        y: 369
+        width: 15
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7b83a0afb864cf570800000000000000
+      internalID: 8501747763578026167
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_99
+      rect:
+        serializedVersion: 2
+        x: 693
+        y: 383
+        width: 26
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5eddd9cf5528e7220800000000000000
+      internalID: 2485567350177127909
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_100
+      rect:
+        serializedVersion: 2
+        x: 906
+        y: 43
+        width: 80
+        height: 353
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 60b7a05bd0cbd2710800000000000000
+      internalID: 1670197803882281734
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_101
+      rect:
+        serializedVersion: 2
+        x: 1163
+        y: 300
+        width: 86
+        height: 124
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b86ea4cbc9aaf9040800000000000000
+      internalID: 4656628129875027595
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_102
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 357
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 46bfeef124eeea300800000000000000
+      internalID: 265411395832445796
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_103
+      rect:
+        serializedVersion: 2
+        x: 84
+        y: 359
+        width: 18
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 58cf993f9e885c2e0800000000000000
+      internalID: -2106126712330126203
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_104
+      rect:
+        serializedVersion: 2
+        x: 655
+        y: 337
+        width: 37
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 40f69d3bf0fe78850800000000000000
+      internalID: 6379330247914516228
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_105
+      rect:
+        serializedVersion: 2
+        x: 850
+        y: 351
+        width: 53
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ab0d045d6b70f20a0800000000000000
+      internalID: -6904291221892443974
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_106
+      rect:
+        serializedVersion: 2
+        x: 866
+        y: 345
+        width: 13
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1f7ebcfad76ac1880800000000000000
+      internalID: -8638846926452955151
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_107
+      rect:
+        serializedVersion: 2
+        x: 62
+        y: 308
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b368ecc1e93df5a10800000000000000
+      internalID: 1900470243815228987
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_108
+      rect:
+        serializedVersion: 2
+        x: 251
+        y: 341
+        width: 9
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8fd15e66cfc627d10800000000000000
+      internalID: 2121878205758774776
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_109
+      rect:
+        serializedVersion: 2
+        x: 890
+        y: 316
+        width: 21
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d2095025fb7ecc240800000000000000
+      internalID: 4813476910653083693
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_110
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 317
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a3e4ae2a40663250800000000000000
+      internalID: 5924028231578870694
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_111
+      rect:
+        serializedVersion: 2
+        x: 432
+        y: 17
+        width: 116
+        height: 306
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1c51c30376fd06ba0800000000000000
+      internalID: -6097628261175781951
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_112
+      rect:
+        serializedVersion: 2
+        x: 685
+        y: 15
+        width: 170
+        height: 307
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 98a267ef77f92a780800000000000000
+      internalID: -8673194594643072375
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_113
+      rect:
+        serializedVersion: 2
+        x: 1031
+        y: 15
+        width: 208
+        height: 307
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cc5b31f335e012ae0800000000000000
+      internalID: -1575962643899632180
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_114
+      rect:
+        serializedVersion: 2
+        x: 38
+        y: 0
+        width: 241
+        height: 315
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0968b903d50788080800000000000000
+      internalID: -9184967894472358256
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_115
+      rect:
+        serializedVersion: 2
+        x: 908
+        y: 296
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dff2c5477931081f0800000000000000
+      internalID: -1044813572336766979
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_116
+      rect:
+        serializedVersion: 2
+        x: 255
+        y: 208
+        width: 19
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fa8b6b5e4da06b420800000000000000
+      internalID: 2645313740630046895
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_117
+      rect:
+        serializedVersion: 2
+        x: 273
+        y: 196
+        width: 17
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 389b0be21675ce370800000000000000
+      internalID: 8353147483772205443
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_118
+      rect:
+        serializedVersion: 2
+        x: 88
+        y: 188
+        width: 20
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0a45680b7860e6680800000000000000
+      internalID: -8760057045337090912
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_119
+      rect:
+        serializedVersion: 2
+        x: 88
+        y: 170
+        width: 12
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9994c36b8189d2760800000000000000
+      internalID: 7434765791762598297
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_120
+      rect:
+        serializedVersion: 2
+        x: 332
+        y: 144
+        width: 19
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a474216dfaf002570800000000000000
+      internalID: 8439762949577525066
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_121
+      rect:
+        serializedVersion: 2
+        x: 846
+        y: 117
+        width: 23
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f7e8f13876b365790800000000000000
+      internalID: -7541775210217763201
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_122
+      rect:
+        serializedVersion: 2
+        x: 78
+        y: 127
+        width: 20
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a7b066674650caf70800000000000000
+      internalID: 9199734067852348282
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_123
+      rect:
+        serializedVersion: 2
+        x: 289
+        y: 117
+        width: 16
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d9593626ded1ab480800000000000000
+      internalID: -8882754409639733859
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_124
+      rect:
+        serializedVersion: 2
+        x: 394
+        y: 119
+        width: 7
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2668726f9451860e0800000000000000
+      internalID: -2276546204229204382
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_125
+      rect:
+        serializedVersion: 2
+        x: 410
+        y: 101
+        width: 7
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9ce01d9980a667c10800000000000000
+      internalID: 2050943265486737097
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_126
+      rect:
+        serializedVersion: 2
+        x: 719
+        y: 109
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2ceb58ee6367ac950800000000000000
+      internalID: 6470113792973192898
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_127
+      rect:
+        serializedVersion: 2
+        x: 74
+        y: 77
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a4950f4da7fb11a30800000000000000
+      internalID: 4184336063083338058
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_128
+      rect:
+        serializedVersion: 2
+        x: 401
+        y: 79
+        width: 8
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eb465bc5360446ed0800000000000000
+      internalID: -2421739904117152578
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_129
+      rect:
+        serializedVersion: 2
+        x: 547
+        y: 79
+        width: 25
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1a70ae68d6befb630800000000000000
+      internalID: 3945130654247290785
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_130
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 47
+        width: 23
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 043a8908987f00ce0800000000000000
+      internalID: -1440879710818491584
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_131
+      rect:
+        serializedVersion: 2
+        x: 872
+        y: 57
+        width: 35
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d9a84b9209076bda0800000000000000
+      internalID: -5929428094909379939
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_132
+      rect:
+        serializedVersion: 2
+        x: 908
+        y: 68
+        width: 15
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7eba47c55010c91c0800000000000000
+      internalID: -4495717205484983321
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_133
+      rect:
+        serializedVersion: 2
+        x: 922
+        y: 70
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0b3631ad2e4339350800000000000000
+      internalID: 6022215275650442160
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_134
+      rect:
+        serializedVersion: 2
+        x: 865
+        y: 50
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9cba5c013fb3fd270800000000000000
+      internalID: 8277400555274742729
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_135
+      rect:
+        serializedVersion: 2
+        x: 116
+        y: 21
+        width: 8
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 83f2d90d798e57150800000000000000
+      internalID: 5869853428084977464
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_men_136
+      rect:
+        serializedVersion: 2
+        x: 289
+        y: 23
+        width: 18
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3da468739e0c47770800000000000000
+      internalID: 8607716895703321299
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      sheet_arms_men_0: 1300093331868030131
+      sheet_arms_men_1: 1286947625033124644
+      sheet_arms_men_10: 1318439134308461478
+      sheet_arms_men_100: 1670197803882281734
+      sheet_arms_men_101: 4656628129875027595
+      sheet_arms_men_102: 265411395832445796
+      sheet_arms_men_103: -2106126712330126203
+      sheet_arms_men_104: 6379330247914516228
+      sheet_arms_men_105: -6904291221892443974
+      sheet_arms_men_106: -8638846926452955151
+      sheet_arms_men_107: 1900470243815228987
+      sheet_arms_men_108: 2121878205758774776
+      sheet_arms_men_109: 4813476910653083693
+      sheet_arms_men_11: 3064607943183728650
+      sheet_arms_men_110: 5924028231578870694
+      sheet_arms_men_111: -6097628261175781951
+      sheet_arms_men_112: -8673194594643072375
+      sheet_arms_men_113: -1575962643899632180
+      sheet_arms_men_114: -9184967894472358256
+      sheet_arms_men_115: -1044813572336766979
+      sheet_arms_men_116: 2645313740630046895
+      sheet_arms_men_117: 8353147483772205443
+      sheet_arms_men_118: -8760057045337090912
+      sheet_arms_men_119: 7434765791762598297
+      sheet_arms_men_12: 8645307280411816724
+      sheet_arms_men_120: 8439762949577525066
+      sheet_arms_men_121: -7541775210217763201
+      sheet_arms_men_122: 9199734067852348282
+      sheet_arms_men_123: -8882754409639733859
+      sheet_arms_men_124: -2276546204229204382
+      sheet_arms_men_125: 2050943265486737097
+      sheet_arms_men_126: 6470113792973192898
+      sheet_arms_men_127: 4184336063083338058
+      sheet_arms_men_128: -2421739904117152578
+      sheet_arms_men_129: 3945130654247290785
+      sheet_arms_men_13: 2161280064384298617
+      sheet_arms_men_130: -1440879710818491584
+      sheet_arms_men_131: -5929428094909379939
+      sheet_arms_men_132: -4495717205484983321
+      sheet_arms_men_133: 6022215275650442160
+      sheet_arms_men_134: 8277400555274742729
+      sheet_arms_men_135: 5869853428084977464
+      sheet_arms_men_136: 8607716895703321299
+      sheet_arms_men_14: 5513036203691959709
+      sheet_arms_men_15: -6905815562204661938
+      sheet_arms_men_16: 1327893229129512838
+      sheet_arms_men_17: -3049236878805304520
+      sheet_arms_men_18: 5903582243389618438
+      sheet_arms_men_19: 542368265228076388
+      sheet_arms_men_2: 3340748817702811727
+      sheet_arms_men_20: 7625133010827173948
+      sheet_arms_men_21: 2753308897415424695
+      sheet_arms_men_22: 3674821395260932964
+      sheet_arms_men_23: -2566966372101972363
+      sheet_arms_men_24: -5779392682014669494
+      sheet_arms_men_25: 2708561651435510109
+      sheet_arms_men_26: -4682860852677631131
+      sheet_arms_men_27: -7324333501652627685
+      sheet_arms_men_28: 4607985607977363763
+      sheet_arms_men_29: -5393220796728844440
+      sheet_arms_men_3: -861849145949819623
+      sheet_arms_men_30: -2724938904608061860
+      sheet_arms_men_31: 5817989774853612268
+      sheet_arms_men_32: -4553386459078962318
+      sheet_arms_men_33: -654930300166020333
+      sheet_arms_men_34: -5961846953323605203
+      sheet_arms_men_35: -2697207295652341242
+      sheet_arms_men_36: 2618790300429173805
+      sheet_arms_men_37: 267230994954177945
+      sheet_arms_men_38: -3659629991632965089
+      sheet_arms_men_39: 6182342849362398810
+      sheet_arms_men_4: 7944530654748207396
+      sheet_arms_men_40: 3872113979811160016
+      sheet_arms_men_41: 3853983285134807770
+      sheet_arms_men_42: -3534352097778455539
+      sheet_arms_men_43: -8374674000349268796
+      sheet_arms_men_44: -3893745821368459730
+      sheet_arms_men_45: 3076328277562032059
+      sheet_arms_men_46: -5327459704760728150
+      sheet_arms_men_47: 3242132124299826624
+      sheet_arms_men_48: -387557107428549752
+      sheet_arms_men_49: -2643159218749891837
+      sheet_arms_men_5: -7754616684157103224
+      sheet_arms_men_50: 8671649299427501994
+      sheet_arms_men_51: -1098464913677192759
+      sheet_arms_men_52: -5450863890559172798
+      sheet_arms_men_53: -7376043157247042717
+      sheet_arms_men_54: -5191801709933518587
+      sheet_arms_men_55: -7286990488236223973
+      sheet_arms_men_56: 9118763105913188906
+      sheet_arms_men_57: -560031245478964712
+      sheet_arms_men_58: -6211952303234270446
+      sheet_arms_men_59: -5036199571661189683
+      sheet_arms_men_6: 6364959358371833114
+      sheet_arms_men_60: 2432398735634534941
+      sheet_arms_men_61: 8433720060399816487
+      sheet_arms_men_62: -8472444014769764569
+      sheet_arms_men_63: 2280731454856863508
+      sheet_arms_men_64: 7133899094600226740
+      sheet_arms_men_65: -1853583058006223585
+      sheet_arms_men_66: -6486642530616635528
+      sheet_arms_men_67: 7950663748658011749
+      sheet_arms_men_68: -5251662067846847809
+      sheet_arms_men_69: -2046458965899947324
+      sheet_arms_men_7: -8339140606048801045
+      sheet_arms_men_70: -5229672266736021470
+      sheet_arms_men_71: -4131209666705152881
+      sheet_arms_men_72: 7341858756473731495
+      sheet_arms_men_73: -5595678278486934438
+      sheet_arms_men_74: -2824292774492308308
+      sheet_arms_men_75: -9123346587546505393
+      sheet_arms_men_76: 1542006075624471547
+      sheet_arms_men_77: 6371300678791741525
+      sheet_arms_men_78: -551136301082792128
+      sheet_arms_men_79: 4916489336889145522
+      sheet_arms_men_8: -334841680243991512
+      sheet_arms_men_80: 5920601633067208356
+      sheet_arms_men_81: 8832398200803095769
+      sheet_arms_men_82: 3942306048473756967
+      sheet_arms_men_83: -6281564837296305042
+      sheet_arms_men_84: -7143556874169892266
+      sheet_arms_men_85: -8433909630533531744
+      sheet_arms_men_86: 5093650819630965013
+      sheet_arms_men_87: -3532564132565663541
+      sheet_arms_men_88: -5070266796921956695
+      sheet_arms_men_89: -7994108645877749023
+      sheet_arms_men_9: -8926982757061447929
+      sheet_arms_men_90: 4381520852314648681
+      sheet_arms_men_91: 5096517009807909614
+      sheet_arms_men_92: -8935223145693036223
+      sheet_arms_men_93: -6848204147459064227
+      sheet_arms_men_94: 7449899917371155527
+      sheet_arms_men_95: -2456019230592292070
+      sheet_arms_men_96: 427219667419757589
+      sheet_arms_men_97: 8277177087224173430
+      sheet_arms_men_98: 8501747763578026167
+      sheet_arms_men_99: 2485567350177127909
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

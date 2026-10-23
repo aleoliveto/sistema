@@ -132,8 +132,9 @@ namespace OSistema.Views
             if (limbs)
             {
                 body.sprite = torso;
-                if (armL == null) armL = Part("Arm L", body.transform, null, SpriteFactory.LitMaterial, body.sortingOrder + 1);
-                if (armR == null) armR = Part("Arm R", body.transform, null, SpriteFactory.LitMaterial, body.sortingOrder + 1);
+                // Under the torso: the top of each arm tucks in beneath the sleeve.
+                if (armL == null) armL = Part("Arm L", body.transform, null, SpriteFactory.LitMaterial, body.sortingOrder - 1);
+                if (armR == null) armR = Part("Arm R", body.transform, null, SpriteFactory.LitMaterial, body.sortingOrder - 1);
                 armL.sprite = al;
                 armR.sprite = ar;
                 armL.transform.localPosition = sl;
@@ -372,11 +373,12 @@ namespace OSistema.Views
             }
             else
             {
-                float amp = (0.26f + 0.16f * run) * moving;
-                l.y = 1f + phase * amp;
-                r.y = 1f - phase * amp;
-                rotL = -phase * 6f * moving;
-                rotR = -phase * 6f * moving;
+                // Mostly a swing from the shoulder, with a little stretch as the hand comes forward.
+                float amp = (1f + 0.6f * run) * moving;
+                l.y = 1f + phase * 0.2f * amp;
+                r.y = 1f - phase * 0.2f * amp;
+                rotL = phase * 9f * amp;
+                rotR = phase * 9f * amp;
             }
             // Arms point to the figure's front; the sprites face south and the body is turned round, so +y scale reaches forward.
             armL.transform.localScale = l;

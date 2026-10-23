@@ -70,10 +70,9 @@ namespace OSistema.Views
 
         public static Texture2D Face(int i) => Texture("face", i);
 
-        // ---------- Bodies cut into a torso and two arms (Tools/ArtGen/split_bodies.py) ----------
+        // ---------- Bodies as a torso and two arms (Tools/ArtGen/cut_people.py, split_bodies.py) ----------
 
-        public const float ArmWidthFraction = 0.17f;
-        static Dictionary<string, Vector3Int> armInfo;   // body key -> (shoulder row, left arm's inner edge, right arm's inner edge)
+        static Dictionary<string, Vector3Int> armInfo;   // body key -> (shoulder row, left shoulder pivot x, right shoulder pivot x)
 
         static bool ArmInfo(string bodyKey, out Vector3Int info)
         {
@@ -107,8 +106,7 @@ namespace OSistema.Views
             var tr = Load(key + "_armr");
             if (tt == null || tl == null || tr == null) return false;
             float w = tt.width, h = tt.height;
-            float half = ArmWidthFraction * w * 0.5f;
-            float top = info.x, lx = info.y - half, rx = info.z + half;
+            float top = info.x, lx = info.y, rx = info.z;
             torso = Cut(key + "_torso", tt, new Vector2(0.5f, 0.5f));
             armL = Cut(key + "_arml", tl, new Vector2(lx / w, 1f - top / h));
             armR = Cut(key + "_armr", tr, new Vector2(rx / w, 1f - top / h));

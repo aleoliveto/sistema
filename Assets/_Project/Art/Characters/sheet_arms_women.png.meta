@@ -1,0 +1,4045 @@
+fileFormatVersion: 2
+guid: 729f5e1460e564f689ce9ce90e5cfdd3
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -3674259626427109554
+    second: sheet_arms_women_0
+  - first:
+      213: -2765164599643970850
+    second: sheet_arms_women_1
+  - first:
+      213: 2060468908068113246
+    second: sheet_arms_women_2
+  - first:
+      213: -6270513966795021562
+    second: sheet_arms_women_3
+  - first:
+      213: 905574265902462005
+    second: sheet_arms_women_4
+  - first:
+      213: 3207437020402209846
+    second: sheet_arms_women_5
+  - first:
+      213: 2924715799175723203
+    second: sheet_arms_women_6
+  - first:
+      213: 4263248985914971794
+    second: sheet_arms_women_7
+  - first:
+      213: -3171186629699653119
+    second: sheet_arms_women_8
+  - first:
+      213: 3879327645179618092
+    second: sheet_arms_women_9
+  - first:
+      213: -1018073984693643092
+    second: sheet_arms_women_10
+  - first:
+      213: -4669654257993998816
+    second: sheet_arms_women_11
+  - first:
+      213: 6489609389119051445
+    second: sheet_arms_women_12
+  - first:
+      213: -5625486982169866980
+    second: sheet_arms_women_13
+  - first:
+      213: 670683837513450087
+    second: sheet_arms_women_14
+  - first:
+      213: -1505800153685573939
+    second: sheet_arms_women_15
+  - first:
+      213: -7153690994579571342
+    second: sheet_arms_women_16
+  - first:
+      213: -3196390838392300627
+    second: sheet_arms_women_17
+  - first:
+      213: 3039969797213092876
+    second: sheet_arms_women_18
+  - first:
+      213: -1707216802460225808
+    second: sheet_arms_women_19
+  - first:
+      213: -281908896923804947
+    second: sheet_arms_women_20
+  - first:
+      213: 4559470705808804346
+    second: sheet_arms_women_21
+  - first:
+      213: 5944565548472996512
+    second: sheet_arms_women_22
+  - first:
+      213: -8737321620960545104
+    second: sheet_arms_women_23
+  - first:
+      213: -8872801397902065453
+    second: sheet_arms_women_24
+  - first:
+      213: -4981263348230939417
+    second: sheet_arms_women_25
+  - first:
+      213: -9093468455996115244
+    second: sheet_arms_women_26
+  - first:
+      213: 2092131246573204246
+    second: sheet_arms_women_27
+  - first:
+      213: 7199456754302620689
+    second: sheet_arms_women_28
+  - first:
+      213: -6887009167798316144
+    second: sheet_arms_women_29
+  - first:
+      213: -5401356421730268371
+    second: sheet_arms_women_30
+  - first:
+      213: -3593166384030360140
+    second: sheet_arms_women_31
+  - first:
+      213: -2322159358089746245
+    second: sheet_arms_women_32
+  - first:
+      213: 2900343469072987195
+    second: sheet_arms_women_33
+  - first:
+      213: -3366661260241367088
+    second: sheet_arms_women_34
+  - first:
+      213: -5408798675268711121
+    second: sheet_arms_women_35
+  - first:
+      213: -1801156547262815582
+    second: sheet_arms_women_36
+  - first:
+      213: -2666473682986497068
+    second: sheet_arms_women_37
+  - first:
+      213: -7515030383106675239
+    second: sheet_arms_women_38
+  - first:
+      213: 3781731408516901583
+    second: sheet_arms_women_39
+  - first:
+      213: 8545703049628468071
+    second: sheet_arms_women_40
+  - first:
+      213: 5068731688611496351
+    second: sheet_arms_women_41
+  - first:
+      213: -152819000571968664
+    second: sheet_arms_women_42
+  - first:
+      213: -8756992564199090793
+    second: sheet_arms_women_43
+  - first:
+      213: -4247918792438651942
+    second: sheet_arms_women_44
+  - first:
+      213: -5626899119961932487
+    second: sheet_arms_women_45
+  - first:
+      213: -5157824324642253939
+    second: sheet_arms_women_46
+  - first:
+      213: 6048839964611548794
+    second: sheet_arms_women_47
+  - first:
+      213: 4518718066840136832
+    second: sheet_arms_women_48
+  - first:
+      213: 5064134536981881567
+    second: sheet_arms_women_49
+  - first:
+      213: 4195405373799169268
+    second: sheet_arms_women_50
+  - first:
+      213: -1927777613761394577
+    second: sheet_arms_women_51
+  - first:
+      213: -8437611284174953217
+    second: sheet_arms_women_52
+  - first:
+      213: -1522377141240593175
+    second: sheet_arms_women_53
+  - first:
+      213: 5324852323170192430
+    second: sheet_arms_women_54
+  - first:
+      213: -3697407342557034536
+    second: sheet_arms_women_55
+  - first:
+      213: 3539565513318878074
+    second: sheet_arms_women_56
+  - first:
+      213: -5857344798927835600
+    second: sheet_arms_women_57
+  - first:
+      213: -8808423641445306767
+    second: sheet_arms_women_58
+  - first:
+      213: 487079757041354926
+    second: sheet_arms_women_59
+  - first:
+      213: -9012812413317902127
+    second: sheet_arms_women_60
+  - first:
+      213: -2059859166901069976
+    second: sheet_arms_women_61
+  - first:
+      213: 2547582587612597955
+    second: sheet_arms_women_62
+  - first:
+      213: -2163680712494139347
+    second: sheet_arms_women_63
+  - first:
+      213: 4322542968546004420
+    second: sheet_arms_women_64
+  - first:
+      213: 5176898650398963122
+    second: sheet_arms_women_65
+  - first:
+      213: -1100405617674983533
+    second: sheet_arms_women_66
+  - first:
+      213: -5813959807363664651
+    second: sheet_arms_women_67
+  - first:
+      213: 6425481245928356952
+    second: sheet_arms_women_68
+  - first:
+      213: -882203024212127897
+    second: sheet_arms_women_69
+  - first:
+      213: -7283728945727758947
+    second: sheet_arms_women_70
+  - first:
+      213: 6148427126935002554
+    second: sheet_arms_women_71
+  - first:
+      213: -760551540943321531
+    second: sheet_arms_women_72
+  - first:
+      213: 5012883249693154356
+    second: sheet_arms_women_73
+  - first:
+      213: 6615687049295213477
+    second: sheet_arms_women_74
+  - first:
+      213: 2756028566379591367
+    second: sheet_arms_women_75
+  - first:
+      213: -7155293737338714745
+    second: sheet_arms_women_76
+  - first:
+      213: 3539001030392567775
+    second: sheet_arms_women_77
+  - first:
+      213: 911058773079749835
+    second: sheet_arms_women_78
+  - first:
+      213: 2051444752660264331
+    second: sheet_arms_women_79
+  - first:
+      213: -3215995896344116685
+    second: sheet_arms_women_80
+  - first:
+      213: 8119931686343359768
+    second: sheet_arms_women_81
+  - first:
+      213: 341479821533842763
+    second: sheet_arms_women_82
+  - first:
+      213: -8033976807568342149
+    second: sheet_arms_women_83
+  - first:
+      213: -6212965649405657494
+    second: sheet_arms_women_84
+  - first:
+      213: -6708843243628471965
+    second: sheet_arms_women_85
+  - first:
+      213: -3932965466950407957
+    second: sheet_arms_women_86
+  - first:
+      213: 2336479789272361289
+    second: sheet_arms_women_87
+  - first:
+      213: -8409069403713777042
+    second: sheet_arms_women_88
+  - first:
+      213: -1428024460667289326
+    second: sheet_arms_women_89
+  - first:
+      213: -1820630523331974510
+    second: sheet_arms_women_90
+  - first:
+      213: 5521677817965558564
+    second: sheet_arms_women_91
+  - first:
+      213: 7945489628581647421
+    second: sheet_arms_women_92
+  - first:
+      213: 7837496566591445028
+    second: sheet_arms_women_93
+  - first:
+      213: -861218682808925664
+    second: sheet_arms_women_94
+  - first:
+      213: 4601757097362511891
+    second: sheet_arms_women_95
+  - first:
+      213: 49071762427219500
+    second: sheet_arms_women_96
+  - first:
+      213: 7874827520082354450
+    second: sheet_arms_women_97
+  - first:
+      213: -1345207153770359945
+    second: sheet_arms_women_98
+  - first:
+      213: -2272092220541303919
+    second: sheet_arms_women_99
+  - first:
+      213: -5386910151854069516
+    second: sheet_arms_women_100
+  - first:
+      213: 7477761154461205640
+    second: sheet_arms_women_101
+  - first:
+      213: 3582182501427731849
+    second: sheet_arms_women_102
+  - first:
+      213: -461025860538942275
+    second: sheet_arms_women_103
+  - first:
+      213: 5667187369189674699
+    second: sheet_arms_women_104
+  - first:
+      213: 2910351306424908169
+    second: sheet_arms_women_105
+  - first:
+      213: -3415480501432924914
+    second: sheet_arms_women_106
+  - first:
+      213: -4383991441394502631
+    second: sheet_arms_women_107
+  - first:
+      213: 1224186504415532284
+    second: sheet_arms_women_108
+  - first:
+      213: 7321926850232044949
+    second: sheet_arms_women_109
+  - first:
+      213: 3948976926844456454
+    second: sheet_arms_women_110
+  - first:
+      213: 1054493546995598482
+    second: sheet_arms_women_111
+  - first:
+      213: 9025863634366115529
+    second: sheet_arms_women_112
+  - first:
+      213: -1472704835265494025
+    second: sheet_arms_women_113
+  - first:
+      213: -2439957406684300684
+    second: sheet_arms_women_114
+  - first:
+      213: -6984615446361130992
+    second: sheet_arms_women_115
+  - first:
+      213: -5398629558394580128
+    second: sheet_arms_women_116
+  - first:
+      213: -1162304285318135942
+    second: sheet_arms_women_117
+  - first:
+      213: -267731485625641462
+    second: sheet_arms_women_118
+  - first:
+      213: -8318184834848610905
+    second: sheet_arms_women_119
+  - first:
+      213: 7051458208149676032
+    second: sheet_arms_women_120
+  - first:
+      213: 7609504539016240317
+    second: sheet_arms_women_121
+  - first:
+      213: 8312131802876478342
+    second: sheet_arms_women_122
+  - first:
+      213: -9222600466323086445
+    second: sheet_arms_women_123
+  - first:
+      213: 6921573076399893143
+    second: sheet_arms_women_124
+  - first:
+      213: 1251500898663931198
+    second: sheet_arms_women_125
+  - first:
+      213: -1851753885912276399
+    second: sheet_arms_women_126
+  - first:
+      213: -6020716326722081840
+    second: sheet_arms_women_127
+  - first:
+      213: 6985564476855406432
+    second: sheet_arms_women_128
+  - first:
+      213: 5589418530651678017
+    second: sheet_arms_women_129
+  - first:
+      213: 661524884025572111
+    second: sheet_arms_women_130
+  - first:
+      213: 2693909561705995070
+    second: sheet_arms_women_131
+  - first:
+      213: -81371878775353411
+    second: sheet_arms_women_132
+  - first:
+      213: -4573187437754446721
+    second: sheet_arms_women_133
+  - first:
+      213: -6805391173732134027
+    second: sheet_arms_women_134
+  - first:
+      213: 8638572013791209777
+    second: sheet_arms_women_135
+  - first:
+      213: -8642318716902134450
+    second: sheet_arms_women_136
+  - first:
+      213: 2771038457036208654
+    second: sheet_arms_women_137
+  - first:
+      213: -4775808238078620062
+    second: sheet_arms_women_138
+  - first:
+      213: 6651762733796573249
+    second: sheet_arms_women_139
+  - first:
+      213: -5856706594251401727
+    second: sheet_arms_women_140
+  - first:
+      213: -8173712969451937067
+    second: sheet_arms_women_141
+  - first:
+      213: 7710143063228404603
+    second: sheet_arms_women_142
+  - first:
+      213: -7241802909878311105
+    second: sheet_arms_women_143
+  - first:
+      213: -9210557077993932697
+    second: sheet_arms_women_144
+  - first:
+      213: 2519988058606154075
+    second: sheet_arms_women_145
+  - first:
+      213: -3047991393711398551
+    second: sheet_arms_women_146
+  - first:
+      213: 5898933656288737143
+    second: sheet_arms_women_147
+  - first:
+      213: 1121173449863962691
+    second: sheet_arms_women_148
+  - first:
+      213: -412093039554377676
+    second: sheet_arms_women_149
+  - first:
+      213: 9124471279633324903
+    second: sheet_arms_women_150
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: sheet_arms_women_0
+      rect:
+        serializedVersion: 2
+        x: 126
+        y: 961
+        width: 173
+        height: 275
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e4fa04a3658620dc0800000000000000
+      internalID: -3674259626427109554
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_1
+      rect:
+        serializedVersion: 2
+        x: 229
+        y: 0
+        width: 431
+        height: 1236
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ed26cb4727920a9d0800000000000000
+      internalID: -2765164599643970850
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_2
+      rect:
+        serializedVersion: 2
+        x: 247
+        y: 1094
+        width: 74
+        height: 110
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e5b03281e81489c10800000000000000
+      internalID: 2060468908068113246
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_3
+      rect:
+        serializedVersion: 2
+        x: 338
+        y: 1082
+        width: 33
+        height: 70
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 603ae0215c8aaf8a0800000000000000
+      internalID: -6270513966795021562
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_4
+      rect:
+        serializedVersion: 2
+        x: 528
+        y: 1078
+        width: 24
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 534f9d43ffe319c00800000000000000
+      internalID: 905574265902462005
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_5
+      rect:
+        serializedVersion: 2
+        x: 551
+        y: 977
+        width: 63
+        height: 248
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 634d280f9fa138c20800000000000000
+      internalID: 3207437020402209846
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_6
+      rect:
+        serializedVersion: 2
+        x: 605
+        y: 895
+        width: 325
+        height: 343
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3c877d6068da69820800000000000000
+      internalID: 2924715799175723203
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_7
+      rect:
+        serializedVersion: 2
+        x: 894
+        y: 783
+        width: 236
+        height: 451
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 29691827d5a1a2b30800000000000000
+      internalID: 4263248985914971794
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_8
+      rect:
+        serializedVersion: 2
+        x: 1131
+        y: 1077
+        width: 12
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 102b84cdf8eadf3d0800000000000000
+      internalID: -3171186629699653119
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_9
+      rect:
+        serializedVersion: 2
+        x: 1155
+        y: 891
+        width: 86
+        height: 329
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c23a84290f326d530800000000000000
+      internalID: 3879327645179618092
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_10
+      rect:
+        serializedVersion: 2
+        x: 52
+        y: 972
+        width: 58
+        height: 80
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ca8d44bda131fd1f0800000000000000
+      internalID: -1018073984693643092
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_11
+      rect:
+        serializedVersion: 2
+        x: 329
+        y: 1047
+        width: 16
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 02e9068713e023fb0800000000000000
+      internalID: -4669654257993998816
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_12
+      rect:
+        serializedVersion: 2
+        x: 344
+        y: 1036
+        width: 37
+        height: 43
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5b61b712b59bf0a50800000000000000
+      internalID: 6489609389119051445
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_13
+      rect:
+        serializedVersion: 2
+        x: 1149
+        y: 1029
+        width: 22
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c1d4e2315614ee1b0800000000000000
+      internalID: -5625486982169866980
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_14
+      rect:
+        serializedVersion: 2
+        x: 1170
+        y: 1014
+        width: 25
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 762c593956fbe4900800000000000000
+      internalID: 670683837513450087
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_15
+      rect:
+        serializedVersion: 2
+        x: 84
+        y: 968
+        width: 7
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dceb7d00db25a1be0800000000000000
+      internalID: -1505800153685573939
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_16
+      rect:
+        serializedVersion: 2
+        x: 90
+        y: 966
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 27d7c2b31fbf8bc90800000000000000
+      internalID: -7153690994579571342
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_17
+      rect:
+        serializedVersion: 2
+        x: 394
+        y: 951
+        width: 13
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dab505ab77324a3d0800000000000000
+      internalID: -3196390838392300627
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_18
+      rect:
+        serializedVersion: 2
+        x: 571
+        y: 963
+        width: 25
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c0c7dc29c64203a20800000000000000
+      internalID: 3039969797213092876
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_19
+      rect:
+        serializedVersion: 2
+        x: 657
+        y: 971
+        width: 9
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0fea7c60d5fbe48e0800000000000000
+      internalID: -1707216802460225808
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_20
+      rect:
+        serializedVersion: 2
+        x: 665
+        y: 972
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dea95d31a55761cf0800000000000000
+      internalID: -281908896923804947
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_21
+      rect:
+        serializedVersion: 2
+        x: 1013
+        y: 976
+        width: 15
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: af98887237e764f30800000000000000
+      internalID: 4559470705808804346
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_22
+      rect:
+        serializedVersion: 2
+        x: 56
+        y: 947
+        width: 29
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0a212c4eed65f7250800000000000000
+      internalID: 5944565548472996512
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_23
+      rect:
+        serializedVersion: 2
+        x: 84
+        y: 964
+        width: 8
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0b67e4e274cceb680800000000000000
+      internalID: -8737321620960545104
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_24
+      rect:
+        serializedVersion: 2
+        x: 297
+        y: 950
+        width: 28
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3d04573832a7dd480800000000000000
+      internalID: -8872801397902065453
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_25
+      rect:
+        serializedVersion: 2
+        x: 611
+        y: 785
+        width: 85
+        height: 181
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7ec950c606ffedab0800000000000000
+      internalID: -4981263348230939417
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_26
+      rect:
+        serializedVersion: 2
+        x: 673
+        y: 951
+        width: 9
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4d6b1285e928dc180800000000000000
+      internalID: -9093468455996115244
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_27
+      rect:
+        serializedVersion: 2
+        x: 679
+        y: 953
+        width: 11
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 613bd7fb84eb80d10800000000000000
+      internalID: 2092131246573204246
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_28
+      rect:
+        serializedVersion: 2
+        x: 68
+        y: 875
+        width: 30
+        height: 76
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1149eff06cb99e360800000000000000
+      internalID: 7199456754302620689
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_29
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 943
+        width: 9
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 093d58c96ad6c60a0800000000000000
+      internalID: -6887009167798316144
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_30
+      rect:
+        serializedVersion: 2
+        x: 102
+        y: 947
+        width: 10
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d2b0e79b3f68a05b0800000000000000
+      internalID: -5401356421730268371
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_31
+      rect:
+        serializedVersion: 2
+        x: 571
+        y: 915
+        width: 37
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4bddefc0632822ec0800000000000000
+      internalID: -3593166384030360140
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_32
+      rect:
+        serializedVersion: 2
+        x: 977
+        y: 921
+        width: 19
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bb8263dfd5806cfd0800000000000000
+      internalID: -2322159358089746245
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_33
+      rect:
+        serializedVersion: 2
+        x: 94
+        y: 937
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b3438b8b407104820800000000000000
+      internalID: 2900343469072987195
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_34
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 806
+        width: 60
+        height: 116
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0df8e30db673741d0800000000000000
+      internalID: -3366661260241367088
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_35
+      rect:
+        serializedVersion: 2
+        x: 98
+        y: 642
+        width: 152
+        height: 289
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f2d410b034610f4b0800000000000000
+      internalID: -5408798675268711121
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_36
+      rect:
+        serializedVersion: 2
+        x: 428
+        y: 640
+        width: 95
+        height: 279
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2a2e787c9a10107e0800000000000000
+      internalID: -1801156547262815582
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_37
+      rect:
+        serializedVersion: 2
+        x: 606
+        y: 881
+        width: 26
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4db89aa1058cefad0800000000000000
+      internalID: -2666473682986497068
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_38
+      rect:
+        serializedVersion: 2
+        x: 683
+        y: 906
+        width: 11
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9dda8a2deaf35b790800000000000000
+      internalID: -7515030383106675239
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_39
+      rect:
+        serializedVersion: 2
+        x: 689
+        y: 622
+        width: 133
+        height: 301
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fca6698fda86b7430800000000000000
+      internalID: 3781731408516901583
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_40
+      rect:
+        serializedVersion: 2
+        x: 985
+        y: 905
+        width: 11
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 763c31585af689670800000000000000
+      internalID: 8545703049628468071
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_41
+      rect:
+        serializedVersion: 2
+        x: 991
+        y: 895
+        width: 13
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f9144719d90c75640800000000000000
+      internalID: 5068731688611496351
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_42
+      rect:
+        serializedVersion: 2
+        x: 1003
+        y: 905
+        width: 9
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8634afbbde311edf0800000000000000
+      internalID: -152819000571968664
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_43
+      rect:
+        serializedVersion: 2
+        x: 1029
+        y: 554
+        width: 204
+        height: 365
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7951d2ec8a9e87680800000000000000
+      internalID: -8756992564199090793
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_44
+      rect:
+        serializedVersion: 2
+        x: 594
+        y: 871
+        width: 14
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ad3ecfd5d5c5c05c0800000000000000
+      internalID: -4247918792438651942
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_45
+      rect:
+        serializedVersion: 2
+        x: 705
+        y: 883
+        width: 12
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 93df5bf101d39e1b0800000000000000
+      internalID: -5626899119961932487
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_46
+      rect:
+        serializedVersion: 2
+        x: 265
+        y: 859
+        width: 42
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d8354d3aa1abb68b0800000000000000
+      internalID: -5157824324642253939
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_47
+      rect:
+        serializedVersion: 2
+        x: 378
+        y: 821
+        width: 17
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a769bd156ebc1f350800000000000000
+      internalID: 6048839964611548794
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_48
+      rect:
+        serializedVersion: 2
+        x: 649
+        y: 822
+        width: 11
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 08c652ef326b5be30800000000000000
+      internalID: 4518718066840136832
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_49
+      rect:
+        serializedVersion: 2
+        x: 311
+        y: 761
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fd2a79bc78b674640800000000000000
+      internalID: 5064134536981881567
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_50
+      rect:
+        serializedVersion: 2
+        x: 313
+        y: 755
+        width: 6
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4fc701295f2193a30800000000000000
+      internalID: 4195405373799169268
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_51
+      rect:
+        serializedVersion: 2
+        x: 547
+        y: 763
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f684dcd59782f35e0800000000000000
+      internalID: -1927777613761394577
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_52
+      rect:
+        serializedVersion: 2
+        x: 603
+        y: 731
+        width: 33
+        height: 51
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ff4acedcd3597ea80800000000000000
+      internalID: -8437611284174953217
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_53
+      rect:
+        serializedVersion: 2
+        x: 629
+        y: 720
+        width: 65
+        height: 54
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9e40e225e0e6fdae0800000000000000
+      internalID: -1522377141240593175
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_54
+      rect:
+        serializedVersion: 2
+        x: 852
+        y: 537
+        width: 53
+        height: 231
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e2c09f3c9fca5e940800000000000000
+      internalID: 5324852323170192430
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_55
+      rect:
+        serializedVersion: 2
+        x: 956
+        y: 756
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8d787f49c9b20bcc0800000000000000
+      internalID: -3697407342557034536
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_56
+      rect:
+        serializedVersion: 2
+        x: 329
+        y: 746
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a7b4898b4101f1130800000000000000
+      internalID: 3539565513318878074
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_57
+      rect:
+        serializedVersion: 2
+        x: 577
+        y: 712
+        width: 27
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 03eacec50f786bea0800000000000000
+      internalID: -5857344798927835600
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_58
+      rect:
+        serializedVersion: 2
+        x: 697
+        y: 746
+        width: 9
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 17eef7cfd5132c580800000000000000
+      internalID: -8808423641445306767
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_59
+      rect:
+        serializedVersion: 2
+        x: 961
+        y: 702
+        width: 53
+        height: 54
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ea8cbb7557472c600800000000000000
+      internalID: 487079757041354926
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_60
+      rect:
+        serializedVersion: 2
+        x: 378
+        y: 728
+        width: 11
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1d094fcacde0ce280800000000000000
+      internalID: -9012812413317902127
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_61
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 708
+        width: 33
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 86797855009e963e0800000000000000
+      internalID: -2059859166901069976
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_62
+      rect:
+        serializedVersion: 2
+        x: 936
+        y: 718
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3ce8e92add4da5320800000000000000
+      internalID: 2547582587612597955
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_63
+      rect:
+        serializedVersion: 2
+        x: 945
+        y: 726
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d283c6c0bdf09f1e0800000000000000
+      internalID: -2163680712494139347
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_64
+      rect:
+        serializedVersion: 2
+        x: 691
+        y: 718
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4cd0c869de1ccfb30800000000000000
+      internalID: 4322542968546004420
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_65
+      rect:
+        serializedVersion: 2
+        x: 944
+        y: 712
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2b5ba37e4e908d740800000000000000
+      internalID: 5176898650398963122
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_66
+      rect:
+        serializedVersion: 2
+        x: 952
+        y: 712
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 39763a1cbe29ab0f0800000000000000
+      internalID: -1100405617674983533
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_67
+      rect:
+        serializedVersion: 2
+        x: 577
+        y: 654
+        width: 19
+        height: 45
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5f4b0bfdb5aa05fa0800000000000000
+      internalID: -5813959807363664651
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_68
+      rect:
+        serializedVersion: 2
+        x: 595
+        y: 680
+        width: 29
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 85c7e764625eb2950800000000000000
+      internalID: 6425481245928356952
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_69
+      rect:
+        serializedVersion: 2
+        x: 635
+        y: 670
+        width: 65
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 76f8f0a0609c1c3f0800000000000000
+      internalID: -882203024212127897
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_70
+      rect:
+        serializedVersion: 2
+        x: 930
+        y: 687
+        width: 28
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d9d9aad5d1ffaea90800000000000000
+      internalID: -7283728945727758947
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_71
+      rect:
+        serializedVersion: 2
+        x: 954
+        y: 698
+        width: 10
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: abd165c65e9935550800000000000000
+      internalID: 6148427126935002554
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_72
+      rect:
+        serializedVersion: 2
+        x: 46
+        y: 676
+        width: 21
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 54682b0376af175f0800000000000000
+      internalID: -760551540943321531
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_73
+      rect:
+        serializedVersion: 2
+        x: 673
+        y: 664
+        width: 13
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 43c577691c6519540800000000000000
+      internalID: 5012883249693154356
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_74
+      rect:
+        serializedVersion: 2
+        x: 679
+        y: 678
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5a3b466e154afcb50800000000000000
+      internalID: 6615687049295213477
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_75
+      rect:
+        serializedVersion: 2
+        x: 681
+        y: 671
+        width: 11
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7c672e901616f3620800000000000000
+      internalID: 2756028566379591367
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_76
+      rect:
+        serializedVersion: 2
+        x: 946
+        y: 674
+        width: 16
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 785495a914a43bc90800000000000000
+      internalID: -7155293737338714745
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_77
+      rect:
+        serializedVersion: 2
+        x: 979
+        y: 562
+        width: 47
+        height: 130
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fd75a4ccfae0d1130800000000000000
+      internalID: 3539001030392567775
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_78
+      rect:
+        serializedVersion: 2
+        x: 118
+        y: 660
+        width: 12
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bc4fbea802bb4ac00800000000000000
+      internalID: 911058773079749835
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_79
+      rect:
+        serializedVersion: 2
+        x: 621
+        y: 629
+        width: 27
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b8577ae2222387c10800000000000000
+      internalID: 2051444752660264331
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_80
+      rect:
+        serializedVersion: 2
+        x: 898
+        y: 535
+        width: 72
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3328b4775cc7e53d0800000000000000
+      internalID: -3215995896344116685
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_81
+      rect:
+        serializedVersion: 2
+        x: 940
+        y: 632
+        width: 26
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 81d3fe4f8dacfa070800000000000000
+      internalID: 8119931686343359768
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_82
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 304
+        width: 222
+        height: 307
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b4d0d74a61e2db400800000000000000
+      internalID: 341479821533842763
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_83
+      rect:
+        serializedVersion: 2
+        x: 424
+        y: 333
+        width: 106
+        height: 280
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b73892bc8a4918090800000000000000
+      internalID: -8033976807568342149
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_84
+      rect:
+        serializedVersion: 2
+        x: 611
+        y: 584
+        width: 85
+        height: 35
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a6eb879d8ac17c9a0800000000000000
+      internalID: -6212965649405657494
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_85
+      rect:
+        serializedVersion: 2
+        x: 653
+        y: 596
+        width: 13
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 369deb96d9665e2a0800000000000000
+      internalID: -6708843243628471965
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_86
+      rect:
+        serializedVersion: 2
+        x: 723
+        y: 327
+        width: 100
+        height: 287
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: be8ea8cdebc4b69c0800000000000000
+      internalID: -3932965466950407957
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_87
+      rect:
+        serializedVersion: 2
+        x: 973
+        y: 317
+        width: 175
+        height: 298
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 94965783df7dc6020800000000000000
+      internalID: 2336479789272361289
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_88
+      rect:
+        serializedVersion: 2
+        x: 295
+        y: 568
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e62d8043eebfc4b80800000000000000
+      internalID: -8409069403713777042
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_89
+      rect:
+        serializedVersion: 2
+        x: 360
+        y: 573
+        width: 9
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2118b5ba153ae2ce0800000000000000
+      internalID: -1428024460667289326
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_90
+      rect:
+        serializedVersion: 2
+        x: 46
+        y: 388
+        width: 19
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 29a60956f22dbb6e0800000000000000
+      internalID: -1820630523331974510
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_91
+      rect:
+        serializedVersion: 2
+        x: 78
+        y: 387
+        width: 7
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 42bbdf768b0f0ac40800000000000000
+      internalID: 5521677817965558564
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_92
+      rect:
+        serializedVersion: 2
+        x: 86
+        y: 385
+        width: 10
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d34d82e58bc044e60800000000000000
+      internalID: 7945489628581647421
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_93
+      rect:
+        serializedVersion: 2
+        x: 257
+        y: 393
+        width: 10
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 428d60c3a9164cc60800000000000000
+      internalID: 7837496566591445028
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_94
+      rect:
+        serializedVersion: 2
+        x: 263
+        y: 395
+        width: 13
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0228e31cb265c04f0800000000000000
+      internalID: -861218682808925664
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_95
+      rect:
+        serializedVersion: 2
+        x: 289
+        y: 457
+        width: 10
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 318dceae2b9bcdf30800000000000000
+      internalID: 4601757097362511891
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_96
+      rect:
+        serializedVersion: 2
+        x: 295
+        y: 447
+        width: 14
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c2e0af702865ea000800000000000000
+      internalID: 49071762427219500
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_97
+      rect:
+        serializedVersion: 2
+        x: 303
+        y: 425
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 211aaf928e1094d60800000000000000
+      internalID: 7874827520082354450
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_98
+      rect:
+        serializedVersion: 2
+        x: 311
+        y: 428
+        width: 30
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 773143a883dd45de0800000000000000
+      internalID: -1345207153770359945
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_99
+      rect:
+        serializedVersion: 2
+        x: 311
+        y: 425
+        width: 10
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 19305b9d928e770e0800000000000000
+      internalID: -2272092220541303919
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_100
+      rect:
+        serializedVersion: 2
+        x: 325
+        y: 407
+        width: 14
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4f8eac902c9dd35b0800000000000000
+      internalID: -5386910151854069516
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_101
+      rect:
+        serializedVersion: 2
+        x: 346
+        y: 357
+        width: 67
+        height: 97
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 88400eea62856c760800000000000000
+      internalID: 7477761154461205640
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_102
+      rect:
+        serializedVersion: 2
+        x: 352
+        y: 457
+        width: 11
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 98d583e710876b130800000000000000
+      internalID: 3582182501427731849
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_103
+      rect:
+        serializedVersion: 2
+        x: 376
+        y: 439
+        width: 53
+        height: 45
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dbcbe462c6b1a99f0800000000000000
+      internalID: -461025860538942275
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_104
+      rect:
+        serializedVersion: 2
+        x: 595
+        y: 391
+        width: 97
+        height: 148
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bce8120e2e4e5ae40800000000000000
+      internalID: 5667187369189674699
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_105
+      rect:
+        serializedVersion: 2
+        x: 643
+        y: 415
+        width: 21
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 989fc0fe715a36820800000000000000
+      internalID: 2910351306424908169
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_106
+      rect:
+        serializedVersion: 2
+        x: 858
+        y: 423
+        width: 43
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e0541d67496c990d0800000000000000
+      internalID: -3415480501432924914
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_107
+      rect:
+        serializedVersion: 2
+        x: 858
+        y: 232
+        width: 57
+        height: 180
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 914f35de20fe823c0800000000000000
+      internalID: -4383991441394502631
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_108
+      rect:
+        serializedVersion: 2
+        x: 1157
+        y: 447
+        width: 22
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cf4d386c32f2df010800000000000000
+      internalID: 1224186504415532284
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_109
+      rect:
+        serializedVersion: 2
+        x: 1161
+        y: 447
+        width: 10
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 59dc9735da5bc9560800000000000000
+      internalID: 7321926850232044949
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_110
+      rect:
+        serializedVersion: 2
+        x: 1163
+        y: 471
+        width: 8
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 60e07c6a7959dc630800000000000000
+      internalID: 3948976926844456454
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_111
+      rect:
+        serializedVersion: 2
+        x: 1165
+        y: 443
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2944d964b4052ae00800000000000000
+      internalID: 1054493546995598482
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_112
+      rect:
+        serializedVersion: 2
+        x: 1180
+        y: 415
+        width: 25
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9ce2285872f424d70800000000000000
+      internalID: 9025863634366115529
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_113
+      rect:
+        serializedVersion: 2
+        x: 1186
+        y: 425
+        width: 7
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7f3000b41c6ef8be0800000000000000
+      internalID: -1472704835265494025
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_114
+      rect:
+        serializedVersion: 2
+        x: 46
+        y: 345
+        width: 54
+        height: 45
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 47abf738aa7832ed0800000000000000
+      internalID: -2439957406684300684
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_115
+      rect:
+        serializedVersion: 2
+        x: 86
+        y: 335
+        width: 10
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 01830f2f149a11f90800000000000000
+      internalID: -6984615446361130992
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_116
+      rect:
+        serializedVersion: 2
+        x: 233
+        y: 315
+        width: 7
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 06397f115073415b0800000000000000
+      internalID: -5398629558394580128
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_117
+      rect:
+        serializedVersion: 2
+        x: 241
+        y: 339
+        width: 9
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a7fb2b0296aaedfe0800000000000000
+      internalID: -1162304285318135942
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_118
+      rect:
+        serializedVersion: 2
+        x: 585
+        y: 375
+        width: 11
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a069810e1a3d84cf0800000000000000
+      internalID: -267731485625641462
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_119
+      rect:
+        serializedVersion: 2
+        x: 675
+        y: 326
+        width: 42
+        height: 60
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7a5aeced6fedf8c80800000000000000
+      internalID: -8318184834848610905
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_120
+      rect:
+        serializedVersion: 2
+        x: 930
+        y: 335
+        width: 20
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 000264d41efcbd160800000000000000
+      internalID: 7051458208149676032
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_121
+      rect:
+        serializedVersion: 2
+        x: 942
+        y: 316
+        width: 10
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dbc19c4bf046a9960800000000000000
+      internalID: 7609504539016240317
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_122
+      rect:
+        serializedVersion: 2
+        x: 999
+        y: 300
+        width: 31
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6830eacc5df9a5370800000000000000
+      internalID: 8312131802876478342
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_123
+      rect:
+        serializedVersion: 2
+        x: 1147
+        y: 248
+        width: 90
+        height: 92
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 393e5734dbdb20080800000000000000
+      internalID: -9222600466323086445
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_124
+      rect:
+        serializedVersion: 2
+        x: 547
+        y: 306
+        width: 7
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 79a29b97a0e5e0060800000000000000
+      internalID: 6921573076399893143
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_125
+      rect:
+        serializedVersion: 2
+        x: 581
+        y: 304
+        width: 15
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e3d12f4cf693e5110800000000000000
+      internalID: 1251500898663931198
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_126
+      rect:
+        serializedVersion: 2
+        x: 707
+        y: 312
+        width: 16
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 152efbad6af3d46e0800000000000000
+      internalID: -1851753885912276399
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_127
+      rect:
+        serializedVersion: 2
+        x: 713
+        y: 312
+        width: 7
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0dbe554666e127ca0800000000000000
+      internalID: -6020716326722081840
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_128
+      rect:
+        serializedVersion: 2
+        x: 910
+        y: 304
+        width: 34
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 06fcd8e61e5b1f060800000000000000
+      internalID: 6985564476855406432
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_129
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 29
+        width: 202
+        height: 272
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 145aa742a8a919d40800000000000000
+      internalID: 5589418530651678017
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_130
+      rect:
+        serializedVersion: 2
+        x: 297
+        y: 281
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f0bfc6a80653e2900800000000000000
+      internalID: 661524884025572111
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_131
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 282
+        width: 21
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e3b93823970b26520800000000000000
+      internalID: 2693909561705995070
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_132
+      rect:
+        serializedVersion: 2
+        x: 426
+        y: 27
+        width: 109
+        height: 273
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dbf83e615b8eedef0800000000000000
+      internalID: -81371878775353411
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_133
+      rect:
+        serializedVersion: 2
+        x: 695
+        y: 15
+        width: 128
+        height: 293
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f7c0e515146c880c0800000000000000
+      internalID: -4573187437754446721
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_134
+      rect:
+        serializedVersion: 2
+        x: 1009
+        y: 28
+        width: 176
+        height: 283
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5731e14b8c46e81a0800000000000000
+      internalID: -6805391173732134027
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_135
+      rect:
+        serializedVersion: 2
+        x: 1025
+        y: 286
+        width: 14
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 139e7a83a7f52e770800000000000000
+      internalID: 8638572013791209777
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_136
+      rect:
+        serializedVersion: 2
+        x: 303
+        y: 228
+        width: 14
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e4da65b7ae0501880800000000000000
+      internalID: -8642318716902134450
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_137
+      rect:
+        serializedVersion: 2
+        x: 315
+        y: 224
+        width: 20
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e0af69a8bc4b47620800000000000000
+      internalID: 2771038457036208654
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_138
+      rect:
+        serializedVersion: 2
+        x: 257
+        y: 208
+        width: 7
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 26e80f5f5bbe8bdb0800000000000000
+      internalID: -4775808238078620062
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_139
+      rect:
+        serializedVersion: 2
+        x: 854
+        y: 168
+        width: 33
+        height: 59
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 140402eb6fecf4c50800000000000000
+      internalID: 6651762733796573249
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_140
+      rect:
+        serializedVersion: 2
+        x: 289
+        y: 114
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 10615f7f16cc8bea0800000000000000
+      internalID: -5856706594251401727
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_141
+      rect:
+        serializedVersion: 2
+        x: 295
+        y: 112
+        width: 11
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5d260d74c53219e80800000000000000
+      internalID: -8173712969451937067
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_142
+      rect:
+        serializedVersion: 2
+        x: 305
+        y: 115
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b73db23144eeffa60800000000000000
+      internalID: 7710143063228404603
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_143
+      rect:
+        serializedVersion: 2
+        x: 310
+        y: 111
+        width: 9
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f3720574f92ff7b90800000000000000
+      internalID: -7241802909878311105
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_144
+      rect:
+        serializedVersion: 2
+        x: 713
+        y: 119
+        width: 10
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 76836be13278d2080800000000000000
+      internalID: -9210557077993932697
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_145
+      rect:
+        serializedVersion: 2
+        x: 916
+        y: 93
+        width: 84
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b51327fa9cbc8f220800000000000000
+      internalID: 2519988058606154075
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_146
+      rect:
+        serializedVersion: 2
+        x: 313
+        y: 99
+        width: 18
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9616263f9fb53b5d0800000000000000
+      internalID: -3047991393711398551
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_147
+      rect:
+        serializedVersion: 2
+        x: 326
+        y: 95
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 777bfa018e83dd150800000000000000
+      internalID: 5898933656288737143
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_148
+      rect:
+        serializedVersion: 2
+        x: 948
+        y: 95
+        width: 6
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 340adbaff453f8f00800000000000000
+      internalID: 1121173449863962691
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_149
+      rect:
+        serializedVersion: 2
+        x: 619
+        y: 39
+        width: 13
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 43843fa5093f74af0800000000000000
+      internalID: -412093039554377676
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_arms_women_150
+      rect:
+        serializedVersion: 2
+        x: 866
+        y: 34
+        width: 43
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 76b5cc90942a0ae70800000000000000
+      internalID: 9124471279633324903
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      sheet_arms_women_0: -3674259626427109554
+      sheet_arms_women_1: -2765164599643970850
+      sheet_arms_women_10: -1018073984693643092
+      sheet_arms_women_100: -5386910151854069516
+      sheet_arms_women_101: 7477761154461205640
+      sheet_arms_women_102: 3582182501427731849
+      sheet_arms_women_103: -461025860538942275
+      sheet_arms_women_104: 5667187369189674699
+      sheet_arms_women_105: 2910351306424908169
+      sheet_arms_women_106: -3415480501432924914
+      sheet_arms_women_107: -4383991441394502631
+      sheet_arms_women_108: 1224186504415532284
+      sheet_arms_women_109: 7321926850232044949
+      sheet_arms_women_11: -4669654257993998816
+      sheet_arms_women_110: 3948976926844456454
+      sheet_arms_women_111: 1054493546995598482
+      sheet_arms_women_112: 9025863634366115529
+      sheet_arms_women_113: -1472704835265494025
+      sheet_arms_women_114: -2439957406684300684
+      sheet_arms_women_115: -6984615446361130992
+      sheet_arms_women_116: -5398629558394580128
+      sheet_arms_women_117: -1162304285318135942
+      sheet_arms_women_118: -267731485625641462
+      sheet_arms_women_119: -8318184834848610905
+      sheet_arms_women_12: 6489609389119051445
+      sheet_arms_women_120: 7051458208149676032
+      sheet_arms_women_121: 7609504539016240317
+      sheet_arms_women_122: 8312131802876478342
+      sheet_arms_women_123: -9222600466323086445
+      sheet_arms_women_124: 6921573076399893143
+      sheet_arms_women_125: 1251500898663931198
+      sheet_arms_women_126: -1851753885912276399
+      sheet_arms_women_127: -6020716326722081840
+      sheet_arms_women_128: 6985564476855406432
+      sheet_arms_women_129: 5589418530651678017
+      sheet_arms_women_13: -5625486982169866980
+      sheet_arms_women_130: 661524884025572111
+      sheet_arms_women_131: 2693909561705995070
+      sheet_arms_women_132: -81371878775353411
+      sheet_arms_women_133: -4573187437754446721
+      sheet_arms_women_134: -6805391173732134027
+      sheet_arms_women_135: 8638572013791209777
+      sheet_arms_women_136: -8642318716902134450
+      sheet_arms_women_137: 2771038457036208654
+      sheet_arms_women_138: -4775808238078620062
+      sheet_arms_women_139: 6651762733796573249
+      sheet_arms_women_14: 670683837513450087
+      sheet_arms_women_140: -5856706594251401727
+      sheet_arms_women_141: -8173712969451937067
+      sheet_arms_women_142: 7710143063228404603
+      sheet_arms_women_143: -7241802909878311105
+      sheet_arms_women_144: -9210557077993932697
+      sheet_arms_women_145: 2519988058606154075
+      sheet_arms_women_146: -3047991393711398551
+      sheet_arms_women_147: 5898933656288737143
+      sheet_arms_women_148: 1121173449863962691
+      sheet_arms_women_149: -412093039554377676
+      sheet_arms_women_15: -1505800153685573939
+      sheet_arms_women_150: 9124471279633324903
+      sheet_arms_women_16: -7153690994579571342
+      sheet_arms_women_17: -3196390838392300627
+      sheet_arms_women_18: 3039969797213092876
+      sheet_arms_women_19: -1707216802460225808
+      sheet_arms_women_2: 2060468908068113246
+      sheet_arms_women_20: -281908896923804947
+      sheet_arms_women_21: 4559470705808804346
+      sheet_arms_women_22: 5944565548472996512
+      sheet_arms_women_23: -8737321620960545104
+      sheet_arms_women_24: -8872801397902065453
+      sheet_arms_women_25: -4981263348230939417
+      sheet_arms_women_26: -9093468455996115244
+      sheet_arms_women_27: 2092131246573204246
+      sheet_arms_women_28: 7199456754302620689
+      sheet_arms_women_29: -6887009167798316144
+      sheet_arms_women_3: -6270513966795021562
+      sheet_arms_women_30: -5401356421730268371
+      sheet_arms_women_31: -3593166384030360140
+      sheet_arms_women_32: -2322159358089746245
+      sheet_arms_women_33: 2900343469072987195
+      sheet_arms_women_34: -3366661260241367088
+      sheet_arms_women_35: -5408798675268711121
+      sheet_arms_women_36: -1801156547262815582
+      sheet_arms_women_37: -2666473682986497068
+      sheet_arms_women_38: -7515030383106675239
+      sheet_arms_women_39: 3781731408516901583
+      sheet_arms_women_4: 905574265902462005
+      sheet_arms_women_40: 8545703049628468071
+      sheet_arms_women_41: 5068731688611496351
+      sheet_arms_women_42: -152819000571968664
+      sheet_arms_women_43: -8756992564199090793
+      sheet_arms_women_44: -4247918792438651942
+      sheet_arms_women_45: -5626899119961932487
+      sheet_arms_women_46: -5157824324642253939
+      sheet_arms_women_47: 6048839964611548794
+      sheet_arms_women_48: 4518718066840136832
+      sheet_arms_women_49: 5064134536981881567
+      sheet_arms_women_5: 3207437020402209846
+      sheet_arms_women_50: 4195405373799169268
+      sheet_arms_women_51: -1927777613761394577
+      sheet_arms_women_52: -8437611284174953217
+      sheet_arms_women_53: -1522377141240593175
+      sheet_arms_women_54: 5324852323170192430
+      sheet_arms_women_55: -3697407342557034536
+      sheet_arms_women_56: 3539565513318878074
+      sheet_arms_women_57: -5857344798927835600
+      sheet_arms_women_58: -8808423641445306767
+      sheet_arms_women_59: 487079757041354926
+      sheet_arms_women_6: 2924715799175723203
+      sheet_arms_women_60: -9012812413317902127
+      sheet_arms_women_61: -2059859166901069976
+      sheet_arms_women_62: 2547582587612597955
+      sheet_arms_women_63: -2163680712494139347
+      sheet_arms_women_64: 4322542968546004420
+      sheet_arms_women_65: 5176898650398963122
+      sheet_arms_women_66: -1100405617674983533
+      sheet_arms_women_67: -5813959807363664651
+      sheet_arms_women_68: 6425481245928356952
+      sheet_arms_women_69: -882203024212127897
+      sheet_arms_women_7: 4263248985914971794
+      sheet_arms_women_70: -7283728945727758947
+      sheet_arms_women_71: 6148427126935002554
+      sheet_arms_women_72: -760551540943321531
+      sheet_arms_women_73: 5012883249693154356
+      sheet_arms_women_74: 6615687049295213477
+      sheet_arms_women_75: 2756028566379591367
+      sheet_arms_women_76: -7155293737338714745
+      sheet_arms_women_77: 3539001030392567775
+      sheet_arms_women_78: 911058773079749835
+      sheet_arms_women_79: 2051444752660264331
+      sheet_arms_women_8: -3171186629699653119
+      sheet_arms_women_80: -3215995896344116685
+      sheet_arms_women_81: 8119931686343359768
+      sheet_arms_women_82: 341479821533842763
+      sheet_arms_women_83: -8033976807568342149
+      sheet_arms_women_84: -6212965649405657494
+      sheet_arms_women_85: -6708843243628471965
+      sheet_arms_women_86: -3932965466950407957
+      sheet_arms_women_87: 2336479789272361289
+      sheet_arms_women_88: -8409069403713777042
+      sheet_arms_women_89: -1428024460667289326
+      sheet_arms_women_9: 3879327645179618092
+      sheet_arms_women_90: -1820630523331974510
+      sheet_arms_women_91: 5521677817965558564
+      sheet_arms_women_92: 7945489628581647421
+      sheet_arms_women_93: 7837496566591445028
+      sheet_arms_women_94: -861218682808925664
+      sheet_arms_women_95: 4601757097362511891
+      sheet_arms_women_96: 49071762427219500
+      sheet_arms_women_97: 7874827520082354450
+      sheet_arms_women_98: -1345207153770359945
+      sheet_arms_women_99: -2272092220541303919
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
