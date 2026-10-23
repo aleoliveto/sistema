@@ -129,7 +129,7 @@ namespace OSistema.Views
 
         const float LegsTop = 16f;   // the hips' row on the legs canvas
         /// <summary>Where the hips sit under the torso, in the torso sprite's units (before turning).</summary>
-        public static readonly Vector2 HipsOnTorso = new Vector2(0f, (128f - 200f) / PixelsPerUnit);
+        public static readonly Vector2 HipsOnTorso = new Vector2(0f, (128f - 226f) / PixelsPerUnit);
 
         /// <summary>
         /// Which trousers walk under a body: 0 jeans and trainers, 1 tracksuit, 2 suit trousers, 3 a skirt.

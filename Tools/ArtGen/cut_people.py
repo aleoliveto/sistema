@@ -20,7 +20,7 @@ from PIL import Image
 
 CANVAS = 256
 BODY_W = 196            # the old bodies' width on the canvas
-NECK = (128, 112)       # where the head sits on the canvas
+SHOULDER_TOP = 86      # the old bodies' top of the shoulders on the canvas: the heads were made to sit over it
 ARM_THICK = 0.23        # arm thickness, as a fraction of the torso's width (the old painted arms)
 ARM_HIDDEN = 0.30       # how much of the arm's top is tucked under the sleeve
 
@@ -83,8 +83,8 @@ def main(torsos, arms, out, prefix, first=0, body_w=BODY_W, flip_arms=True, arm_
             print("skip cell", i)
             continue
         scale = body_w / (tb[2] - tb[0] + 1)
-        nx, ny = neck_centre(ta, tb)
-        torso = place(tc, scale, (nx, ny), NECK)
+        # Shoulders' top on the old bodies' line, centred: the heads and hair sit over the neck as they always did.
+        torso = place(tc, scale, ((tb[0] + tb[2]) / 2, tb[1]), (CANVAS / 2, SHOULDER_TOP))
         t = np.array(torso)
         # The shoulder: a little in from the torso's outer edge, a little below the top of the shoulders.
         tb2 = bbox(t)
@@ -152,7 +152,7 @@ elif __name__ == "__main__":
 
 HIP_W = 116            # the trousers' width under the torso, on the 256 canvas
 LEGS_TOP = 16          # where the hips sit on the legs canvas (the pivot)
-FORESHORTEN = 0.42     # seen from above, legs are mostly hidden: squash them
+FORESHORTEN = 0.28     # seen from above, legs are mostly hidden: squash them
 
 
 def legs(sheet, out):
