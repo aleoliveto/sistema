@@ -44,7 +44,8 @@ namespace OSistema.Crime
 
         public Contact ByName(string name) => All.Find(c => c.Name == name);
 
-        public bool Visible(Contact c, Game game) => !c.Secret || game.Org.SupplierIntroduced;
+        public bool Visible(Contact c, Game game) =>
+            (!c.Secret || game.Org.SupplierIntroduced) && !(c.Name == Saverio && game.Org.SaverioGone);
 
         static readonly System.Collections.Generic.Dictionary<string, int> Faces = new System.Collections.Generic.Dictionary<string, int>
         {

@@ -74,6 +74,10 @@ namespace OSistema.UI
             var learn = Tutorial(game, p, org, s);
             if (learn.HasValue) return learn.Value;
 
+            // The first corner is Don Saverio's: the milestone after the first steps.
+            var saverio = org.SaverioGoal(game);
+            if (saverio.HasValue) return Go(saverio.Value.text, saverio.Value.at);
+
             // Nothing serious going on: no marker. The Taccuino (J) says who has work.
             if (hour >= 23 || hour < 5) return new Goal { Text = "Late. Home and bed, when you're done." };
             return new Goal { Text = "" };

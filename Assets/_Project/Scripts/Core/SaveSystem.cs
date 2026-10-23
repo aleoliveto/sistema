@@ -18,7 +18,7 @@ namespace OSistema.Core
     /// </summary>
     public static class SaveSystem
     {
-        public const int Version = 11;
+        public const int Version = 12;   // 12: Don Saverio's corner
         const int OldestReadable = 5; // the map generator changed too much to migrate older saves
 
         /// <summary>The save slot: a folder.</summary>
@@ -215,6 +215,7 @@ namespace OSistema.Core
                 hustles = game.Org.H,
                 lookoutShifts = game.Org.LookoutShifts,
                 supplierIntroduced = game.Org.SupplierIntroduced,
+                saverio = game.Org.Sav,
                 bulkDg = game.Stock.BulkDg, carriedDg = game.Org.CarriedDg, baggies = game.Stock.Baggies,
                 tobaccoG = game.Stock.TobaccoG, papers = game.Stock.Papers, emptyPacks = game.Stock.EmptyPacks,
                 digitalScale = game.Stock.DigitalScale, heatSealer = game.Stock.HeatSealer, rollingMachine = game.Stock.RollingMachine, stored = game.Stock.Stored,
@@ -263,6 +264,7 @@ namespace OSistema.Core
 
             foreach (var p in game.Pawns.All)
             {
+                if (p.Faction == Faction.Rival && p.Clan == Crime.Organization.SaverioClan) continue;   // his men come back with him
                 var d = ToData(p);
                 var clan = p.Clan >= 0 && p.Clan < game.Clans.Count ? game.Clans[p.Clan] : game.Rival;
                 d.missionSquare = p.MissionSquare != null ? clan.Squares.IndexOf(p.MissionSquare) : -1;
@@ -340,6 +342,7 @@ namespace OSistema.Core
                 od.clanSquares.Add(new SquareData { x = sq.Cell.x, y = sq.Cell.y, zone = sq.ZoneId, clan = sq.Clan });
             foreach (var p in d.Dormant)
             {
+                if (p.Faction == Faction.Rival && p.Clan == Crime.Organization.SaverioClan) continue;
                 var pd = ToData(p);
                 pd.missionSquare = p.MissionSquare != null ? d.DormantClanSquares.IndexOf(p.MissionSquare) : -1;
                 od.pawns.Add(pd);
@@ -542,6 +545,9 @@ namespace OSistema.Core
             if (data.version >= 9) { st.DoseQuality = data.doseQuality; st.PackQuality = data.packQuality; }
             // Families from before version 8 already had a supplier.
             game.Org.SupplierIntroduced = data.version < 8 || data.supplierIntroduced;
+            // Before version 12 nobody held the first corner.
+            if (data.version >= 12 && data.saverio != null) game.Org.Sav = data.saverio;
+            else game.Org.SaverioFromOldSave(game);
             if (data.favours != null && data.favours.Neighbours.Count > 0) game.Favours.S = data.favours;
             else game.Favours.Setup(game, game.Rng);
 
@@ -677,6 +683,7 @@ namespace OSistema.Core
             public OSistema.Crime.HustleState hustles;
             public int lookoutShifts;
             public bool supplierIntroduced;
+            public OSistema.Crime.SaverioState saverio;
             public int bulkDg, carriedDg, baggies, tobaccoG, papers, emptyPacks;
             public bool digitalScale, heatSealer, rollingMachine;
             public int[] stored;

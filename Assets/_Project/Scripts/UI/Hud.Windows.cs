@@ -204,7 +204,9 @@ namespace OSistema.UI
             SetStatus(BizTab.Organigram, org.Squares.Count == 0 ? "no piazze yet" : $"{org.Squares.Count} piazz{(org.Squares.Count == 1 ? "a" : "e")}");
             SetStatus(BizTab.Overview, problems.Count == 0 ? "<color=#8FD18A>all quiet</color>" : $"<color=#F2B866>{problems.Count} to look at</color>");
             SetStatus(BizTab.Crew, crew == 0 ? "just you" : $"{crew} guagliun{(crew == 1 ? "e" : "i")}" + (idle > 0 ? $" · <color=#F2B866>{idle} without a job</color>" : ""));
-            SetStatus(BizTab.Piazze, org.Squares.Count == 0 ? "none yet" : $"{org.Squares.Count} open");
+            SetStatus(BizTab.Piazze, org.Squares.Count > 0 ? $"{org.Squares.Count} open"
+                : org.Sav.feud || org.Sav.dead ? "<color=#F07A6E>at war with Don Saverio</color>"
+                : org.SaverioContact(game) != null && !org.Sav.taken ? "Don Saverio holds the corner" : "none yet");
             SetStatus(BizTab.Pizzo, paying == 0 ? "nobody pays yet" : $"{paying} paying");
             SetStatus(BizTab.Supply, $"{game.Stock.Product} doses · {game.Stock.Cigarettes} packs");
             SetStatus(BizTab.Property, $"€{game.Stock.Cash} dirty · €{game.Stock.Clean} clean");
@@ -241,6 +243,8 @@ namespace OSistema.UI
                 collector |= c.Role == CrewRole.Collector;
             }
             int wages = org.WeeklyWageBill(game);
+            if (org.SaverioCutRunning && st.Cash + st.Clean < wages + Organization.SaverioCutWeekly)
+                list.Add(($"Sunday's cut for Don Saverio (€{Organization.SaverioCutWeekly}) isn't there. Miss two and he takes the corner back.", BizTab.Piazze, true));
             if (st.Cash + st.Clean < wages) list.Add(($"Not enough money for Sunday's wages (€{wages}). Unpaid crew lose loyalty.", BizTab.Property, true));
             if (org.Evidence >= 60f) list.Add(($"Evidence against you is at {org.Evidence:0}/100. Lie low, launder, keep your hands clean.", BizTab.Property, true));
             // Beds are shared by a house's day and night shifts: short only where more sleep at once than there are beds.
@@ -283,9 +287,10 @@ namespace OSistema.UI
         void PiazzeTab()
         {
             var org = game.Org;
+            SaverioSection();
             if (org.Squares.Count == 0)
             {
-                Ui.Text("No piazze yet. Open Build (B) and use Open piazza on a pavement in your turf.", bizBody, "muted", "wrap");
+                Ui.Text("No piazze yet. Take Don Saverio's corner, or open Build (B) and use Open piazza on a pavement in your turf.", bizBody, "muted", "wrap");
                 return;
             }
             int pushers = game.Pawns.Crew.Count(p => p.IsPresent && p.Role == CrewRole.Pusher);
@@ -326,6 +331,24 @@ namespace OSistema.UI
                                $"Today {square.SalesToday} sold, {square.LostToday} customers lost. Heat {zone.Heat:0}. Demand {zone.Demand:0.0}." +
                                (game.Clans.Any(c => !c.Destroyed && c.NearRivalTerritory(square)) ? "\nCompeting with a clan nearby." : ""));
             }
+        }
+
+        /// <summary>The first corner: Don Saverio's until the family takes it.</summary>
+        void SaverioSection()
+        {
+            var org = game.Org;
+            var c = org.SaverioContact(game);
+            if (c == null || (org.Sav.taken && !org.SaverioCutRunning)) return;
+            Ui.Text("DON SAVERIO'S CORNER", bizBody, "section");
+            bool war = org.Sav.feud || org.Sav.dead;
+            Ui.Text(org.SaverioStatus(game), bizBody, "small", "wrap", org.Sav.taken ? "muted" : war ? "bad" : "warn");
+            var row = Ui.Row(bizBody);
+            if (!org.Sav.taken && !war)
+            {
+                var call = Ui.Btn($"Call him with an offer ▸ (€{org.SaverioPrice})", () => { game.Events.Raise(OSistema.Story.EventCards.SaverioOffer(game)); ToggleWindow(Window.Business); }, row, "btn--small");
+                Tip(call, () => org.CanBuyOutSaverio(game, out var why) ? "Pay him to retire, all at once or a cut every Sunday." : why);
+            }
+            Ui.Btn("Show", () => FocusCamera(c.Present ? c.Position : Mover.CellCenter(c.Spot)), row, "btn--small");
         }
 
         void PizzoTab()
