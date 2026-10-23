@@ -90,14 +90,16 @@ namespace OSistema.Crime
         }
 
         /// <summary>One bag, weighed by hand. Short bags cheat customers; heavy ones give product away.</summary>
-        public void MakeDose(float grams, Game game)
+        /// <summary>One bag. <paramref name="cut"/>: the share of it that's lactose, not product (stretches the stock, cheats the customer).</summary>
+        public void MakeDose(float grams, Game game, float cut = 0f, float sealQuality = 1f)
         {
             var s = game.Stock;
-            int dg = Mathf.Clamp(Mathf.RoundToInt(grams * 10f), 1, s.BulkDg);
+            int dg = Mathf.Clamp(Mathf.RoundToInt(grams * (1f - cut) * 10f), 1, s.BulkDg);
             s.BulkDg -= dg;
             s.Baggies--;
             float err = (grams - Prices.DoseDg / 10f) / (Prices.DoseDg / 10f);
             float q = err < 0f ? 1f - Mathf.Clamp01(-err * 3f) : 1f - Mathf.Clamp01(err * 0.8f);
+            q *= (1f - cut * 1.6f) * Mathf.Lerp(0.85f, 1f, sealQuality);
             // The stock's honesty is the average of the bags in it: each bag counts the same.
             s.DoseQuality = s.Product <= 0 ? q : (s.DoseQuality * s.Product + q) / (s.Product + 1);
             s.Product++;

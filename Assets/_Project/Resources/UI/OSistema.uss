@@ -1495,3 +1495,9 @@
 .inspector .insp-scroll { flex-shrink: 1; flex-grow: 0; }
 .inspector .insp-scroll .unity-scroll-view__content-container { width: 100%; }
 .inspector Button { white-space: normal; flex-shrink: 0; }
+
+/* Minigames: the word that pops over the table, the streak, and the scare banner. */
+.minigame { position: relative; }
+.minigame__pop { position: absolute; top: 40%; left: 0; right: 0; -unity-text-align: middle-center; font-size: 26px; -unity-font-style: bold; opacity: 0; }
+.minigame__streak { color: #E3B862; font-size: 15px; -unity-font-style: bold; letter-spacing: 1px; margin-top: 8px; min-height: 20px; }
+.minigame__scare { position: absolute; left: 18px; right: 18px; bottom: 14px; padding: 10px 14px; background-color: rgba(120, 20, 16, 0.92); color: #FFF2E0; font-size: 17px; -unity-text-align: middle-center; border-radius: 4px; }

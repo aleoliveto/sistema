@@ -35,6 +35,31 @@ When Gennaro's sleep (`Needs.Rest`) runs out:
 
 **At the bar:** scopa / briscola for favours and debts
 
+## 6. From the Oct 23 playtest (not built yet)
+**Done the same day:** slower walking and less wobble · selling by hand at your piazza and the stall (G) · the cavallo ridden to Nanninella on the real scooter · vest bought, not given · "Don" only at 'O Sistema · Clan needs a piazza and a full crew · money requests from Clan · less rain · pop-ups only for what involves you · phone by touch · building card scrolls · follow me · scooters swerve · gunfight camera · fewer lavoretti offers · shop counters reachable from the door · new rolling and bagging tables.
+
+**Early game:**
+- **Don Saverio owns the starting piazza.** To take it: kill him and his guards, or pay him to retire (a big sum, or a cut for a while). Until then you deal on his corner by his leave.
+- **Inventory per character:** what each person carries (doses, packs, a pistol, cash, the stolen scooter's keys), not one family stock. Needed for selling from the pocket, searches, and crew on errands.
+
+**The crew's homes:**
+- Assign people to a house, not a bed. Beds in that house rotate between day and night shifts; no free bed → they sulk.
+- They eat where they live (or at a pizzeria near their post), not all back at the basso.
+
+**Scooters as things:** a scooter is parked somewhere and you walk to it; no pulling one out of your pocket. Crew take one from where it's parked. How riders sit and look on scooters (seat position, legs, passenger).
+
+**Cars:** parked cars on every street (the parcheggiatore needs them), moving traffic, police and ambulance cars (prompts in ART_PROMPTS_WORLD.md).
+
+**Clothes:** a clothing shop; buy outfits and change at the dresser at home (the body sprite is the outfit).
+
+**Doors:** painted doors that open and close (prompts in ART_PROMPTS_WORLD.md).
+
+**Modes:** a story mode (chapters, the rise of one family) and a sandbox mode (today's game).
+
+**Naples, not a grid:** curving vicoli, stairs (gradoni), piazzette, the sea front, churches, laundry between balconies, real ground textures (ART_PROMPTS_WORLD.md, section B). More realism in general.
+
+**Art to make (ChatGPT, ART_PROMPTS_WORLD.md):** furniture by footprint so nothing is cut wrong, ground textures, cars and emergency vehicles, doors, and optional minigame art.
+
 ## 2. Animation (STEP 1 DONE: arms swing, recoil, flinch, fall, sleep breathing; next: shoes, scooter lean, work hands, punches)
 Painted bodies are single images with the arms painted in, so the walk is only a small sway and reads as sliding (`Views/PersonRig.cs`).
 1. **Split the painted body** into torso, two arms and two shoes, painted with `Tools/ArtGen` in the same style. Load them in `CharacterArt` and give them their own transforms in `PersonRig`.
