@@ -137,7 +137,8 @@ namespace OSistema.Social
             var n = PickFree(game);
             if (n == null) return;
             var rng = game.Rng;
-            var kind = (Request)rng.Next(5);
+            // Money (loans, the clinic, a funeral) is asked of a Clan; a smaller name gets asked for help, not cash.
+            var kind = game.Org.Rank >= 2 ? (Request)rng.Next(5) : rng.Next(2) == 0 ? Request.SonJob : Request.Bully;
             if (kind == Request.Loan && n.Loan > 0) kind = Request.Funeral;
             PhoneMessage m;
             switch (kind)

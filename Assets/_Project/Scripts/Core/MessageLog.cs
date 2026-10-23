@@ -10,13 +10,15 @@ namespace OSistema.Core
         public readonly MessageKind Kind;
         public readonly long Tick;
         public readonly UnityEngine.Vector2Int? Location; // click the notification to go there
+        public readonly bool Toast;                       // false: the diary only, no pop-up (the city going about its business)
 
-        public Message(string text, MessageKind kind, long tick, UnityEngine.Vector2Int? location)
+        public Message(string text, MessageKind kind, long tick, UnityEngine.Vector2Int? location, bool toast = true)
         {
             Text = text;
             Kind = kind;
             Tick = tick;
             Location = location;
+            Toast = toast;
         }
     }
 
@@ -42,6 +44,15 @@ namespace OSistema.Core
             Version++;
             Trace?.Invoke(text);
             messages.Add(new Message(text, kind, ticks.TicksGame, location));
+            if (messages.Count > MaxMessages) messages.RemoveAt(0);
+        }
+
+        /// <summary>Into the diary (News) without a pop-up: things happening around you, not to you.</summary>
+        public void Note(string text, MessageKind kind = MessageKind.Info, UnityEngine.Vector2Int? location = null)
+        {
+            Version++;
+            Trace?.Invoke(text);
+            messages.Add(new Message(text, kind, ticks.TicksGame, location, toast: false));
             if (messages.Count > MaxMessages) messages.RemoveAt(0);
         }
     }

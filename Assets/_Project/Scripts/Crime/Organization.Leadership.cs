@@ -80,7 +80,7 @@ namespace OSistema.Crime
                 var batch = new List<(string, Action<Game>)>(pizzini);
                 pizzini.Clear();
                 foreach (var (_, action) in batch) action(game);
-                game.Log.Add($"The crew received {batch.Count} pizzini from the boss.", MessageKind.Good);
+                game.Log.Note($"The crew received {batch.Count} pizzini from the boss.", MessageKind.Good);
             }
 
             CheckSuccession(game, now);

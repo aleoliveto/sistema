@@ -138,7 +138,7 @@ namespace OSistema.Crime
                 var outside = NearestFree(game.Map, door) ?? door;
                 p.LeaveHospital(outside);
                 p.Mood.AddMemory("hospital", "Patched up at the Ospedale", 4f, now, GameClock.TicksPerDay);
-                game.Log.Add($"{p.DisplayName} has been discharged from the Ospedale.", MessageKind.Good, outside);
+                game.Log.Note($"{p.DisplayName} has been discharged from the Ospedale.", MessageKind.Good, outside);
             }
         }
 

@@ -141,11 +141,13 @@ namespace OSistema.UI
             // What E would do right now, over the player's head.
             var player = game.Player;
             var act = player != null && !MinigameOpen && game.Events.Current == null ? controller.Interaction() : null;
-            if (act != null && reach == null)
+            var sale = player != null && !MinigameOpen && game.Events.Current == null ? controller.SaleAction() : null;
+            if (sale != null) act = sale;
+            if (act != null && (reach == null || sale != null))
             {
                 var tag = NextTag();
                 tag.AddToClassList("tag--work");
-                tag.text = $"<b>[E]</b> {act.Label}";
+                tag.text = sale != null ? $"<b>[G]</b> {sale.Label}" : $"<b>[E]</b> {act.Label}";
                 var pos = WorldToPanel(player.Position);
                 tag.style.left = pos.x;
                 tag.style.top = pos.y - unit * 1.1f;

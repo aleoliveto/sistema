@@ -348,6 +348,7 @@ namespace OSistema.World
         public const int RecruitBonus = 200;
         public const int JailedFamilySupport = 150; // weekly, per crew member inside
         public const int Pistol = 600;
+        public const int Vest = 450;
         public const int Scooter = 900;
         /// <summary>The four scooters at the dealer, cheap to flash: step-through 50, commuter 125, GT 300, maxi 530.</summary>
         public static readonly int[] ScooterModels = { 700, 1700, 2800, 7800 };

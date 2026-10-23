@@ -64,12 +64,16 @@ namespace OSistema.Crime
         public Npc WaitingCustomer(Game game)
         {
             var p = game.Player;
-            if (DealingCorner == null || p == null) return null;
+            if (p == null) return null;
             Npc best = null;
             float bestD = 2.4f * 2.4f;
             foreach (var n in game.Npcs.All)
             {
-                if (n.Kind != NpcKind.Customer || n.Despawned || n.Square != DealingCorner || n.State != 1) continue;
+                if (n.Kind != NpcKind.Customer || n.Despawned || n.State != 1 || n.Square == null) continue;
+                // Your corner or stall, or one of the family's piazze where you happen to be standing.
+                bool mine = IsPlayerCorner(n.Square) || (!n.Square.Rival && Squares.Contains(n.Square));
+                if (!mine) continue;
+                if (n.Square == StallCorner ? !HasStallStock(game) : game.Stock.Product <= 0) continue;
                 float d = (n.Mover.Position - p.Position).sqrMagnitude;
                 if (d < bestD) { bestD = d; best = n; }
             }
@@ -79,12 +83,15 @@ namespace OSistema.Crime
         public void SellToCustomer(Npc customer, Game game)
         {
             var p = game.Player;
-            if (customer == null || p == null || game.Stock.Product <= 0) return;
-            Sell(DealingCorner, p, game);
+            if (customer == null || p == null) return;
+            if (customer.Square == StallCorner) { SellFromStall(customer, game); return; }
+            if (game.Stock.Product <= 0) return;
+            var square = customer.Square;
+            Sell(square, p, game);
             p.Learn(Skill.Awareness, 2f, game);
             customer.State = 2;
             customer.Walker = new Walker(customer.Exit, adjacent: false);
-            var zone = game.Territory.Zones[DealingCorner.ZoneId];
+            var zone = game.Territory.Zones[square.ZoneId];
             var owner = game.ClanOwning(zone.Id);
             if (owner != null) owner.Hostility = Mathf.Min(100f, owner.Hostility + 0.6f);
             // Selling in front of a policeman.
@@ -93,7 +100,7 @@ namespace OSistema.Crime
                 game.Pursuit.Start(cop, "A policeman saw you hand something over.", game);
             if (game.Stock.Product <= 0)
             {
-                game.Log.Add("Out of doses. The corner can wait.", MessageKind.Info);
+                if (DealingCorner != null) game.Log.Add("Out of doses. The corner can wait.", MessageKind.Info);
                 StopDealing(game, quiet: true);
             }
         }

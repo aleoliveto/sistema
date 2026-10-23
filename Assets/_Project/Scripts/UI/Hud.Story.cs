@@ -95,6 +95,15 @@ namespace OSistema.UI
         float lastToastAt;
         Game feedGame;
 
+        /// <summary>Pop-ups are for what involves you: danger always; news from across the city only in the diary and the Sirena.</summary>
+        bool Concerns(Message m)
+        {
+            if (!m.Toast) return false;
+            if (m.Kind == MessageKind.Bad || !m.Location.HasValue) return true;
+            var p = game.Player;
+            return p == null || (m.Location.Value - p.Cell).sqrMagnitude <= 22 * 22;
+        }
+
         void RefreshFeed()
         {
             if (feedGame != game)
@@ -114,7 +123,8 @@ namespace OSistema.UI
             {
                 int fresh = System.Math.Min(game.Log.Version - feedVersion, game.Log.All.Count);
                 feedVersion = game.Log.Version;
-                for (int i = game.Log.All.Count - fresh; i < game.Log.All.Count; i++) toastQueue.Enqueue(game.Log.All[i]);
+                for (int i = game.Log.All.Count - fresh; i < game.Log.All.Count; i++)
+                    if (Concerns(game.Log.All[i])) toastQueue.Enqueue(game.Log.All[i]);
                 // Too much at once: keep the bad news, drop the oldest small talk.
                 while (toastQueue.Count > ToastQueueMax)
                 {

@@ -119,7 +119,7 @@ namespace OSistema.Views
             if (onScooter)
             {
                 float heading = pawn.Controlled ? pawn.Heading : transform.Find("Pivot").localEulerAngles.z;
-                PropArt.DressScooter(scooter, heading, pawn.StolenScooter ? 0 : pawn.RideModel, pawn.StolenScooter ? 0 : pawn.RideColour >= 0 ? pawn.RideColour : Mathf.Abs(pawn.Id),
+                PropArt.DressScooter(scooter, heading, pawn.StolenScooter ? Mathf.Max(0, pawn.StolenLook) / 4 : pawn.RideModel, pawn.StolenScooter ? Mathf.Max(0, pawn.StolenLook) % 4 : pawn.RideColour >= 0 ? pawn.RideColour : Mathf.Abs(pawn.Id),
                     pawn.StolenScooter ? new Color(0.92f, 0.92f, 0.9f) : FamilyScooters[Mathf.Abs(pawn.Id) % FamilyScooters.Length]);
                 var fwd = new Vector2(-Mathf.Sin(heading * Mathf.Deg2Rad), Mathf.Cos(heading * Mathf.Deg2Rad));
                 WorldLighting.AimHeadlight(headlight, true, pawn.Position, heading);

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using OSistema.AI;
 using OSistema.Core;
+using OSistema.Npcs;
 using OSistema.Pawns;
 using OSistema.Story;
 using OSistema.World;
@@ -30,6 +31,7 @@ namespace OSistema.Crime
         public int cavalli;               // stolen scooters hidden away, waiting for their owners to call
         public long cavalloAt;
         public int cavalloDay = -1;
+        public bool cavalloRiding;        // the boss is on the way to Nanninella's with one
         public int lastLotto = -1, lastBet = -1, lastWeekly = -1, lastLoans = -1;
         public List<ShopLoan> loans = new List<ShopLoan>();
     }
@@ -105,7 +107,9 @@ namespace OSistema.Crime
             {
                 PlayerStall = at;
                 PlayerParking = null;
-                game.Log.Add($"You set out your stock: {game.Stock.Cigarettes} packs of ROSSE, {H.fakes} fakes. Stay close and they sell by the hour. Watch for the Finanza.", MessageKind.Info, at);
+                var zone = game.Territory.ZoneAt(at);
+                StallCorner = new DrugSquare { Cell = at, ZoneId = zone != null ? zone.Id : 0, OpenHour = 0, CloseHour = 0 };
+                game.Log.Add($"You set out your stock: {game.Stock.Cigarettes} packs of ROSSE, {H.fakes} fakes. People will stop by: G (or E) to sell. Watch for the Finanza.", MessageKind.Info, at);
             }
         }
 
@@ -114,7 +118,61 @@ namespace OSistema.Crime
             if (playerStreetTakings > 0)
                 game.Log.Add($"You packed up. €{playerStreetTakings} made on the street.", MessageKind.Good);
             PlayerParking = PlayerStall = null;
+            StallCorner = null;
             playerStreetTakings = 0;
+        }
+
+        // ---------- The boss at his stall: buyers come up one at a time, like at the corner ----------
+
+        /// <summary>The player's own stall, as a selling spot customers walk to (not a piazza).</summary>
+        public DrugSquare StallCorner;
+
+        public bool IsPlayerCorner(DrugSquare sq) => sq != null && (sq == DealingCorner || sq == StallCorner);
+
+        public bool HasStallStock(Game game) => game.Stock.Cigarettes > 0 || H.fakes > 0;
+
+        /// <summary>What the next buyer wants: mostly a pack, sometimes a fake bag or shirt.</summary>
+        public string StallOffer(Npc customer, Game game)
+        {
+            bool fake = H.fakes > 0 && (game.Stock.Cigarettes <= 0 || customer.Id % 3 == 0);
+            return fake ? $"Sell a fake · €{FakePrice}" : $"Sell a pack · €{PackPrice(game) + 1}";
+        }
+
+        void SellFromStall(Npc customer, Game game)
+        {
+            var p = game.Player;
+            var s = game.Stock;
+            bool fake = H.fakes > 0 && (s.Cigarettes <= 0 || customer.Id % 3 == 0);
+            int price;
+            if (fake) { H.fakes--; price = FakePrice; }
+            else if (s.Cigarettes > 0) { s.Cigarettes--; price = PackPrice(game) + 1; }
+            else return;
+            // A second pack now and then.
+            if (!fake && s.Cigarettes > 0 && game.Rng.NextDouble() < 0.25) { s.Cigarettes--; price += PackPrice(game) + 1; }
+            s.Cash += price;
+            playerStreetTakings += price;
+            game.PopupAt(p.Position, $"+€{price}");
+            customer.State = 2;
+            customer.Walker = new Walker(customer.Exit, adjacent: false);
+            if (!HasStallStock(game))
+            {
+                game.Log.Add("Nothing left to sell.", MessageKind.Info);
+                EndPlayerStreetWork(game);
+            }
+        }
+
+        /// <summary>Passers-by stop at the boss's stall: busiest at lunch and in the evening.</summary>
+        void SpawnStallCustomers(Game game)
+        {
+            if (StallCorner == null) return;
+            int h = game.Clock.Hour;
+            if (h < 9 || h >= 21) return;
+            float perHour = (h >= 12 && h < 14) || h >= 18 ? 7f : 4.5f;
+            var zone = game.Territory.Zones[StallCorner.ZoneId];
+            perHour *= 0.7f + zone.Demand * 0.3f;
+            if (game.Rng.NextDouble() >= perHour / GameClock.TicksPerHour) return;
+            var npc = game.Npcs.SpawnCustomer(StallCorner, game);
+            npc.Mover.Teleport(game.StreetLife.RandomDestinationNear(StallCorner.Cell, game));
         }
 
         /// <summary>One hour of minding cars: tips, more in a busier rione, and now and then a driver who won't pay.</summary>
@@ -125,6 +183,21 @@ namespace OSistema.Crime
             int tips = game.Rng.Next(1, 4) + (h >= 19 ? 1 : 0);    // a few coins a car; evenings, when people go out, pay best
             game.Territory.AddHeat(at, 0.15f);
             return tips;
+        }
+
+        /// <summary>The Finanza walks up: the stock on the stall is gone. True if they came.</summary>
+        bool FinanzaCheck(Vector2Int at, Game game)
+        {
+            if (game.Rng.NextDouble() >= 0.025) return false;
+            var s = game.Stock;
+            int packs = Math.Min(s.Cigarettes, 8), fakes = Math.Min(H.fakes, 5);
+            s.Cigarettes -= packs;
+            H.fakes -= fakes;
+            AddEvidence(1f, game);
+            game.Territory.AddHeat(at, 4f);
+            game.Log.Add($"The Guardia di Finanza walked up to the stall: {packs} packs and {fakes} fakes confiscated, and your name taken.", MessageKind.Bad, at);
+            if (!HasStallStock(game)) EndPlayerStreetWork(game);
+            return true;
         }
 
         /// <summary>One hour at the stall: a few packs and a few fakes go, at street prices. The Finanza now and then.</summary>
@@ -179,12 +252,10 @@ namespace OSistema.Crime
                 if (!there) EndPlayerStreetWork(game);
                 else
                 {
-                    int e = PlayerParking.HasValue ? ParkingHour(spot.Value, game) : StallHour(spot.Value, game, true);
-                    if (PlayerStall.HasValue && s.Cigarettes <= 0 && H.fakes <= 0)
-                    {
-                        game.Log.Add("Nothing left to sell.", MessageKind.Info);
-                        EndPlayerStreetWork(game);
-                    }
+                    // At the stall the boss sells by hand (SellFromStall); the hour only brings the Finanza's risk.
+                    int e = 0;
+                    if (PlayerParking.HasValue) e = ParkingHour(spot.Value, game);
+                    else FinanzaCheck(spot.Value, game);
                     playerStreetTakings += e;
                     earned += e;
                 }
@@ -224,16 +295,53 @@ namespace OSistema.Crime
         /// <summary>Take a parked scooter off the street and hide it; its owner will call to buy it back.</summary>
         public void StealForRansom(Vector2Int at, Game game)
         {
+            var p = game.Player;
+            if (p == null || p.Riding) return;
+            // You ride off on that very scooter (same model, same colour) to Nanninella's, who hides it.
+            p.StolenLook = OSistema.Views.PropArt.ParkedScooterLook(at.x, at.y);
             game.Map.SetBuilding(at.x, at.y, null);
             H.cavalloDay = game.Clock.Day;
-            H.cavalli++;
-            if (H.cavalli == 1) H.cavalloAt = game.Ticks.TicksGame + GameClock.TicksPerHour * game.Rng.Next(4, 9);
+            H.cavalloRiding = true;
+            p.StolenScooter = true;
+            p.Riding = p.OnScooter = true;
+            p.Velocity = Vector2.zero;
+            p.ScooterSpeed = 0f;
+            p.Carrying = "a stolen scooter";
+            p.EndCurrentJob(game);
             if (game.Rng.NextDouble() < 0.3)
             {
                 game.Territory.AddHeat(at, 6f);
                 game.Log.Add("Someone on a balcony saw you take it. Heat is rising.", MessageKind.Bad, at);
             }
-            else game.Log.Add("Gone in a minute, hidden in a garage. Now you wait for the owner to ask around.", MessageKind.Info, at);
+            game.Log.Add("It started first kick. Ride it to Nanninella: she'll hide it until the owner comes asking.", MessageKind.Info, at);
+        }
+
+        /// <summary>Every tick while riding a cavallo: at Nanninella's, she takes it and the wait for the owner begins.</summary>
+        public void CheckCavalloDelivery(Game game)
+        {
+            if (!H.cavalloRiding) return;
+            var p = game.Player;
+            if (p == null || !p.StolenScooter || p.Dead) { H.cavalloRiding = false; return; }
+            var nanni = game.Contacts.ByName(ContactBook.Nanninella);
+            if (nanni == null || (nanni.Position - p.Position).sqrMagnitude > 2.5f * 2.5f) return;
+            H.cavalloRiding = false;
+            p.StolenScooter = false;
+            p.Riding = p.OnScooter = false;
+            p.Velocity = Vector2.zero;
+            p.ScooterSpeed = 0f;
+            p.Carrying = null;
+            p.Mover.Unstick(game.Map);
+            H.cavalli++;
+            if (H.cavalli == 1) H.cavalloAt = game.Ticks.TicksGame + GameClock.TicksPerHour * game.Rng.Next(4, 9);
+            game.Log.Add("Nanninella rolls it into the back of her garage. \"Mo' aspettammo ca 'o padrone se fa vivo.\" Now you wait for the owner to ask around.", MessageKind.Good, p.Cell);
+        }
+
+        /// <summary>Where the cavallo goes, for the objective line.</summary>
+        public Vector2? CavalloDropAt(Game game)
+        {
+            if (!H.cavalloRiding) return null;
+            var nanni = game.Contacts.ByName(ContactBook.Nanninella);
+            return nanni?.Position;
         }
 
         GameEvent CavalloCall(Game game)

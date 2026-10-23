@@ -153,6 +153,15 @@ namespace OSistema.Views
             return s;
         }
 
+        /// <summary>The parked scooter at a cell as the sprite number (model × 4 + colour), so a stolen one looks the same ridden.</summary>
+        public static int ParkedScooterLook(int x, int y)
+        {
+            var names = ByDef["parked_scooter"];
+            uint h = (uint)(x * 73856093) ^ (uint)(y * 19349663);
+            var n = names[(int)(h % (uint)names.Length)];
+            return int.TryParse(n.Substring(n.Length - 2), out int i) ? i : 0;
+        }
+
         /// <summary>A moving scooter, by model (0 cheap step-through ... 3 maxi) and colour.</summary>
         public static Sprite Scooter(int model, int colour) => Load($"Vehicles/scooter_{Mathf.Clamp(model, 0, 3) * 4 + ((colour % 4) + 4) % 4:00}");
 

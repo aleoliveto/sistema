@@ -210,8 +210,8 @@ def torso_and_arms(group, i, fit):
     ascale = (body_w * g["arm_thick"]) / aw * float(af.get("size", 1.0))
     arm_w = aw * ascale
     pivot_src = ((ab[0] + ab[2]) / 2, ab[1] + ah * ARM_HIDDEN)
-    px = left_edge + arm_w * 0.42
-    rx = right_edge - arm_w * 0.42
+    px = left_edge + arm_w * 0.58
+    rx = right_edge - arm_w * 0.58
 
     def col_top(x):
         col = np.where(t[:, int(round(x)), 3] > 60)[0]

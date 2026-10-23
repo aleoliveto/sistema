@@ -408,7 +408,6 @@ namespace OSistema.Core
             game.Stock.EmptyPacks = 10;
             game.PlaceStarterTable();
             game.SpawnStartingCrew(setup);
-            if (game.Player != null) game.Player.Armor = Pawn.MaxArmor;   // a vest under the jacket
             game.SetupClans(rng);
             game.Favours.Setup(game, rng);
             game.Log.Add($"{game.Player?.FirstName ?? "Gennaro"} is seventeen. He lives with his mother in a basso in the rione, and he wants more.");

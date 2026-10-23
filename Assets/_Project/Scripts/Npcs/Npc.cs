@@ -119,6 +119,8 @@ namespace OSistema.Npcs
 
         public Npc Spawn(NpcKind kind, Vector2Int cell, float speed, Color32 color)
         {
+            // People on foot stroll; vehicles keep their speed.
+            if (kind != NpcKind.Scooter && kind != NpcKind.Ambulance) speed *= Pawn.WalkScale;
             var npc = new Npc(nextId++, kind, cell, speed, color);
             npcs.Add(npc);
             Added?.Invoke(npc);
@@ -249,7 +251,7 @@ namespace OSistema.Npcs
                         return;
                     }
                     // At the player's corner they come to him, wherever he's standing now.
-                    bool corner = npc.Square == game.Org.DealingCorner && game.Player != null;
+                    bool corner = game.Org.IsPlayerCorner(npc.Square) && game.Player != null;
                     var goal = corner ? game.Player.Cell : npc.Square.Cell;
                     if (npc.Walker == null || (corner && (npc.Walker.Target - goal).sqrMagnitude > 2)) npc.Walker = new Walker(goal, adjacent: true);
                     var status = npc.Walker.Tick(npc.Mover, 1f, game);
@@ -268,7 +270,7 @@ namespace OSistema.Npcs
                         Leave(npc);
                         return;
                     }
-                    if (npc.Square == game.Org.DealingCorner)
+                    if (game.Org.IsPlayerCorner(npc.Square))
                     {
                         // At the player's corner: wait for him to hand it over (E). If he steps away, follow.
                         var me = game.Player;
@@ -280,7 +282,7 @@ namespace OSistema.Npcs
                         }
                         if (--npc.Timer <= 0)
                         {
-                            game.Org.LoseCustomer(npc.Square, game);
+                            if (npc.Square == game.Org.DealingCorner) game.Org.LoseCustomer(npc.Square, game);
                             Leave(npc);
                         }
                         return;

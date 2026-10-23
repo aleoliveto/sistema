@@ -55,6 +55,9 @@ namespace OSistema.UI
             }
             if (p.Needs.Rest < 0.15f) return Station(game, p.Cell, BuildingDefs.Bed, "You're dead on your feet: sleep in your bed (E)", "You're exhausted: find somewhere to sleep");
 
+            var cavallo = org.CavalloDropAt(game);
+            if (cavallo.HasValue) return Go("Take the scooter to Nanninella", cavallo.Value);
+
             var visitor = game.Events.Visitor;
             if (visitor != null) return Go($"{game.Events.VisitorTitle}: someone wants a word with you", visitor.Mover.Position);
 

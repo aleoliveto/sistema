@@ -436,6 +436,20 @@ namespace OSistema.UI
                     game.Log.Add("A pistol, wrapped in a cloth, now sits in the stash.");
                 }
             }), bizBody, "btn--small").style.alignSelf = Align.FlexStart;
+            var boss = game.Player;
+            Ui.Text($"Your vest: <b>{(boss == null || boss.Armor <= 0.5f ? "none" : $"{boss.Armor / Pawn.MaxArmor:P0}")}</b>. It soaks the first hits and doesn't mend: once shot through, buy another.", bizBody, "small", "wrap");
+            Ui.Btn($"Buy a bulletproof vest (€{Prices.Vest})", Do(() =>
+            {
+                if (boss == null) return;
+                if (boss.Armor >= Pawn.MaxArmor - 0.5f) game.Log.Add("You're already wearing a good vest.", MessageKind.Info);
+                else if (!org.RequireRank(1, "A bulletproof vest", game, out var rankError)) game.Log.Add(rankError, MessageKind.Bad);
+                else if (!org.Pay(Prices.Vest, game, out var error)) game.Log.Add(error, MessageKind.Bad);
+                else
+                {
+                    boss.Armor = Pawn.MaxArmor;
+                    game.Log.Add("A vest under the jacket. Heavy, hot, and worth it.");
+                }
+            }), bizBody, "btn--small").style.alignSelf = Align.FlexStart;
         }
 
         void RivalsTab()

@@ -195,7 +195,7 @@ namespace OSistema.Crime
             Soldiers = Mathf.Max(0, Soldiers - 1);
             game.Territory.AddHeat(pawn.Cell, 15f);
             game.Org.AddEvidence(6f, game);
-            game.Log.Add($"A soldier of the {Name} lies dead in the street. {Soldiers} of theirs left.", MessageKind.Info);
+            game.Log.Note($"A soldier of the {Name} lies dead in the street. {Soldiers} of theirs left.", MessageKind.Info);
             if (Soldiers == 0) Collapse(game);
         }
 
@@ -457,7 +457,8 @@ namespace OSistema.Crime
             {
                 var zone = EmptyZoneNextDoor(game);
                 if (zone != null && ClaimZone(zone, game))
-                    game.Log.Add($"Word in the street: the {Name} have opened a piazza in {zone.Name}.", MessageKind.Info);
+                    game.Log.Note($"Word in the street: the {Name} have opened a piazza in {zone.Name}.", MessageKind.Info);
+                    game.Newspaper.Report(game, 1, "New dealing spot, say residents", $"In {zone.Name}, neighbours complain of a new piazza di spaccio run, they say, by the {Name}.");
             }
         }
 
@@ -603,7 +604,7 @@ namespace OSistema.Crime
             var zone = game.Territory.Zones[target.ZoneId];
             bool ours = !target.Rival;
             if (!ours && game.Rng.NextDouble() < 0.5)
-                game.Log.Add($"The {Name} are moving on the {game.Clans[target.Clan].Name}'s piazza in {zone.Name}.", MessageKind.Info, target.Cell);
+                game.Log.Note($"The {Name} are moving on the {game.Clans[target.Clan].Name}'s piazza in {zone.Name}.", MessageKind.Info, target.Cell);
         }
 
         // Assaults on someone else's corner: how long nobody has been there to stop them.
@@ -643,7 +644,8 @@ namespace OSistema.Crime
                     loser.Squares.Remove(sq);
                     loser.Soldiers = Mathf.Max(0, loser.Soldiers - 1);
                     if (loser.Squares.Count == 0 && loser.Soldiers <= 3) loser.Collapse(game);
-                    game.Log.Add($"The {Name} took the {loser.Name}'s piazza in {zone.Name}.", MessageKind.Info, sq.Cell);
+                    game.Log.Note($"The {Name} took the {loser.Name}'s piazza in {zone.Name}.", MessageKind.Info, sq.Cell);
+                    game.Newspaper.Report(game, 2, "Turf war in the old town", $"Residents of {zone.Name} describe new faces on the corner: the {Name} have pushed out the {loser.Name}.");
                 }
                 var mine = new DrugSquare { Cell = sq.Cell, ZoneId = sq.ZoneId, Rival = true, OpenHour = 0, CloseHour = 0, Clan = Id };
                 Squares.Add(mine);

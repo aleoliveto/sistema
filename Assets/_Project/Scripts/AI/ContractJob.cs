@@ -174,6 +174,7 @@ namespace OSistema.AI
                         game.Contracts.Finish(c, false, "someone rode off on the scooter first.", game);
                         return true;
                     }
+                    Pawn.StolenLook = OSistema.Views.PropArt.ParkedScooterLook(at.x, at.y);
                     game.Map.SetBuilding(at.x, at.y, null);
                     if (Witnessed(game, at))
                     {

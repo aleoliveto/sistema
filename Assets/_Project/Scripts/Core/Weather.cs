@@ -36,7 +36,7 @@ namespace OSistema.Core
             if (hour >= nextChangeHour)
             {
                 var rng = game.Rng;
-                bool wet = rng.NextDouble() < (target > 0f ? 0.55 : 0.16);   // rain tends to stay a while
+                bool wet = rng.NextDouble() < (target > 0f ? 0.45 : 0.05);   // Naples is mostly dry; rain, when it comes, stays a while
                 target = wet ? 0.4f + (float)rng.NextDouble() * 0.6f : 0f;
                 nextChangeHour = hour + 2 + rng.Next(5);
             }

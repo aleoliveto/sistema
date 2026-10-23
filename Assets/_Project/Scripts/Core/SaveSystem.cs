@@ -547,7 +547,7 @@ namespace OSistema.Core
 
             game.EnsurePlayer();
             var loadedBoss = game.Org.Boss(game);
-            if (loadedBoss != null) loadedBoss.Titled = game.Org.Rank >= 1;
+            if (loadedBoss != null) loadedBoss.Titled = game.Org.Rank >= Crime.Organization.RankNames.Length - 1;
             game.Log.Add("Game loaded.", MessageKind.Info);
             return game;
         }

@@ -22,7 +22,11 @@ namespace OSistema.Pawns
     public sealed class Pawn
     {
         /// <summary>Cells per tick on cost-1 terrain (~4.5 cells/s at 1x).</summary>
-        public const float BaseSpeed = 0.075f;
+        /// <summary>Everyone on foot walks at this share of the old pace (it read as running).</summary>
+        public const float WalkScale = 0.72f;
+        /// <summary>The old walking pace: scooters are still tuned to it.</summary>
+        public const float ScooterBase = 0.075f;
+        public const float BaseSpeed = ScooterBase * WalkScale;
         const float BarkSeconds = 3.5f;
         const int CheckInterval = 250;
         const int MentalBreakTicks = 15000; // ~6 in-game hours
@@ -216,6 +220,7 @@ namespace OSistema.Pawns
         public float Stamina = 1f;       // the player's breath for running
         public bool Winded;              // ran out of breath: no running until it comes back
         public Vector2 Velocity;         // the player's scooter keeps its momentum
+        public int StolenLook = -1;      // which parked scooter it was (PropArt.ParkedScooterLook)
         public bool StolenScooter;       // riding someone else's, for Nanninella
         public float Heading;            // the player's scooter: degrees, 0 = north, positive = turning left
         public float ScooterSpeed;       // forward speed along the heading, cells per second

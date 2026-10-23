@@ -79,7 +79,7 @@ namespace OSistema.Crime
                 if (game.Stock.Meals < want)
                 {
                     game.Stock.Meals = want;
-                    if (clock.Hour == 13) game.Log.Add("Mammà left a pot of pasta e patate on the stove. \"Mangia, ca si' sicco.\"", MessageKind.Good);
+                    if (clock.Hour == 13) game.Log.Note("Mammà left a pot of pasta e patate on the stove. \"Mangia, ca si' sicco.\"", MessageKind.Good);
                 }
             }
             ReopenBurnedShops(game);
@@ -138,7 +138,7 @@ namespace OSistema.Crime
         void DeliverOrder(Game game)
         {
             game.Stock.Product += PendingOrderUnits;
-            game.Log.Add($"The supplier's courier dropped off {PendingOrderUnits} units at the basso.", MessageKind.Good);
+            game.Log.Note($"The supplier's courier dropped off {PendingOrderUnits} units at the basso.", MessageKind.Good);
             PendingOrderUnits = 0;
         }
 
@@ -209,7 +209,7 @@ namespace OSistema.Crime
                 }
             }
 
-            if (unpaid == 0) game.Log.Add($"Payday: €{paidTotal} paid out. The crew is happy.", MessageKind.Good);
+            if (unpaid == 0) game.Log.Note($"Payday: €{paidTotal} paid out. The crew is happy.", MessageKind.Good);
             else game.Log.Add($"Payday: €{paidTotal} paid, {unpaid} left without their money.", MessageKind.Bad);
         }
 
@@ -375,7 +375,7 @@ namespace OSistema.Crime
 
         /// <summary>Whether a square (ours or the rivals') is still operating.</summary>
         public bool IsActiveSquare(DrugSquare square, Game game) =>
-            square != null && (square == DealingCorner || Squares.Contains(square) || (square.Rival && square.Clan < game.Clans.Count && game.Clans[square.Clan].Squares.Contains(square)));
+            square != null && (square == DealingCorner || square == StallCorner || Squares.Contains(square) || (square.Rival && square.Clan < game.Clans.Count && game.Clans[square.Clan].Squares.Contains(square)));
 
         public void Sell(DrugSquare square, Pawn pusher, Game game)
         {
@@ -411,6 +411,8 @@ namespace OSistema.Crime
         void SpawnCustomers(Game game)
         {
             SpawnCornerCustomers(game);
+            SpawnStallCustomers(game);
+            CheckCavalloDelivery(game);
             if (Squares.Count == 0 && !game.RivalSquares.Any()) return;
             if (game.Npcs.Count(NpcKind.Customer) >= MaxCustomers) return;
             if (game.Territory.Entrances.Count == 0) return;
@@ -592,7 +594,7 @@ namespace OSistema.Crime
                 if (def != null) game.Map.SetBuilding(b.Cell.x, b.Cell.y, def);
                 b.Status = BusinessStatus.Free;
                 b.Defiance = 0.05f;
-                game.Log.Add($"{b.Name} has reopened. The owner keeps their eyes down.");
+                game.Log.Note($"{b.Name} has reopened. The owner keeps their eyes down.");
             }
         }
 
@@ -614,7 +616,7 @@ namespace OSistema.Crime
                     Respect = Mathf.Min(100f, Respect + 2f);
                     AddEvidence(1f, game);
                     collector.Say("pizzo_ok");
-                    game.Log.Add($"{b.Name} agreed to pay €{b.WeeklyPizzo} a week.", MessageKind.Good);
+                    game.Log.Note($"{b.Name} agreed to pay €{b.WeeklyPizzo} a week.", MessageKind.Good);
                     Collect(b, week, game);
                 }
                 else
@@ -650,7 +652,7 @@ namespace OSistema.Crime
             game.Stock.Cash += b.WeeklyPizzo;
             game.PopupAt(Pawns.Mover.CellCenter(b.Cell), $"+€{b.WeeklyPizzo}");
             b.LastCollectedWeek = week;
-            game.Log.Add($"Collected €{b.WeeklyPizzo} pizzo from {b.Name}.", MessageKind.Good);
+            game.Log.Note($"Collected €{b.WeeklyPizzo} pizzo from {b.Name}.", MessageKind.Good);
         }
     }
 }

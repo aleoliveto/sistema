@@ -13,13 +13,24 @@ namespace OSistema.Crime
         public static readonly string[] RankNames = { "Guaglione", "Paranza", "Clan", "'O Sistema" };
         public const float FriendsRespect = 6f;   // when the boys from the vicolo start wanting in
         static readonly float[] RankRespect = { 0f, 15f, 40f, 70f };
-        static readonly int[] RankJobs = { 0, 4, 8, 12 };
+        static readonly int[] RankJobs = { 0, 4, 12, 22 };
         static readonly int[] RankMaxCrew = { 4, 6, 9, 12 };
         static readonly int[] RankMaxSquares = { 0, 1, 2, 3 };
 
         public int Rank { get; private set; }
 
         public int CompletedJobs(Game game) => game.Contracts.Completed;
+
+        int CrewCount(Game game)
+        {
+            int n = 0;
+            foreach (var p in game.Pawns.Crew) if (!p.Dead) n++;
+            return n;
+        }
+
+        /// <summary>Past Paranza a name isn't enough: the family must hold a piazza and have a full crew.</summary>
+        bool HoldsEnough(Game game, int next) =>
+            next < 2 || (Squares.Count >= 1 && CrewCount(game) >= RankMaxCrew[next - 1]);
 
         public string RankName => RankNames[Rank];
         public int MaxCrewForRank => Rank == 0 && Respect < FriendsRespect ? 1 : RankMaxCrew[Rank];
@@ -39,7 +50,8 @@ namespace OSistema.Crime
             if (Rank == 0 && Respect < FriendsRespect)
                 return $"Make a name for yourself: respect {Respect:0}/{FriendsRespect:0}, and the boys from the vicolo will want in.";
             int next = Rank + 1;
-            return $"Next: {RankNames[next]} · respect {Respect:0}/{RankRespect[next]:0} · lavoretti {CompletedJobs(game)}/{RankJobs[next]}";
+            string more = next >= 2 ? $" · piazza {(Squares.Count >= 1 ? "✓" : "✗")} · crew {CrewCount(game)}/{RankMaxCrew[next - 1]}" : "";
+            return $"Next: {RankNames[next]} · respect {Respect:0}/{RankRespect[next]:0} · lavoretti {CompletedJobs(game)}/{RankJobs[next]}{more}";
         }
 
         /// <summary>What the next rank asks, as a checklist: (line, done). Empty at the top.</summary>
@@ -50,6 +62,12 @@ namespace OSistema.Crime
             int next = Rank + 1;
             list.Add(($"Respect {Mathf.Min(Respect, RankRespect[next]):0}/{RankRespect[next]:0}", Respect >= RankRespect[next]));
             list.Add(($"Lavoretti done {Mathf.Min(CompletedJobs(game), RankJobs[next])}/{RankJobs[next]}", CompletedJobs(game) >= RankJobs[next]));
+            if (next >= 2)
+            {
+                list.Add(("A piazza of your own", Squares.Count >= 1));
+                int need = RankMaxCrew[next - 1];
+                list.Add(($"A full crew {Mathf.Min(CrewCount(game), need)}/{need}", CrewCount(game) >= need));
+            }
             return list;
         }
 
@@ -60,7 +78,8 @@ namespace OSistema.Crime
             int next = Rank + 1;
             float r = RankRespect[next] <= 0f ? 1f : Mathf.Clamp01(Respect / RankRespect[next]);
             float j = RankJobs[next] <= 0 ? 1f : Mathf.Clamp01(CompletedJobs(game) / (float)RankJobs[next]);
-            return Mathf.Min(r, j);
+            float h = next < 2 ? 1f : 0.5f * (Squares.Count >= 1 ? 1f : 0f) + 0.5f * Mathf.Clamp01(CrewCount(game) / (float)RankMaxCrew[next - 1]);
+            return Mathf.Min(Mathf.Min(r, j), h);
         }
 
         public static string UnlocksAt(int rank) => rank switch
@@ -78,7 +97,7 @@ namespace OSistema.Crime
         {
             CheckIntroduction(game);
             var head = Boss(game);
-            if (head != null) head.Titled = Rank >= 1;
+            if (head != null) head.Titled = Rank >= RankNames.Length - 1;
             if (head != null && !head.Controlled) game.EnsurePlayer();
 
             // Word gets round: the friends from the vicolo call.
@@ -103,10 +122,11 @@ namespace OSistema.Crime
 
             int rank = 0;
             for (int r = 1; r < RankNames.Length; r++)
-                if (Respect >= RankRespect[r] && CompletedJobs(game) >= RankJobs[r]) rank = r;
+                if (Respect >= RankRespect[r] && CompletedJobs(game) >= RankJobs[r] && HoldsEnough(game, r)) rank = r;
+                else break;
             if (rank <= Rank) return;
             Rank = rank;
-            if (head != null) head.Titled = Rank >= 1;
+            if (head != null) head.Titled = Rank >= RankNames.Length - 1;
             game.Log.Add($"The family is now a {RankName}. Unlocked: {UnlocksAt(rank)}.", MessageKind.Good);
             game.Events.Raise(EventCards.RankUp(game, rank));
             game.Newspaper.Report(game, 3, "A new power in the old town?", $"Shopkeepers speak, off the record, of a family growing in influence. They call them a {RankName.ToLower()}.");

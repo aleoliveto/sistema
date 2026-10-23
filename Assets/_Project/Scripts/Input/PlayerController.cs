@@ -223,6 +223,7 @@ namespace OSistema.Input
                 if (kb.digit5Key.wasPressedThisFrame) game.Ticks.SetSpeed(5); // debug ×120
             }
             if (kb.eKey.wasPressedThisFrame && CurrentTool != Tool.Build) Interaction()?.Act();
+            if (kb.gKey.wasPressedThisFrame && CurrentTool != Tool.Build) SaleAction()?.Act();
             if (kb.fKey.wasPressedThisFrame) follow = game.Player;
             if (CurrentTool == Tool.Build && kb.qKey.wasPressedThisFrame) PlacementRotation = (PlacementRotation + 1) % 4;
             if (CurrentTool == Tool.Build && kb.eKey.wasPressedThisFrame) PlacementRotation = (PlacementRotation + 3) % 4;
@@ -578,7 +579,7 @@ namespace OSistema.Input
                 // Better scooters are faster: the maxi leaves a step-through standing.
                 p.RideModel = game.Stock.ScooterModel;
                 p.RideColour = game.Stock.ScooterColour;
-                float top = Pawn.BaseSpeed * TickManager.TicksPerSecond * 2.6f * (p.StolenScooter ? 1f : 0.92f + 0.1f * game.Stock.ScooterModel);
+                float top = Pawn.ScooterBase * TickManager.TicksPerSecond * 2.6f * (p.StolenScooter ? 1f : 0.92f + 0.1f * game.Stock.ScooterModel);
                 bool gas = kb.wKey.isPressed, brake = kb.sKey.isPressed;
                 float steer = (kb.aKey.isPressed ? 1f : 0f) - (kb.dKey.isPressed ? 1f : 0f);
                 if (gas) p.ScooterSpeed = Mathf.MoveTowards(p.ScooterSpeed, top, 8f * dt);
@@ -640,7 +641,6 @@ namespace OSistema.Input
             if (reticle != null && !Aiming) reticle.enabled = false;
             p.Bloom = Mathf.MoveTowards(p.Bloom, 0f, 12f * dt);
             // Home, out of the fight: a fresh vest under the jacket.
-            if (p.Armor < Pawn.MaxArmor && game.PlayerBase.Contains(p.Cell) && game.Ticks.TicksGame - p.LastDamagedTick > 600) p.Armor = Pawn.MaxArmor;
             bool reloading = p.ReloadUntil > Time.unscaledTime;
             if (!reloading && p.ReloadUntil > 0f)
             {
@@ -818,6 +818,17 @@ namespace OSistema.Input
             public void Act() => Do();
         }
 
+        /// <summary>A buyer waiting in front of you (corner, piazza or stall): G sells, and so does E.</summary>
+        public Action SaleAction()
+        {
+            var p = game.Player;
+            if (p == null || !p.CanAct || p.Riding) return null;
+            var customer = game.Org.WaitingCustomer(game);
+            if (customer == null) return null;
+            string label = customer.Square == game.Org.StallCorner ? game.Org.StallOffer(customer, game) : $"Sell a dose · €{Prices.ProductStreet}";
+            return new Action { Label = label, Do = () => game.Org.SellToCustomer(customer, game) };
+        }
+
         public Action Interaction()
         {
             var p = game.Player;
@@ -837,9 +848,8 @@ namespace OSistema.Input
                 } };
             }
 
-            var customer = game.Org.WaitingCustomer(game);
-            if (customer != null && game.Stock.Product > 0)
-                return new Action { Label = $"Sell a dose · €{Prices.ProductStreet}", Do = () => game.Org.SellToCustomer(customer, game) };
+            var sale = SaleAction();
+            if (sale != null) return sale;
 
             var contact = ContactInReach(out _);
             if (contact != null) return new Action { Label = $"Talk to {contact.Name}", Do = () => OrderTalk(contact) };

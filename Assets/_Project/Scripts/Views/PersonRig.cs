@@ -264,7 +264,7 @@ namespace OSistema.Views
             // Arms swing while walking; both hands come forward when aiming.
             moving = Mathf.MoveTowards(moving, !lying && !Seated && speed > 0.2f ? 1f : 0f, dt * 6f);
             // About one full step cycle (left and right) every 1.5 cells.
-            stride += speed * dt * 4.2f;
+            stride += speed * dt * 5.2f;
             float swing = Mathf.Sin(stride) * 0.12f * moving;
             if (Seated && !lying)
             {
@@ -309,9 +309,9 @@ namespace OSistema.Views
                 // rises and falls with each step. Running exaggerates all of it; standing, he breathes.
                 float run = Mathf.Clamp01((speed - 3.5f) / 3f);
                 float amp = moving * (1f + run * 0.8f);
-                float sway = Mathf.Sin(stride) * 7f * amp;
+                float sway = Mathf.Sin(stride) * 2.2f * amp;
                 float breathe = Seated ? 0f : Mathf.Sin(Time.time * 2.2f + stride) * 0.012f * (1f - moving);
-                float step = Mathf.Abs(Mathf.Sin(stride)) * 0.05f * amp;
+                float step = Mathf.Abs(Mathf.Sin(stride)) * 0.015f * amp;
                 body.transform.localRotation = Quaternion.Euler(0f, 0f, 180f + sway);
                 if (neck != null) neck.transform.localRotation = body.transform.localRotation;
                 // Standing about: every so often a glance to one side.
@@ -322,24 +322,24 @@ namespace OSistema.Views
                     float n = Mathf.PerlinNoise(idleLook * 0.35f, lookSeed);
                     look = n > 0.62f ? (n - 0.62f) * 110f : n < 0.3f ? (n - 0.3f) * 90f : 0f;
                 }
-                var headRot = Quaternion.Euler(0f, 0f, 180f - sway * 0.35f + look);
+                var headRot = Quaternion.Euler(0f, 0f, 180f - sway * 0.2f + look);
                 head.transform.localRotation = headRot;
                 hair.transform.localRotation = headRot;
                 if (hat != null) hat.transform.localRotation = headRot;
                 // Leaning into the run.
-                var lean = new Vector3(0f, 0.04f * run * moving, 0f);
+                var lean = new Vector3(0f, 0.02f * run * moving, 0f);
                 head.transform.localPosition = lean;
                 hair.transform.localPosition = lean;
                 if (hat != null) hat.transform.localPosition = lean;
                 body.transform.localScale = new Vector3(1f + breathe, 1f + breathe + step, 1f);
                 // The weight shifts onto each foot in turn.
-                body.transform.localPosition = new Vector3(Mathf.Sin(stride) * 0.025f * amp, 0.03f * run * moving, 0f);
+                body.transform.localPosition = new Vector3(Mathf.Sin(stride) * 0.008f * amp, 0.015f * run * moving, 0f);
                 if (neck != null) neck.transform.localPosition = body.transform.localPosition;
             }
             else
             {
                 // A slight bob of the shoulders as the weight shifts.
-                body.transform.localScale = Vector3.one * (1f + Mathf.Abs(Mathf.Sin(stride)) * 0.04f * moving);
+                body.transform.localScale = Vector3.one * (1f + Mathf.Abs(Mathf.Sin(stride)) * 0.015f * moving);
             }
 
             root.position = new Vector3(position.x, position.y, 0f);
@@ -398,10 +398,10 @@ namespace OSistema.Views
             {
                 // Mostly a swing from the shoulder, with a little stretch as the hand comes forward.
                 float amp = (1f + 0.6f * run) * moving;
-                l.y = 1f + phase * 0.2f * amp;
-                r.y = 1f - phase * 0.2f * amp;
-                rotL = phase * 9f * amp;
-                rotR = phase * 9f * amp;
+                l.y = 1f + phase * 0.1f * amp;
+                r.y = 1f - phase * 0.1f * amp;
+                rotL = phase * 5f * amp;
+                rotR = phase * 5f * amp;
             }
             // Arms point to the figure's front; the sprites face south and the body is turned round, so +y scale reaches forward.
             armL.transform.localScale = l;
