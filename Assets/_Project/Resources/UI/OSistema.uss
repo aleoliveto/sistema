@@ -1337,7 +1337,7 @@
 
 /* =====================================================================
    v5: painted pieces from Tools/ArtGen/ui.py (Resources/UI/Art), drawn at 2x.
-   Frames and buttons are 9-slice; -unity-slice-scale 0.5 brings them back to screen size.
+   Frames and buttons are 9-slice, drawn at the art's own scale.
    ===================================================================== */
 .panel {
     background-image: resource("UI/Art/frame_panel");
