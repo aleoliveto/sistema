@@ -127,18 +127,21 @@ namespace OSistema.World
         {
             Id = "pizzeria_counter", Label = "Pizzeria", Passable = false, WorkToBuild = 600,
             Color = new Color32(222, 92, 40, 255), Shop = ShopKind.Pizzeria,
+            Size = new Vector2Int(2, 1),
         };
 
         public static readonly BuildingDef SalumeriaCounter = new BuildingDef
         {
             Id = "salumeria_counter", Label = "Salumeria", Passable = false, WorkToBuild = 600,
             Color = new Color32(232, 196, 92, 255), Shop = ShopKind.Salumeria,
+            Size = new Vector2Int(2, 1),
         };
 
         public static readonly BuildingDef FarmaciaCounter = new BuildingDef
         {
             Id = "farmacia_counter", Label = "Farmacia", Passable = false, WorkToBuild = 600,
             Color = new Color32(60, 190, 120, 255), Shop = ShopKind.Farmacia,
+            Size = new Vector2Int(2, 1),
         };
 
         // Businesses that only matter for pizzo (for now).
@@ -146,18 +149,21 @@ namespace OSistema.World
         {
             Id = "bar_counter", Label = "Bar", Passable = false, WorkToBuild = 600,
             Color = new Color32(170, 120, 200, 255), Shop = ShopKind.Bar,
+            Size = new Vector2Int(2, 1),
         };
 
         public static readonly BuildingDef MacelleriaCounter = new BuildingDef
         {
             Id = "macelleria_counter", Label = "Macelleria", Passable = false, WorkToBuild = 600,
             Color = new Color32(190, 60, 80, 255), Shop = ShopKind.Macelleria,
+            Size = new Vector2Int(2, 1),
         };
 
         public static readonly BuildingDef TabaccheriaCounter = new BuildingDef
         {
             Id = "tabaccheria_counter", Label = "Tabaccheria", Passable = false, WorkToBuild = 600,
             Color = new Color32(80, 140, 200, 255), Shop = ShopKind.Tabaccheria,
+            Size = new Vector2Int(2, 1),
         };
 
         // What's left of a shop after arson. Reverts to the counter when the shop reopens.
@@ -304,6 +310,14 @@ namespace OSistema.World
         public static readonly BuildingDef PottedPalm = Deco("potted_palm", "Palm", 1.5f);
         public static readonly BuildingDef Sideboard = Deco("sideboard", "Sideboard", 2f, 2, 1);
         public static readonly BuildingDef BurntShelf = Deco("burnt_shelf", "Burned shelves", -1f);
+        // From the ChatGPT furniture sheets (Tools/ArtGen/cut_world.py).
+        public static readonly BuildingDef CoatStand = Deco("coat_stand", "Coat stand", 0.5f);
+        public static readonly BuildingDef LaundryBasket = Deco("laundry_basket", "Laundry basket", 0.2f);
+        public static readonly BuildingDef TvCabinet = Deco("tv_cabinet", "TV cabinet", 1.5f, 2, 1);
+        public static readonly BuildingDef CornerSofa = Deco("corner_sofa", "Corner sofa", 4f, 2, 2);
+        public static readonly BuildingDef BunkBed = Deco("bunk_bed", "Bunk bed", 1f, 2, 2);
+        public static readonly BuildingDef PoolTable = Deco("pool_table", "Pool table", 1f, 2, 2);
+        public static readonly BuildingDef DiningSet = Deco("dining_set", "Dining table", 2f, 2, 2);
 
         public static readonly BuildingDef[] Buildable =
         {
@@ -327,6 +341,7 @@ namespace OSistema.World
             DoubleBed, CheckedTable, Till, Newsstand, GreenSofa, SlotMachine, CigStock, ClothesRail, CardTable, DrinksFridge,
             PartsBench, DiningChair, Nightstand, Dresser, Bookcase, WashingMachine, FloorLamp, BarStool, WineRack, FlourSacks,
             GlassVitrine, PharmacyCabinet, JewelCase, DisplayTable, BreadRack, TyreStack, Charred, PottedPalm, Sideboard, BurntShelf,
+            CoatStand, LaundryBasket, TvCabinet, CornerSofa, BunkBed, PoolTable, DiningSet,
         };
 
         public static BuildingDef ById(string id)

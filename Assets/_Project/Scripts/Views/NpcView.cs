@@ -87,11 +87,23 @@ namespace OSistema.Views
         void BuildAmbulance()
         {
             van = gameObject.AddComponent<SpriteRenderer>();
-            van.sprite = SpriteFactory.CenteredPixel;
             van.sharedMaterial = SpriteFactory.LitMaterial;
             van.sortingOrder = 14;
-            van.color = new Color(0.95f, 0.95f, 0.93f);
-            transform.localScale = new Vector3(0.9f, 1.8f, 1f);
+            // The painted 118 van (drawn nose down, so turned round), or a white box if the art is missing.
+            var art = PropArt.Load("Vehicles/wcar_em_03");
+            if (art != null)
+            {
+                van.sprite = art;
+                van.color = Color.white;
+                van.flipY = true;
+                transform.localScale = Vector3.one * 2.5f;
+            }
+            else
+            {
+                van.sprite = SpriteFactory.CenteredPixel;
+                van.color = new Color(0.95f, 0.95f, 0.93f);
+                transform.localScale = new Vector3(0.9f, 1.8f, 1f);
+            }
 
             var crossGo = new GameObject("Cross");
             crossGo.transform.SetParent(transform, false);
@@ -100,7 +112,7 @@ namespace OSistema.Views
             cross.sprite = SpriteFactory.CenteredPixel;
             cross.sharedMaterial = SpriteFactory.LitMaterial;
             cross.sortingOrder = 15;
-            cross.color = new Color(0.8f, 0.1f, 0.1f);
+            cross.color = van.sprite != SpriteFactory.CenteredPixel ? Color.clear : new Color(0.8f, 0.1f, 0.1f);   // the painted van has its own
 
             var lightGo = new GameObject("Beacon");
             lightGo.transform.SetParent(transform, false);

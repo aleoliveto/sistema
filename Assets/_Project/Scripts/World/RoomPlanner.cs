@@ -112,6 +112,9 @@ namespace OSistema.World
             if (p.Rng.NextDouble() < 0.7) p.Wall(OtherSide(p), BuildingDefs.HomeShrine);
             if (t >= 2) p.Corner(BuildingDefs.Plant);
             if (t >= 3) { p.Corner(BuildingDefs.FloorLamp); p.Wall(Back(p), BuildingDefs.Dresser); }
+            // The coat stand by the door, the washing waiting in its basket.
+            if (p.Rng.NextDouble() < 0.5) p.Corner(BuildingDefs.CoatStand);
+            if (p.Rng.NextDouble() < 0.4) p.Corner(BuildingDefs.LaundryBasket);
             if (t >= 1) p.WallFill(t >= 2 ? new[] { BuildingDefs.Wardrobe, BuildingDefs.Bookcase, BuildingDefs.Plant } : new[] { BuildingDefs.Bed, BuildingDefs.Pantry }, t == 1 ? 0.3f : 0.4f);
         }
 
@@ -123,8 +126,11 @@ namespace OSistema.World
             p.Run(BuildingDefs.Pantry);
             if (t >= 2 && p.Rng.NextDouble() < 0.7) p.Run(BuildingDefs.WashingMachine);
             if (p.Centre(t >= 1 ? BuildingDefs.CheckedTable : BuildingDefs.Table, use: true) && t >= 1) p.Chairs(t >= 2 ? 3 : 2);
-            if (t >= 1) { p.Wall(SideOf(p), BuildingDefs.Sofa); p.Wall(OtherSide(p), BuildingDefs.Television); }
+            // A comfortable home: the corner sofa and a TV cabinet; otherwise the old sofa and the set on a stand.
+            if (t >= 3 && p.Corner(BuildingDefs.CornerSofa)) p.Wall(OtherSide(p), BuildingDefs.TvCabinet);
+            else if (t >= 1) { p.Wall(SideOf(p), BuildingDefs.Sofa); p.Wall(OtherSide(p), t >= 2 ? BuildingDefs.TvCabinet : BuildingDefs.Television); }
             if (t >= 2) p.Wall(SideOf(p), BuildingDefs.Sideboard);
+            if (p.Rng.NextDouble() < 0.4) p.Corner(BuildingDefs.CoatStand);
             if (t >= 3) p.Wall(OtherSide(p), BuildingDefs.Armchair);
             if (p.Rng.NextDouble() < 0.6) p.Wall(OtherSide(p), BuildingDefs.HomeShrine);
             if (t >= 1) p.Corner(BuildingDefs.Plant);
@@ -141,6 +147,9 @@ namespace OSistema.World
             }
             else p.Wall(Back(p), BuildingDefs.Bed, use: true);
             if (p.Rng.NextDouble() < 0.6) p.Wall(Back(p), BuildingDefs.Bed, use: true);   // the children's
+            // A bunk bed where there's room: a picture of a big family (beds to sleep in stay the single ones).
+            if (t >= 1 && p.Rng.NextDouble() < 0.35) p.Wall(SideOf(p), BuildingDefs.BunkBed);
+            if (p.Rng.NextDouble() < 0.4) p.Corner(BuildingDefs.LaundryBasket);
             p.Wall(SideOf(p), BuildingDefs.Wardrobe);
             if (t >= 2) p.Wall(OtherSide(p), BuildingDefs.Dresser);
             if (t >= 3) p.Wall(SideOf(p), BuildingDefs.Bookcase);
@@ -179,7 +188,7 @@ namespace OSistema.World
                 Fill = new[] { BuildingDefs.WineRack, BuildingDefs.ShopShelf, BuildingDefs.DrinksFridge },
                 Back = new[] { BuildingDefs.WineRack, BuildingDefs.DrinksFridge, BuildingDefs.ShopShelf, BuildingDefs.WineRack },
                 Run = new[] { BuildingDefs.Till, BuildingDefs.IceCream }, Floor = new[] { BuildingDefs.CafeTable, BuildingDefs.CafeTable, BuildingDefs.CafeTable, BuildingDefs.CafeTable },
-                Side = new[] { BuildingDefs.SlotMachine, BuildingDefs.Television }, Stool = BuildingDefs.BarStool,
+                Side = new[] { BuildingDefs.SlotMachine, BuildingDefs.Television, BuildingDefs.PoolTable }, Stool = BuildingDefs.BarStool,
                 Store = new[] { BuildingDefs.Crates, BuildingDefs.DrinksFridge },
             };
             if (counter == BuildingDefs.SalumeriaCounter) return new Trade

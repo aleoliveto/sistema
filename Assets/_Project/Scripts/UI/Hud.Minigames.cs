@@ -103,6 +103,55 @@ namespace OSistema.UI
         static bool MouseHeld => Mouse.current != null && Mouse.current.leftButton.isPressed;
         static bool SpacePressed => Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame;
 
+        // ---------- The painted pieces (Resources/UI/Minigame, cut by Tools/ArtGen/cut_world.py) ----------
+
+        const int MgTable = 0, MgTobacco = 1, MgPackOpen = 4, MgPackShut = 5, MgScale = 6, MgBag = 7, MgDose = 8;
+
+        static Texture2D Mg(int i) => Resources.Load<Texture2D>($"UI/Minigame/mg_{i:00}");
+
+        static void Picture(VisualElement e, Texture2D t)
+        {
+            e.style.backgroundImage = t != null ? new StyleBackground(t) : new StyleBackground(StyleKeyword.None);
+            e.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
+            e.style.backgroundRepeat = new BackgroundRepeat(Repeat.NoRepeat, Repeat.NoRepeat);
+            e.style.backgroundPositionX = new BackgroundPosition(BackgroundPositionKeyword.Center);
+            e.style.backgroundPositionY = new BackgroundPosition(BackgroundPositionKeyword.Center);
+        }
+
+        /// <summary>The wooden table under the work, and a dark card behind the words so they read on it.</summary>
+        static void OnTheTable(VisualElement row, VisualElement words)
+        {
+            var wood = Mg(MgTable);
+            if (wood == null) return;
+            row.style.backgroundImage = new StyleBackground(wood);
+            row.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Cover);
+            row.AddToClassList("minigame__table");
+            words.AddToClassList("minigame__card");
+        }
+
+        /// <summary>What you've made this sitting, laid out on the table: a little row of bags or packs.</summary>
+        sealed class Tray
+        {
+            readonly VisualElement box;
+            readonly Texture2D icon;
+            public Tray(VisualElement parent, Texture2D icon)
+            {
+                this.icon = icon;
+                box = Ui.Row(parent);
+                box.AddToClassList("minigame__tray");
+            }
+
+            public void Add()
+            {
+                if (icon == null) return;
+                var e = new VisualElement();
+                e.AddToClassList("minigame__tray-item");
+                Picture(e, icon);
+                box.Add(e);
+                while (box.childCount > 24) box.RemoveAt(0);
+            }
+        }
+
         // ---------- What both tables share: a streak, a pop of feedback, and the odd scare ----------
 
         /// <summary>A word that pops up over the table and fades ("Spot on!", "Perfetto!").</summary>
@@ -231,6 +280,15 @@ namespace OSistema.UI
 
             var right = Ui.Box("col").Into(row);
             right.style.width = 240;
+            OnTheTable(row, right);
+            var tray = new Tray(panel, Mg(MgDose));
+            // The bag on the scale: clear plastic, the heap shows through it.
+            var digital = s.DigitalScale ? Mg(MgScale) : null;
+            if (digital != null) Picture(scale, digital);
+            var bagPic = new VisualElement();
+            bagPic.AddToClassList("minigame__bag");
+            Picture(bagPic, Mg(MgBag));
+            scale.Add(bagPic);
             var step = Ui.Text("", right, "bold", "wrap");
             // The button ties a quick knot: always holds, never a perfect seal. Space and the iron do better.
             var sealBtn = Ui.Btn("Tie a quick knot", () => { if (stage == 0 && w >= 0.1f) Finish(0.6f); }, right);
@@ -266,11 +324,15 @@ namespace OSistema.UI
             scale.Paint = (p, r) =>
             {
                 var c = new Vector2(r.width / 2f, r.height * 0.6f);
-                FillRect(p, 30, r.height * 0.72f, r.width - 60, 40, new Color(0.16f, 0.16f, 0.18f));
-                FillCircle(p, c, 78f, new Color(0.62f, 0.64f, 0.66f));
-                FillCircle(p, c, 72f, new Color(0.78f, 0.8f, 0.82f));
+                if (digital != null) c = new Vector2(r.width / 2f, r.height * 0.42f);
+                else
+                {
+                    FillRect(p, 30, r.height * 0.72f, r.width - 60, 40, new Color(0.16f, 0.16f, 0.18f));
+                    FillCircle(p, c, 78f, new Color(0.62f, 0.64f, 0.66f));
+                    FillCircle(p, c, 72f, new Color(0.78f, 0.8f, 0.82f));
+                }
                 // The open bag, and the little heap growing in it (bluish when cut).
-                FillRect(p, c.x - 34, c.y - 44, 68, 80, new Color(0.92f, 0.95f, 0.98f, 0.55f));
+                if (bagPic.style.backgroundImage.value.texture == null) FillRect(p, c.x - 34, c.y - 44, 68, 80, new Color(0.92f, 0.95f, 0.98f, 0.55f));
                 float heap = 6f + 22f * Mathf.Sqrt(Mathf.Max(0f, w));
                 if (w > 0.005f) FillCircle(p, c + new Vector2(0, 10), heap, cut ? new Color(0.93f, 0.95f, 1f) : new Color(0.97f, 0.97f, 0.96f));
                 // The bag's mouth: open while pouring, pressed and glowing while sealing.
@@ -344,6 +406,7 @@ namespace OSistema.UI
                     last = $"<color=#F2B866>{w:0.00} g — heavy. You gave product away.</color>";
                 }
                 org.MakeDose(w, game, cut ? 0.25f : 0f, sq);
+                tray.Add();
                 w = 0f; shown = 0f; stage = 0;
             }
 
@@ -436,6 +499,11 @@ namespace OSistema.UI
             var pop = new Pop(midCol);
             var right = Ui.Box("col").Into(row);
             right.style.width = 230;
+            OnTheTable(row, right);
+            var tray = new Tray(panel, Mg(MgPackShut));
+            Texture2D heapArt = Mg(MgTobacco), openArt = Mg(MgPackOpen), shutArt = Mg(MgPackShut);
+            bool painted = heapArt != null && openArt != null && shutArt != null;
+            int shown = -1;   // which picture the left canvas has: 0 tobacco, 1 open pack, 2 shut pack
             var step = Ui.Text("", right, "bold", "wrap");
             var action = Ui.Btn("", () => Action(), right);
             action.style.marginTop = 6;
@@ -455,6 +523,21 @@ namespace OSistema.UI
 
             left.Paint = (p, r) =>
             {
+                if (painted)
+                {
+                    if (pouring && stage == 0) FillCircle(p, new Vector2(r.width * 0.8f, r.height * 0.8f), 8f, new Color(0.6f, 0.42f, 0.22f));
+                    if (stage == 3 && !lidShut)
+                    {
+                        // The lid, swinging from the open pack's top edge.
+                        float ih = r.height * 0.92f, iw = ih * openArt.width / (float)openArt.height;
+                        float x0 = (r.width - iw) / 2f, y0 = (r.height - ih) / 2f;
+                        float a0 = Mathf.Sin(lidT * 4.2f) * 70f;
+                        var hinge = new Vector2(x0 + 4f, y0 + ih * 0.06f);
+                        var d0 = new Vector2(Mathf.Cos(a0 * Mathf.Deg2Rad), Mathf.Sin(a0 * Mathf.Deg2Rad));
+                        Line(p, hinge, hinge + d0 * (iw - 8f), 10f, new Color(0.72f, 0.1f, 0.12f, 0.95f));
+                    }
+                    return;
+                }
                 if (stage < 3)
                 {
                     // The tobacco pouch.
@@ -551,6 +634,7 @@ namespace OSistema.UI
                 if (q > 0.8f) { streak++; best = Mathf.Max(best, streak); } else streak = 0;
                 q = Mathf.Clamp01(q + Mathf.Min(streak, 5) * 0.02f);
                 org.MakePack(Mathf.RoundToInt(fill + spilled), q, game);
+                tray.Add();
                 packs++;
                 last = q > 0.85f ? $"<color=#8FD18A>★★★ A beautiful pack. They'll pass for the real thing.</color>"
                     : q > 0.6f ? "★★ A decent pack." : "<color=#F2B866>★ Loose and lumpy. It'll sell, cheap.</color>";
@@ -604,8 +688,13 @@ namespace OSistema.UI
                 var scared = scare.Tick(dt, stage < 4 && (fill > 0f || pouring));
                 if (scared != null) last = scared;
                 pop.Tick(dt);
-                brand.Show(stage >= 3);
-                warning.Show(stage >= 3);
+                brand.Show(stage >= 3 && !painted);
+                warning.Show(stage >= 3 && !painted);
+                if (painted)
+                {
+                    int want = stage < 3 ? 0 : stage == 3 && !lidShut ? 1 : 2;
+                    if (want != shown) { shown = want; Picture(left, want == 0 ? heapArt : want == 1 ? openArt : shutArt); }
+                }
 
                 step.text = stage switch
                 {

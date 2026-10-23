@@ -1,0 +1,457 @@
+fileFormatVersion: 2
+guid: 2c2422ec7b532401e809abd94e063119
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -8819564788378377427
+    second: furn_2x1_home_0
+  - first:
+      213: 5391266109501104149
+    second: furn_2x1_home_1
+  - first:
+      213: 3111110324264074281
+    second: furn_2x1_home_2
+  - first:
+      213: -5428274386550963516
+    second: furn_2x1_home_3
+  - first:
+      213: -6648535813756431899
+    second: furn_2x1_home_4
+  - first:
+      213: 841713492768560880
+    second: furn_2x1_home_5
+  - first:
+      213: 1455523464986056934
+    second: furn_2x1_home_6
+  - first:
+      213: 6488127147103295021
+    second: furn_2x1_home_7
+  - first:
+      213: 524273796241967045
+    second: furn_2x1_home_8
+  - first:
+      213: 780822314636710916
+    second: furn_2x1_home_9
+  - first:
+      213: 5558510305070404176
+    second: furn_2x1_home_10
+  - first:
+      213: -3699016917943801043
+    second: furn_2x1_home_11
+  - first:
+      213: -4542419368741302703
+    second: furn_2x1_home_12
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: furn_2x1_home_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 891
+        width: 626
+        height: 355
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d23e9239d8c9a9580800000000000000
+      internalID: -8819564788378377427
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_2x1_home_1
+      rect:
+        serializedVersion: 2
+        x: 30
+        y: 594
+        width: 574
+        height: 304
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5106a6266ff91da40800000000000000
+      internalID: 5391266109501104149
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_2x1_home_2
+      rect:
+        serializedVersion: 2
+        x: 329
+        y: 901
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 92c7fc64b52ec2b20800000000000000
+      internalID: 3111110324264074281
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_2x1_home_3
+      rect:
+        serializedVersion: 2
+        x: 625
+        y: 881
+        width: 614
+        height: 355
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4c24746a435eaa4b0800000000000000
+      internalID: -5428274386550963516
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_2x1_home_4
+      rect:
+        serializedVersion: 2
+        x: 635
+        y: 602
+        width: 578
+        height: 284
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5e1d59027e7abb3a0800000000000000
+      internalID: -6648535813756431899
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_2x1_home_5
+      rect:
+        serializedVersion: 2
+        x: 1220
+        y: 907
+        width: 11
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0f69f1b46fd5eab00800000000000000
+      internalID: 841713492768560880
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_2x1_home_6
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 680
+        width: 6
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6e85db431ee033410800000000000000
+      internalID: 1455523464986056934
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_2x1_home_7
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 630
+        width: 13
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d2619a4c3457a0a50800000000000000
+      internalID: 6488127147103295021
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_2x1_home_8
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 318
+        width: 612
+        height: 278
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5c74c0e6d38964700800000000000000
+      internalID: 524273796241967045
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_2x1_home_9
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 304
+        width: 5
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4049e9812c906da00800000000000000
+      internalID: 780822314636710916
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_2x1_home_10
+      rect:
+        serializedVersion: 2
+        x: 636
+        y: 316
+        width: 608
+        height: 282
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 052d1161cabc32d40800000000000000
+      internalID: 5558510305070404176
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_2x1_home_11
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 25
+        width: 615
+        height: 279
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d2baccb16b37aacc0800000000000000
+      internalID: -3699016917943801043
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_2x1_home_12
+      rect:
+        serializedVersion: 2
+        x: 655
+        y: 15
+        width: 587
+        height: 295
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 15e0251a6a516f0c0800000000000000
+      internalID: -4542419368741302703
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      furn_2x1_home_0: -8819564788378377427
+      furn_2x1_home_1: 5391266109501104149
+      furn_2x1_home_10: 5558510305070404176
+      furn_2x1_home_11: -3699016917943801043
+      furn_2x1_home_12: -4542419368741302703
+      furn_2x1_home_2: 3111110324264074281
+      furn_2x1_home_3: -5428274386550963516
+      furn_2x1_home_4: -6648535813756431899
+      furn_2x1_home_5: 841713492768560880
+      furn_2x1_home_6: 1455523464986056934
+      furn_2x1_home_7: 6488127147103295021
+      furn_2x1_home_8: 524273796241967045
+      furn_2x1_home_9: 780822314636710916
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

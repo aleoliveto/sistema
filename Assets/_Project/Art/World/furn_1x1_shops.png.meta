@@ -1,0 +1,717 @@
+fileFormatVersion: 2
+guid: 887a3c21f4cd54ef99166dcc5b9affaf
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 8917198116336230278
+    second: furn_1x1_shops_0
+  - first:
+      213: -3122454672294447995
+    second: furn_1x1_shops_1
+  - first:
+      213: 2732293560742881168
+    second: furn_1x1_shops_2
+  - first:
+      213: -313552472103016841
+    second: furn_1x1_shops_3
+  - first:
+      213: -7982035639070871887
+    second: furn_1x1_shops_4
+  - first:
+      213: -623223965445478452
+    second: furn_1x1_shops_5
+  - first:
+      213: 1139038093378702771
+    second: furn_1x1_shops_6
+  - first:
+      213: -2841994165392441261
+    second: furn_1x1_shops_7
+  - first:
+      213: 8622930416677074775
+    second: furn_1x1_shops_8
+  - first:
+      213: 6830037375651955692
+    second: furn_1x1_shops_9
+  - first:
+      213: 1893577384738647999
+    second: furn_1x1_shops_10
+  - first:
+      213: 284328248173790062
+    second: furn_1x1_shops_11
+  - first:
+      213: -497015136452360233
+    second: furn_1x1_shops_12
+  - first:
+      213: -697675949313760150
+    second: furn_1x1_shops_13
+  - first:
+      213: 1366887184909070721
+    second: furn_1x1_shops_14
+  - first:
+      213: 1838496077716080543
+    second: furn_1x1_shops_15
+  - first:
+      213: -7879517570599600839
+    second: furn_1x1_shops_16
+  - first:
+      213: 4101519846607772007
+    second: furn_1x1_shops_17
+  - first:
+      213: 7114498847574460713
+    second: furn_1x1_shops_18
+  - first:
+      213: 2485460955571520166
+    second: furn_1x1_shops_19
+  - first:
+      213: 2067988969084965302
+    second: furn_1x1_shops_20
+  - first:
+      213: -5690898826414822117
+    second: furn_1x1_shops_21
+  - first:
+      213: 8789213087123933783
+    second: furn_1x1_shops_22
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: furn_1x1_shops_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 964
+        width: 292
+        height: 272
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 68fd004017040cb70800000000000000
+      internalID: 8917198116336230278
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_1x1_shops_1
+      rect:
+        serializedVersion: 2
+        x: 325
+        y: 935
+        width: 274
+        height: 319
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 58471aed400daa4d0800000000000000
+      internalID: -3122454672294447995
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_1x1_shops_2
+      rect:
+        serializedVersion: 2
+        x: 623
+        y: 925
+        width: 313
+        height: 327
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 097aa26648e0be520800000000000000
+      internalID: 2732293560742881168
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_1x1_shops_3
+      rect:
+        serializedVersion: 2
+        x: 954
+        y: 947
+        width: 285
+        height: 265
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 776aad910b906abf0800000000000000
+      internalID: -313552472103016841
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_1x1_shops_4
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 616
+        width: 266
+        height: 319
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1be2cac70ec1a3190800000000000000
+      internalID: -7982035639070871887
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_1x1_shops_5
+      rect:
+        serializedVersion: 2
+        x: 508
+        y: 935
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cc7ac1cfa1dd957f0800000000000000
+      internalID: -623223965445478452
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_1x1_shops_6
+      rect:
+        serializedVersion: 2
+        x: 772
+        y: 931
+        width: 17
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3bdc97d6c1daecf00800000000000000
+      internalID: 1139038093378702771
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_1x1_shops_7
+      rect:
+        serializedVersion: 2
+        x: 932
+        y: 927
+        width: 20
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3500d063d553f88d0800000000000000
+      internalID: -2841994165392441261
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_1x1_shops_8
+      rect:
+        serializedVersion: 2
+        x: 1119
+        y: 923
+        width: 22
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 757b2f8178dcaa770800000000000000
+      internalID: 8622930416677074775
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_1x1_shops_9
+      rect:
+        serializedVersion: 2
+        x: 303
+        y: 620
+        width: 643
+        height: 305
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ce3406a5eca29ce50800000000000000
+      internalID: 6830037375651955692
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_1x1_shops_10
+      rect:
+        serializedVersion: 2
+        x: 667
+        y: 923
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fbf6f0c4996574a10800000000000000
+      internalID: 1893577384738647999
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_1x1_shops_11
+      rect:
+        serializedVersion: 2
+        x: 945
+        y: 624
+        width: 301
+        height: 304
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e630208090322f300800000000000000
+      internalID: 284328248173790062
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_1x1_shops_12
+      rect:
+        serializedVersion: 2
+        x: 952
+        y: 921
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7d7c3cfdd5f3a19f0800000000000000
+      internalID: -497015136452360233
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_1x1_shops_13
+      rect:
+        serializedVersion: 2
+        x: 932
+        y: 650
+        width: 11
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a64e1d8ab6b5156f0800000000000000
+      internalID: -697675949313760150
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_1x1_shops_14
+      rect:
+        serializedVersion: 2
+        x: 938
+        y: 626
+        width: 12
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 181f98017a828f210800000000000000
+      internalID: 1366887184909070721
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_1x1_shops_15
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 292
+        width: 307
+        height: 321
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f9747312176a38910800000000000000
+      internalID: 1838496077716080543
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_1x1_shops_16
+      rect:
+        serializedVersion: 2
+        x: 313
+        y: 513
+        width: 10
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 93d36fa548456a290800000000000000
+      internalID: -7879517570599600839
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_1x1_shops_17
+      rect:
+        serializedVersion: 2
+        x: 323
+        y: 296
+        width: 311
+        height: 320
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7695548d1968be830800000000000000
+      internalID: 4101519846607772007
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_1x1_shops_18
+      rect:
+        serializedVersion: 2
+        x: 627
+        y: 318
+        width: 297
+        height: 305
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9290a94f107cbb260800000000000000
+      internalID: 7114498847574460713
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_1x1_shops_19
+      rect:
+        serializedVersion: 2
+        x: 940
+        y: 328
+        width: 302
+        height: 285
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a281ff02912e7220800000000000000
+      internalID: 2485460955571520166
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_1x1_shops_20
+      rect:
+        serializedVersion: 2
+        x: 12
+        y: 0
+        width: 618
+        height: 293
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6b15cbdb209f2bc10800000000000000
+      internalID: 2067988969084965302
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_1x1_shops_21
+      rect:
+        serializedVersion: 2
+        x: 639
+        y: 0
+        width: 296
+        height: 318
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b1d6bd64badd501b0800000000000000
+      internalID: -5690898826414822117
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furn_1x1_shops_22
+      rect:
+        serializedVersion: 2
+        x: 950
+        y: 21
+        width: 297
+        height: 289
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 75a8c394cbe89f970800000000000000
+      internalID: 8789213087123933783
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      furn_1x1_shops_0: 8917198116336230278
+      furn_1x1_shops_1: -3122454672294447995
+      furn_1x1_shops_10: 1893577384738647999
+      furn_1x1_shops_11: 284328248173790062
+      furn_1x1_shops_12: -497015136452360233
+      furn_1x1_shops_13: -697675949313760150
+      furn_1x1_shops_14: 1366887184909070721
+      furn_1x1_shops_15: 1838496077716080543
+      furn_1x1_shops_16: -7879517570599600839
+      furn_1x1_shops_17: 4101519846607772007
+      furn_1x1_shops_18: 7114498847574460713
+      furn_1x1_shops_19: 2485460955571520166
+      furn_1x1_shops_2: 2732293560742881168
+      furn_1x1_shops_20: 2067988969084965302
+      furn_1x1_shops_21: -5690898826414822117
+      furn_1x1_shops_22: 8789213087123933783
+      furn_1x1_shops_3: -313552472103016841
+      furn_1x1_shops_4: -7982035639070871887
+      furn_1x1_shops_5: -623223965445478452
+      furn_1x1_shops_6: 1139038093378702771
+      furn_1x1_shops_7: -2841994165392441261
+      furn_1x1_shops_8: 8622930416677074775
+      furn_1x1_shops_9: 6830037375651955692
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

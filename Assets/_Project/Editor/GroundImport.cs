@@ -18,7 +18,7 @@ public sealed class GroundImport : AssetPostprocessor
         t.anisoLevel = 4;
         t.sRGBTexture = true;
         t.alphaSource = TextureImporterAlphaSource.None;
-        t.maxTextureSize = 1024;
+        t.maxTextureSize = 2048;
         t.textureCompression = TextureImporterCompression.CompressedHQ;
     }
 }

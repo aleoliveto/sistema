@@ -355,6 +355,7 @@ namespace OSistema.Views
 
             if (b == BuildingDefs.Door)
             {
+                if (PropArt.Has(b)) return;   // a painted door on top (PropLayer)
                 bool horizontal = IsWallish(map, x - 1, y) || IsWallish(map, x + 1, y);
                 var wood = new Color32(112, 72, 42, 255);
                 var frame = new Color32(66, 42, 24, 255);

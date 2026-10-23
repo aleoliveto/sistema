@@ -34,9 +34,91 @@ namespace OSistema.Views
 
         void OnChanged(int x, int y) => pending.Add(map.Index(x, y));
 
+        // ---------- Doors: painted, facing the street, open while someone stands in them ----------
+
+        readonly HashSet<int> doorCells = new HashSet<int>();
+        readonly HashSet<int> openDoors = new HashSet<int>();
+        readonly HashSet<int> occupied = new HashSet<int>();
+        float doorCheck;
+
+        bool Indoorish(int x, int y)
+        {
+            if (!map.InBounds(x, y)) return false;
+            var t = map.GetTerrain(x, y);
+            return t == TerrainType.Floor || t == TerrainType.Marble;
+        }
+
+        bool WallAt(int x, int y) => map.InBounds(x, y) && (map.GetBuilding(x, y) == BuildingDefs.Wall || map.GetBuilding(x, y) == BuildingDefs.Door);
+
+        /// <summary>Which painted door: the street door of a shop, a palazzo, a basso, the family's own, a church; or one inside.</summary>
+        Sprite DoorSprite(int x, int y, bool open)
+        {
+            bool horizontal = WallAt(x - 1, y) || WallAt(x + 1, y);
+            bool inside = horizontal ? Indoorish(x, y - 1) && Indoorish(x, y + 1) : Indoorish(x - 1, y) && Indoorish(x + 1, y);
+            float h = TilePainter.Noise(x, y, 131);
+            int style;
+            if (inside) style = h < 0.5f ? 4 : 5;
+            else
+            {
+                var game = OSistema.Core.GameRunner.Current;
+                var cell = new Vector2Int(x, y);
+                var prop = game?.Properties.All.Find(p => p.Door == cell);
+                bool family = game != null && (game.PlayerBase.Contains(cell) || (prop != null && prop.OwnedByPlayer));
+                if (family) style = 6;
+                else if (prop == null) style = h < 0.5f ? 0 : 1;
+                else if (prop.Kind == PropertyKind.Shop) style = h < 0.7f ? 3 : 2;
+                else if (prop.Kind == PropertyKind.Civic) style = 7;
+                else style = h < 0.45f ? 0 : h < 0.75f ? 1 : 5;
+            }
+            return PropArt.Load($"Doors/door_{style + (open ? 8 : 0):00}");
+        }
+
+        /// <summary>Doors turn so the threshold (the bottom of the painting) faces out, onto the street.</summary>
+        float DoorAngle(int x, int y)
+        {
+            bool horizontal = WallAt(x - 1, y) || WallAt(x + 1, y);
+            if (horizontal) return Indoorish(x, y - 1) && !Indoorish(x, y + 1) ? 180f : 0f;
+            return Indoorish(x - 1, y) && !Indoorish(x + 1, y) ? 90f : -90f;
+        }
+
+        /// <summary>Anyone standing in a doorway: that door is open.</summary>
+        void UpdateDoors()
+        {
+            doorCheck -= Time.deltaTime;
+            if (doorCheck > 0f || doorCells.Count == 0) return;
+            doorCheck = 0.12f;
+            var game = OSistema.Core.GameRunner.Current;
+            if (game == null) return;
+            occupied.Clear();
+            foreach (var p in game.Pawns.All) if (!p.Dead && p.IsPresent) Mark(p.Position);
+            foreach (var n in game.Npcs.All) if (!n.Despawned) Mark(n.Mover.Position);
+            foreach (int i in doorCells)
+            {
+                bool open = occupied.Contains(i);
+                if (open == openDoors.Contains(i)) continue;
+                if (open) openDoors.Add(i); else openDoors.Remove(i);
+                pending.Add(i);
+            }
+
+            void Mark(Vector2 pos)
+            {
+                int x = Mathf.FloorToInt(pos.x), y = Mathf.FloorToInt(pos.y);
+                // In the doorway, or a step either side of it.
+                for (int dy = -1; dy <= 1; dy++)
+                for (int dx = -1; dx <= 1; dx++)
+                {
+                    if (!map.InBounds(x + dx, y + dy)) continue;
+                    if (dx != 0 && dy != 0) continue;
+                    var c = new Vector2(x + dx + 0.5f, y + dy + 0.5f);
+                    if ((c - pos).sqrMagnitude < 0.75f * 0.75f) occupied.Add(map.Index(x + dx, y + dy));
+                }
+            }
+        }
+
         void LateUpdate()
         {
             if (map == null) return;
+            UpdateDoors();
             if (pending.Count > 0)
             {
                 foreach (int i in pending) Refresh(i % map.Width, i / map.Width);
@@ -72,7 +154,9 @@ namespace OSistema.Views
         {
             int i = map.Index(x, y);
             var def = map.GetBuilding(x, y);
-            var sprite = def != null ? PropArt.For(def, x, y) : null;
+            bool door = def == BuildingDefs.Door;
+            if (door) doorCells.Add(i); else { doorCells.Remove(i); openDoors.Remove(i); }
+            var sprite = door ? DoorSprite(x, y, openDoors.Contains(i)) : def != null ? PropArt.For(def, x, y) : null;
             props.TryGetValue(i, out var sr);
             if (sprite == null)
             {
@@ -111,7 +195,7 @@ namespace OSistema.Views
                 t.localRotation = Quaternion.Euler(0f, 0f, Angle(def, x, y));
             }
             var shadow = t.GetChild(0).GetComponent<SpriteRenderer>();
-            shadow.enabled = def != BuildingDefs.Rug;
+            shadow.enabled = def != BuildingDefs.Rug && def != BuildingDefs.Door;
             heights[i] = HeightOf(def);
             PlaceShadow(sr, heights[i]);
             shadow.transform.localScale = vehicle ? new Vector3(0.62f, 0.95f, 1f) : new Vector3(0.95f, 0.95f, 1f);
@@ -128,6 +212,7 @@ namespace OSistema.Views
             }
             if (def == BuildingDefs.ParkedScooter)
                 return (h % 4) * 90f + ((h >> 3) % 31) - 15f;   // parked any old how
+            if (def == BuildingDefs.Door) return DoorAngle(x, y);
             if (def.Generated) return ((h >> 2) % 4) * 90f * (def == BuildingDefs.Fountain ? 1f : 0f);
             return map.GetRotation(x, y) * 90f;
         }
