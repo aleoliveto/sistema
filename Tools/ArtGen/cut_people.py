@@ -10,7 +10,8 @@ Every torso is scaled to the old painted bodies' size (about 196 px across on 25
 neck opening, so the heads and hair sit where they always have. The arm is scaled to a set length and hung
 with its rounded top at the torso's shoulder, under the sleeve; the right arm is the left one mirrored.
 Run: python3 cut_people.py <sheet_torsos> <sheet_arms> <out dir> <prefix> [first index] [torso width]
-     men: prefix "", width 196; women: prefix "f", width 178
+     [flip arms 1/0] [arm thickness]
+     men: "" 0 196 1 0.23 (thumbs drawn outside); women: f 0 178 0 0.26 (thumbs drawn inside)
 """
 import os
 import sys
@@ -71,7 +72,7 @@ def place(img, scale, src_pt, dst_pt):
     return out
 
 
-def main(torsos, arms, out, prefix, first=0, body_w=BODY_W):
+def main(torsos, arms, out, prefix, first=0, body_w=BODY_W, flip_arms=True, arm_thick=ARM_THICK):
     os.makedirs(out, exist_ok=True)
     lines = []
     for i, (tc, ac) in enumerate(zip(cells(torsos), cells(arms))):
@@ -95,7 +96,7 @@ def main(torsos, arms, out, prefix, first=0, body_w=BODY_W):
         # The arm: its own scale so it's ARM_LEN of the torso's width long; pivot near its rounded top.
         a = np.array(ac)
         aw, ah = ab[2] - ab[0] + 1, ab[3] - ab[1] + 1
-        ascale = (body_w * ARM_THICK) / aw
+        ascale = (body_w * arm_thick) / aw
         arm_w = aw * ascale
         pivot_src = ((ab[0] + ab[2]) / 2, ab[1] + ah * ARM_HIDDEN)
         px = left_edge + arm_w * 0.42
@@ -106,10 +107,14 @@ def main(torsos, arms, out, prefix, first=0, body_w=BODY_W):
             return col.min() if len(col) else row
         drop = (pivot_src[1] - ab[1]) * ascale
         py = max(col_top(px), col_top(rx)) + 14 + drop
-        # ChatGPT draws the arm with the thumb on the outside: as it comes, it's a right arm. Mirror it for the left.
+        # Some sheets come with the thumb on the outside (a right arm): those are mirrored for the left.
         flip = ac.transpose(Image.FLIP_LEFT_RIGHT)
-        arm_l = place(flip, ascale, (ac.width - pivot_src[0], pivot_src[1]), (px, py))
-        arm_r = place(ac, ascale, pivot_src, (rx, py))
+        if flip_arms:
+            arm_l = place(flip, ascale, (ac.width - pivot_src[0], pivot_src[1]), (px, py))
+            arm_r = place(ac, ascale, pivot_src, (rx, py))
+        else:
+            arm_l = place(ac, ascale, pivot_src, (px, py))
+            arm_r = place(flip, ascale, (ac.width - pivot_src[0], pivot_src[1]), (rx, py))
         key = f"{prefix}body_{first + i:02d}"
         torso.save(os.path.join(out, key + "_torso.png"))
         arm_l.save(os.path.join(out, key + "_arml.png"))
@@ -139,7 +144,8 @@ if __name__ == "__main__" and len(sys.argv) > 1 and sys.argv[1] in ("legs", "hea
     pass
 elif __name__ == "__main__":
     main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4] if len(sys.argv) > 4 else "", int(sys.argv[5]) if len(sys.argv) > 5 else 0,
-         int(sys.argv[6]) if len(sys.argv) > 6 else BODY_W)
+         int(sys.argv[6]) if len(sys.argv) > 6 else BODY_W, (sys.argv[7] != "0") if len(sys.argv) > 7 else True,
+         float(sys.argv[8]) if len(sys.argv) > 8 else ARM_THICK)
 
 
 # ---------- walking legs: 4 rows (trousers) x 4 frames ----------
@@ -169,6 +175,12 @@ def legs(sheet, out):
         canvas.alpha_composite(s, (round(CANVAS / 2 - hx * sx), round(LEGS_TOP - y0 * sy)))
         r, f = divmod(i, 4)
         canvas.save(os.path.join(out, f"legs_{r}{f}.png"))
+    # ChatGPT puts the same foot forward in both stepping frames: make the second step the first one mirrored.
+    for r in range(4):
+        for a_, b_ in ((0, 2), (1, 3)):
+            src = os.path.join(out, f"legs_{r}{a_}.png")
+            if os.path.exists(src):
+                Image.open(src).transpose(Image.FLIP_LEFT_RIGHT).save(os.path.join(out, f"legs_{r}{b_}.png"))
     print("legs cut")
 
 
@@ -196,13 +208,13 @@ def fit(cell_img, box, scale=None):
 
 def heads(sheet, out, prefix=""):
     for i, cell in enumerate(cells(sheet)):
-        s, b = fit(cell, HEAD_BOX)
-        if s is None:
+        b = bbox(np.array(cell))
+        if b is None:
             continue
         x0, y0, x1, y1 = b
-        cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
-        tx, ty = (HEAD_BOX[0] + HEAD_BOX[2]) / 2, (HEAD_BOX[1] + HEAD_BOX[3]) / 2
-        place(cell, s, (cx, cy), (tx, ty)).save(os.path.join(out, f"{prefix}head_{i:02d}.png"))
+        # By height, crown to nose tip: the new heads have smaller ears, so their width would make them too big.
+        s = (HEAD_BOX[3] - HEAD_BOX[1]) / (y1 - y0 + 1)
+        place(cell, s, ((x0 + x1) / 2, y0), ((HEAD_BOX[0] + HEAD_BOX[2]) / 2, HEAD_BOX[1])).save(os.path.join(out, f"{prefix}head_{i:02d}.png"))
     print("heads cut")
 
 
@@ -214,15 +226,15 @@ def no_skin(img):
     mn = np.minimum(np.minimum(r, g), b)
     sat = (mx - mn) / np.maximum(mx, 1)
     skin = (r > g) & (g > b) & (r - b > 30)
-    k = np.clip((mx - 110) / 40, 0, 1) * np.clip((sat - 0.18) / 0.12, 0, 1) * skin
+    k = np.clip((mx - 140) / 30, 0, 1) * np.clip((sat - 0.25) / 0.1, 0, 1) * skin
     a[..., 3] *= 1 - k
     return Image.fromarray(a.astype(np.uint8))
 
 
 def hair(sheet, heads_sheet, out, prefix=""):
     # One scale for every style: the heads sheet tells how big ChatGPT drew a head.
-    widths = [bbox(np.array(c))[2] - bbox(np.array(c))[0] for c in cells(heads_sheet) if bbox(np.array(c)) is not None]
-    s = (HEAD_BOX[2] - HEAD_BOX[0]) / float(np.median(widths))
+    heights = [bbox(np.array(c))[3] - bbox(np.array(c))[1] + 1 for c in cells(heads_sheet) if bbox(np.array(c)) is not None]
+    s = (HEAD_BOX[3] - HEAD_BOX[1]) / float(np.median(heights))
     for i, cell in enumerate(cells(sheet)):
         cell = no_skin(cell)
         a = np.array(cell)
@@ -230,8 +242,16 @@ def hair(sheet, heads_sheet, out, prefix=""):
         if b is None:
             continue
         x0, y0, x1, y1 = b
-        # Centred across; the hairline (the bottom of the hair, at the front) at the forehead.
-        place(cell, s, ((x0 + x1) / 2, y1), ((HEAD_BOX[0] + HEAD_BOX[2]) / 2, HAIRLINE_Y)).save(os.path.join(out, f"{prefix}hair_{i:02d}.png"))
+        # The skull's crown is the first row where the hair is wide (a bun or a ponytail on top is narrow).
+        on = a[..., 3] > 60
+        widths = on.sum(axis=1)
+        wide = np.where(widths > widths.max() * 0.55)[0]
+        crown = wide.min() if len(wide) else y0
+        widest = int(np.argmax(widths))
+        cols = np.where(on[widest])[0]
+        cx = (cols.min() + cols.max()) / 2 if len(cols) else (x0 + x1) / 2
+        # The crown of a head is a little rounder than the hair's widest band: start it a touch higher.
+        place(cell, s, (cx, crown), ((HEAD_BOX[0] + HEAD_BOX[2]) / 2, HEAD_BOX[1] + 14)).save(os.path.join(out, f"{prefix}hair_{i:02d}.png"))
     print("hair cut")
 
 
