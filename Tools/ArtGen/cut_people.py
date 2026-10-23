@@ -231,11 +231,14 @@ def no_skin(img):
     return Image.fromarray(a.astype(np.uint8))
 
 
-def hair(sheet, heads_sheet, out, prefix=""):
+def hair(sheet, heads_sheet, out, prefix="", turn=()):
     # One scale for every style: the heads sheet tells how big ChatGPT drew a head.
     heights = [bbox(np.array(c))[3] - bbox(np.array(c))[1] + 1 for c in cells(heads_sheet) if bbox(np.array(c)) is not None]
-    s = (HEAD_BOX[3] - HEAD_BOX[1]) / float(np.median(heights))
+    # A little bigger than the head, so the hair covers the skull to its edges with no scalp showing at the back.
+    s = (HEAD_BOX[3] - HEAD_BOX[1]) / float(np.median(heights)) * 1.06
     for i, cell in enumerate(cells(sheet)):
+        if i in turn:
+            cell = cell.rotate(180)   # drawn hanging over the face: turn it so the length falls down the back
         cell = no_skin(cell)
         a = np.array(cell)
         b = bbox(a)
@@ -250,8 +253,8 @@ def hair(sheet, heads_sheet, out, prefix=""):
         widest = int(np.argmax(widths))
         cols = np.where(on[widest])[0]
         cx = (cols.min() + cols.max()) / 2 if len(cols) else (x0 + x1) / 2
-        # The crown of a head is a little rounder than the hair's widest band: start it a touch higher.
-        place(cell, s, (cx, crown), ((HEAD_BOX[0] + HEAD_BOX[2]) / 2, HEAD_BOX[1] + 14)).save(os.path.join(out, f"{prefix}hair_{i:02d}.png"))
+        # The hair's crown on the head's crown (a touch above, so the back of the skull is covered).
+        place(cell, s, (cx, crown), ((HEAD_BOX[0] + HEAD_BOX[2]) / 2, HEAD_BOX[1] - 3)).save(os.path.join(out, f"{prefix}hair_{i:02d}.png"))
     print("hair cut")
 
 
@@ -261,4 +264,6 @@ if __name__ == "__main__" and len(sys.argv) > 1 and sys.argv[1] == "heads":
 
 if __name__ == "__main__" and len(sys.argv) > 1 and sys.argv[1] == "hair":
     # python3 cut_people.py hair <sheet_hair> <sheet_heads> <out dir> [prefix]
-    hair(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5] if len(sys.argv) > 5 else "")
+    # women: ... f 9   (cell 10, the braid, is drawn hanging over the face)
+    hair(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5] if len(sys.argv) > 5 else "",
+         tuple(int(x) for x in sys.argv[6].split(",")) if len(sys.argv) > 6 else ())

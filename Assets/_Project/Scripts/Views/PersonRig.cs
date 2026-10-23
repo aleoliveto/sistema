@@ -171,7 +171,7 @@ namespace OSistema.Views
             if (neck == null) neck = Part("Chain", pivot, null, SpriteFactory.LitMaterial, head.sortingOrder - 1);
             if (hat == null) hat = Part("Hat", pivot, null, SpriteFactory.LitMaterial, hair.sortingOrder + 1);
             neck.sprite = CharacterArt.Sprite("neck", look.Neck);
-            hat.sprite = CharacterArt.Sprite("hat", look.Hat);
+            hat.sprite = null;   // no headwear for now: the painted hats don't sit on the new heads
             neck.transform.localRotation = back;
             hat.transform.localRotation = back;
             SetVisible(visibleNow);
