@@ -39,7 +39,53 @@ def cells(path):
             cell[-m:, :, 3] = 0
             cell[:, :m, 3] = 0
             cell[:, -m:, 3] = 0
-            yield Image.fromarray(cell)
+            yield Image.fromarray(main_piece(cell))
+
+
+def main_piece(a, thr=30):
+    """Keep the cell's own item: drop the pieces that poke in from a neighbouring cell (they touch the
+    cell's border and are smaller than the main one). A flood fill on the alpha mask."""
+    from collections import deque
+    h, w = a.shape[:2]
+    on = a[..., 3] > thr
+    label = np.zeros((h, w), np.int32)
+    sizes, touches = [0], [False]
+    n = 0
+    for y0 in range(h):
+        row = on[y0]
+        for x0 in np.where(row & (label[y0] == 0))[0]:
+            if label[y0, x0]:
+                continue
+            n += 1
+            q = deque([(y0, x0)])
+            label[y0, x0] = n
+            size, touch = 0, False
+            while q:
+                y, x = q.popleft()
+                size += 1
+                if y < 3 or x < 3 or y >= h - 3 or x >= w - 3:
+                    touch = True
+                for yy, xx in ((y - 1, x), (y + 1, x), (y, x - 1), (y, x + 1)):
+                    if 0 <= yy < h and 0 <= xx < w and on[yy, xx] and not label[yy, xx]:
+                        label[yy, xx] = n
+                        q.append((yy, xx))
+            sizes.append(size)
+            touches.append(touch)
+    if n == 0:
+        return a
+    biggest = int(np.argmax(sizes))
+    keep = np.zeros(n + 1, bool)
+    for k in range(1, n + 1):
+        # The main piece always; other pieces only if they're inside the cell and not specks.
+        keep[k] = k == biggest or (not touches[k] and sizes[k] > sizes[biggest] * 0.05)
+    kept = keep[label] & on
+    # The soft edge round the kept piece stays; everything further than a few pixels from it goes.
+    near = kept.copy()
+    for _ in range(4):
+        near = near | np.roll(near, 1, 0) | np.roll(near, -1, 0) | np.roll(near, 1, 1) | np.roll(near, -1, 1)
+    out = a.copy()
+    out[..., 3] = np.where(near, a[..., 3], 0)
+    return out
 
 
 def bbox(a, thr=40):
@@ -63,6 +109,22 @@ def neck_centre(a, box):
     return xs.mean(), ys.mean()
 
 
+NECK_AT = (128, 121)    # where the neck opening's centre goes: under the head
+
+
+def neck_on_canvas(a):
+    """The neck opening on a placed torso: flat mid-grey pixels in the middle of the upper body. None if unsure."""
+    r, g, b, al = (a[..., k].astype(int) for k in range(4))
+    grey = (al > 200) & (abs(r - g) < 7) & (abs(g - b) < 7) & (r > 95) & (r < 175)
+    grey[:, :70] = False
+    grey[:, 186:] = False
+    grey[170:] = False
+    ys, xs = np.where(grey)
+    if len(xs) < 800:
+        return None
+    return xs.mean(), ys.mean()
+
+
 def place(img, scale, src_pt, dst_pt):
     """img scaled by scale and moved so src_pt lands on dst_pt, on a fresh canvas."""
     w, h = img.size
@@ -83,8 +145,13 @@ def main(torsos, arms, out, prefix, first=0, body_w=BODY_W, flip_arms=True, arm_
             print("skip cell", i)
             continue
         scale = body_w / (tb[2] - tb[0] + 1)
-        # Shoulders' top on the old bodies' line, centred: the heads and hair sit over the neck as they always did.
+        # Shoulders' top on the old bodies' line, centred; then nudged so the neck opening is right under the head.
         torso = place(tc, scale, ((tb[0] + tb[2]) / 2, tb[1]), (CANVAS / 2, SHOULDER_TOP))
+        nk = neck_on_canvas(np.array(torso))
+        if nk is not None:
+            dx = float(np.clip(NECK_AT[0] - nk[0], -16, 16))
+            dy = float(np.clip(NECK_AT[1] - nk[1], -16, 16))
+            torso = place(tc, scale, ((tb[0] + tb[2]) / 2, tb[1]), (CANVAS / 2 + dx, SHOULDER_TOP + dy))
         t = np.array(torso)
         # The shoulder: a little in from the torso's outer edge, a little below the top of the shoulders.
         tb2 = bbox(t)
@@ -218,7 +285,7 @@ def heads(sheet, out, prefix=""):
     print("heads cut")
 
 
-def no_skin(img):
+def no_skin(img, strong=False):
     """Hair sheets paint some scalp (balding, shaved, partings): take the skin out so any head shows through."""
     a = np.array(img).astype(np.float32)
     r, g, b = a[..., 0], a[..., 1], a[..., 2]
@@ -226,12 +293,22 @@ def no_skin(img):
     mn = np.minimum(np.minimum(r, g), b)
     sat = (mx - mn) / np.maximum(mx, 1)
     skin = (r > g) & (g > b) & (r - b > 30)
-    k = np.clip((mx - 140) / 30, 0, 1) * np.clip((sat - 0.25) / 0.1, 0, 1) * skin
+    if strong:   # styles painted on a bare scalp: take all the skin, leave the hair and stubble
+        k = np.clip((mx - 95) / 30, 0, 1) * np.clip((sat - 0.12) / 0.1, 0, 1) * ((r > g) & (g >= b) & (r - b > 18))
+    else:
+        k = np.clip((mx - 140) / 30, 0, 1) * np.clip((sat - 0.25) / 0.1, 0, 1) * skin
     a[..., 3] *= 1 - k
     return Image.fromarray(a.astype(np.uint8))
 
 
-def hair(sheet, heads_sheet, out, prefix="", turn=()):
+# Hand fixes for single styles: (prefix, cell) -> (dx, dy, scale), or None for no hair at all.
+HAIR_FIX = {
+    ("", 7): (0, 16, 0.94),   # the horseshoe: two strips round the sides, not horns on top
+    ("", 8): None,            # shaved: just the bare head (the stubble went with the painted scalp)
+}
+
+
+def hair(sheet, heads_sheet, out, prefix="", turn=(), scalp=()):
     # One scale for every style: the heads sheet tells how big ChatGPT drew a head.
     heights = [bbox(np.array(c))[3] - bbox(np.array(c))[1] + 1 for c in cells(heads_sheet) if bbox(np.array(c)) is not None]
     # A little bigger than the head, so the hair covers the skull to its edges with no scalp showing at the back.
@@ -239,7 +316,7 @@ def hair(sheet, heads_sheet, out, prefix="", turn=()):
     for i, cell in enumerate(cells(sheet)):
         if i in turn:
             cell = cell.rotate(180)   # drawn hanging over the face: turn it so the length falls down the back
-        cell = no_skin(cell)
+        cell = no_skin(cell, strong=i in scalp)
         a = np.array(cell)
         b = bbox(a)
         if b is None:
@@ -254,7 +331,14 @@ def hair(sheet, heads_sheet, out, prefix="", turn=()):
         cols = np.where(on[widest])[0]
         cx = (cols.min() + cols.max()) / 2 if len(cols) else (x0 + x1) / 2
         # The hair's crown on the head's crown (a touch above, so the back of the skull is covered).
-        place(cell, s, (cx, crown), ((HEAD_BOX[0] + HEAD_BOX[2]) / 2, HEAD_BOX[1] - 3)).save(os.path.join(out, f"{prefix}hair_{i:02d}.png"))
+        dx, dy, k = 0, 0, 1.0
+        if (prefix, i) in HAIR_FIX:
+            fix = HAIR_FIX[(prefix, i)]
+            if fix is None:
+                Image.new("RGBA", (CANVAS, CANVAS), (0, 0, 0, 0)).save(os.path.join(out, f"{prefix}hair_{i:02d}.png"))
+                continue
+            dx, dy, k = fix
+        place(cell, s * k, (cx, crown), ((HEAD_BOX[0] + HEAD_BOX[2]) / 2 + dx, HEAD_BOX[1] - 3 + dy)).save(os.path.join(out, f"{prefix}hair_{i:02d}.png"))
     print("hair cut")
 
 
@@ -265,5 +349,6 @@ if __name__ == "__main__" and len(sys.argv) > 1 and sys.argv[1] == "heads":
 if __name__ == "__main__" and len(sys.argv) > 1 and sys.argv[1] == "hair":
     # python3 cut_people.py hair <sheet_hair> <sheet_heads> <out dir> [prefix]
     # women: ... f 9   (cell 10, the braid, is drawn hanging over the face)
-    hair(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5] if len(sys.argv) > 5 else "",
-         tuple(int(x) for x in sys.argv[6].split(",")) if len(sys.argv) > 6 else ())
+    # men: ... "" - 6,7,8,15   (receding, horseshoe, shaved, mohawk: painted on a bare scalp)
+    nums = lambda k: tuple(int(x) for x in sys.argv[k].split(",")) if len(sys.argv) > k and sys.argv[k] != "-" else ()
+    hair(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5] if len(sys.argv) > 5 else "", nums(6), nums(7))
