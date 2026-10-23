@@ -113,6 +113,13 @@ namespace OSistema.Crime
             }
         }
 
+        /// <summary>The boss folds the stall: buyers already on their way turn round (their spot is gone).</summary>
+        public void PackUpStall(Game game)
+        {
+            if (playerStreetTakings <= 0) game.Log.Add("You pack up the stall.", MessageKind.Info);
+            EndPlayerStreetWork(game);
+        }
+
         void EndPlayerStreetWork(Game game)
         {
             if (playerStreetTakings > 0)

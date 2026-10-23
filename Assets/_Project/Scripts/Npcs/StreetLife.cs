@@ -21,6 +21,8 @@ namespace OSistema.Npcs
 
         // Civilian sub-behaviours stored in Npc.State.
         const int Walking = 0, Lingering = 1, GoingHome = 2, Sitting = 3, Playing = 4, Standing = 5;
+        /// <summary>For someone who keeps a spot (a contact): stands there instead of wandering off home.</summary>
+        public const int StandingState = Standing;
 
         readonly List<Vector2Int> doors = new List<Vector2Int>();
         readonly List<Vector2Int> walkable = new List<Vector2Int>();   // sidewalks, piazze, alleys

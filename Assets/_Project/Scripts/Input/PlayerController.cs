@@ -897,7 +897,7 @@ namespace OSistema.Input
                 if (org.PlayerParking.HasValue)
                     return new Action { Label = "Stop minding the cars", Do = () => { org.PlayerParking = null; game.Log.Add("You leave the cars to themselves.", MessageKind.Info); } };
                 if (org.PlayerStall.HasValue)
-                    return new Action { Label = "Pack up the stall", Do = () => { org.PlayerStall = null; game.Log.Add("You pack up the stall.", MessageKind.Info); } };
+                    return new Action { Label = "Pack up the stall", Do = () => org.PackUpStall(game) };
                 if (Near(p, BuildingDefs.MarketStall, out var stall) && (game.Stock.Cigarettes > 0 || org.H.fakes > 0))
                     return new Action { Label = $"Sell from the stall ({game.Stock.Cigarettes} ROSSE, {org.H.fakes} fakes)", Do = () => org.StartStreetWork(Crime.StreetWork.Stall, stall, game) };
                 if (Near(p, BuildingDefs.ParkedScooter, out var scooter) && org.CanStealForRansom(game))

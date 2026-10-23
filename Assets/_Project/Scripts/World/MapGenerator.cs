@@ -113,7 +113,12 @@ namespace OSistema.World
 
             BuildHospital(map, quarters[kinds[2] == QuarterKind.Quartieri ? 2 : 0]);
 
-            var baseLot = PickLot(homeLots, quarters[1].center);
+            // The family's basso: any lot in any of the ordinary quarters, a different one every game.
+            var homeQuarters = new List<RectInt>();
+            for (int i = 0; i < quarters.Count; i++) if (kinds[i] == QuarterKind.Quartieri) homeQuarters.Add(quarters[i]);
+            var hq = homeQuarters.Count > 0 ? homeQuarters[rng.Next(homeQuarters.Count)] : quarters[1];
+            var inQuarter = homeLots.FindAll(l => hq.Contains(Vector2Int.RoundToInt(l.center)));
+            var baseLot = inQuarter.Count > 0 ? inQuarter[rng.Next(inQuarter.Count)] : PickLot(homeLots, hq.center);
             homeLots.Remove(baseLot);
             shopLots.Remove(baseLot);
             properties.RemoveAll(p => p.Rect.Equals(baseLot));

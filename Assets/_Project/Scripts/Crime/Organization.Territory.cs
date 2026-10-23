@@ -21,7 +21,7 @@ namespace OSistema.Crime
         public bool ControlsZone(Zone zone, Game game)
         {
             if (zone == null) return false;
-            if (zone.Rect.Contains(Vector2Int.RoundToInt(game.PlayerBase.center))) return true;
+            // The rione you grew up in isn't yours: it's Don Saverio's until you take his corner.
             if (SaverioCornerHeld(zone, game)) return true;   // his old corner: the rione came with it
             return HasWorkingPiazza(zone, game);
         }
@@ -87,6 +87,9 @@ namespace OSistema.Crime
         {
             if (zone == null) return false;
             if (ControlsZone(zone, game)) return true;
+            // Where you start from: your own rione and the ones beside it.
+            var home = game.Territory.ZoneAt(Vector2Int.RoundToInt(game.PlayerBase.center));
+            if (home != null && (zone == home || Adjacent(home, zone))) return true;
             foreach (var z in game.Territory.Zones)
                 if (ControlsZone(z, game) && Adjacent(z, zone)) return true;
             return false;

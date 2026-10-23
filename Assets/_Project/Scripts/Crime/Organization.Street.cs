@@ -23,11 +23,13 @@ namespace OSistema.Crime
             if ((t != TerrainType.Sidewalk && t != TerrainType.Paving) || game.Territory.ZoneAt(p.Cell) == null) return false;
             // Once the family runs a piazza, you deal there. Before that, on a street corner of your own turf.
             if (Squares.Count > 0) return Squares.Exists(sq => (sq.Cell - p.Cell).sqrMagnitude <= 9);
-            return ControlsZone(game.Territory.ZoneAt(p.Cell), game) && IsCorner(game.Map, p.Cell);
+            var zone = game.Territory.ZoneAt(p.Cell);
+            bool homeRione = zone != null && zone.Rect.Contains(Vector2Int.RoundToInt(game.PlayerBase.center));
+            return (ControlsZone(zone, game) || homeRione) && IsCorner(game.Map, p.Cell);
         }
 
         /// <summary>A crossing: open ground in at least three directions.</summary>
-        static bool IsCorner(Map map, Vector2Int c)
+        public static bool IsCorner(Map map, Vector2Int c)
         {
             int open = 0;
             foreach (var d in new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right })

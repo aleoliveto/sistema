@@ -95,6 +95,28 @@ namespace OSistema.Crime
                 return home;
             }
 
+            // Don Saverio holds the corner of the family's own rione: a crossing a short walk from the basso.
+            Vector2Int? SaverioCorner()
+            {
+                var zone = game.Territory.ZoneAt(home);
+                if (zone == null) return null;
+                Vector2Int? best = null;
+                float bestScore = float.MaxValue;
+                var rng = new System.Random(game.Seed + 29);
+                foreach (var c in GridUtil.Cells(zone.Rect, outlineOnly: false))
+                {
+                    if (used.Contains(c) || !map.IsPassable(c) || map.GetBuilding(c.x, c.y) != null) continue;
+                    var t = map.GetTerrain(c.x, c.y);
+                    if (t != TerrainType.Sidewalk && t != TerrainType.Paving) continue;
+                    float d = (c - home).magnitude;
+                    if (d < 6f || d > 22f) continue;
+                    // A real crossing first; then the nearer, with a little chance in it.
+                    float score = (Crime.Organization.IsCorner(map, c) ? 0f : 40f) + Mathf.Abs(d - 12f) + (float)rng.NextDouble() * 4f;
+                    if (score < bestScore) { bestScore = score; best = c; }
+                }
+                return best;
+            }
+
             Contact Add(string name, string who, Vector2Int spot, int open, int close, Color32 color,
                 string greet, string greetEn, string none, string noneEn)
             {
@@ -123,7 +145,7 @@ namespace OSistema.Crime
                 "Guagliò, viene ccà. Tengo 'na cosa pe' te.", "Come here, kid. I've got something for you.",
                 "Pe' mo' niente. Pigliate 'nu caffè e passa cchiù tarde.", "Nothing for now. Have a coffee and come back later.");
             Add(Saverio, "Runs the corner for the people above him. Pays lookouts by the night, and watches who's reliable.",
-                StreetSpot(8, 30, 23), 15, 2, new Color32(40, 40, 46, 255),
+                SaverioCorner() ?? StreetSpot(8, 30, 23), 15, 2, new Color32(40, 40, 46, 255),
                 "Tu si 'o figlio d''a signora Iaccarino? Sient'a me.", "You're Mrs Iaccarino's son? Listen to me.",
                 "Mo' nun me serve nisciuno. Torna 'o pomeriggio, verso 'e tre.", "I don't need anyone right now. Come back in the afternoon, around three.");
             Add(Peppe, "Lends money at rates the banks would blush at. Needs young legs to collect.",
@@ -172,6 +194,10 @@ namespace OSistema.Crime
                 {
                     c.Npc = game.Npcs.Spawn(NpcKind.Civilian, c.Spot, 0.05f, c.Color);
                     c.Npc.IsFixture = true;
+                    // Stand at the spot. (Spawned as a passer-by they walked "home" at once and vanished,
+                    // to be put back a second later: the flicker, and Don Saverio's men riding off.)
+                    c.Npc.State = StreetLife.StandingState;
+                    c.Npc.Target = c.Spot;
                     c.Npc.ContactName = c.Name;
                 }
                 else if (!open && c.Present)
