@@ -16,6 +16,13 @@ namespace OSistema.AI
             if (pawn.Health.Downed) return new DownedJob(pawn);
             if (pawn.Drafted) return DraftedJob(pawn, game);
             if (pawn.InMentalBreak(game.Ticks.TicksGame)) return new SulkJob(pawn);
+            // "Follow me": they drop what they're doing and come along, keeping their job for when you say stop.
+            if (pawn.Following && !pawn.IsBoss)
+            {
+                var boss = game.Player;
+                if (boss != null && boss.IsPresent && !boss.InJail && pawn.Needs.Food > 0.08f && pawn.Needs.Rest > 0.05f) return new BodyguardJob(pawn, follow: true);
+                pawn.Following = false;
+            }
             if (pawn.IsBoss && game.Org.Hiding) return new HideJob(pawn, game);
             return TryNonIdle(pawn, game) ?? Wander(pawn, game);
         }

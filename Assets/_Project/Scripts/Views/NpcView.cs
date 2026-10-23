@@ -158,6 +158,10 @@ namespace OSistema.Views
                 rig.ApplyLook(look);
             }
             bool visible = FogOfWar.CanSee(npc.Mover.Position);
+            // Someone standing at their spot doesn't blink out as you walk up past a wall corner.
+            var me = OSistema.Core.GameRunner.Current?.Player;
+            if (!visible && (npc.IsFixture || npc.ContactName != null) && me != null && (me.Position - npc.Mover.Position).sqrMagnitude < 5f * 5f)
+                visible = true;
             rig.SetVisible(visible);
             if (scooter != null) scooter.enabled = visible;
             // Stopped for a word: turned to each other, now and then a nod.
@@ -170,7 +174,9 @@ namespace OSistema.Views
             }
             else faced = false;
             standLast = npc.Mover.Position;
-            rig.Update(npc.Mover.Position, false, Time.deltaTime);
+            // Scooters swerve round you in the drawing; the road under them stays the same.
+            var drawn = npc.Mover.Position + npc.Dodge;
+            rig.Update(drawn, false, Time.deltaTime);
 
             if (scooter != null)
             {

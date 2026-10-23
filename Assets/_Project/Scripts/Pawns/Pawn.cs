@@ -221,7 +221,8 @@ namespace OSistema.Pawns
         public bool Winded;              // ran out of breath: no running until it comes back
         public Vector2 Velocity;         // the player's scooter keeps its momentum
         public int StolenLook = -1;      // which parked scooter it was (PropArt.ParkedScooterLook)
-        public bool StolenScooter;       // riding someone else's, for Nanninella
+        public bool StolenScooter;
+        public bool Following;          // "Follow me": tags along behind the boss without changing job       // riding someone else's, for Nanninella
         public float Heading;            // the player's scooter: degrees, 0 = north, positive = turning left
         public float ScooterSpeed;       // forward speed along the heading, cells per second
         public bool Pillion;             // riding on the back of the boss's scooter

@@ -439,24 +439,31 @@ namespace OSistema.Npcs
 
         public static void TickScooter(Npc npc, Game game)
         {
-            // Somebody in the way: brake, and lean on the horn, rather than ride through them.
+            // Somebody in the road: ease off, swerve round them and toot, never stop dead in front of them.
             var p = game.Player;
-            if (p != null && p.IsPresent && npc.Timer < 90)
+            var heading = npc.Mover.Position - npc.LastPos;
+            npc.LastPos = npc.Mover.Position;
+            Vector2 dodge = Vector2.zero;
+            float pace = 1f;
+            if (p != null && p.IsPresent && heading.sqrMagnitude > 0.000001f)
             {
+                var fwd = heading.normalized;
                 var to = p.Position - npc.Mover.Position;
-                var ahead = npc.Mover.Position - npc.Target;   // reuse Target as the last position seen
-                bool inFront = to.sqrMagnitude < 1.3f * 1.3f && (ahead.sqrMagnitude < 0.0001f || Vector2.Dot(-ahead.normalized, to.normalized) > 0.5f);
-                if (inFront)
+                float along = Vector2.Dot(to, fwd);
+                var side = new Vector2(-fwd.y, fwd.x);
+                float across = Vector2.Dot(to, side);
+                if (along > -0.6f && along < 2.2f && Mathf.Abs(across) < 0.9f)
                 {
-                    // A moment's pause and a toot; then they squeeze past anyway.
+                    // Pass on whichever side has more room from them.
+                    dodge = side * (across > 0f ? -1f : 1f) * (0.95f - Mathf.Abs(across));
+                    pace = 0.65f;
                     if (npc.Timer++ == 0 && game.Rng.NextDouble() < 0.5) OSistema.Views.SoundManager.PlayAt(OSistema.Views.AudioSynth.Horn, npc.Mover.Position, 0.22f);
-                    return;
                 }
+                else if ((p.Position - npc.Mover.Position).sqrMagnitude > 9f) npc.Timer = 0;
             }
-            if (npc.Timer > 0 && (p == null || (p.Position - npc.Mover.Position).sqrMagnitude > 4f)) npc.Timer = 0;
-            npc.Target = Vector2Int.FloorToInt(npc.Mover.Position);
+            npc.Dodge = Vector2.MoveTowards(npc.Dodge, dodge, 0.05f);
             npc.Walker ??= new Walker(npc.Exit, adjacent: false, roadOnly: true); // streets and vicoli, never indoors
-            if (npc.Walker.Tick(npc.Mover, 1f, game) != WalkStatus.Walking) npc.Despawned = true;
+            if (npc.Walker.Tick(npc.Mover, pace, game) != WalkStatus.Walking) npc.Despawned = true;
         }
 
         /// <summary>Two officers walking the beat: a few points in a hot zone, then back out.</summary>

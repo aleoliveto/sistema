@@ -699,11 +699,11 @@ namespace OSistema.World
             }
 
             /// <summary>Every free cell can be reached from a door, and everything used can be reached.</summary>
-            bool Walkable()
+            HashSet<Vector2Int> Reach(IEnumerable<Vector2Int> doors)
             {
                 var reached = new HashSet<Vector2Int>();
                 var queue = new Queue<Vector2Int>();
-                foreach (var d in Room.Doors)
+                foreach (var d in doors)
                     foreach (var dir in Dirs)
                     {
                         var c = d + dir;
@@ -718,8 +718,17 @@ namespace OSistema.World
                         if (Room.Cells.Contains(n) && Passable(n) && reached.Add(n)) queue.Enqueue(n);
                     }
                 }
+                return reached;
+            }
+
+            bool Walkable()
+            {
+                var all = Reach(Room.Doors);
                 foreach (var c in Room.Cells)
-                    if (Map.GetBuilding(c) == null && !reached.Contains(c)) return false;
+                    if (Map.GetBuilding(c) == null && !all.Contains(c)) return false;
+                // The counter and the things you use must be reachable from the street door, not only from the back:
+                // a customer can't come in through the storeroom.
+                var reached = Room.Front ? Reach(new[] { Room.Door }) : all;
                 foreach (var (anchor, def, use) in placed)
                 {
                     if (!use) continue;

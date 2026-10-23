@@ -32,6 +32,9 @@ namespace OSistema.UI
         Label phoneSoftL, phoneSoftR, phoneStatusLine;
         readonly System.Collections.Generic.List<System.Action> phoneItems = new System.Collections.Generic.List<System.Action>();
 
+        float lcdDragFrom, lcdDragOffset;
+        bool lcdDragged, lcdDragging;
+
         void BuildPhone()
         {
             phoneWindow = Ui.Box("nokia").Into(hudLayer);
@@ -44,6 +47,25 @@ namespace OSistema.UI
             scroll.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
             scroll.verticalScrollerVisibility = ScrollerVisibility.Hidden;   // an old phone has no scrollbar: the arrows scroll
             phoneLcdBody = scroll.contentContainer;
+            // A touch screen too: tap a line to pick it, drag or wheel to scroll, tap the home screen for the menu.
+            scroll.mode = ScrollViewMode.Vertical;
+            scroll.touchScrollBehavior = ScrollView.TouchScrollBehavior.Elastic;
+            scroll.RegisterCallback<WheelEvent>(e =>
+            {
+                scroll.scrollOffset += new Vector2(0f, e.delta.y * 18f);
+                e.StopPropagation();
+            });
+            scroll.RegisterCallback<PointerDownEvent>(e => { lcdDragFrom = e.position.y; lcdDragOffset = scroll.scrollOffset.y; lcdDragged = false; lcdDragging = true; });
+            scroll.RegisterCallback<PointerMoveEvent>(e =>
+            {
+                if (!lcdDragging) return;
+                float dy = e.position.y - lcdDragFrom;
+                if (Mathf.Abs(dy) > 6f) lcdDragged = true;
+                if (lcdDragged) scroll.scrollOffset = new Vector2(0f, lcdDragOffset - dy);
+            });
+            scroll.RegisterCallback<PointerUpEvent>(_ => lcdDragging = false);
+            scroll.RegisterCallback<PointerLeaveEvent>(_ => lcdDragging = false);
+            phoneLcd.RegisterCallback<ClickEvent>(_ => { if (phoneScreen == PhoneScreen.Home && !lcdDragged) PhoneGo(PhoneScreen.Menu); });
             var soft = Ui.Row(phoneLcd);
             soft.AddToClassList("lcd__soft");
             phoneSoftL = Ui.Text("", soft, "lcd", "lcd__softkey");
@@ -154,7 +176,8 @@ namespace OSistema.UI
                 phoneItems.Add(act);
                 l.Toggle("lcd__row--sel", index == phoneSel);
                 if (index == phoneSel) l.schedule.Execute(() => (phoneLcdBody.parent?.parent as ScrollView)?.ScrollTo(l));
-                l.RegisterCallback<ClickEvent>(_ => { phoneSel = index; PhoneSelect(); });
+                // A drag to scroll isn't a tap.
+                l.RegisterCallback<ClickEvent>(e => { if (lcdDragged) return; e.StopPropagation(); phoneSel = index; PhoneSelect(); });
             }
             return l;
         }

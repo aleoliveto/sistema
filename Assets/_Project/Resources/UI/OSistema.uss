@@ -1488,3 +1488,10 @@
 .nokia__ok { background-image: resource("UI/Art/button_active"); background-color: rgba(0, 0, 0, 0); color: #F2CF7A; }
 .root .nokia__digit { color: #F2CF7A; }
 .root .nokia__letters { color: #9C9180; }
+
+/* Building card: never wider or taller than the screen allows; long text wraps, the rest scrolls. */
+.inspector { max-height: 64%; overflow: hidden; }
+.inspector Label { white-space: normal; flex-shrink: 1; }
+.inspector .insp-scroll { flex-shrink: 1; flex-grow: 0; }
+.inspector .insp-scroll .unity-scroll-view__content-container { width: 100%; }
+.inspector Button { white-space: normal; flex-shrink: 0; }

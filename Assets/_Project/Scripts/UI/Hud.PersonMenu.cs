@@ -54,6 +54,13 @@ namespace OSistema.UI
             if (n == 0) Ui.Text("Nothing to do here.", list, "small", "muted");
         }
 
+        void ToggleFollow(Pawn p)
+        {
+            p.Following = !p.Following;
+            p.EndCurrentJob(game);
+            game.Log.Add(p.Following ? $"{p.DisplayName} falls in behind you." : $"{p.DisplayName} goes back to work.", MessageKind.Info);
+        }
+
         List<(string, System.Action, bool, string)> ActionsFor(Pawn p)
         {
             var list = new List<(string, System.Action, bool, string)>();
@@ -95,6 +102,8 @@ namespace OSistema.UI
             {
                 var boss = game.Player;
                 list.Add(("Call over", () => { if (boss != null) p.ForceJob(new GotoJob(p, boss.Cell, "Coming over"), game); }, canAct && boss != null, null));
+                list.Add((p.Following ? "Stop following" : "Follow me", () => ToggleFollow(p), canAct && boss != null,
+                    p.Following ? "Back to their job." : "They come along behind you and keep their job for later."));
                 list.Add(($"Job: {RoleLabel(p.Role)} ▸", () => ShowRoleMenu(p, menuAnchor), canAct, null));
                 list.Add(($"{BedLabel(p).Replace(" ▾", "")} ▸", () => ShowBedMenu(p, menuAnchor), true, null));
                 list.Add((p.Armed ? "Take the pistol back" : $"Give a pistol ({s.Pistols} in the stash)", () => ToggleArmed(p), p.Armed || s.Pistols > 0, null));

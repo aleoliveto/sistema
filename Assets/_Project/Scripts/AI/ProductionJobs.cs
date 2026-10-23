@@ -145,8 +145,10 @@ namespace OSistema.AI
         Vector2 lastBossPos, facing = Vector2.up;
         int wait;
 
-        public BodyguardJob(Pawn pawn) : base(pawn) { }
-        public override string Label => Pawn.GuardPost.HasValue ? "Standing guard" : Pawn.Pillion ? "On the back of the boss's scooter" : Pawn.OnScooter ? "Riding behind the boss" : "Watching the boss's back";
+        readonly bool follow;   // "Follow me": tagging along behind the boss, whatever their job is
+
+        public BodyguardJob(Pawn pawn, bool follow = false) : base(pawn) { this.follow = follow; }
+        public override string Label => follow ? (Pawn.Pillion ? "On the back of the boss's scooter" : "Following the boss") : Pawn.GuardPost.HasValue ? "Standing guard" : Pawn.Pillion ? "On the back of the boss's scooter" : Pawn.OnScooter ? "Riding behind the boss" : "Watching the boss's back";
         public override bool IsWork => true;
 
         /// <summary>Where in the formation this bodyguard stands, relative to the boss: (right, forward) in cells.</summary>
@@ -162,10 +164,11 @@ namespace OSistema.AI
 
         public override bool Tick(Game game)
         {
-            if (Pawn.GuardPost.HasValue) return TickPost(game);
+            if (follow && !Pawn.Following) return true;
+            if (!follow && Pawn.GuardPost.HasValue) return TickPost(game);
             var boss = game.Player;
             if (boss == null || !boss.IsPresent || boss.InJail) return true;
-            int slot = Pawn.GuardSlot;
+            int slot = follow ? SlotBehind : Pawn.GuardSlot;
             bool closeSlot = slot == SlotClose || slot == SlotBehind;
 
             if (boss.Riding && !boss.StolenScooter)

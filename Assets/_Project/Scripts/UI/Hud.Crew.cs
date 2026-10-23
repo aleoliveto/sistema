@@ -22,6 +22,7 @@ namespace OSistema.UI
         readonly Dictionary<int, CrewCard> cards = new Dictionary<int, CrewCard>();
         string crewSignature = "";
 
+        ScrollView propertyScroll;
         VisualElement inspector, inspectorDetail, injuriesBox, thoughtsBox, propertyPanel, inspBody;
         Button callButton, treatButton;
         enum InspTab { Needs, Health, Mind, Skills }
@@ -388,7 +389,12 @@ namespace OSistema.UI
             // Skills
             inspSkills = Ui.Text("", inspTabBodies[InspTab.Skills], "small", "wrap");
 
-            propertyPanel = Ui.Box("col").Into(inspector);
+            // A building's card can run long (a racket's options): it scrolls instead of running off the screen.
+            propertyScroll = new ScrollView(ScrollViewMode.Vertical);
+            propertyScroll.AddToClassList("insp-scroll");
+            propertyScroll.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
+            inspector.Add(propertyScroll);
+            propertyPanel = Ui.Box("col").Into(propertyScroll);
         }
 
         void TreatWithMedicine(Pawn p) => OSistema.Crime.Healing.WithMedicine(game, p);
@@ -421,7 +427,7 @@ namespace OSistema.UI
             int count = controller.Selected.Count;
             var property = controller.SelectedProperty;
             inspector.Show((count > 0 || property != null) && openWindow != Window.Business);
-            propertyPanel.Show(count == 0 && property != null);
+            propertyScroll.Show(count == 0 && property != null);
             if (count == 0)
             {
                 inspMulti.Show(false);

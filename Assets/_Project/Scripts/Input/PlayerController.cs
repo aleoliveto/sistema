@@ -285,6 +285,38 @@ namespace OSistema.Input
                 if (!p.InMentalBreak(now)) p.SetDrafted(draft, game);
         }
 
+        const float CombatZoom = 11f;    // a gunfight wants to see about a pistol's range all round
+        float combatBlend;               // 0 = your own zoom, 1 = pulled out for the fight
+        float zoomBeforeFight = -1f;
+
+        /// <summary>
+        /// Aiming, or shots near you: the camera eases out so you can see who's where, and leans towards
+        /// where you aim. When it's quiet again it goes back to the zoom you had.
+        /// </summary>
+        void CombatCamera(Vector2 mousePos)
+        {
+            var p = game.Player;
+            bool near = p != null && game.Ticks.TicksGame - game.Combat.LastShotTick < TickManager.TicksPerSecond * 6 &&
+                        (game.Combat.LastShotPosition - p.Position).sqrMagnitude < 18f * 18f;
+            bool fight = p != null && p.IsPresent && !p.Riding && (Aiming || near);
+            float before = combatBlend;
+            combatBlend = Mathf.MoveTowards(combatBlend, fight ? 1f : 0f, Time.unscaledDeltaTime * (fight ? 2.5f : 0.8f));
+            if (before <= 0f && combatBlend > 0f) zoomBeforeFight = cam.orthographicSize;
+            if (zoomBeforeFight < 0f) return;
+            float target = Mathf.Max(zoomBeforeFight, CombatZoom);
+            cam.orthographicSize = Mathf.Lerp(zoomBeforeFight, target, Mathf.SmoothStep(0f, 1f, combatBlend));
+            if (combatBlend <= 0f) zoomBeforeFight = -1f;
+            // Lean the view a third of the way towards the aim, so the target isn't off the edge.
+            if (Aiming && follow == p && p != null)
+            {
+                var aim = ScreenToWorld(mousePos);
+                var lead = Vector2.ClampMagnitude((Vector2)aim - p.Position, 9f) * 0.33f;
+                var c = cam.transform.position;
+                var t = new Vector3(p.Position.x + lead.x, p.Position.y + lead.y, c.z);
+                cam.transform.position = Vector3.Lerp(c, t, 1f - Mathf.Exp(-4f * Time.unscaledDeltaTime));
+            }
+        }
+
         void HandleCamera(Keyboard kb, Mouse mouse, Vector2 mousePos, bool overUi)
         {
             float size = cam.orthographicSize;
@@ -310,6 +342,8 @@ namespace OSistema.Input
                 cam.transform.position -= new Vector3(delta.x, delta.y, 0f) * unitsPerPixel;
             }
 
+            CombatCamera(mousePos);
+
             float zoom = 0f;
             if (!overUi) zoom = Mathf.Clamp(mouse.scroll.ReadValue().y * 0.12f, -0.4f, 0.4f);
             if (kb.equalsKey.isPressed) zoom += 1.5f * Time.unscaledDeltaTime;
@@ -319,6 +353,8 @@ namespace OSistema.Input
                 // Zoom towards the cursor.
                 Vector3 before = ScreenToWorld(mousePos);
                 cam.orthographicSize = Mathf.Clamp(size * (1f - zoom), MinZoom, MaxZoom);
+                // Mid-fight the wheel still works: it changes the zoom you'll come back to.
+                if (zoomBeforeFight > 0f) zoomBeforeFight = Mathf.Clamp(zoomBeforeFight * (1f - zoom), MinZoom, MaxZoom);
                 cam.transform.position += before - ScreenToWorld(mousePos);
             }
 

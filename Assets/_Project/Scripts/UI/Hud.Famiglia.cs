@@ -430,6 +430,7 @@ namespace OSistema.UI
                     var boss = game.Player;
                     if (boss != null && pawn.CanAct) pawn.ForceJob(new GotoJob(pawn, boss.Cell, "Coming over"), game);
                 }));
+                Tile(grid, "⇢", p.Following ? "Stop following" : "Follow me", Do(() => ToggleFollow(pawn)));
             }
             if (p.Health.Downed && !game.Hospital.IsCalled(p)) Tile(grid, "✚", "Call 118", Do(() => game.Hospital.Call(pawn, game, byPasserby: false)), danger: true);
             if (!p.Health.Healthy && OSistema.Crime.Healing.NeedsCare(p) && game.Stock.Medicine > 0) Tile(grid, "✚", $"Medicine ({game.Stock.Medicine})", Do(() => TreatWithMedicine(pawn)));

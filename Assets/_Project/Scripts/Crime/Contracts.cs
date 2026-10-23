@@ -126,13 +126,14 @@ namespace OSistema.Crime
 
             int hour = game.Clock.Hour;
             // Contacts think of something for you through the day. You hear about it in person.
-            if (first || hour == 8 || hour == 11 || hour == 14 || hour == 17 || hour == 20)
+            // Twice a day, and a contact who just had a job done (or let one lapse) waits most of a day before the next.
+            if (first || hour == 9 || hour == 16)
             {
                 int added = 0;
                 foreach (var contact in game.Contacts.All)
                 {
-                    if (OfferCount >= MaxOffers || added >= 2) break;
-                    if (HasOffer(contact.Name) || game.Rng.NextDouble() < 0.35) continue;
+                    if (OfferCount >= MaxOffers || added >= 1) break;
+                    if (HasOffer(contact.Name) || Resting(contact.Name, now) || game.Rng.NextDouble() < 0.35) continue;
                     var c = Generate(game, contact.Name);
                     if (c == null) continue;
                     All.Add(c);
@@ -141,7 +142,7 @@ namespace OSistema.Crime
                 if (added > 0) Version++;
             }
             // Don Saverio always needs eyes on the corner, from the afternoon into the night.
-            if ((first || hour == 15 || hour == 18 || hour == 21) && !HasOffer(ContactBook.Saverio) && !All.Exists(c => c.Giver == ContactBook.Saverio && c.State == ContractState.Active))
+            if ((first || hour == 15) && !HasOffer(ContactBook.Saverio) && !Resting(ContactBook.Saverio, now) && !All.Exists(c => c.Giver == ContactBook.Saverio && c.State == ContractState.Active))
             {
                 var c = Generate(game, ContactBook.Saverio);
                 if (c != null)
@@ -153,6 +154,12 @@ namespace OSistema.Crime
         }
 
         bool HasOffer(string giver) => All.Exists(c => c.Giver == giver && c.State == ContractState.Offered);
+
+        const long RestTicks = GameClock.TicksPerHour * 20;
+
+        /// <summary>A job of theirs ended (done, failed or lapsed) less than ~20 hours ago.</summary>
+        bool Resting(string giver, long now) =>
+            All.Exists(c => c.Giver == giver && c.State != ContractState.Offered && c.State != ContractState.Active && now - c.ExpiresTick < RestTicks);
 
         // ---------- Generating jobs ----------
 
