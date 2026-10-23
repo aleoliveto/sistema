@@ -289,6 +289,43 @@ namespace OSistema.Story
             });
         }
 
+        /// <summary>
+        /// A word with Don Saverio about his corner: in person, or on the phone from the Piazza screen.
+        /// He sells it once, to a Paranza with the money, or for a cut every Sunday to a name he trusts.
+        /// </summary>
+        public static GameEvent SaverioOffer(Game game)
+        {
+            var org = game.Org;
+            var contact = game.Contacts.ByName(ContactBook.Saverio);
+            bool can = org.CanBuyOutSaverio(game, out var why);
+            int price = org.SaverioPrice;
+            var zone = org.SaverioZone(game);
+            var e = new GameEvent
+            {
+                Id = "saverio_offer",
+                Title = "Don Saverio's corner",
+                Portrait = contact?.Face ?? -1,
+                Neapolitan = can ? "'O pizzo mio? Tutto se venne, guagliò. Basta ca 'o prezzo è giusto." : "Tu? Va' a jucà 'o pallone, va'.",
+                English = can ? "My corner? Everything's for sale, kid. As long as the price is right." : "You? Go and play football.",
+                Body = can
+                    ? $"He's run the corner in {zone?.Name ?? "the rione"} for twenty years and his knees hurt. For €{price} he retires to Ischia and the corner is yours. " +
+                      $"Or €{Organization.SaverioCutDown} now and €{Organization.SaverioCutWeekly} every Sunday for {Organization.SaverioCutWeeks} weeks: miss two Sundays and he takes it back."
+                    : why,
+            };
+            if (can)
+            {
+                e.Option($"Pay him to retire · €{price}", "Cash or clean, he doesn't care. The corner and the rione are yours today.",
+                    g => g.Org.BuyOutSaverio(g), g => g.Stock.Cash + g.Stock.Clean >= price);
+                e.Option($"A cut · €{Organization.SaverioCutDown} now, €{Organization.SaverioCutWeekly} a Sunday ×{Organization.SaverioCutWeeks}",
+                    org.Respect >= Organization.SaverioCutRespect
+                        ? $"The corner is yours today. €{Organization.SaverioCutDown + Organization.SaverioCutWeekly * Organization.SaverioCutWeeks} in all."
+                        : $"He only takes promises from a name: respect {org.Respect:0}/{Organization.SaverioCutRespect:0}.",
+                    g => g.Org.CutDealWithSaverio(g),
+                    g => g.Org.Respect >= Organization.SaverioCutRespect && g.Stock.Cash + g.Stock.Clean >= Organization.SaverioCutDown);
+            }
+            return e.Option("Not now", "The other way is a gun: him, and his men.", g => { });
+        }
+
         public static GameEvent RankUp(Game game, int rank)
         {
             var boss = game.Org.Boss(game);

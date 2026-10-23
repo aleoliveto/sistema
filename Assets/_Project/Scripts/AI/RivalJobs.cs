@@ -40,6 +40,8 @@ namespace OSistema.AI
                     if (pawn.MissionTarget != null && pawn.MissionTarget.IsPresent) return new GuardJob(pawn);
                     pawn.Mission = RivalMission.Leave;
                     return new LeaveMapJob(pawn, game);
+                case RivalMission.Corner:
+                    return new CornerGuardJob(pawn, game.Org.SaverioPostFor(pawn, game));
                 default:
                     return new LeaveMapJob(pawn, game);
             }
@@ -322,6 +324,39 @@ namespace OSistema.AI
             if (boss == null || !boss.IsPresent) { Pawn.Mission = RivalMission.Leave; return true; }
             if ((boss.Position - Pawn.Position).sqrMagnitude < 2.5f * 2.5f) { Pawn.StopMoving(); return false; }
             if (walker == null || (walker.Target - boss.Cell).sqrMagnitude > 4) walker = new Walker(boss.Cell, adjacent: true);
+            if (walker.Tick(Pawn, game) == WalkStatus.Failed) walker = null;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// One of Don Saverio's men: stands by his corner, smoking. Once the family has started shooting,
+    /// he goes for whoever of the family comes close.
+    /// </summary>
+    public sealed class CornerGuardJob : Job
+    {
+        readonly Vector2Int post;
+        Walker walker;
+
+        public CornerGuardJob(Pawn pawn, Vector2Int post) : base(pawn) => this.post = post;
+
+        public override string Label => Pawn.Feuding ? "Fighting for Don Saverio" : "Minding Don Saverio's corner";
+
+        public override bool Tick(Game game)
+        {
+            if (Pawn.Feuding)
+            {
+                var foe = CombatSystem.NearestHostile(Pawn, game, 20f);
+                if (foe != null)
+                {
+                    if ((foe.Position - Pawn.Position).sqrMagnitude <= 6f * 6f) { Pawn.StopMoving(); return false; }
+                    if (walker == null || (walker.Target - foe.Cell).sqrMagnitude > 9) walker = new Walker(foe.Cell, adjacent: true);
+                    if (walker.Tick(Pawn, game) == WalkStatus.Failed) walker = null;
+                    return false;
+                }
+            }
+            if ((Pawn.Cell - post).sqrMagnitude <= 1) { Pawn.StopMoving(); return false; }
+            if (walker == null || walker.Target != post) walker = new Walker(post, adjacent: false);
             if (walker.Tick(Pawn, game) == WalkStatus.Failed) walker = null;
             return false;
         }

@@ -17,12 +17,13 @@ namespace OSistema.Crime
         public bool SupplierIntroduced;
 
         public string SupplierProgress =>
-            Rank < 1 ? "Zì Tore doesn't sell to kids: become a Paranza first, then Don Saverio can vouch for you."
+            Sav.dead || Sav.feud ? "Don Saverio won't vouch for you now. Take his corner, and Zì Tore will hear who holds it."
+            : Rank < 1 ? "Zì Tore doesn't sell to kids: become a Paranza first, then Don Saverio can vouch for you."
                      : $"Keep watch for Don Saverio until he vouches for you: shifts {LookoutShifts}/{ShiftsToVouch}, respect {Respect:0}/{RespectToVouch:0}.";
 
         void CheckIntroduction(Game game)
         {
-            if (SupplierIntroduced || Rank < 1 || LookoutShifts < ShiftsToVouch || Respect < RespectToVouch) return;
+            if (SupplierIntroduced || SaverioGone || Sav.feud || Rank < 1 || LookoutShifts < ShiftsToVouch || Respect < RespectToVouch) return;
             int hour = game.Clock.Hour;
             if (hour < 16 || hour > 23) return;
             foreach (var m in game.Phone.Messages)

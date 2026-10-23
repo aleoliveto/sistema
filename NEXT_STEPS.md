@@ -39,7 +39,7 @@ When Gennaro's sleep (`Needs.Rest`) runs out:
 **Done the same day:** slower walking and less wobble · selling by hand at your piazza and the stall (G) · the cavallo ridden to Nanninella on the real scooter · vest bought, not given · "Don" only at 'O Sistema · Clan needs a piazza and a full crew · money requests from Clan · less rain · pop-ups only for what involves you · phone by touch · building card scrolls · follow me · scooters swerve · gunfight camera · fewer lavoretti offers · shop counters reachable from the door · new rolling and bagging tables.
 
 **Early game:**
-- **Don Saverio owns the starting piazza.** To take it: kill him and his guards, or pay him to retire (a big sum, or a cut for a while). Until then you deal on his corner by his leave.
+- **Don Saverio owns the starting piazza** (DONE: `Organization.Saverio.cs`). Three armed men stand by him while he's on his corner (15:00–02:00); no piazza of yours opens in his rione until it's taken. Shoot him (two bullets) and his men, or, as a Paranza, pay him to retire (€9–15k depending on respect) or a cut (€2,000 now + €900 for 10 Sundays, respect 25; miss two and he takes it back). Offer from his contact card or Piazza › Piazze. Playtest: is the price right, and are his men too easy or too hard?
 - **Inventory per character:** what each person carries (doses, packs, a pistol, cash, the stolen scooter's keys), not one family stock. Needed for selling from the pocket, searches, and crew on errands.
 
 **The crew's homes:**

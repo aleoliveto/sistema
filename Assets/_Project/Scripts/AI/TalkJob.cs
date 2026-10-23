@@ -88,6 +88,8 @@ namespace OSistema.AI
                 if (free > 0)
                     e.Option($"    …or send someone ({free} free) ▸", "Pick who goes. Same pay and respect for the family; he learns from it.", g => g.Events.Raise(SendPicker(job, pawn, g)));
             }
+            if (contact.Name == ContactBook.Saverio && !game.Org.Sav.taken)
+                e.Option("Talk about his corner ▸", $"What it would take for him to retire. He has {game.Org.Sav.guards} armed men.", g => g.Events.Raise(EventCards.SaverioOffer(g)));
             // Some contacts trade as well as giving work.
             if (contact.Name == ContactBook.Totonno && game.Stock.Cigarettes > 0 && game.Org.TotonnoWants(game) > 0)
             {

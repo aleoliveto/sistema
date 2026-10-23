@@ -142,7 +142,7 @@ namespace OSistema.Crime
                 if (added > 0) Version++;
             }
             // Don Saverio always needs eyes on the corner, from the afternoon into the night.
-            if ((first || hour == 15) && !HasOffer(ContactBook.Saverio) && !Resting(ContactBook.Saverio, now) && !All.Exists(c => c.Giver == ContactBook.Saverio && c.State == ContractState.Active))
+            if ((first || hour == 15) && !game.Org.SaverioGone && !game.Org.Sav.feud && !HasOffer(ContactBook.Saverio) && !Resting(ContactBook.Saverio, now) && !All.Exists(c => c.Giver == ContactBook.Saverio && c.State == ContractState.Active))
             {
                 var c = Generate(game, ContactBook.Saverio);
                 if (c != null)
@@ -151,6 +151,12 @@ namespace OSistema.Crime
                     Version++;
                 }
             }
+        }
+
+        /// <summary>Someone's offers are off the table (Don Saverio, once he's gone).</summary>
+        public void Withdraw(string giver)
+        {
+            if (All.RemoveAll(c => c.Giver == giver && c.State == ContractState.Offered) > 0) Version++;
         }
 
         bool HasOffer(string giver) => All.Exists(c => c.Giver == giver && c.State == ContractState.Offered);

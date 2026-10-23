@@ -22,6 +22,7 @@ namespace OSistema.Crime
         {
             if (zone == null) return false;
             if (zone.Rect.Contains(Vector2Int.RoundToInt(game.PlayerBase.center))) return true;
+            if (SaverioCornerHeld(zone, game)) return true;   // his old corner: the rione came with it
             return HasWorkingPiazza(zone, game);
         }
 

@@ -16,7 +16,7 @@ namespace OSistema.Pawns
     public enum Skill { Construction, Cooking, Medicine, Intimidation, Awareness, Shooting }
 
     /// <summary>What a rival clan member on the map is here to do.</summary>
-    public enum RivalMission { Pusher, Stesa, Hit, Leave, Lookout, Patrol, Assault, Guard }
+    public enum RivalMission { Pusher, Stesa, Hit, Leave, Lookout, Patrol, Assault, Guard, Corner }
 
     /// <summary>A crew member. Pure simulation data; PawnView draws it.</summary>
     public sealed class Pawn
@@ -58,6 +58,7 @@ namespace OSistema.Pawns
         public int Clan;                 // rivals: which clan (index into Game.Clans)
         public DrugSquare MissionSquare;
         public Pawn MissionTarget;
+        public bool Feuding;             // Don Saverio's men, once the family has started shooting (not saved)
 
         public CrewRole Role;
         public int Wage = 150;          // weekly mesata, paid on Sunday

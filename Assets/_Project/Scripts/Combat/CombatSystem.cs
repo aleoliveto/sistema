@@ -148,7 +148,7 @@ namespace OSistema.Combat
             if (!b.IsPresent || b.Health.Downed) return false;
             // Two clans' soldiers: enemies whenever either of them has come looking for a fight.
             if (a.Faction == Faction.Rival && b.Faction == Faction.Rival)
-                return a.Clan != b.Clan && (a.IsAggressive(now) || b.IsAggressive(now));
+                return a.Clan != b.Clan && a.Clan != Crime.Organization.SaverioClan && b.Clan != Crime.Organization.SaverioClan && (a.IsAggressive(now) || b.IsAggressive(now));
             if (a.Faction == b.Faction) return false;
             if (a.Controlled) return false;   // the player aims and fires himself
             if (a.Faction == Faction.Crew)
@@ -170,6 +170,7 @@ namespace OSistema.Combat
         public static bool AfterFamily(Pawn r) => r.Mission switch
         {
             RivalMission.Stesa => true,
+            RivalMission.Corner => r.Feuding,
             RivalMission.Hit => r.MissionTarget == null || r.MissionTarget.Faction == Faction.Crew,
             RivalMission.Assault => r.MissionSquare == null || !r.MissionSquare.Rival,
             RivalMission.Leave => (r.MissionTarget != null && r.MissionTarget.Faction == Faction.Crew) || (r.MissionSquare != null && !r.MissionSquare.Rival),
@@ -296,6 +297,7 @@ namespace OSistema.Combat
 
         static void ShotBystander(Npcs.Npc npc, bool melee, Game game)
         {
+            if (game.Org.OnSaverioHit(npc, melee, game)) return;
             bool cop = npc.Kind == Npcs.NpcKind.Police;
             var zone = game.Territory.ZoneAt(npc.Mover.Cell);
             if (melee)
@@ -384,7 +386,9 @@ namespace OSistema.Combat
         static void OnAttacked(Pawn target, Pawn attacker, Game game, long now)
         {
             target.AggressiveUntil = Math.Max(target.AggressiveUntil, now + AggroTicks);
-            if (attacker.Faction == Faction.Crew && target.Faction == Faction.Rival)
+            if (attacker.Faction == Faction.Crew && target.Faction == Faction.Rival && target.Clan == Crime.Organization.SaverioClan)
+                game.Org.SaverioProvoked(game);
+            else if (attacker.Faction == Faction.Crew && target.Faction == Faction.Rival)
             {
                 var clan = game.ClanOf(target);
                 clan.OnCrewAttacked(game);

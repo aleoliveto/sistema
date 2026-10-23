@@ -62,6 +62,7 @@ namespace OSistema.Crime
             }
             SpawnCustomers(game);
             TickCarrying(game);
+            SaverioTick(game);
         }
 
         void OnHour(Game game)
@@ -85,6 +86,7 @@ namespace OSistema.Crime
             ReopenBurnedShops(game);
             OrganiseShifts(game);
             HustlesHourly(game);
+            SaverioHourly(game);
             game.Police.HourlyCheck(game);
             LeadershipHourly(game);
             CheckRank(game);
@@ -281,6 +283,12 @@ namespace OSistema.Crime
             if (game.RivalSquares.Any(s => (s.Cell - cell).sqrMagnitude < 64))
             {
                 error = "That's the rivals' piazza. Take it by force first.";
+                return false;
+            }
+            var saverioZone = game.Territory.ZoneAt(cell);
+            if (SaverioHolds(saverioZone, game))
+            {
+                error = $"{saverioZone.Name} is Don Saverio's corner. Take it from him first: kill him and his men, or pay him to retire (Piazza › Piazze).";
                 return false;
             }
             error = null;
