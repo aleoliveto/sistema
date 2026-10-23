@@ -24,6 +24,15 @@ namespace OSistema.Views
         float moving;               // 0 standing .. 1 walking, smoothed
         bool aiming;
 
+        /// <summary>Lying asleep (not hurt): breathing slowly.</summary>
+        public bool Asleep;
+        bool wasLying;
+        float fall = 1f;            // 0 the moment someone goes down, 1 when they've hit the ground
+        float flinch;               // a hit: jolt back, decaying
+
+        /// <summary>Hit: a jolt back from the blow.</summary>
+        public void Flinch() => flinch = 1f;
+
         /// <summary>In bed: lie along it, shoulders across the mattress, head to the pillow.</summary>
         public float? LieAngle;
 
@@ -35,8 +44,26 @@ namespace OSistema.Views
 
         public Transform Root => root;
 
+        // Every rig alive, so a shot can find the arm that fired it (domain reload is off: prune the dead).
+        static readonly System.Collections.Generic.List<PersonRig> all = new System.Collections.Generic.List<PersonRig>();
+
+        /// <summary>A shot fired from here: whoever is standing on the spot kicks back.</summary>
+        public static void RecoilAt(Vector2 from)
+        {
+            all.RemoveAll(r => r.root == null);
+            PersonRig best = null;
+            float bestD = 0.8f * 0.8f;
+            foreach (var r in all)
+            {
+                float d = ((Vector2)r.root.position - from).sqrMagnitude;
+                if (d < bestD) { bestD = d; best = r; }
+            }
+            best?.Recoil();
+        }
+
         public PersonRig(Transform parent, float scale, int sortingOrder)
         {
+            all.Add(this);
             root = parent;
             root.localScale = Vector3.one * scale;
 
@@ -84,7 +111,8 @@ namespace OSistema.Views
 
         // ---------- Painted parts ----------
 
-        SpriteRenderer hat, neck;
+        SpriteRenderer hat, neck, armL, armR;
+        bool limbs;                 // the painted body is cut into a torso and two arms that swing
         bool art;
         bool visibleNow = true;
         Color artTint = Color.white;
@@ -100,6 +128,21 @@ namespace OSistema.Views
             art = true;
             drawnLegs = look.Body >= OSistema.Pawns.Look.Street;
             body.sprite = b;
+            limbs = CharacterArt.Limbs(look.Body, out var torso, out var al, out var ar, out var sl, out var sr);
+            if (limbs)
+            {
+                body.sprite = torso;
+                if (armL == null) armL = Part("Arm L", body.transform, null, SpriteFactory.LitMaterial, body.sortingOrder + 1);
+                if (armR == null) armR = Part("Arm R", body.transform, null, SpriteFactory.LitMaterial, body.sortingOrder + 1);
+                armL.sprite = al;
+                armR.sprite = ar;
+                armL.transform.localPosition = sl;
+                armR.transform.localPosition = sr;
+            }
+            else if (armL != null)
+            {
+                armL.sprite = armR.sprite = null;
+            }
             head.sprite = h;
             hair.sprite = hr;
             // The painted parts face the viewer (south); the figure faces north before it's turned.
@@ -127,6 +170,7 @@ namespace OSistema.Views
             artTint = c;
             if (!art) return;
             body.color = head.color = hair.color = c;
+            if (armL != null) armL.color = armR.color = c;
             if (hat != null) hat.color = c;
             if (neck != null) neck.color = c;
         }
@@ -161,6 +205,7 @@ namespace OSistema.Views
             handL.enabled = hands;
             handR.enabled = hands;
             if (hat != null) hat.enabled = visible && hat.sprite != null;
+            if (armL != null) armL.enabled = armR.enabled = visible && limbs;
             if (neck != null) neck.enabled = visible && neck.sprite != null;
             if (!visible)
             {
@@ -226,12 +271,13 @@ namespace OSistema.Views
             if (art)
             {
                 // The painted bodies have their own arms: hands only appear holding a gun.
-                bool hands = visibleNow && aiming && !lying && !Seated;
+                bool hands = visibleNow && aiming && !lying && !Seated && !limbs;
                 handL.enabled = hands;
                 handR.enabled = hands;
                 footL.enabled = footR.enabled = false;
             }
 
+            if (limbs) PoseArms(lying, speed, Mathf.Sin(stride));
             aiming = false;
             if (art && !lying)
             {
@@ -273,15 +319,70 @@ namespace OSistema.Views
             }
 
             root.position = new Vector3(position.x, position.y, 0f);
+            // Going down (not to bed): a fall that takes a moment, turning over, a bounce as he lands.
+            if (lying && !wasLying && !Asleep) fall = 0f;
+            wasLying = lying;
+            fall = Mathf.MoveTowards(fall, 1f, dt * 2.6f);
+            flinch = Mathf.MoveTowards(flinch, 0f, dt * 7f);
             float current = pivot.localEulerAngles.z;
             float target = lying ? (LieAngle ?? heading + 90f) : heading;
-            pivot.localRotation = Quaternion.Euler(0f, 0f, Mathf.MoveTowardsAngle(current, target, TurnSpeed * dt));
+            float turn = fall < 1f ? 260f : TurnSpeed;
+            pivot.localRotation = Quaternion.Euler(0f, 0f, Mathf.MoveTowardsAngle(current, target, turn * dt));
             // Lying figures read flatter and slightly offset, standing ones bob very slightly when moving.
-            pivot.localPosition = lying ? new Vector3(0f, -0.1f, 0f) : Vector3.zero;
+            var back = -(Vector2)(pivot.localRotation * Vector3.up);
+            pivot.localPosition = (lying ? new Vector3(0f, -0.1f * fall, 0f) : Vector3.zero) + (Vector3)(back * flinch * 0.12f);
+            float landing = fall < 1f ? 1f + Mathf.Sin(fall * Mathf.PI) * 0.12f : 1f;
+            // Asleep: the chest rises and falls, slowly.
+            float sleepBreath = lying && Asleep ? Mathf.Sin(Time.time * 1.4f) * 0.025f : 0f;
+            pivot.localScale = new Vector3(landing + sleepBreath * 0.6f, landing + sleepBreath, 1f);
             shadow.transform.localScale = lying ? new Vector3(1.2f, 0.55f, 1f) : new Vector3(0.95f, 0.7f, 1f);
             // A contact shadow always, thrown longer by the sun in the morning and evening.
             shadow.transform.localPosition = (Vector3)(Sun.Offset * (lying ? 0.12f : 0.32f));
             shadow.color = new Color(0.05f, 0.04f, 0.06f, 0.3f + 0.28f * Sun.Strength);
+        }
+
+        float recoil;
+
+        /// <summary>A shot fired: the gun arm kicks back for a moment.</summary>
+        public void Recoil() => recoil = 1f;
+
+        /// <summary>
+        /// The painted arms, seen from above: walking, each arm reaches forward as the other falls back
+        /// (stretched or shortened from the shoulder); running, more. Aiming, both come forward and in
+        /// to hold the gun, and kick back with each shot. On the scooter they hold the handlebars.
+        /// </summary>
+        void PoseArms(bool lying, float speed, float phase)
+        {
+            float dt = Time.deltaTime;
+            recoil = Mathf.MoveTowards(recoil, 0f, dt * 6f);
+            float run = Mathf.Clamp01((speed - 3.5f) / 3f);
+            Vector3 l = Vector3.one, r = Vector3.one;
+            float rotL = 0f, rotR = 0f;
+            if (lying) { }
+            else if (Seated)
+            {
+                l.y = r.y = 1.3f;
+                rotL = 18f; rotR = -18f;
+            }
+            else if (aiming)
+            {
+                // Arms reach forward and in towards the gun; the shooting arm a little further.
+                l.y = 1.35f; r.y = 1.55f - recoil * 0.35f;
+                rotL = 30f; rotR = -16f + recoil * 6f;
+            }
+            else
+            {
+                float amp = (0.26f + 0.16f * run) * moving;
+                l.y = 1f + phase * amp;
+                r.y = 1f - phase * amp;
+                rotL = -phase * 6f * moving;
+                rotR = -phase * 6f * moving;
+            }
+            // Arms point to the figure's front; the sprites face south and the body is turned round, so +y scale reaches forward.
+            armL.transform.localScale = l;
+            armR.transform.localScale = r;
+            armL.transform.localRotation = Quaternion.Euler(0f, 0f, rotL);
+            armR.transform.localRotation = Quaternion.Euler(0f, 0f, rotR);
         }
 
         // ---------- Appearance helpers ----------

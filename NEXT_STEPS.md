@@ -20,7 +20,7 @@ When Gennaro's sleep (`Needs.Rest`) runs out:
 - **Past 0, down to −10:** Rest has to be allowed below zero (or tracked as a separate "overtired" counter). At −10 he passes out where he stands: he drops to the ground, sleeps a few hours, and is vulnerable in the street (police, rivals, pickpockets).
 - Apply the same to crew (slow and yawning), so the shift system and beds matter.
 
-## 2. Animation (high value for feel, trailers and screenshots)
+## 2. Animation (STEP 1 DONE: arms swing, recoil, flinch, fall, sleep breathing; next: shoes, scooter lean, work hands, punches)
 Painted bodies are single images with the arms painted in, so the walk is only a small sway and reads as sliding (`Views/PersonRig.cs`).
 1. **Split the painted body** into torso, two arms and two shoes, painted with `Tools/ArtGen` in the same style. Load them in `CharacterArt` and give them their own transforms in `PersonRig`.
 2. **Walk and run:** shoes step out front and back, arms swing against them, a clear bob, all stronger when running.

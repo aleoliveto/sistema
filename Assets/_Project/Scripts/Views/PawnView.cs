@@ -102,6 +102,8 @@ namespace OSistema.Views
             }
 
             bool lying = pawn.Dead || pawn.Health.Downed || pawn.Sleep != SleepState.Awake;
+            rig.Asleep = pawn.Sleep != SleepState.Awake && !pawn.Dead && !pawn.Health.Downed;
+            if (Time.unscaledTime - pawn.LastHitTime < 0.05f) rig.Flinch();
             rig.LieAngle = pawn.Sleep == SleepState.InBed && pawn.Bed.HasValue && !pawn.Dead && !pawn.Health.Downed ? BedAngle(pawn.Bed.Value) : (float?)null;
             rig.Update(pawn.Position, lying, Time.deltaTime);
             if (pawn.AimTarget != null && !lying) rig.FaceTowards(pawn.AimTarget.Position);

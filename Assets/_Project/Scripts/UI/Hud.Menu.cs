@@ -292,6 +292,7 @@ namespace OSistema.UI
                 // "tired": Gennaro starts with no sleep left, to see the yawns, the heavy eyelids and the collapse.
                 if (text.Contains("tired") && game?.Player != null) game.Player.Needs.Rest = -0.08f;
                 if (text.Contains("uitour") && game != null) StartUiTour();
+                if (text.Contains("walkshots") && game != null) StartWalkShots();
                 if (text.Contains("interiors") && game != null) StartInteriorTour();
                 if (text.Contains("checks") && game != null) StartDevChecks();
                 return;

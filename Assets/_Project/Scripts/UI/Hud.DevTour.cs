@@ -17,6 +17,51 @@ namespace OSistema.UI
 
         void StartInteriorTour() => StartCoroutine(InteriorTour());
 
+        void StartWalkShots() => StartCoroutine(WalkShots());
+
+        /// <summary>Developer switch "walkshots": close-up frames of someone walking (persistentDataPath/walk), to check the arms.</summary>
+        IEnumerator WalkShots()
+        {
+            string dir = Path.Combine(Application.persistentDataPath, "walk");
+            Directory.CreateDirectory(dir);
+            foreach (var f in Directory.GetFiles(dir, "*.png")) File.Delete(f);
+            Application.runInBackground = true;
+            var fog = FindAnyObjectByType<OSistema.Views.FogOfWar>();
+            if (fog != null) fog.gameObject.SetActive(false);
+            yield return new WaitForSecondsRealtime(3f);
+            var cam = Camera.main;
+            for (int tries = 0; tries < 60; tries++)
+            {
+                // Whoever moves furthest in a moment is walking.
+                var before = new Dictionary<OSistema.Pawns.Pawn, Vector2>();
+                foreach (var p in game.Pawns.Crew) if (p.IsPresent) before[p] = p.Position;
+                yield return new WaitForSecondsRealtime(0.3f);
+                OSistema.Pawns.Pawn walker = null;
+                float best = 0.25f;
+                foreach (var kv in before)
+                {
+                    float d = (kv.Key.Position - kv.Value).magnitude;
+                    if (d > best && !kv.Key.Riding) { best = d; walker = kv.Key; }
+                }
+                if (walker != null)
+                {
+                    controller.StopFollowing();
+                    cam.orthographicSize = 2.2f;
+                    for (int i = 0; i < 8; i++)
+                    {
+                        cam.transform.position = new Vector3(walker.Position.x, walker.Position.y, cam.transform.position.z);
+                        yield return null;
+                        ScreenCapture.CaptureScreenshot(Path.Combine(dir, $"walk_{i:00}.png"));
+                        yield return new WaitForSecondsRealtime(0.11f);
+                    }
+                    Debug.Log("[walkshots] done");
+                    yield break;
+                }
+                yield return new WaitForSecondsRealtime(0.5f);
+            }
+            Debug.Log("[walkshots] nobody walking");
+        }
+
         /// <summary>
         /// Developer switch "interiors": roofs off, fog lifted, and a screenshot of the family basso,
         /// a few homes and one shop of each trade (persistentDataPath/interiors); then one shop burned,

@@ -77,6 +77,7 @@ namespace OSistema.Views
                 return;
             }
 
+            PersonRig.RecoilAt(shot.From);
             // You hear gunfire even when you can't see it.
             SoundManager.PlayAt(AudioSynth.Gunshot, shot.From, 0.9f);
             if (shake != null) shake.Kick(shot.From, 0.25f);

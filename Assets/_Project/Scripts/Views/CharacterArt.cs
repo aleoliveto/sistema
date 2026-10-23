@@ -69,5 +69,68 @@ namespace OSistema.Views
         public static bool Available => Count("body") > 0 && Count("head") > 0 && Count("hair") > 0;
 
         public static Texture2D Face(int i) => Texture("face", i);
+
+        // ---------- Bodies cut into a torso and two arms (Tools/ArtGen/split_bodies.py) ----------
+
+        public const float ArmWidthFraction = 0.17f;
+        static Dictionary<string, Vector3Int> armInfo;   // body key -> (shoulder row, left arm's inner edge, right arm's inner edge)
+
+        static bool ArmInfo(string bodyKey, out Vector3Int info)
+        {
+            if (armInfo == null)
+            {
+                armInfo = new Dictionary<string, Vector3Int>();
+                var txt = Resources.Load<TextAsset>("Characters/arms");
+                if (txt != null)
+                    foreach (var line in txt.text.Split('\n'))
+                    {
+                        var f = line.Trim().Split(' ');
+                        if (f.Length == 4 && int.TryParse(f[1], out int top) && int.TryParse(f[2], out int l) && int.TryParse(f[3], out int r))
+                            armInfo[f[0]] = new Vector3Int(top, l, r);
+                    }
+            }
+            return armInfo.TryGetValue(bodyKey, out info);
+        }
+
+        /// <summary>
+        /// The torso and the two arms of a body, if it's been cut. Each arm's sprite pivots at its shoulder,
+        /// and shoulderL / shoulderR are where those pivots sit in the body sprite (units, before turning).
+        /// </summary>
+        public static bool Limbs(int body, out Sprite torso, out Sprite armL, out Sprite armR, out Vector2 shoulderL, out Vector2 shoulderR)
+        {
+            torso = armL = armR = null;
+            shoulderL = shoulderR = Vector2.zero;
+            string key = Key("body", body);
+            if (!ArmInfo(key, out var info)) return false;
+            var tt = Load(key + "_torso");
+            var tl = Load(key + "_arml");
+            var tr = Load(key + "_armr");
+            if (tt == null || tl == null || tr == null) return false;
+            float w = tt.width, h = tt.height;
+            float half = ArmWidthFraction * w * 0.5f;
+            float top = info.x, lx = info.y - half, rx = info.z + half;
+            torso = Cut(key + "_torso", tt, new Vector2(0.5f, 0.5f));
+            armL = Cut(key + "_arml", tl, new Vector2(lx / w, 1f - top / h));
+            armR = Cut(key + "_armr", tr, new Vector2(rx / w, 1f - top / h));
+            shoulderL = new Vector2((lx - w * 0.5f) / PixelsPerUnit, (h * 0.5f - top) / PixelsPerUnit);
+            shoulderR = new Vector2((rx - w * 0.5f) / PixelsPerUnit, (h * 0.5f - top) / PixelsPerUnit);
+            return true;
+        }
+
+        static Texture2D Load(string key)
+        {
+            if (textures.TryGetValue(key, out var tex) && tex != null) return tex;
+            tex = Resources.Load<Texture2D>("Characters/" + key);
+            textures[key] = tex;
+            return tex;
+        }
+
+        static Sprite Cut(string key, Texture2D tex, Vector2 pivot)
+        {
+            if (sprites.TryGetValue(key, out var s) && s != null) return s;
+            s = UnityEngine.Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), pivot, PixelsPerUnit);
+            sprites[key] = s;
+            return s;
+        }
     }
 }
