@@ -125,6 +125,32 @@ namespace OSistema.Views
             return true;
         }
 
+        // ---------- Walking legs (Tools/ArtGen/cut_people.py legs): legs_<row><frame>, hips at the top ----------
+
+        const float LegsTop = 16f;   // the hips' row on the legs canvas
+        /// <summary>Where the hips sit under the torso, in the torso sprite's units (before turning).</summary>
+        public static readonly Vector2 HipsOnTorso = new Vector2(0f, (128f - 200f) / PixelsPerUnit);
+
+        /// <summary>
+        /// Which trousers walk under a body: 0 jeans and trainers, 1 tracksuit, 2 suit trousers, 3 a skirt.
+        /// -1 for the bodies still painted whole, with their own legs (police, street people).
+        /// </summary>
+        public static int LegsRow(int body)
+        {
+            int set = body / 100, n = body % 100;
+            if (set == 0) return n == 3 || n == 4 || n == 15 ? 1 : n == 9 ? 2 : 0;
+            if (set == 1) return n == 2 || n == 14 ? 1 : n == 3 || n == 11 ? 0 : 3;
+            return -1;
+        }
+
+        public static Sprite Legs(int row, int frame)
+        {
+            if (row < 0) return null;
+            string key = $"legs_{row}{frame}";
+            var tex = Load(key);
+            return tex == null ? null : Cut(key, tex, new Vector2(0.5f, 1f - LegsTop / tex.height));
+        }
+
         static Texture2D Load(string key)
         {
             if (textures.TryGetValue(key, out var tex) && tex != null) return tex;

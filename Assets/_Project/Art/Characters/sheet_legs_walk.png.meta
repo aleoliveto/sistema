@@ -1,0 +1,1393 @@
+fileFormatVersion: 2
+guid: 7e312e73f0e504a25afabaea19e11b7c
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -3254190932248747487
+    second: sheet_legs_walk_0
+  - first:
+      213: -4755951399005667219
+    second: sheet_legs_walk_1
+  - first:
+      213: -4714297787670670564
+    second: sheet_legs_walk_2
+  - first:
+      213: -1687602523142329348
+    second: sheet_legs_walk_3
+  - first:
+      213: 30989379839639160
+    second: sheet_legs_walk_4
+  - first:
+      213: 7022221607439495105
+    second: sheet_legs_walk_5
+  - first:
+      213: -6248423848543160747
+    second: sheet_legs_walk_6
+  - first:
+      213: 799776722067415979
+    second: sheet_legs_walk_7
+  - first:
+      213: -5061151572165794637
+    second: sheet_legs_walk_8
+  - first:
+      213: -3408170271541820865
+    second: sheet_legs_walk_9
+  - first:
+      213: -5457828996135439085
+    second: sheet_legs_walk_10
+  - first:
+      213: -1254924437788864389
+    second: sheet_legs_walk_11
+  - first:
+      213: 1645075879362849331
+    second: sheet_legs_walk_12
+  - first:
+      213: 4463124085284588908
+    second: sheet_legs_walk_13
+  - first:
+      213: -226334789276982102
+    second: sheet_legs_walk_14
+  - first:
+      213: -5230335857583472192
+    second: sheet_legs_walk_15
+  - first:
+      213: -592986518328721761
+    second: sheet_legs_walk_16
+  - first:
+      213: -8868704632736430897
+    second: sheet_legs_walk_17
+  - first:
+      213: 4571369037014575561
+    second: sheet_legs_walk_18
+  - first:
+      213: 8874380164609035404
+    second: sheet_legs_walk_19
+  - first:
+      213: 6528063023856951654
+    second: sheet_legs_walk_20
+  - first:
+      213: 7399035625021826237
+    second: sheet_legs_walk_21
+  - first:
+      213: -2987883519332225408
+    second: sheet_legs_walk_22
+  - first:
+      213: -7822639191963895062
+    second: sheet_legs_walk_23
+  - first:
+      213: -492003210784268698
+    second: sheet_legs_walk_24
+  - first:
+      213: 9005020309964471190
+    second: sheet_legs_walk_25
+  - first:
+      213: -1591579522070973912
+    second: sheet_legs_walk_26
+  - first:
+      213: 294427558559600556
+    second: sheet_legs_walk_27
+  - first:
+      213: 156392408817227605
+    second: sheet_legs_walk_28
+  - first:
+      213: -7967575055919773486
+    second: sheet_legs_walk_29
+  - first:
+      213: 7288332679034039817
+    second: sheet_legs_walk_30
+  - first:
+      213: 6621106731931104854
+    second: sheet_legs_walk_31
+  - first:
+      213: 114597306276608871
+    second: sheet_legs_walk_32
+  - first:
+      213: 2951242941844329145
+    second: sheet_legs_walk_33
+  - first:
+      213: 2271189369529878580
+    second: sheet_legs_walk_34
+  - first:
+      213: -8390069711329687483
+    second: sheet_legs_walk_35
+  - first:
+      213: -8996509911658594464
+    second: sheet_legs_walk_36
+  - first:
+      213: -110462431459926684
+    second: sheet_legs_walk_37
+  - first:
+      213: 8594571116171877178
+    second: sheet_legs_walk_38
+  - first:
+      213: -5985214620759258797
+    second: sheet_legs_walk_39
+  - first:
+      213: -1208666115253088802
+    second: sheet_legs_walk_40
+  - first:
+      213: -6525962396994255376
+    second: sheet_legs_walk_41
+  - first:
+      213: 387503030679218261
+    second: sheet_legs_walk_42
+  - first:
+      213: -8680860463852528836
+    second: sheet_legs_walk_43
+  - first:
+      213: -4016629769949361751
+    second: sheet_legs_walk_44
+  - first:
+      213: 9202867543937605292
+    second: sheet_legs_walk_45
+  - first:
+      213: 7390750855080616943
+    second: sheet_legs_walk_46
+  - first:
+      213: 182597064986300627
+    second: sheet_legs_walk_47
+  - first:
+      213: 3263971835453416713
+    second: sheet_legs_walk_48
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: sheet_legs_walk_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 938
+        width: 315
+        height: 300
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 122240ca69ac6d2d0800000000000000
+      internalID: -3254190932248747487
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_1
+      rect:
+        serializedVersion: 2
+        x: 323
+        y: 1132
+        width: 34
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d60ce3596677ffdb0800000000000000
+      internalID: -4755951399005667219
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_2
+      rect:
+        serializedVersion: 2
+        x: 326
+        y: 1132
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c13da78b323739eb0800000000000000
+      internalID: -4714297787670670564
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_3
+      rect:
+        serializedVersion: 2
+        x: 329
+        y: 1126
+        width: 12
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cfb6c0e427e6498e0800000000000000
+      internalID: -1687602523142329348
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_4
+      rect:
+        serializedVersion: 2
+        x: 334
+        y: 964
+        width: 302
+        height: 275
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 87eb6214da81e6000800000000000000
+      internalID: 30989379839639160
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_5
+      rect:
+        serializedVersion: 2
+        x: 667
+        y: 942
+        width: 319
+        height: 296
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1cfe08db851f37160800000000000000
+      internalID: 7022221607439495105
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_6
+      rect:
+        serializedVersion: 2
+        x: 1005
+        y: 970
+        width: 212
+        height: 268
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 55671858d932949a0800000000000000
+      internalID: -6248423848543160747
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_7
+      rect:
+        serializedVersion: 2
+        x: 931
+        y: 1076
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ba3647af0b0691b00800000000000000
+      internalID: 799776722067415979
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_8
+      rect:
+        serializedVersion: 2
+        x: 84
+        y: 1040
+        width: 12
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3b4e5a2d57d23c9b0800000000000000
+      internalID: -5061151572165794637
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_9
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 636
+        width: 283
+        height: 301
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f3204bef13fb3b0d0800000000000000
+      internalID: -3408170271541820865
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_10
+      rect:
+        serializedVersion: 2
+        x: 311
+        y: 710
+        width: 12
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3153580e175e144b0800000000000000
+      internalID: -5457828996135439085
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_11
+      rect:
+        serializedVersion: 2
+        x: 325
+        y: 644
+        width: 258
+        height: 297
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b7053a96fdc959ee0800000000000000
+      internalID: -1254924437788864389
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_12
+      rect:
+        serializedVersion: 2
+        x: 633
+        y: 626
+        width: 313
+        height: 317
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 33a6cf9dbcb74d610800000000000000
+      internalID: 1645075879362849331
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_13
+      rect:
+        serializedVersion: 2
+        x: 1001
+        y: 644
+        width: 200
+        height: 297
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c6dc0eb75b330fd30800000000000000
+      internalID: 4463124085284588908
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_14
+      rect:
+        serializedVersion: 2
+        x: 506
+        y: 643
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aa425d455b5ebdcf0800000000000000
+      internalID: -226334789276982102
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_15
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 322
+        width: 292
+        height: 307
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c1cfb0cf3d1a67b0800000000000000
+      internalID: -5230335857583472192
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_16
+      rect:
+        serializedVersion: 2
+        x: 319
+        y: 323
+        width: 359
+        height: 306
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f9ebb6247e945c7f0800000000000000
+      internalID: -592986518328721761
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_17
+      rect:
+        serializedVersion: 2
+        x: 707
+        y: 326
+        width: 275
+        height: 304
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fc442ebff180ce480800000000000000
+      internalID: -8868704632736430897
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_18
+      rect:
+        serializedVersion: 2
+        x: 922
+        y: 562
+        width: 32
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9c929744be3c07f30800000000000000
+      internalID: 4571369037014575561
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_19
+      rect:
+        serializedVersion: 2
+        x: 1013
+        y: 369
+        width: 194
+        height: 262
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c8c4b41cdb1282b70800000000000000
+      internalID: 8874380164609035404
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_20
+      rect:
+        serializedVersion: 2
+        x: 291
+        y: 384
+        width: 11
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6612b58abb6589a50800000000000000
+      internalID: 6528063023856951654
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_21
+      rect:
+        serializedVersion: 2
+        x: 299
+        y: 389
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: db4e2edf2b7aea660800000000000000
+      internalID: 7399035625021826237
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_22
+      rect:
+        serializedVersion: 2
+        x: 299
+        y: 357
+        width: 30
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 08e65f705c7e886d0800000000000000
+      internalID: -2987883519332225408
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_23
+      rect:
+        serializedVersion: 2
+        x: 613
+        y: 381
+        width: 7
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aea71fcd917607390800000000000000
+      internalID: -7822639191963895062
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_24
+      rect:
+        serializedVersion: 2
+        x: 295
+        y: 373
+        width: 9
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 66e1ad0cfad0c29f0800000000000000
+      internalID: -492003210784268698
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_25
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 368
+        width: 13
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 69b3c92e24248fc70800000000000000
+      internalID: 9005020309964471190
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_26
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 0
+        width: 262
+        height: 324
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8227c237bd299e9e0800000000000000
+      internalID: -1591579522070973912
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_27
+      rect:
+        serializedVersion: 2
+        x: 289
+        y: 232
+        width: 50
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cafc708fd44061400800000000000000
+      internalID: 294427558559600556
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_28
+      rect:
+        serializedVersion: 2
+        x: 334
+        y: 0
+        width: 314
+        height: 327
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5575e15311e9b2200800000000000000
+      internalID: 156392408817227605
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_29
+      rect:
+        serializedVersion: 2
+        x: 617
+        y: 167
+        width: 35
+        height: 67
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2d883ae53bc7d6190800000000000000
+      internalID: -7967575055919773486
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_30
+      rect:
+        serializedVersion: 2
+        x: 675
+        y: 19
+        width: 228
+        height: 307
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 90ee1b2d4fb552560800000000000000
+      internalID: 7288332679034039817
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_31
+      rect:
+        serializedVersion: 2
+        x: 989
+        y: 0
+        width: 265
+        height: 325
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 65673b81e75e2eb50800000000000000
+      internalID: 6621106731931104854
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_32
+      rect:
+        serializedVersion: 2
+        x: 691
+        y: 198
+        width: 21
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 76b75d494a1279100800000000000000
+      internalID: 114597306276608871
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_33
+      rect:
+        serializedVersion: 2
+        x: 900
+        y: 183
+        width: 30
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9b2928ab1dbe4f820800000000000000
+      internalID: 2951242941844329145
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_34
+      rect:
+        serializedVersion: 2
+        x: 922
+        y: 161
+        width: 24
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 438c874c2b2e48f10800000000000000
+      internalID: 2271189369529878580
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_35
+      rect:
+        serializedVersion: 2
+        x: 321
+        y: 128
+        width: 18
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5480e6fcc0c709b80800000000000000
+      internalID: -8390069711329687483
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_36
+      rect:
+        serializedVersion: 2
+        x: 679
+        y: 111
+        width: 15
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 06ffe41a6e9f52380800000000000000
+      internalID: -8996509911658594464
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_37
+      rect:
+        serializedVersion: 2
+        x: 1212
+        y: 124
+        width: 19
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 46d1ecbf00f877ef0800000000000000
+      internalID: -110462431459926684
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_38
+      rect:
+        serializedVersion: 2
+        x: 88
+        y: 97
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a3bd148e4ec064770800000000000000
+      internalID: 8594571116171877178
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_39
+      rect:
+        serializedVersion: 2
+        x: 90
+        y: 89
+        width: 12
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3598b21730f30fca0800000000000000
+      internalID: -5985214620759258797
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_40
+      rect:
+        serializedVersion: 2
+        x: 305
+        y: 87
+        width: 10
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eddc94c6294f93fe0800000000000000
+      internalID: -1208666115253088802
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_41
+      rect:
+        serializedVersion: 2
+        x: 310
+        y: 71
+        width: 31
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0f5c995a6cf1f65a0800000000000000
+      internalID: -6525962396994255376
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_42
+      rect:
+        serializedVersion: 2
+        x: 649
+        y: 63
+        width: 15
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 558a50d04ffa06500800000000000000
+      internalID: 387503030679218261
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_43
+      rect:
+        serializedVersion: 2
+        x: 916
+        y: 45
+        width: 36
+        height: 35
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c3b565bb663678780800000000000000
+      internalID: -8680860463852528836
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_44
+      rect:
+        serializedVersion: 2
+        x: 959
+        y: 55
+        width: 31
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9a9c8e751801248c0800000000000000
+      internalID: -4016629769949361751
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_45
+      rect:
+        serializedVersion: 2
+        x: 378
+        y: 39
+        width: 29
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cae5f57b54727bf70800000000000000
+      internalID: 9202867543937605292
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_46
+      rect:
+        serializedVersion: 2
+        x: 597
+        y: 17
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fe3ae7caeb8319660800000000000000
+      internalID: 7390750855080616943
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_47
+      rect:
+        serializedVersion: 2
+        x: 704
+        y: 23
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3d0998b2017b88200800000000000000
+      internalID: 182597064986300627
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sheet_legs_walk_48
+      rect:
+        serializedVersion: 2
+        x: 321
+        y: 7
+        width: 14
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 905a4115715fb4d20800000000000000
+      internalID: 3263971835453416713
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      sheet_legs_walk_0: -3254190932248747487
+      sheet_legs_walk_1: -4755951399005667219
+      sheet_legs_walk_10: -5457828996135439085
+      sheet_legs_walk_11: -1254924437788864389
+      sheet_legs_walk_12: 1645075879362849331
+      sheet_legs_walk_13: 4463124085284588908
+      sheet_legs_walk_14: -226334789276982102
+      sheet_legs_walk_15: -5230335857583472192
+      sheet_legs_walk_16: -592986518328721761
+      sheet_legs_walk_17: -8868704632736430897
+      sheet_legs_walk_18: 4571369037014575561
+      sheet_legs_walk_19: 8874380164609035404
+      sheet_legs_walk_2: -4714297787670670564
+      sheet_legs_walk_20: 6528063023856951654
+      sheet_legs_walk_21: 7399035625021826237
+      sheet_legs_walk_22: -2987883519332225408
+      sheet_legs_walk_23: -7822639191963895062
+      sheet_legs_walk_24: -492003210784268698
+      sheet_legs_walk_25: 9005020309964471190
+      sheet_legs_walk_26: -1591579522070973912
+      sheet_legs_walk_27: 294427558559600556
+      sheet_legs_walk_28: 156392408817227605
+      sheet_legs_walk_29: -7967575055919773486
+      sheet_legs_walk_3: -1687602523142329348
+      sheet_legs_walk_30: 7288332679034039817
+      sheet_legs_walk_31: 6621106731931104854
+      sheet_legs_walk_32: 114597306276608871
+      sheet_legs_walk_33: 2951242941844329145
+      sheet_legs_walk_34: 2271189369529878580
+      sheet_legs_walk_35: -8390069711329687483
+      sheet_legs_walk_36: -8996509911658594464
+      sheet_legs_walk_37: -110462431459926684
+      sheet_legs_walk_38: 8594571116171877178
+      sheet_legs_walk_39: -5985214620759258797
+      sheet_legs_walk_4: 30989379839639160
+      sheet_legs_walk_40: -1208666115253088802
+      sheet_legs_walk_41: -6525962396994255376
+      sheet_legs_walk_42: 387503030679218261
+      sheet_legs_walk_43: -8680860463852528836
+      sheet_legs_walk_44: -4016629769949361751
+      sheet_legs_walk_45: 9202867543937605292
+      sheet_legs_walk_46: 7390750855080616943
+      sheet_legs_walk_47: 182597064986300627
+      sheet_legs_walk_48: 3263971835453416713
+      sheet_legs_walk_5: 7022221607439495105
+      sheet_legs_walk_6: -6248423848543160747
+      sheet_legs_walk_7: 799776722067415979
+      sheet_legs_walk_8: -5061151572165794637
+      sheet_legs_walk_9: -3408170271541820865
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

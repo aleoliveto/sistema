@@ -111,7 +111,8 @@ namespace OSistema.Views
 
         // ---------- Painted parts ----------
 
-        SpriteRenderer hat, neck, armL, armR;
+        SpriteRenderer hat, neck, armL, armR, legs;
+        int legsRow = -1;
         bool limbs;                 // the painted body is cut into a torso and two arms that swing
         bool art;
         bool visibleNow = true;
@@ -144,6 +145,19 @@ namespace OSistema.Views
             {
                 armL.sprite = armR.sprite = null;
             }
+            legsRow = limbs ? CharacterArt.LegsRow(look.Body) : -1;
+            if (legsRow >= 0 && CharacterArt.Legs(legsRow, 1) != null)
+            {
+                // Under everything: the hips tuck in beneath the trousers, the shoes step out in front.
+                if (legs == null) legs = Part("Legs", body.transform, null, SpriteFactory.LitMaterial, body.sortingOrder - 2);
+                legs.transform.localPosition = CharacterArt.HipsOnTorso;
+                legs.sprite = CharacterArt.Legs(legsRow, 1);
+            }
+            else
+            {
+                legsRow = -1;
+                if (legs != null) legs.sprite = null;
+            }
             head.sprite = h;
             hair.sprite = hr;
             // The painted parts face the viewer (south); the figure faces north before it's turned.
@@ -172,6 +186,7 @@ namespace OSistema.Views
             if (!art) return;
             body.color = head.color = hair.color = c;
             if (armL != null) armL.color = armR.color = c;
+            if (legs != null) legs.color = c;
             if (hat != null) hat.color = c;
             if (neck != null) neck.color = c;
         }
@@ -207,6 +222,7 @@ namespace OSistema.Views
             handR.enabled = hands;
             if (hat != null) hat.enabled = visible && hat.sprite != null;
             if (armL != null) armL.enabled = armR.enabled = visible && limbs;
+            if (legs != null) legs.enabled = visible && legsRow >= 0;
             if (neck != null) neck.enabled = visible && neck.sprite != null;
             if (!visible)
             {
@@ -279,6 +295,13 @@ namespace OSistema.Views
             }
 
             if (limbs) PoseArms(lying, speed, Mathf.Sin(stride));
+            if (legs != null && legsRow >= 0)
+            {
+                // Four steps a stride: left foot forward, passing, right foot forward, passing. Standing: together.
+                int frame = moving > 0.3f && !lying ? ((int)Mathf.Floor((stride + Mathf.PI / 4f) / (Mathf.PI / 2f)) + 1) & 3 : 1;
+                legs.sprite = CharacterArt.Legs(legsRow, frame);
+                legs.enabled = visibleNow && !Seated;
+            }
             aiming = false;
             if (art && !lying)
             {

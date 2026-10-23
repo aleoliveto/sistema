@@ -9,7 +9,8 @@ Cuts the people sheets made from ART_PROMPTS_PEOPLE.md (4x4 grids, transparent) 
 Every torso is scaled to the old painted bodies' size (about 196 px across on 256) and centred on its
 neck opening, so the heads and hair sit where they always have. The arm is scaled to a set length and hung
 with its rounded top at the torso's shoulder, under the sleeve; the right arm is the left one mirrored.
-Run: python3 cut_people.py <sheet_torsos> <sheet_arms> <out dir> <prefix> [first index]
+Run: python3 cut_people.py <sheet_torsos> <sheet_arms> <out dir> <prefix> [first index] [torso width]
+     men: prefix "", width 196; women: prefix "f", width 178
 """
 import os
 import sys
@@ -70,7 +71,7 @@ def place(img, scale, src_pt, dst_pt):
     return out
 
 
-def main(torsos, arms, out, prefix, first=0):
+def main(torsos, arms, out, prefix, first=0, body_w=BODY_W):
     os.makedirs(out, exist_ok=True)
     lines = []
     for i, (tc, ac) in enumerate(zip(cells(torsos), cells(arms))):
@@ -80,7 +81,7 @@ def main(torsos, arms, out, prefix, first=0):
         if tb is None or ab is None:
             print("skip cell", i)
             continue
-        scale = BODY_W / (tb[2] - tb[0] + 1)
+        scale = body_w / (tb[2] - tb[0] + 1)
         nx, ny = neck_centre(ta, tb)
         torso = place(tc, scale, (nx, ny), NECK)
         t = np.array(torso)
@@ -94,7 +95,7 @@ def main(torsos, arms, out, prefix, first=0):
         # The arm: its own scale so it's ARM_LEN of the torso's width long; pivot near its rounded top.
         a = np.array(ac)
         aw, ah = ab[2] - ab[0] + 1, ab[3] - ab[1] + 1
-        ascale = (BODY_W * ARM_THICK) / aw
+        ascale = (body_w * ARM_THICK) / aw
         arm_w = aw * ascale
         pivot_src = ((ab[0] + ab[2]) / 2, ab[1] + ah * ARM_HIDDEN)
         px = left_edge + arm_w * 0.42
@@ -134,5 +135,43 @@ def main(torsos, arms, out, prefix, first=0):
     print(len(lines), "figures cut")
 
 
-if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4] if len(sys.argv) > 4 else "", int(sys.argv[5]) if len(sys.argv) > 5 else 0)
+if __name__ == "__main__" and len(sys.argv) > 1 and sys.argv[1] == "legs":
+    pass
+elif __name__ == "__main__":
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4] if len(sys.argv) > 4 else "", int(sys.argv[5]) if len(sys.argv) > 5 else 0,
+         int(sys.argv[6]) if len(sys.argv) > 6 else BODY_W)
+
+
+# ---------- walking legs: 4 rows (trousers) x 4 frames ----------
+
+HIP_W = 116            # the trousers' width under the torso, on the 256 canvas
+LEGS_TOP = 16          # where the hips sit on the legs canvas (the pivot)
+FORESHORTEN = 0.42     # seen from above, legs are mostly hidden: squash them
+
+
+def legs(sheet, out):
+    for i, cell in enumerate(cells(sheet)):
+        a = np.array(cell)
+        b = bbox(a)
+        if b is None:
+            continue
+        x0, y0, x1, y1 = b
+        # The hips' width: across the top tenth of the figure.
+        top_rows = a[y0:y0 + max(2, (y1 - y0) // 10), :, 3] > 60
+        cols = np.where(top_rows.any(axis=0))[0]
+        hip_w = cols.max() - cols.min() + 1 if len(cols) else x1 - x0
+        sx = HIP_W / hip_w
+        sy = sx * FORESHORTEN
+        w, h = cell.size
+        s = cell.resize((max(1, round(w * sx)), max(1, round(h * sy))), Image.LANCZOS)
+        canvas = Image.new("RGBA", (CANVAS, CANVAS), (0, 0, 0, 0))
+        hx = (cols.min() + cols.max()) / 2 if len(cols) else (x0 + x1) / 2
+        canvas.alpha_composite(s, (round(CANVAS / 2 - hx * sx), round(LEGS_TOP - y0 * sy)))
+        r, f = divmod(i, 4)
+        canvas.save(os.path.join(out, f"legs_{r}{f}.png"))
+    print("legs cut")
+
+
+if __name__ == "__main__" and len(sys.argv) > 1 and sys.argv[1] == "legs":
+    # python3 cut_people.py legs <sheet_legs_walk> <out dir>
+    legs(sys.argv[2], sys.argv[3])
