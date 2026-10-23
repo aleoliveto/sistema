@@ -261,9 +261,12 @@ namespace OSistema.UI
             });
         }
 
+        float debugTick;
+
         void Update()
         {
             if (damageOverlay != null) UpdateDamageOverlay();
+            if ((debugTick -= Time.unscaledDeltaTime) <= 0f) { debugTick = 0.5f; DebugRefreshStatus(); }
             var kb = Keyboard.current;
             if (kb != null)
             {
@@ -271,6 +274,7 @@ namespace OSistema.UI
                 if (!typing)
                 {
                     if (kb.hKey.wasPressedThisFrame || kb.f1Key.wasPressedThisFrame) ToggleWindow(Window.Help);
+                    if (kb.f2Key.wasPressedThisFrame) ToggleDebug();
                     if (kb.tabKey.wasPressedThisFrame) OpenSection(FamSection.Famiglia);
                     if (kb.bKey.wasPressedThisFrame) ToggleBuildMode();
                     if (kb.jKey.wasPressedThisFrame) ToggleWindow(Window.Jobs);

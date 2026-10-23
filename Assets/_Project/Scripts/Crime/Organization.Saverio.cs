@@ -249,6 +249,9 @@ namespace OSistema.Crime
         // ---------- Taking it ----------
 
         /// <summary>The corner changes hands: a piazza of the family's where he used to stand.</summary>
+        /// <summary>Developer panel: the corner is yours, as if he'd retired.</summary>
+        public void DevTakeSaverio(Game game) => TakeSaverioCorner(2, game);
+
         void TakeSaverioCorner(int how, Game game)
         {
             Sav.taken = true;

@@ -1502,3 +1502,10 @@
 .minigame__bag { position: absolute; width: 96px; height: 116px; left: 50%; top: 42%; translate: -50% -55%; opacity: 0.9; }
 .minigame__tray { min-height: 40px; margin-top: 8px; flex-wrap: wrap; }
 .minigame__tray-item { width: 34px; height: 40px; margin-right: 2px; }
+
+/* F2 debug panel: docked on the right, the game runs behind it. */
+.debug-panel { position: absolute; right: 10px; top: 70px; bottom: 80px; width: 470px; padding: 10px 12px; }
+.debug-scroll { flex-grow: 1; flex-shrink: 1; margin-top: 6px; }
+.debug-row { align-items: center; flex-wrap: wrap; margin-bottom: 3px; }
+.debug-label { width: 150px; flex-shrink: 0; }
+.debug-btn { margin: 1px 3px 1px 0; min-width: 0; padding: 2px 7px; }
