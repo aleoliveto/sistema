@@ -1,5 +1,13 @@
 # Next steps (after the HUD overhaul, Oct 2026)
 
+## 0. Next session starts here (Oct 23 evening)
+Done today: world art in (cut_world.py), doors, F2 debug panel, Saverio's corner in your rione, no starting turf, random home, contacts no longer flicker, PRs #1 and #2 merged. Nothing played in Unity yet: start a NEW game and check doors, counters, ground, minigame art, Saverio.
+Pick one next:
+1. **Inventory + physical scooters:** each pawn carries its own items (doses, packs, cash, gun); scooters are parked objects you walk to (Stock.Scooters becomes ParkedScooter instances owned by the family).
+2. **Naples, not a grid:** curving vicoli, gradoni, piazzette in MapGenerator; use the spare ground textures (vicolo, piazza, marciapiede, graniglia, wet basoli when raining) by adding material slots to the MapLit shader.
+3. **Cars and traffic:** moving cars on main roads, police cars from cars_emergency (wcar_em_00..07 already cut).
+
+
 ## 1. Playtest first (essential)
 - **Cigarettes:** do days 1–3 feel tight but survivable? Does €7 a pack make lavoretti feel pointless? (`Prices.PackStreet`, `Organization.TotonnoDailyPacks`)
 - **Big crew:** play to day 10–15 with 8+ crew. Do payday walk-outs and Mammà's lunch and dinner keep the family alive?
