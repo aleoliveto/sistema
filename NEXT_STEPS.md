@@ -2,7 +2,9 @@
 
 ## 0. Next session starts here (Oct 23 evening)
 Done today: world art in (cut_world.py), doors, F2 debug panel, Saverio's corner in your rione, no starting turf, random home, contacts no longer flicker, PRs #1 and #2 merged. Nothing played in Unity yet: start a NEW game and check doors, counters, ground, minigame art, Saverio.
-Pick one next:
+**PRIORITY FIRST: make managing people much simpler.** Today it's too complicated (Famiglia roster, roles, capi, shifts, guard slots, houses, organigram all separate). Aim: one screen, one card per person with job, place (piazza/house) and shift as three simple dropdowns or drag-and-drop onto a board; sensible defaults so new recruits slot themselves in (auto-assign to the piazza short of people, day/night balanced by the capo); remove or hide anything that needs micromanaging (guard slots, per-person shifts) behind an "advanced" toggle. Files: UI/Hud.Famiglia.cs, Hud.PersonMenu.cs, Hud.Crew.cs, Crime/Organization.Capi.cs, Core/Housing.cs.
+
+Then pick one:
 1. **Inventory + physical scooters:** each pawn carries its own items (doses, packs, cash, gun); scooters are parked objects you walk to (Stock.Scooters becomes ParkedScooter instances owned by the family).
 2. **Naples, not a grid:** curving vicoli, gradoni, piazzette in MapGenerator; use the spare ground textures (vicolo, piazza, marciapiede, graniglia, wet basoli when raining) by adding material slots to the MapLit shader.
 3. **Cars and traffic:** moving cars on main roads, police cars from cars_emergency (wcar_em_00..07 already cut).
