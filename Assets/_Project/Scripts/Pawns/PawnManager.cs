@@ -132,13 +132,6 @@ namespace OSistema.Pawns
             }
         }
 
-        public bool IsBedOwned(Vector2Int bed, Pawn except)
-        {
-            foreach (var p in crew)
-                if (p != except && !p.Dead && p.Bed == bed) return true;
-            return false;
-        }
-
         /// <summary>Pushes pawns out of a cell that just became solid (e.g. a finished wall).</summary>
         public void EvictFrom(Vector2Int cell, Map map)
         {

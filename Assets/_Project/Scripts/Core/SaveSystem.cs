@@ -599,6 +599,7 @@ namespace OSistema.Core
                 lookHat = p.Look?.Hat ?? -1, lookNeck = p.Look?.Neck ?? -1, lookFace = p.Look?.Face ?? -1,
                 bedX = p.Bed?.x ?? 0,
                 bedY = p.Bed?.y ?? 0,
+                homeSaved = true, hasHome = p.Home.HasValue, homeX = p.Home?.x ?? 0, homeY = p.Home?.y ?? 0,
                 hasPiazza = p.Piazza.HasValue, piazzaX = p.Piazza?.x ?? 0, piazzaY = p.Piazza?.y ?? 0,
                 guardSlot = p.GuardSlot, hasGuardPost = p.GuardPost.HasValue, guardPostX = p.GuardPost?.x ?? 0, guardPostY = p.GuardPost?.y ?? 0,
             };
@@ -631,7 +632,10 @@ namespace OSistema.Core
                 AggressiveUntil = d.aggressiveUntil,
                 MealsDelivered = d.mealsDelivered,
                 Mission = (RivalMission)d.mission, Clan = d.clan, Armor = d.armor,
-                Bed = d.hasBed ? new Vector2Int(d.bedX, d.bedY) : (Vector2Int?)null,
+                // Beds are the house's now, taken only while slept in. A save from before kept each person's
+                // own bed: they live in the house that bed is in (the basso, or one of the family's flats).
+                Home = d.homeSaved ? (d.hasHome ? new Vector2Int(d.homeX, d.homeY) : (Vector2Int?)null)
+                                   : d.hasBed ? new Vector2Int(d.bedX, d.bedY) : (Vector2Int?)null,
                 Piazza = d.hasPiazza ? new Vector2Int(d.piazzaX, d.piazzaY) : (Vector2Int?)null,
                 GuardSlot = d.guardSlot,
                 GuardPost = d.hasGuardPost ? new Vector2Int(d.guardPostX, d.guardPostY) : (Vector2Int?)null,
@@ -807,6 +811,8 @@ namespace OSistema.Core
             public bool hasLook;
             public int lookBody, lookHead, lookHair, lookHat = -1, lookNeck = -1, lookFace = -1;
             public int bedX, bedY;
+            public bool homeSaved, hasHome;   // homeSaved is false in saves from when everyone had a bed of their own
+            public int homeX, homeY;
             public List<InjuryData> injuries = new List<InjuryData>();
             public List<ThoughtData> memories = new List<ThoughtData>();
         }

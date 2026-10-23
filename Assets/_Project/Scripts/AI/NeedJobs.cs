@@ -76,14 +76,17 @@ namespace OSistema.AI
         }
     }
 
-    /// <summary>Sleep in the pawn's bed, or on the floor where they stand if they have none.</summary>
+    /// <summary>
+    /// Sleep in a bed of the pawn's house, or on the floor if there's none. The bed is theirs only while
+    /// they lie in it: once they get up, whoever's shift is over can have it.
+    /// </summary>
     public sealed class SleepJob : Job
     {
         readonly Vector2Int? bed;
         readonly Walker walker;
-        bool asleep;
+        bool asleep, claimed;
 
-        /// <param name="bed">The pawn's bed, or null to sleep on the floor.</param>
+        /// <param name="bed">A free bed in their house, or null to sleep on the floor.</param>
         /// <param name="floorSpot">Where to lie down without a bed; null sleeps on the spot.</param>
         public SleepJob(Pawn pawn, Vector2Int? bed, Vector2Int? floorSpot) : base(pawn)
         {
@@ -98,6 +101,13 @@ namespace OSistema.AI
 
         public override bool Tick(Game game)
         {
+            if (!claimed && bed.HasValue)
+            {
+                // Someone from the other shift got there first.
+                if (Housing.BedTaken(bed.Value, Pawn, game)) return Fail();
+                Pawn.Bed = bed;
+                claimed = true;
+            }
             if (!asleep)
             {
                 if (walker != null)
@@ -128,7 +138,12 @@ namespace OSistema.AI
             return true;
         }
 
-        public override void OnEnd(Game game) => Pawn.Sleep = SleepState.Awake;
+        public override void OnEnd(Game game)
+        {
+            Pawn.Sleep = SleepState.Awake;
+            // Up and out: the bed is free for the next shift.
+            if (claimed && Pawn.Bed == bed) Pawn.Bed = null;
+        }
     }
 
     /// <summary>Patch up a crewmate (or yourself). Medicine from the farmacia makes it work much better.</summary>
@@ -244,19 +259,32 @@ namespace OSistema.AI
         public override bool Tick(Game game) => !Pawn.Health.Downed;
     }
 
-    /// <summary>Mental break: wanders the rione ignoring orders and work until it passes.</summary>
+    /// <summary>
+    /// Mental break: wanders the rione ignoring orders and work until it passes. Also a shorter sulk with
+    /// a reason, such as coming home tired to find every bed taken.
+    /// </summary>
     public sealed class SulkJob : Job
     {
+        readonly long until;
+        readonly string why;
         Walker walker;
         int pause;
 
         public SulkJob(Pawn pawn) : base(pawn) { }
 
-        public override string Label => "Sulking (mental break)";
+        /// <summary>A sulk of its own, for this long, whatever their mood.</summary>
+        public SulkJob(Pawn pawn, long until, string why) : base(pawn)
+        {
+            this.until = until;
+            this.why = why;
+        }
+
+        public override string Label => why != null ? $"Sulking: {why}" : "Sulking (mental break)";
 
         public override bool Tick(Game game)
         {
-            if (!Pawn.InMentalBreak(game.Ticks.TicksGame)) return true;
+            long now = game.Ticks.TicksGame;
+            if (!Pawn.InMentalBreak(now) && now >= until) return true;
 
             if (pause > 0)
             {

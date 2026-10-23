@@ -72,8 +72,6 @@ namespace OSistema.Pawns
             float pain = pawn.Health.Pain;
             if (pain > 0.05f) AddSituational(pain > 0.5f ? "In agony" : "In pain", -Mathf.Round(pain * 20f));
 
-            if (!pawn.HasBed) AddSituational("No bed of my own", -3f);
-
             float total = Base;
             foreach (var t in AllThoughts) total += t.Value;
             Value = Mathf.Clamp(total, 0f, 100f);
