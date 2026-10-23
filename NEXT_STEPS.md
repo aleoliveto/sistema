@@ -20,6 +20,21 @@ When Gennaro's sleep (`Needs.Rest`) runs out:
 - **Past 0, down to −10:** Rest has to be allowed below zero (or tracked as a separate "overtired" counter). At −10 he passes out where he stands: he drops to the ground, sleeps a few hours, and is vulnerable in the street (police, rivals, pickpockets).
 - Apply the same to crew (slow and yawning), so the shift system and beds matter.
 
+## 5. Content to add (agreed Oct 2026)
+**Pacing** (DONE): friends call one at a time, days apart; favours from respect 12; pizzo at Clan; Zì Tore only after Paranza; Paranza needs 4 lavoretti.
+
+**Early-game hustles** (DONE: Piazza › Rackets, crew jobs Parking and Stall, E by a parked car / stall / scooter): parcheggiatore abusivo · bionde stall · cavallo di ritorno · fake goods (bags, Napoli shirts)
+
+**Mid-game rackets** (DONE: Piazza › Rackets): lotto clandestino with the smorfia · video poker and betting on Napoli · usura (shops that can't pay become fronts) · abusivismo (illegal rooftop floors, inspectors)
+
+**The city's calendar:** Napoli match days · San Gennaro's blood · Christmas (presepe shops, tombola) · New Year (illegal fireworks, stese in the noise) · processions bowing at the boss's house
+
+**People and ties:** comparaggio (godfather at baptisms and weddings; marriages between clans) · baby paranza · crew traits and relationships (an ambitious capo may split off) · a neomelodic singer
+
+**Pressure and story:** a journalist · the anti-racket association · the dawn blitz, trials and witnesses · asset seizures · a nemesis rival boss arc
+
+**At the bar:** scopa / briscola for favours and debts
+
 ## 2. Animation (STEP 1 DONE: arms swing, recoil, flinch, fall, sleep breathing; next: shoes, scooter lean, work hands, punches)
 Painted bodies are single images with the arms painted in, so the walk is only a small sway and reads as sliding (`Views/PersonRig.cs`).
 1. **Split the painted body** into torso, two arms and two shoes, painted with `Tools/ArtGen` in the same style. Load them in `CharacterArt` and give them their own transforms in `PersonRig`.

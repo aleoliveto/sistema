@@ -11,7 +11,7 @@ namespace OSistema.Pawns
     public enum SleepState { Awake, InBed, OnFloor }
 
     /// <summary>The crew member's job in the clan. Hierarchy comes later; for now it's what they do all day.</summary>
-    public enum CrewRole { General, Pusher, Lookout, Collector, Manager, Bagger, Roller, Bodyguard, Capo }
+    public enum CrewRole { General, Pusher, Lookout, Collector, Manager, Bagger, Roller, Bodyguard, Capo, Parking, Vendor }
 
     public enum Skill { Construction, Cooking, Medicine, Intimidation, Awareness, Shooting }
 
@@ -409,6 +409,12 @@ namespace OSistema.Pawns
                 game.Log.Add($"{Nickname} has calmed down.", MessageKind.Good);
             }
 
+            // Out cold: stay down for the whole spell, whatever tries to wake you.
+            if (PassedOut(now))
+            {
+                if (Sleep == SleepState.Awake) Sleep = SleepState.OnFloor;
+                return;
+            }
             // No sleep left: yawning, dragging the feet; past the end of it, out cold where you stand.
             if (Sleep == SleepState.Awake && CanAct && !Riding && !Pillion)
             {

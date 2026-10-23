@@ -179,3 +179,49 @@ namespace OSistema.AI
         }
     }
 }
+
+namespace OSistema.AI
+{
+    /// <summary>
+    /// Street work: a parcheggiatore minding the cars, or a vendor at a stall with ROSSE and fake bags. Walk to
+    /// the spot and stay through the shift; the takings are counted every hour (Organization.Hustles).
+    /// </summary>
+    public sealed class StreetWorkJob : Job
+    {
+        const int RethinkTicks = 3000;   // step away now and then so needs get a look in
+
+        public readonly Vector2Int Spot;
+        readonly OSistema.Crime.StreetWork kind;
+        readonly Walker walker;
+        int ticksThere;
+
+        public bool AtSpot { get; private set; }
+        public OSistema.Crime.StreetWork Kind => kind;
+
+        public StreetWorkJob(Pawn pawn, OSistema.Crime.StreetWork kind, Vector2Int spot) : base(pawn)
+        {
+            this.kind = kind;
+            Spot = spot;
+            walker = new Walker(spot, adjacent: false) { Flexible = true };
+        }
+
+        public override string Label => kind == OSistema.Crime.StreetWork.Parking
+            ? (AtSpot ? "Minding the cars (parcheggiatore)" : "Going to mind the cars")
+            : (AtSpot ? "Selling at the stall" : "Going to the stall");
+
+        public override bool IsWork => true;
+
+        public override bool Tick(Game game)
+        {
+            if (!JobGiver.OnShift(Pawn, game)) return true;
+            if (!AtSpot)
+            {
+                var status = walker.Tick(Pawn, game);
+                if (status == WalkStatus.Failed) return Fail();
+                if (status == WalkStatus.Walking) return false;
+                AtSpot = true;
+            }
+            return ++ticksThere > RethinkTicks;
+        }
+    }
+}

@@ -107,8 +107,9 @@ namespace OSistema.Social
                 DailyGrudges(game);
             }
             if (clock.Hour == 10) CheckLoans(game);
-            // Neighbours don't bother a nobody much; the more respected the family, the more they ask.
-            int maxToday = game.Org.Respect < 15f ? 1 : 2;
+            // Neighbours don't ask a nobody for anything: favours start once the family has a name.
+            if (game.Org.Respect < 12f) return;
+            int maxToday = game.Org.Respect < 25f ? 1 : 2;
             if (clock.Hour >= 9 && clock.Hour <= 20 && S.RequestsToday < maxToday && game.Rng.NextDouble() < 0.06)
             {
                 S.RequestsToday++;

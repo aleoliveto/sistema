@@ -100,6 +100,10 @@ namespace OSistema.AI
                 {
                     if (g.Org.Pay(Prices.EmptyPacks20, g, out var err)) g.Stock.EmptyPacks += 20; else g.Log.Add(err, MessageKind.Bad);
                 });
+                e.Option($"A sack of fakes ×{Organization.FakesBatch} · €{Organization.FakesBatchPrice}", $"Bags and Napoli shirts, good enough from a metre away. €{Organization.FakePrice} each at a stall. You have {game.Org.H.fakes}.", g =>
+                {
+                    if (g.Org.Pay(Organization.FakesBatchPrice, g, out var err)) g.Org.H.fakes += Organization.FakesBatch; else g.Log.Add(err, MessageKind.Bad);
+                });
                 e.Option($"Ask what she knows about the clans · €{OperationCards.InfoPrice}", "Information for a hit: names, faces, where the boss drinks.", g => g.Events.Raise(OperationCards.Information(g)));
                 foreach (var table in new[] { BuildingDefs.RollingTable, BuildingDefs.BaggingTable })
                 {

@@ -211,6 +211,8 @@ namespace OSistema.Core
                 informants = game.Informants.S,
                 news = game.Newspaper.S,
                 friendsJoined = game.Org.FriendsJoined,
+                lastFriendCallDay = game.Org.LastFriendCallDay,
+                hustles = game.Org.H,
                 lookoutShifts = game.Org.LookoutShifts,
                 supplierIntroduced = game.Org.SupplierIntroduced,
                 bulkDg = game.Stock.BulkDg, carriedDg = game.Org.CarriedDg, baggies = game.Stock.Baggies,
@@ -525,6 +527,8 @@ namespace OSistema.Core
             if (data.news != null) game.Newspaper.S = data.news;
             // Before version 7 the crew started with all three friends.
             game.Org.FriendsJoined = data.version >= 7 ? data.friendsJoined : Game.FriendCount;
+            game.Org.LastFriendCallDay = data.lastFriendCallDay;
+            game.Org.H = data.hustles ?? new OSistema.Crime.HustleState();
             game.Org.LookoutShifts = data.lookoutShifts;
             var st = game.Stock;
             st.BulkDg = data.bulkDg; game.Org.CarriedDg = data.carriedDg; st.Baggies = data.baggies;
@@ -665,7 +669,8 @@ namespace OSistema.Core
             public FavourState favours;
             public InformantState informants;
             public NewsState news;
-            public int friendsJoined;
+            public int friendsJoined, lastFriendCallDay;
+            public OSistema.Crime.HustleState hustles;
             public int lookoutShifts;
             public bool supplierIntroduced;
             public int bulkDg, carriedDg, baggies, tobaccoG, papers, emptyPacks;

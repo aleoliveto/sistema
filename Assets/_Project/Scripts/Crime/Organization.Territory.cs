@@ -103,6 +103,8 @@ namespace OSistema.Crime
         /// <summary>Why pizzo can't be imposed on this business, or null if it can.</summary>
         public string PizzoBlocker(Business b, Game game)
         {
+            // Shopkeepers pay a Clan, not a couple of guagliuni with ideas.
+            if (Rank < 2) return "Pizzo is for a Clan: you're not one yet";
             var zone = game.Territory.ZoneAt(b.Cell);
             var clan = zone != null ? game.ClanOwning(zone.Id) : null;
             if (clan != null) return $"Pays the {clan.Name}";

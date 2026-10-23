@@ -12,7 +12,7 @@ namespace OSistema.UI
     public sealed partial class Hud
     {
         enum Window { None, Business, Help, Jobs, Phone }
-        enum BizTab { Overview, Crew, Organigram, Piazze, Pizzo, Supply, Property, Favours, Rivals }
+        enum BizTab { Overview, Crew, Organigram, Piazze, Pizzo, Supply, Property, Favours, Rivals, Rackets }
 
         Window openWindow;
         BizTab bizTab;
@@ -146,6 +146,7 @@ namespace OSistema.UI
                 case BizTab.Favours: FavoursTab(); break;
                 case BizTab.Property: PropertyTab(); break;
                 case BizTab.Rivals: RivalsTab(); break;
+                case BizTab.Rackets: RacketsTab(); break;
             }
             bizScroll.scrollOffset = scroll;
         }
@@ -169,11 +170,13 @@ namespace OSistema.UI
             BizTab.Supply => "Stash & guns",
             BizTab.Property => "Money & property",
             BizTab.Favours => "Neighbours",
+            BizTab.Rackets => "Rackets",
             _ => "Clans",
         };
 
         static string TabBlurb(BizTab t) => t switch
         {
+            BizTab.Rackets => "The street work and the rackets: from minding cars and a stall of ROSSE to the lotto, the book on Napoli, loans and machines.",
             BizTab.Overview => "How the family is doing, and what needs you now. Click a line to go there.",
             BizTab.Crew => "Everyone in the family. Click someone to set their job, wage and bed.",
             BizTab.Organigram => "Who answers to whom. Each piazza has a capo paranza who runs its pushers and lookouts, day and night.",
@@ -206,6 +209,7 @@ namespace OSistema.UI
             SetStatus(BizTab.Supply, $"{game.Stock.Product} doses · {game.Stock.Cigarettes} packs");
             SetStatus(BizTab.Property, $"€{game.Stock.Cash} dirty · €{game.Stock.Clean} clean");
             SetStatus(BizTab.Favours, "the neighbours");
+            SetStatus(BizTab.Rackets, (org.H.lotto ? "lotto · " : "") + (org.H.betting ? "book · " : "") + $"{org.H.loans.Count} loans · {org.H.poker} machines");
             int clansLeft = game.Clans.Count(c => !c.Destroyed);
             var angry = AngriestClan();
             SetStatus(BizTab.Rivals, clansLeft == 0 ? "the city is yours" : $"{clansLeft} clans · " + (angry.Hostility >= 70f ? "<color=#F07A6E>one wants blood</color>" : angry.Hostility >= 40f ? "<color=#F2B866>one is angry</color>" : "watching"));
@@ -322,6 +326,8 @@ namespace OSistema.UI
         void PizzoTab()
         {
             var org = game.Org;
+            if (org.Rank < 2)
+                Ui.Text("Shopkeepers pay a Clan, not a couple of guagliuni with ideas. Pizzo opens when the family becomes a Clan.", bizBody, "warn", "wrap");
             int weekly = org.Businesses.Where(b => b.Status == BusinessStatus.Paying).Sum(b => b.WeeklyPizzo);
             Ui.Text($"Paying businesses bring in <b>€{weekly}</b> a week. You can only squeeze the shops on your own turf ({string.Join(", ", org.Turf(game).Select(z => z.Name))}); the rest pay someone else, or nobody yet.", bizBody, "wrap");
             // One heading per rione: your turf first and open, the rest folded.

@@ -227,6 +227,9 @@ namespace OSistema.UI
                 devSoak = text.Contains("soak");
                 if (devSoak && game != null)
                 {
+                    // The soak's boss looks after himself: eats, sleeps, works, like a player would.
+                    game.PlayerSelfCare = true;
+                    if (game.Player != null) game.Player.Autopilot = true;
                     game.Ticks.SetSpeed(5);
                     Application.runInBackground = true;   // keep going while the editor isn't in front
                     Core.MessageLog.Trace = m => Debug.Log($"[soak] d{this.game?.Clock.Day} {this.game?.Clock.Hour:00}h | {m}");
@@ -291,6 +294,28 @@ namespace OSistema.UI
                 }
                 // "tired": Gennaro starts with no sleep left, to see the yawns, the heavy eyelids and the collapse.
                 if (text.Contains("tired") && game?.Player != null) game.Player.Needs.Rest = -0.08f;
+                // "hustles": every racket going at once, to check them in a soak run.
+                if (text.Contains("hustles") && game != null)
+                {
+                    var o = game.Org;
+                    o.Respect = System.Math.Max(o.Respect, 45f);
+                    o.DevSetRank(2);
+                    game.Stock.Cash += 6000;
+                    game.Stock.Cigarettes += 40;
+                    o.H.fakes += 20;
+                    int n = 0;
+                    foreach (var c in game.Pawns.Crew)
+                    {
+                        if (c.Controlled || c.IsBoss) continue;
+                        c.Role = n++ % 2 == 0 ? Pawns.CrewRole.Parking : Pawns.CrewRole.Vendor;
+                    }
+                    o.StartLotto(game, out _);
+                    o.StartBetting(game, out _);
+                    o.InstallPoker(game, out _);
+                    foreach (var b in o.Businesses) { if (o.H.loans.Count >= 2) break; o.Lend(b, game, out _); }
+                    foreach (var sc in game.Map.PositionsOf(World.BuildingDefs.ParkedScooter)) { o.StealForRansom(sc, game); break; }
+                    UnityEngine.Debug.Log($"[hustles] set up: lotto {o.H.lotto}, book {o.H.betting}, poker {o.H.poker}, loans {o.H.loans.Count}, cavalli {o.H.cavalli}");
+                }
                 if (text.Contains("uitour") && game != null) StartUiTour();
                 if (text.Contains("walkshots") && game != null) StartWalkShots();
                 if (text.Contains("interiors") && game != null) StartInteriorTour();

@@ -46,6 +46,8 @@ namespace OSistema.UI
             CrewRole.Roller => "Roller (makes ROSSE)",
             CrewRole.Bodyguard => "Bodyguard",
             CrewRole.Capo => "Capo paranza",
+            CrewRole.Parking => "Parcheggiatore (minds cars)",
+            CrewRole.Vendor => "Stall (sells ROSSE and fakes)",
             _ => "General",
         };
 

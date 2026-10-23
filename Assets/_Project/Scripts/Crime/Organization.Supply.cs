@@ -10,18 +10,19 @@ namespace OSistema.Crime
     /// </summary>
     public sealed partial class Organization
     {
-        public const int ShiftsToVouch = 3;
-        public const float RespectToVouch = 8f;
+        public const int ShiftsToVouch = 5;
+        public const float RespectToVouch = 18f;   // and a Paranza: Zì Tore doesn't sell to kids
 
         public int LookoutShifts;
         public bool SupplierIntroduced;
 
         public string SupplierProgress =>
-            $"Keep watch for Don Saverio until he vouches for you: shifts {LookoutShifts}/{ShiftsToVouch}, respect {Respect:0}/{RespectToVouch:0}.";
+            Rank < 1 ? "Zì Tore doesn't sell to kids: become a Paranza first, then Don Saverio can vouch for you."
+                     : $"Keep watch for Don Saverio until he vouches for you: shifts {LookoutShifts}/{ShiftsToVouch}, respect {Respect:0}/{RespectToVouch:0}.";
 
         void CheckIntroduction(Game game)
         {
-            if (SupplierIntroduced || LookoutShifts < ShiftsToVouch || Respect < RespectToVouch) return;
+            if (SupplierIntroduced || Rank < 1 || LookoutShifts < ShiftsToVouch || Respect < RespectToVouch) return;
             int hour = game.Clock.Hour;
             if (hour < 16 || hour > 23) return;
             foreach (var m in game.Phone.Messages)

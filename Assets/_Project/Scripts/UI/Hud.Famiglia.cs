@@ -283,6 +283,8 @@ namespace OSistema.UI
             CrewRole.Roller => "Rollers",
             CrewRole.Bodyguard => "Bodyguards",
             CrewRole.Capo => "Capi paranza",
+            CrewRole.Parking => "Parcheggiatori",
+            CrewRole.Vendor => "At the stall",
             _ => r.ToString(),
         };
 
@@ -296,6 +298,8 @@ namespace OSistema.UI
             CrewRole.Roller => "Roller",
             CrewRole.Bodyguard => "Bodyguard",
             CrewRole.Capo => "Capo",
+            CrewRole.Parking => "Parking",
+            CrewRole.Vendor => "Stall",
             _ => "No job",
         };
 
@@ -665,6 +669,59 @@ namespace OSistema.UI
                 Ui.Btn(BodyguardJob.SlotNames[i], Do(() => pawn.GuardSlot = slot), slots, "pill", "pill--small", p.GuardSlot == i ? "pill--on" : "x");
             }
             Ui.Text("Relative to the way the boss is walking. Close or Behind ride on the back of his scooter; the rest follow on their own.", bizBody, "tiny", "wrap");
+        }
+
+        // ---------- Rackets ----------
+
+        void RacketsTab()
+        {
+            var org = game.Org;
+            var h = org.H;
+            int parking = 0, stall = 0;
+            foreach (var p in game.Pawns.Crew)
+            {
+                if (!p.IsPresent) continue;
+                if (p.Role == CrewRole.Parking) parking++;
+                if (p.Role == CrewRole.Vendor) stall++;
+            }
+            Ui.Text("ON THE STREET", bizBody, "section");
+            Field("Parcheggiatori", parking == 0 ? "nobody" : $"{parking} minding cars", _ => OpenBizTab(BizTab.Crew));
+            Field("At the stall", stall == 0 ? "nobody" : $"{stall} selling", _ => OpenBizTab(BizTab.Crew));
+            Field("Stock to sell", $"{game.Stock.Cigarettes} ROSSE · {h.fakes} fakes");
+            if (h.cavalli > 0) Field("Cavallo di ritorno", $"{h.cavalli} scooter{(h.cavalli == 1 ? "" : "s")} waiting for the owner's call");
+            Ui.Text("Give someone the Parking or Stall job, or do it yourself: E beside a parked car or a market stall. Fakes come from Nanninella. E beside a parked scooter takes it for a cavallo di ritorno.", bizBody, "tiny", "wrap");
+
+            Ui.Text("RACKETS", bizBody, "section");
+            Racket("Lotto clandestino", 1, h.lotto ? "Open · the draw is Saturday at 19:00" : "The neighbours' dreams, read as numbers. You're the bank.",
+                h.lotto ? null : $"Open the book · €{Organization.LottoSetup}", () => { if (!org.StartLotto(game, out var e)) game.Log.Add(e, MessageKind.Bad); });
+            Racket("Bets on Napoli", 1, h.betting ? "Open · settles Sunday after the match" : "Take bets on the match. When Napoli win, you pay.",
+                h.betting ? null : $"Open the book · €{Organization.BettingSetup}", () => { if (!org.StartBetting(game, out var e)) game.Log.Add(e, MessageKind.Bad); });
+            Racket("Rooftop floors (abusivismo)", 1, $"{h.roofFloors}/{Organization.MaxRoofFloors} built · €{Organization.RoofRent} a week each · inspectors now and then",
+                h.roofFloors < Organization.MaxRoofFloors ? $"Build a floor · €{Organization.RoofFloorCost}" : null, () => { if (!org.BuildRoofFloor(game, out var e)) game.Log.Add(e, MessageKind.Bad); });
+            Racket("Video poker", 2, $"{h.poker}/{org.MaxPokerMachines(game)} machines in the bars on your turf · paid every Sunday",
+                h.poker < org.MaxPokerMachines(game) ? $"Put a machine in · €{Organization.PokerMachine}" : null, () => { if (!org.InstallPoker(game, out var e)) game.Log.Add(e, MessageKind.Bad); });
+
+            Ui.Text("USURA", bizBody, "section");
+            if (org.Rank < 1) { Ui.Text("Shopkeepers borrow from a Paranza, not a guaglione.", bizBody, "small", "muted", "wrap"); return; }
+            Ui.Text($"Lend €{Organization.LoanAmount}: 15% a week for four weeks, then the money back. Miss twice and the shop is yours.", bizBody, "tiny", "wrap");
+            var home = Vector2Int.RoundToInt(game.PlayerBase.center);
+            foreach (var b in org.Businesses.Where(b => b.Status != BusinessStatus.Owned && b.Status != BusinessStatus.Closed)
+                                             .OrderByDescending(b => org.LoanTo(b) != null).ThenBy(b => GridUtil.Manhattan(b.Cell, home)).Take(6))
+            {
+                var biz = b;
+                var loan = org.LoanTo(b);
+                var row = Field(b.Name, loan != null ? $"owes €{loan.owed} · {loan.weeksLeft} weeks of interest left{(loan.missed > 0 ? $" · <color=#F07A6E>missed {loan.missed}</color>" : "")}" : "");
+                if (loan == null && h.loans.Count < Organization.MaxLoans)
+                    Ui.Btn($"Lend €{Organization.LoanAmount}", Do(() => { if (!org.Lend(biz, game, out var e)) game.Log.Add(e, MessageKind.Bad); }), row, "btn--small", "field__btn");
+            }
+        }
+
+        /// <summary>One racket's line: name, what it is or how it's going, and the button to start it, or the rank it needs.</summary>
+        void Racket(string name, int rank, string status, string button, System.Action act)
+        {
+            bool open = game.Org.Rank >= rank;
+            var row = Field(name, open ? status : $"<color=#9C9180>needs a {Organization.RankNames[rank]}</color>");
+            if (open && button != null) Ui.Btn(button, Do(act), row, "btn--small", "field__btn");
         }
 
         // ---------- The organigram ----------

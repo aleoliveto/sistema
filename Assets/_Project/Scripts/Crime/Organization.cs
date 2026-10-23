@@ -84,6 +84,7 @@ namespace OSistema.Crime
             }
             ReopenBurnedShops(game);
             OrganiseShifts(game);
+            HustlesHourly(game);
             game.Police.HourlyCheck(game);
             LeadershipHourly(game);
             CheckRank(game);

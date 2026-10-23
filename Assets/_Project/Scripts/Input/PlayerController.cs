@@ -844,6 +844,22 @@ namespace OSistema.Input
             var contact = ContactInReach(out _);
             if (contact != null) return new Action { Label = $"Talk to {contact.Name}", Do = () => OrderTalk(contact) };
 
+            // Street hustles: mind the cars, sell from a stall, or take a scooter to sell back to its owner.
+            var org = game.Org;
+            if (!p.Riding)
+            {
+                if (org.PlayerParking.HasValue)
+                    return new Action { Label = "Stop minding the cars", Do = () => { org.PlayerParking = null; game.Log.Add("You leave the cars to themselves.", MessageKind.Info); } };
+                if (org.PlayerStall.HasValue)
+                    return new Action { Label = "Pack up the stall", Do = () => { org.PlayerStall = null; game.Log.Add("You pack up the stall.", MessageKind.Info); } };
+                if (Near(p, BuildingDefs.MarketStall, out var stall) && (game.Stock.Cigarettes > 0 || org.H.fakes > 0))
+                    return new Action { Label = $"Sell from the stall ({game.Stock.Cigarettes} ROSSE, {org.H.fakes} fakes)", Do = () => org.StartStreetWork(Crime.StreetWork.Stall, stall, game) };
+                if (Near(p, BuildingDefs.ParkedScooter, out var scooter) && org.CanStealForRansom(game))
+                    return new Action { Label = "Steal it for a cavallo di ritorno", Do = () => org.StealForRansom(scooter, game) };
+                if (Near(p, BuildingDefs.ParkedCar, out var car))
+                    return new Action { Label = "Mind the cars here (parcheggiatore abusivo)", Do = () => org.StartStreetWork(Crime.StreetWork.Parking, car, game) };
+            }
+
             if (Near(p, BuildingDefs.BaggingTable, out var bagT))
             {
                 var w = game.WorkerAt(bagT);

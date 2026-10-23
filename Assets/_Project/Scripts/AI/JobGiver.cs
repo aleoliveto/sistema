@@ -257,6 +257,13 @@ namespace OSistema.AI
             var org = game.Org;
 
             if (pawn.Role == CrewRole.Collector) return CollectorDuty(pawn, game);
+            if (pawn.Role == CrewRole.Parking || pawn.Role == CrewRole.Vendor)
+            {
+                var kind = pawn.Role == CrewRole.Parking ? StreetWork.Parking : StreetWork.Stall;
+                if (kind == StreetWork.Stall && game.Stock.Cigarettes <= 0 && org.H.fakes <= 0) return null;   // nothing to sell
+                var spot = org.StreetSpot(kind, pawn, game);
+                return spot.HasValue ? new StreetWorkJob(pawn, kind, spot.Value) : null;
+            }
             if (pawn.Role == CrewRole.Bodyguard)
                 return pawn.GuardPost.HasValue || (game.Player != null && game.Player.IsPresent && !game.Player.InJail) ? new BodyguardJob(pawn) : null;
             if (pawn.Role == CrewRole.Bagger)

@@ -13,7 +13,7 @@ namespace OSistema.Crime
         public static readonly string[] RankNames = { "Guaglione", "Paranza", "Clan", "'O Sistema" };
         public const float FriendsRespect = 6f;   // when the boys from the vicolo start wanting in
         static readonly float[] RankRespect = { 0f, 15f, 40f, 70f };
-        static readonly int[] RankJobs = { 0, 3, 6, 10 };
+        static readonly int[] RankJobs = { 0, 4, 8, 12 };
         static readonly int[] RankMaxCrew = { 4, 6, 9, 12 };
         static readonly int[] RankMaxSquares = { 0, 1, 2, 3 };
 
@@ -24,6 +24,10 @@ namespace OSistema.Crime
         public string RankName => RankNames[Rank];
         public int MaxCrewForRank => Rank == 0 && Respect < FriendsRespect ? 1 : RankMaxCrew[Rank];
         public int FriendsJoined;
+        /// <summary>The day the last friend called: they come one at a time, a few days apart, as the name grows.</summary>
+        public int LastFriendCallDay = -10;
+        const int DaysBetweenFriends = 3;
+        const float RespectPerFriend = 6f;
         /// <summary>The rank the family basso was last done up for (Interiors).</summary>
         public int DressedRank;
         public int MaxSquaresForRank => RankMaxSquares[Rank];
@@ -62,10 +66,13 @@ namespace OSistema.Crime
         public static string UnlocksAt(int rank) => rank switch
         {
             1 => "your own piazza, pistols, up to 6 crew",
-            2 => "a second piazza, arson, buying shops as fronts, up to 9 crew",
+            2 => "pizzo on the shops of your turf, a second piazza, arson, buying shops as fronts, up to 9 crew",
             3 => "a third piazza, up to 12 crew",
             _ => "",
         };
+
+        /// <summary>Developer switches only: jump to a rank.</summary>
+        public void DevSetRank(int rank) => Rank = Mathf.Clamp(rank, 0, RankNames.Length - 1);
 
         public void CheckRank(Game game)
         {
@@ -75,9 +82,12 @@ namespace OSistema.Crime
             if (head != null && !head.Controlled) game.EnsurePlayer();
 
             // Word gets round: the friends from the vicolo call.
-            if (Respect >= FriendsRespect && FriendsJoined < Game.FriendCount && !FriendCalling(game) && game.Clock.Hour >= 9 && game.Clock.Hour <= 22
-                && (FriendsJoined == 0 || Respect >= FriendsRespect + 4f))
+            // One friend at a time, never on the first day, a few days apart, and each wants more of a name than the last.
+            if (Respect >= FriendsRespect + FriendsJoined * RespectPerFriend && FriendsJoined < Game.FriendCount && !FriendCalling(game)
+                && game.Clock.Day >= 2 && game.Clock.Day - LastFriendCallDay >= DaysBetweenFriends
+                && game.Clock.Hour >= 9 && game.Clock.Hour <= 22 && game.Rng.NextDouble() < 0.3)
             {
+                LastFriendCallDay = game.Clock.Day;
                 var m = game.Phone.Send(game, Social.MsgKind.Friend, Game.FriendName(FriendsJoined),
                     FriendsJoined == 0 ? "Gennà, aggio sentuto ca mo' faje 'e cose serie. Pigliame cu te, fratè."
                                        : "Pure io, Gennà. Nun me lassà 'ncopp' 'o muretto a guardà.",
