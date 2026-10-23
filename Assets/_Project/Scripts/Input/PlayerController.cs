@@ -975,11 +975,11 @@ namespace OSistema.Input
 
             if (Near(p, BuildingDefs.Bed, out var bed) && (game.PlayerBase.Contains(bed) || game.Properties.IsOwnedHome(bed)))
             {
-                // Your own bed, or a free one (which becomes yours). Not someone else's.
-                Pawn owner = null;
-                foreach (var c in game.Pawns.Crew) if (c != p && !c.Dead && c.Bed == bed) owner = c;
-                if (owner != null && p.Bed != bed) return new Action { Label = $"{owner.Nickname}'s bed (assign beds in Famiglia)", Do = () => { } };
-                return new Action { Label = "Sleep", Do = () => { p.Bed = bed; p.LastInputTick = -1000000; p.ForceJob(new SleepJob(p, bed, null), game); } };
+                // Beds belong to the house, not to anyone: any one nobody is lying in.
+                Pawn sleeper = null;
+                foreach (var c in game.Pawns.Crew) if (c != p && !c.Dead && c.Bed == bed) sleeper = c;
+                if (sleeper != null) return new Action { Label = $"{sleeper.Nickname} is sleeping here", Do = () => { } };
+                return new Action { Label = "Sleep", Do = () => { p.LastInputTick = -1000000; p.ForceJob(new SleepJob(p, bed, null), game); } };
             }
             if (game.Stock.Meals > 0 && p.Needs.Food < 0.8f && Near(p, BuildingDefs.Pantry, out var pantry) && InOwnedHome(pantry))
                 return new Action { Label = "Eat something", Do = () => { p.LastInputTick = -1000000; p.ForceJob(new EatJob(p, pantry, atShop: false), game); } };

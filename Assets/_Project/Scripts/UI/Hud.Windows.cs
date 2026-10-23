@@ -178,7 +178,7 @@ namespace OSistema.UI
         {
             BizTab.Rackets => "The street work and the rackets: from minding cars and a stall of ROSSE to the lotto, the book on Napoli, loans and machines.",
             BizTab.Overview => "How the family is doing, and what needs you now. Click a line to go there.",
-            BizTab.Crew => "Everyone in the family. Click someone to set their job, wage and bed.",
+            BizTab.Crew => "Everyone in the family. Click someone to set their job, wage and home.",
             BizTab.Organigram => "Who answers to whom. Each piazza has a capo paranza who runs its pushers and lookouts, day and night.",
             BizTab.Piazze => "Your drug squares: pushers sell, lookouts whistle when the police come. Watch the heat.",
             BizTab.Pizzo => "Shops on your turf pay for protection. A Collector does the rounds, or you go yourself.",
@@ -227,7 +227,7 @@ namespace OSistema.UI
             var list = new System.Collections.Generic.List<(string, BizTab, bool)>();
             var org = game.Org;
             var st = game.Stock;
-            int crew = 0, idle = 0, hungry = 0, beds = game.Map.PositionsOf(BuildingDefs.Bed).Count(b => game.PlayerBase.Contains(b) || game.Properties.IsOwnedHome(b));
+            int crew = 0, idle = 0, hungry = 0;
             bool pusher = false, lookout = false, collector = false;
             foreach (var c in game.Pawns.Crew)
             {
@@ -243,7 +243,12 @@ namespace OSistema.UI
             int wages = org.WeeklyWageBill(game);
             if (st.Cash + st.Clean < wages) list.Add(($"Not enough money for Sunday's wages (€{wages}). Unpaid crew lose loyalty.", BizTab.Property, true));
             if (org.Evidence >= 60f) list.Add(($"Evidence against you is at {org.Evidence:0}/100. Lie low, launder, keep your hands clean.", BizTab.Property, true));
-            if (beds < crew) list.Add(($"{crew - beds} of the crew {(crew - beds == 1 ? "has" : "have")} no bed. Buy one at the Mobilificio and put it down at home.", BizTab.Crew, true));
+            // Beds are shared by a house's day and night shifts: short only where more sleep at once than there are beds.
+            foreach (var house in Housing.Houses(game))
+            {
+                int shortBy = Housing.BedsShort(house, game);
+                if (shortBy > 0) list.Add(($"{Housing.Name(house)} is {shortBy} bed{(shortBy == 1 ? "" : "s")} short at night. Buy one at the Mobilificio, or move someone to another house.", BizTab.Crew, true));
+            }
             if (hungry > 0) list.Add(($"{hungry} of the crew {(hungry == 1 ? "is" : "are")} hungry. Groceries and a stove, or pizza money.", BizTab.Supply, true));
             if (idle > 0) list.Add(($"{idle} of the crew {(idle == 1 ? "has" : "have")} no job. Give them a role.", BizTab.Crew, false));
             if (org.Squares.Count > 0 && !pusher) list.Add(("Your piazza has no pusher: nobody is selling.", BizTab.Organigram, true));

@@ -12,7 +12,7 @@ namespace OSistema.UI
 {
     /// <summary>
     /// Famiglia's people: a searchable roster that copes with three guagliuni or thirty, one person's
-    /// page (job, wage, bed, gun), and the two front pages. Early on the front page is personal: your
+    /// page (job, wage, home, gun), and the two front pages. Early on the front page is personal: your
     /// guagliuni and your home. From Clan up it becomes the organisation's dashboard: capi, piazze,
     /// takings, the neighbourhood and the other clans.
     /// </summary>
@@ -98,7 +98,7 @@ namespace OSistema.UI
             famSubtitle.text = section switch
             {
                 FamSection.Casa => boss ? $"{game.Org.RankName} · the organisation at a glance, the stash, the money" : $"{game.Org.RankName} · how things stand, the stash, the money",
-                FamSection.Famiglia => boss ? "Your people, the capi, and who answers to whom" : "Your guagliuni: jobs, wages, beds",
+                FamSection.Famiglia => boss ? "Your people, the capi, and who answers to whom" : "Your guagliuni: jobs, wages, homes",
                 _ => "The street: piazze, pizzo, the neighbours and the clans",
             };
             bool organigram = game.Org.Squares.Count > 0 || boss;
@@ -404,7 +404,7 @@ namespace OSistema.UI
                 Ui.Text("WORK", bizBody, "section");
                 Field("Job", RoleLabel(p.Role), at => ShowRoleMenu(pawn, at));
                 PersonShifts(p);
-                Field("Bed", BedLabel(p).Replace(" ▾", ""), at => ShowBedMenu(pawn, at));
+                Field("Home", Housing.Name(Housing.HomeOf(p, game)), at => ShowHouseMenu(pawn, at));
                 var wage = Field("Weekly wage", $"€{p.Wage}");
                 Ui.Btn("−", Do(() => pawn.Wage = Mathf.Max(0, pawn.Wage - 10)), wage, "btn--small", "field__btn");
                 Ui.Btn("+", Do(() => pawn.Wage = Mathf.Min(1000, pawn.Wage + 10)), wage, "btn--small", "field__btn");
@@ -500,10 +500,11 @@ namespace OSistema.UI
             var st = game.Stock;
             var org = game.Org;
             int beds = game.Map.PositionsOf(BuildingDefs.Bed).Count(b => game.PlayerBase.Contains(b) || game.Properties.IsOwnedHome(b));
-            int crew = game.Pawns.Crew.Count(p => !p.Dead);
+            // Beds are shared between shifts: what counts is how many sleep at once.
+            int crew = Housing.Houses(game).Sum(h => Housing.BedsNeeded(h, game));
             StatCards(("CASH", $"€{st.Cash}", $"+ €{st.Clean} clean"),
                       ("SUNDAY'S WAGES", $"€{org.WeeklyWageBill(game)}", "the mesata"),
-                      ("HOME", $"{beds} bed{(beds == 1 ? "" : "s")}", $"{crew} to sleep · {st.Meals + st.Groceries * 2} meals"));
+                      ("HOME", $"{beds} bed{(beds == 1 ? "" : "s")}", $"{crew} asleep at once · {st.Meals + st.Groceries * 2} meals"));
             NeedsYou();
 
             Ui.Text("YOUR GUAGLIUNI", bizBody, "section");

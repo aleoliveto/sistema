@@ -33,7 +33,7 @@ namespace OSistema.UI
         Label inspCollapse;
         VisualElement inspectorAvatar;
         Label inspName, inspSub, inspJob, inspSkills, inspHealth, inspMulti;
-        Button roleButton, draftButton, armButton, bedButton;
+        Button roleButton, draftButton, armButton, homeButton;
         VisualElement moodFill, foodFill, restFill, loyaltyFill;
         Label moodValue, foodValue, restValue, loyaltyValue;
 
@@ -86,8 +86,11 @@ namespace OSistema.UI
             }
         }
 
-        /// <summary>Beds in the family's homes, with whose they are; pick one to give it to this person.</summary>
-        void ShowBedMenu(Pawn p, VisualElement anchor)
+        /// <summary>
+        /// The basso and the family's flats, with their beds and who lives there; pick one to move this person in.
+        /// The beds of a house are shared, the day and night shifts taking turns.
+        /// </summary>
+        void ShowHouseMenu(Pawn p, VisualElement anchor)
         {
             if (roleMenu == null)
             {
@@ -102,27 +105,25 @@ namespace OSistema.UI
             var local = roleMenu.WorldToLocal(new Vector2(r.xMin, r.yMax));
             list.style.left = local.x;
             list.style.top = local.y + 2;
-            int n = 0;
-            foreach (var bed in game.Map.PositionsOf(BuildingDefs.Bed))
+            var mine = Core.Housing.HomeOf(p, game);
+            foreach (var house in Core.Housing.Houses(game))
             {
-                if (!game.PlayerBase.Contains(bed) && !game.Properties.IsOwnedHome(bed)) continue;
-                n++;
-                Pawn owner = null;
-                foreach (var c in game.Pawns.Crew) if (!c.Dead && c.Bed == bed) owner = c;
-                var home = game.PlayerBase.Contains(bed) ? "the basso" : game.Properties.At(bed)?.Name ?? "home";
-                var b = bed;
-                var item = Ui.Btn($"Bed {n} · {home} · {(owner == null ? "free" : owner.Nickname)}", () =>
+                int beds = Core.Housing.BedsIn(house, game).Count;
+                int people = Core.Housing.Residents(house, game).Count, shortBy = Core.Housing.BedsShort(house, game);
+                var h = house;
+                var label = $"{Core.Housing.Name(house)} · {beds} bed{(beds == 1 ? "" : "s")} · {people} live here" +
+                            (shortBy > 0 ? $" · <color=#E07A5F>{shortBy} short</color>" : "");
+                var item = Ui.Btn(label, () =>
                 {
-                    // Swap: whoever had it takes this person's old bed.
-                    if (owner != null && owner != p) owner.Bed = p.Bed;
-                    p.Bed = b;
+                    Core.Housing.MoveIn(p, h);
                     roleMenu.Show(false);
                     bizDirty = true;
                     RefreshAll();
                 }, list, "btn--small", "role-menu__item");
-                item.Toggle("btn--on", p.Bed == bed);
+                item.Toggle("btn--on", house == mine);
             }
-            if (n == 0) Ui.Text("No beds yet. Buy one at the furniture shop and place it at home.", list, "small", "muted");
+            Ui.Text("Beds are shared: the day and night shifts take turns. With none free they sulk, then sleep on the floor. They eat at home, or at a pizzeria near their post on shift.",
+                list, "small", "muted", "wrap");
         }
 
         /// <summary>A grid of the 24 hours under a button; pick one.</summary>
@@ -148,18 +149,7 @@ namespace OSistema.UI
             }
         }
 
-        string BedLabel(Pawn p)
-        {
-            if (!p.Bed.HasValue) return "Bed: none ▾";
-            int n = 0;
-            foreach (var bed in game.Map.PositionsOf(BuildingDefs.Bed))
-            {
-                if (!game.PlayerBase.Contains(bed) && !game.Properties.IsOwnedHome(bed)) continue;
-                n++;
-                if (bed == p.Bed.Value) return $"Bed {n} ▾";
-            }
-            return "Bed: none ▾";
-        }
+        string HomeLabel(Pawn p) => $"Home: {Core.Housing.Name(Core.Housing.HomeOf(p, game))} ▾";
 
         static void CycleRole(Pawn p)
         {
@@ -339,8 +329,8 @@ namespace OSistema.UI
             actions.style.marginTop = 4;
             roleButton = Ui.Btn("", () => { if (Single(out var p)) ShowRoleMenu(p, roleButton); }, actions, "btn--small");
             Tip(roleButton, () => "Change job: general, pusher, lookout, collector, bagger, roller, bodyguard.");
-            bedButton = Ui.Btn("", () => { if (Single(out var p)) ShowBedMenu(p, bedButton); }, actions, "btn--small");
-            Tip(bedButton, () => "Which bed is theirs. Pick one to give it to them; whoever had it swaps.");
+            homeButton = Ui.Btn("", () => { if (Single(out var p)) ShowHouseMenu(p, homeButton); }, actions, "btn--small");
+            Tip(homeButton, () => "Which house they live in: the basso or one of your flats. They sleep in whichever bed there is free, and eat there.");
             armButton = Ui.Btn("", () => { if (Single(out var p)) ToggleArmed(p); RefreshAll(); }, actions, "btn--small");
             Tip(armButton, () => $"Give or take back a pistol. Pistols in the stash: {game.Stock.Pistols}.");
             draftButton = Ui.Btn("Call over", () =>
@@ -459,7 +449,7 @@ namespace OSistema.UI
             draftButton.Show(!p.Controlled);
             roleButton.Show(!p.Controlled);
             armButton.text = p.Armed ? "Disarm" : "Arm";
-            bedButton.text = BedLabel(p);
+            homeButton.text = HomeLabel(p);
             armButton.Toggle("btn--on", p.Armed);
             callButton.Show(p.Health.Downed && !game.Hospital.IsCalled(p));
             inspBody.Show(!inspCollapsed);

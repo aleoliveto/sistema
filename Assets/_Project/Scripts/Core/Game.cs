@@ -597,13 +597,6 @@ namespace OSistema.Core
                 };
                 pawn.Needs.Food = 0.5f + (float)Rng.NextDouble() * 0.4f;
                 pawn.Needs.Rest = 0.6f + (float)Rng.NextDouble() * 0.35f;
-                // Each of the starting crew already has a bed at the basso.
-                foreach (var bed in Map.PositionsOf(BuildingDefs.Bed))
-                {
-                    if (Pawns.IsBedOwned(bed, pawn)) continue;
-                    pawn.Bed = bed;
-                    break;
-                }
                 Pawns.Add(pawn);
                 return pawn;
             }

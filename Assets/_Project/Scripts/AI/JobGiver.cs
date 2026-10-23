@@ -115,18 +115,31 @@ namespace OSistema.AI
         {
             if (!pawn.Needs.Hungry) return null;
             var stock = game.Stock;
-            // Home food comes from the family's own pantry, never a shop's or a neighbour's.
-            if (stock.Meals > 0 && TryFindAtHome(game, BuildingDefs.Pantry, pawn.Cell, out var pantry))
+            // On shift, out at their post: a pizza round the corner, not the walk back across the rione.
+            if (!pawn.Controlled && pawn.Role != CrewRole.General && OnShift(pawn, game) &&
+                !Housing.InHouse(pawn.Cell, Housing.HomeOf(pawn, game), game) && stock.Cash >= Prices.Pizza &&
+                TryFindPizzeria(game, pawn.Cell, out var nearPost) && (nearPost - pawn.Cell).sqrMagnitude <= PizzeriaNearPost * PizzeriaNearPost)
+                return new EatJob(pawn, nearPost, atShop: true);
+            // Home food comes from the pantry of the house they live in (any of the family's, if theirs has none),
+            // never a shop's or a neighbour's.
+            if (stock.Meals > 0 && FindHome(pawn, game, BuildingDefs.Pantry, out var pantry))
                 return new EatJob(pawn, pantry, atShop: false);
             // Nothing cooked but groceries in: whoever is hungry puts the pot on.
             if (stock.Meals <= 0 && stock.Groceries > 0 && stock.Cook == null &&
-                TryFindAtHome(game, BuildingDefs.Pantry, pawn.Cell, out _) &&
-                TryFindAtHome(game, BuildingDefs.Stove, pawn.Cell, out var stove))
+                FindHome(pawn, game, BuildingDefs.Pantry, out _) &&
+                FindHome(pawn, game, BuildingDefs.Stove, out var stove))
                 return new CookJob(pawn, stove, game);
             if (stock.Cash >= Prices.Pizza && TryFindPizzeria(game, pawn.Cell, out var pizzeria))
                 return new EatJob(pawn, pizzeria, atShop: true);
             return null;
         }
+
+        /// <summary>How far from their post the crew will walk for a pizza on shift, in cells.</summary>
+        const int PizzeriaNearPost = 30;
+
+        /// <summary>This furniture in the house the pawn lives in, or failing that the nearest in any of the family's homes.</summary>
+        public static bool FindHome(Pawn pawn, Game game, BuildingDef def, out Vector2Int found) =>
+            Housing.TryFindInHouse(pawn, def, game, out found) || TryFindAtHome(game, def, pawn.Cell, out found);
 
         /// <summary>The nearest piece of this furniture in the family's own homes: not a shop's, not a neighbour's.</summary>
         public static bool TryFindAtHome(Game game, BuildingDef def, Vector2Int from, out Vector2Int found)
@@ -179,23 +192,24 @@ namespace OSistema.AI
 
             if (needs.Rest < 0.03f) return new SleepJob(pawn, null, null); // collapses where they stand
 
-            var bed = EnsureBed(pawn, game);
+            // Any bed of their house nobody is in: the day team sleeps in the night team's beds, and back.
+            var bed = Housing.FreeBed(pawn, game);
             if (bed.HasValue) return new SleepJob(pawn, bed, null);
-            // No bed: go home and sleep on the floor of the basso, not in the street.
-            return new SleepJob(pawn, null, FloorSpotAtHome(pawn, game));
-        }
 
-        static Vector2Int? FloorSpotAtHome(Pawn pawn, Game game)
-        {
-            var owned = game.Properties.RandomHomeCell(pawn.Cell, game.Rng);
-            if (owned.HasValue) return owned;
-            var home = game.PlayerBase;
-            for (int i = 0; i < 20; i++)
+            // Every bed taken (or none at all): first they sulk about it, then they lie down on the floor at home.
+            long now = game.Ticks.TicksGame;
+            if (!pawn.Controlled && !pawn.Mood.Memories.Exists(m => m.Id == "no_bed"))
             {
-                var c = new Vector2Int(game.Rng.Next(home.xMin, home.xMax), game.Rng.Next(home.yMin, home.yMax));
-                if (game.Map.IsPassable(c) && game.Map.GetBuilding(c) == null) return c;
+                var house = Housing.HomeOf(pawn, game);
+                bool none = Housing.BedsIn(house, game).Count == 0;
+                pawn.Mood.AddMemory("no_bed", none ? $"No bed at {Housing.Name(house)}" : $"Every bed at {Housing.Name(house)} taken", -6f, now, GameClock.TicksPerDay / 2);
+                pawn.Say("sulk");
+                game.Log.Add(none
+                    ? $"{pawn.Nickname} came home to {Housing.Name(house)} to sleep and there isn't a bed. They're sulking."
+                    : $"{pawn.Nickname} came home to {Housing.Name(house)} to sleep and every bed is taken. They're sulking.", MessageKind.Bad);
+                return new SulkJob(pawn, now + GameClock.TicksPerHour, none ? "no bed at home" : "no bed free");
             }
-            return null;
+            return new SleepJob(pawn, null, Housing.RandomCellAtHome(pawn, game));
         }
 
         /// <summary>True while the pawn's role keeps them up: an open piazza, or a night job for the collector.</summary>
@@ -219,27 +233,6 @@ namespace OSistema.AI
                 default:
                     return false;
             }
-        }
-
-        static Vector2Int? EnsureBed(Pawn pawn, Game game)
-        {
-            if (pawn.Bed.HasValue) return pawn.Bed;
-            Vector2Int? best = null;
-            int bestDist = int.MaxValue;
-            foreach (var bed in game.Map.PositionsOf(BuildingDefs.Bed))
-            {
-                // Only beds in the family's own homes: not the hospital's, not the neighbours'.
-                if (!game.PlayerBase.Contains(bed) && !game.Properties.IsOwnedHome(bed)) continue;
-                if (game.Pawns.IsBedOwned(bed, pawn)) continue;
-                int d = GridUtil.Manhattan(pawn.Cell, bed);
-                if (d < bestDist)
-                {
-                    bestDist = d;
-                    best = bed;
-                }
-            }
-            pawn.Bed = best;
-            return best;
         }
 
         static Job TryContract(Pawn pawn, Game game)
@@ -446,11 +439,10 @@ namespace OSistema.AI
             // Afternoons and evenings: the TV is on, if the family has one.
             int hour = game.Clock.Hour;
             if (hour >= 13 && game.Rng.NextDouble() < 0.3)
-                foreach (var tv in game.Map.PositionsOf(BuildingDefs.Television))
-                    if (game.PlayerBase.Contains(tv) || game.Properties.IsOwnedHome(tv)) return new WatchTvJob(pawn, tv);
+                if (Housing.TryFindInHouse(pawn, BuildingDefs.Television, game, out var tv)) return new WatchTvJob(pawn, tv);
 
-            // Hang around whichever of the family's homes is nearest.
-            var spot = game.Properties.RandomHomeCell(pawn.Cell, game.Rng);
+            // Hang around the house they live in.
+            var spot = Housing.RandomCellAtHome(pawn, game);
             if (spot.HasValue && spot.Value != pawn.Cell) return new WanderJob(pawn, spot.Value, game.Rng.Next(240, 900));
             var home = game.PlayerBase;
             for (int i = 0; i < 10; i++)

@@ -73,7 +73,8 @@ namespace OSistema.Pawns
         public string DeathCause { get; private set; }
         public Job CurrentJob { get; private set; }
 
-        public Vector2Int? Bed;
+        public Vector2Int? Home;         // a cell of the owned home they live in; null for the family basso
+        public Vector2Int? Bed;          // the bed they're lying in (or heading to) right now: beds are the house's, not theirs
         public SleepState Sleep;
         public string Carrying;          // shown in the HUD while shopping
         public Pawn TendedBy;            // reserved by a doctor
@@ -207,7 +208,6 @@ namespace OSistema.Pawns
         public Vector2 Position => Mover.Position;
         public string FullName => $"{FirstName} {LastName}";
         public bool HasBark => Time.unscaledTime < barkUntil;
-        public bool HasBed => Bed.HasValue;
         public bool InJail => JailedUntil > 0;
         public bool InHospital => HospitalUntil > 0;
         public bool IsAggressive(long now) => AggressiveUntil > now;

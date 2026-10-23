@@ -41,7 +41,7 @@ namespace OSistema.UI
         {
             void Item(BuildingDef def, BuildCat cat, string tip) =>
                 buildItems.Add(new ToolEntry { Label = def.Label, Tool = Tool.Build, Def = def, Swatch = def.Color, Cat = cat, Tip = tip });
-            Item(BuildingDefs.Bed, BuildCat.Vita, "Everyone wants a bed of their own.");
+            Item(BuildingDefs.Bed, BuildCat.Vita, "A bed for each who sleeps at once: the day and night shifts take turns.");
             Item(BuildingDefs.Sofa, BuildCat.Vita, "Somewhere to collapse after a long day.");
             Item(BuildingDefs.Armchair, BuildCat.Vita, "For the boss.");
             Item(BuildingDefs.Television, BuildCat.Vita, "The crew watches Napoli on it in the afternoon. Good for morale.");
@@ -102,7 +102,7 @@ namespace OSistema.UI
             casaButton = IconTab(tabs, "CASA", IconKind.House, () => OpenSection(FamSection.Casa), null, "how things stand", "icon_casa");
             Tip(casaButton, () => "How the family is doing, the stash, the money and property.");
             businessButton = IconTab(tabs, "FAMIGLIA", IconKind.Business, () => OpenSection(FamSection.Famiglia), "Tab", "your people", "icon_crew");
-            Tip(businessButton, () => "Your people: jobs, wages, beds, and the organigram (Tab).");
+            Tip(businessButton, () => "Your people: jobs, wages, homes, and the organigram (Tab).");
             piazzaButton = IconTab(tabs, "PIAZZA", IconKind.Product, () => OpenSection(FamSection.Piazza), null, "the street", "icon_piazza");
             Tip(piazzaButton, () => "The street: your piazze, the pizzo, the neighbours and the other clans.");
             // The taccuino has no button for now (J still opens it).

@@ -42,9 +42,7 @@ When Gennaro's sleep (`Needs.Rest`) runs out:
 - **Don Saverio owns the starting piazza.** To take it: kill him and his guards, or pay him to retire (a big sum, or a cut for a while). Until then you deal on his corner by his leave.
 - **Inventory per character:** what each person carries (doses, packs, a pistol, cash, the stolen scooter's keys), not one family stock. Needed for selling from the pocket, searches, and crew on errands.
 
-**The crew's homes:**
-- Assign people to a house, not a bed. Beds in that house rotate between day and night shifts; no free bed → they sulk.
-- They eat where they live (or at a pizzeria near their post), not all back at the basso.
+**The crew's homes (built):** people live in a house, not a bed (the basso or a flat, picked in Famiglia or their menu). Its beds rotate between the day and night shifts; no free bed → they sulk, then sleep on the floor. They eat at home, or at a pizzeria near their post on shift. Playtest: a flat with one bed and two on opposite shifts; the "beds short" warning.
 
 **Scooters as things:** a scooter is parked somewhere and you walk to it; no pulling one out of your pocket. Crew take one from where it's parked. How riders sit and look on scooters (seat position, legs, passenger).
 

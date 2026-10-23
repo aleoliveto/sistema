@@ -11,7 +11,7 @@ namespace OSistema.UI
 {
     /// <summary>
     /// Click one of your people (yourself included) and everything you can have them do comes up
-    /// next to them: eat, sleep, see to their wounds, come over, change job, take a bed...
+    /// next to them: eat, sleep, see to their wounds, come over, change job, choose where they live...
     /// </summary>
     public sealed partial class Hud
     {
@@ -31,7 +31,7 @@ namespace OSistema.UI
             var at = RuntimePanelUtils.ScreenToPanel(root.panel, new Vector2(screenPos.x, Screen.height - screenPos.y));
             list.style.left = at.x + 14;
             list.style.top = at.y - 10;
-            // Where the job and bed dropdowns open from, once this menu has closed.
+            // Where the job and house dropdowns open from, once this menu has closed.
             if (menuAnchor == null)
             {
                 menuAnchor = Ui.Box().Into(modalLayer);
@@ -68,29 +68,19 @@ namespace OSistema.UI
             bool me = p.Controlled;
             bool canAct = p.CanAct;
 
-            Vector2Int? Nearest(BuildingDef def)
-            {
-                Vector2Int? best = null;
-                int bestD = int.MaxValue;
-                foreach (var c in game.Map.PositionsOf(def))
-                {
-                    if (!game.PlayerBase.Contains(c) && !game.Properties.IsOwnedHome(c)) continue;
-                    int d = (c - p.Cell).sqrMagnitude;
-                    if (d < bestD) { bestD = d; best = c; }
-                }
-                return best;
-            }
-
-            var pantry = Nearest(BuildingDefs.Pantry);
+            // Their own house's pantry and beds first; the beds are whichever nobody is lying in.
+            Vector2Int? pantry = JobGiver.FindHome(p, game, BuildingDefs.Pantry, out var ownPantry) ? ownPantry : (Vector2Int?)null;
             list.Add(($"Eat ({s.Meals} meals at home)", () => { p.LastInputTick = -1000000; p.ForceJob(new EatJob(p, pantry.Value, atShop: false), game); },
                 canAct && s.Meals > 0 && pantry.HasValue && p.Needs.Food < 0.95f, s.Meals <= 0 ? "No meals at home: cook groceries, or buy a pizza." : null));
-            var bed = p.Bed ?? Nearest(BuildingDefs.Bed);
-            list.Add(("Sleep", () => { p.LastInputTick = -1000000; p.Bed = bed; p.ForceJob(new SleepJob(p, bed, null), game); },
-                canAct && bed.HasValue && p.Needs.Rest < 0.95f, bed.HasValue ? null : "No bed: buy one at the furniture shop."));
+            var bed = Housing.FreeBed(p, game);
+            list.Add(("Sleep", () => { p.LastInputTick = -1000000; p.ForceJob(new SleepJob(p, bed, null), game); },
+                canAct && bed.HasValue && p.Needs.Rest < 0.95f,
+                bed.HasValue ? null : Housing.BedsIn(Housing.HomeOf(p, game), game).Count > 0 ? "Every bed at home is taken." : "No bed at home: buy one at the furniture shop."));
             if (!p.Health.Healthy)
                 list.Add(($"Treat the wounds ({s.Medicine} medicine)", () => Healing.WithMedicine(game, p),
                     s.Medicine > 0 && Healing.NeedsCare(p), s.Medicine > 0 ? null : "No medicine at home: the farmacia sells it."));
-            list.Add(("Go home", () => p.ForceJob(new GotoJob(p, Vector2Int.RoundToInt(game.PlayerBase.center), "Going home"), game), canAct, null));
+            var home = Housing.Rooms(Housing.HomeOf(p, game), game);
+            list.Add(("Go home", () => p.ForceJob(new GotoJob(p, Vector2Int.RoundToInt(home.center), "Going home"), game), canAct, null));
 
             if (me)
             {
@@ -105,7 +95,7 @@ namespace OSistema.UI
                 list.Add((p.Following ? "Stop following" : "Follow me", () => ToggleFollow(p), canAct && boss != null,
                     p.Following ? "Back to their job." : "They come along behind you and keep their job for later."));
                 list.Add(($"Job: {RoleLabel(p.Role)} ▸", () => ShowRoleMenu(p, menuAnchor), canAct, null));
-                list.Add(($"{BedLabel(p).Replace(" ▾", "")} ▸", () => ShowBedMenu(p, menuAnchor), true, null));
+                list.Add(($"{HomeLabel(p).Replace(" ▾", "")} ▸", () => ShowHouseMenu(p, menuAnchor), true, null));
                 list.Add((p.Armed ? "Take the pistol back" : $"Give a pistol ({s.Pistols} in the stash)", () => ToggleArmed(p), p.Armed || s.Pistols > 0, null));
                 if (p.Health.Downed && !game.Hospital.IsCalled(p))
                     list.Add(("Call 118", () => game.Hospital.Call(p, game, byPasserby: false), true, "The hospital patches them up, and reports gunshot wounds."));
