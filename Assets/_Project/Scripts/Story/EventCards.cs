@@ -24,6 +24,7 @@ namespace OSistema.Story
             yield return Wedding(game);
             yield return SupplierDeal(game);
             yield return RivalTruce(game);
+            foreach (var card in LifeCards.Deck(game)) yield return card;
         }
 
         static IEnumerable<Pawn> PresentCrew(Game game) => game.Pawns.Crew.Where(p => p.IsPresent);

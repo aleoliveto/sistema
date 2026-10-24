@@ -595,7 +595,7 @@ namespace OSistema.Core
                 mealsDelivered = p.MealsDelivered,
                 mission = (int)p.Mission, clan = p.Clan, armor = p.Armor,
                 pocketDoses = p.PocketDoses, pocketPacks = p.PocketPacks, pocketFakes = p.PocketFakes,
-                gun = (int)p.Gun, arrestAfterHospital = p.ArrestAfterHospital,
+                gun = (int)p.Gun, arrestAfterHospital = p.ArrestAfterHospital, young = p.Young,
                 missionTarget = p.MissionTarget?.Id ?? 0,
                 x = p.Cell.x,
                 y = p.Cell.y,
@@ -647,7 +647,7 @@ namespace OSistema.Core
                 MealsDelivered = d.mealsDelivered,
                 Mission = (RivalMission)d.mission, Clan = d.clan, Armor = d.armor,
                 PocketDoses = d.pocketDoses, PocketPacks = d.pocketPacks, PocketFakes = d.pocketFakes,
-                Gun = (OSistema.Combat.Gun)d.gun, ArrestAfterHospital = d.arrestAfterHospital,
+                Gun = (OSistema.Combat.Gun)d.gun, ArrestAfterHospital = d.arrestAfterHospital, Young = d.young,
                 // Beds are the house's now, taken only while slept in. A save from before kept each person's
                 // own bed: they live in the house that bed is in (the basso, or one of the family's flats).
                 Home = d.homeSaved ? (d.hasHome ? new Vector2Int(d.homeX, d.homeY) : (Vector2Int?)null)
@@ -818,7 +818,7 @@ namespace OSistema.Core
             public int faction, shooting, mealsDelivered, mission, missionTarget, missionSquare = -1, clan;
             public float armor;
             public int pocketDoses, pocketPacks, pocketFakes, gun;
-            public bool arrestAfterHospital;
+            public bool arrestAfterHospital, young;
             public bool armed, isBoss;
             public long aggressiveUntil;
             public int x, y;

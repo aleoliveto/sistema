@@ -161,6 +161,12 @@ namespace OSistema.Crime
 
             // Every arrest is a chance to talk. Inside, the investigators lean on him every day.
             game.Org.AddEvidence(6f, game);
+            if (pawn.Young)
+            {
+                // A sixteen-year-old pushing at a piazza: the papers, the prosecutors, the minister.
+                game.Org.AddEvidence(6f, game);
+                game.Newspaper.Report(game, 5, "Baby paranza: a minor arrested at a drug market", "He is sixteen. The juvenile court prosecutor speaks of children used as soldiers.");
+            }
             if (!pawn.IsBoss) game.Informants.Of(pawn).Pressure += (pawn.Loyalty < 40f ? 30f : 12f) *
                 (pawn.Character == Trait.Loyal ? 0.5f : pawn.Character == Trait.Chatty ? 1.6f : 1f);
             var zone = game.Territory.Zones[raid.Square.ZoneId];

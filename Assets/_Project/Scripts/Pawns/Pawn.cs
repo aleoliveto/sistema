@@ -241,11 +241,13 @@ namespace OSistema.Pawns
             PocketDoses > 0 ? $"{PocketDoses} doses" : null, PocketPacks > 0 ? $"{PocketPacks} packs" : null, PocketFakes > 0 ? $"{PocketFakes} fakes" : null
         }.Where(x => x != null));
         public bool HasFamilyScooter;
+        public bool Young;               // baby paranza: a kid off the street, reckless and cheap
+        public bool RivalBoss;           // a clan's boss, out in person (not saved)
 
         static readonly Trait[] TraitDeck = { Trait.Steady, Trait.Steady, Trait.Steady, Trait.Loyal, Trait.Loyal, Trait.Ambitious, Trait.Hothead, Trait.Greedy, Trait.Careful, Trait.Chatty };
 
         /// <summary>Their character, fixed from who they are (the same in every save).</summary>
-        public Trait Character => IsBoss || Controlled ? Trait.None : TraitDeck[(int)((uint)(Id * 2654435761u) % (uint)TraitDeck.Length)];
+        public Trait Character => IsBoss || Controlled ? Trait.None : Young ? Trait.Hothead : TraitDeck[(int)((uint)(Id * 2654435761u) % (uint)TraitDeck.Length)];
 
         public static string TraitName(Trait t) => t switch
         {

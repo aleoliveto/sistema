@@ -66,7 +66,7 @@ namespace OSistema.UI
             {
                 var a = AngriestClan();
                 return a == null || a.Destroyed ? "No clan left to fear." :
-                    $"{a.Name}: hostility {a.Hostility:0}/100. Above 40: stese. Above 55: they come for your piazze. Above 70: ambushes.";
+                    $"{a.Name}, run by {a.BossName}: hostility {a.Hostility:0}/100. Above 40: stese. Above 55: they come for your piazze. Above 70: ambushes, and {a.BossName} may lead an attack himself: kill him and the clan breaks.";
             });
 
             topVitals = Ui.Box("tgroup").Into(bar);   // Gennaro's body, filled in by Hud.Vitals

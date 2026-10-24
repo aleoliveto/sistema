@@ -34,6 +34,8 @@ namespace OSistema.Crime
         public bool cavalloRiding;        // the boss is on the way to Nanninella's with one
         public int lastLotto = -1, lastBet = -1, lastWeekly = -1, lastLoans = -1;
         public List<ShopLoan> loans = new List<ShopLoan>();
+        public List<int> antiRacket = new List<int>();   // rioni whose shopkeepers have banded together against the pizzo
+        public List<int> godchildShops = new List<int>(); // shops whose children the boss held at the font: they always pay
     }
 
     /// <summary>

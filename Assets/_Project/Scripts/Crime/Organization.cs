@@ -108,6 +108,7 @@ namespace OSistema.Crime
             DailyMoney(game);
             DailyOperations(game);
             CharacterDaily(game);
+            PressureDaily(game);
             SearchNascondigli(game);
             LandlordsDaily(game);
 

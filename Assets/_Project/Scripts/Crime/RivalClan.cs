@@ -58,6 +58,7 @@ namespace OSistema.Crime
         }
         public string Name;
         public string BossName;
+        Pawn bossOut;                // the boss himself, out leading an attack (not saved)
         public float Hostility = 10f;
         public int Soldiers = StartingSoldiers;
         public int Cash = 2000;
@@ -310,6 +311,32 @@ namespace OSistema.Crime
             }
         }
 
+        /// <summary>The boss came out, and didn't come back: the clan is beheaded.</summary>
+        void CheckBoss(Game game)
+        {
+            if (bossOut == null) return;
+            if (!bossOut.Dead)
+            {
+                if (bossOut.Departed || !bossOut.IsPresent) bossOut = null;   // went home
+                return;
+            }
+            string fallen = BossName;
+            bossOut = null;
+            game.Org.Respect = Mathf.Min(100f, game.Org.Respect + 15f);
+            game.Newspaper.Report(game, 8, $"{fallen} killed in the street", $"The head of the {Name} died in a shootout in the old town. Investigators fear a war of succession.");
+            if (Soldiers <= 8 || Squares.Count <= 1)
+            {
+                game.Log.Add($"{fallen} is dead. Without him the {Name} fall apart.", MessageKind.Good);
+                Collapse(game);
+                return;
+            }
+            // A successor, weaker and busy holding the clan together.
+            Soldiers /= 2;
+            Hostility = 20f;
+            BossName = $"{Names.Pick(Names.FirstNames, game.Rng)} {BossName.Split(' ').Last()}";
+            game.Log.Add($"{fallen} is dead. {BossName} takes over what's left of the {Name}, half of them gone.", MessageKind.Good);
+        }
+
         public void OnCrewAttacked(Game game)
         {
             if (Destroyed) return;
@@ -332,6 +359,7 @@ namespace OSistema.Crime
             {
                 CheckCaptures(game);
                 CheckAssaults(game);
+                CheckBoss(game);
             }
             int absoluteHour = game.Clock.Day * 24 + game.Clock.Hour;
             if (lastAbsoluteHour < 0) lastAbsoluteHour = absoluteHour;
@@ -600,6 +628,23 @@ namespace OSistema.Crime
                 var p = SpawnSoldier(from, RivalMission.Assault, true, game);
                 p.MissionSquare = target;
                 p.AggressiveUntil = long.MaxValue;
+            }
+            // The nemesis: when the hatred is personal, the boss comes himself, with a Kalashnikov.
+            if (!target.Rival && Hostility >= 75f && (bossOut == null || bossOut.Dead || !bossOut.IsPresent) && game.Rng.NextDouble() < 0.35)
+            {
+                var boss = SpawnSoldier(from, RivalMission.Assault, true, game);
+                var parts = BossName.Split(' ');
+                boss.FirstName = parts[0];
+                boss.Nickname = "'o Boss";
+                boss.MissionSquare = target;
+                boss.AggressiveUntil = long.MaxValue;
+                boss.Gun = OSistema.Combat.Gun.Kalash;
+                boss.Ammo = boss.MagSize;
+                boss.ShootingSkill = 9;
+                boss.Armor = 100f;
+                boss.RivalBoss = true;
+                bossOut = boss;
+                game.Log.Add($"{BossName} is leading them himself. Kill him and the {Name} are finished.", MessageKind.Bad, target.Cell);
             }
             var zone = game.Territory.Zones[target.ZoneId];
             bool ours = !target.Rival;
