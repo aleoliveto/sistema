@@ -956,6 +956,17 @@ namespace OSistema.Input
                     return new Action { Label = safe ? "Crack the safe" : "Turn the place over", Do = () => game.Response.Rob(inside, safe, game) };
             }
 
+            // At a bar, the old men play briscola for money all afternoon.
+            foreach (var b in game.Org.Businesses)
+            {
+                if (b.Kind != ShopKind.Bar || b.Status == BusinessStatus.Closed || Story.ShopCards.PizzoActionable(b, game)) continue;
+                if ((Mover.CellCenter(b.Cell) - p.Position).sqrMagnitude > 4f * 4f) continue;
+                var floor = game.Map.GetTerrain(p.Cell.x, p.Cell.y);
+                if (floor != TerrainType.Floor && floor != TerrainType.Marble) continue;
+                if (game.Clock.Hour < 9 || game.Clock.Hour >= 23) break;
+                return new Action { Label = "Sit down for a game of briscola", Do = () => hud.OpenBriscola() };
+            }
+
             foreach (var b in game.Org.Businesses)
             {
                 if (b.Status == BusinessStatus.Closed) continue;

@@ -45,7 +45,14 @@ When Gennaro's sleep (`Needs.Rest`) runs out:
 
 **Pressure and story** (dawn blitz and trial DONE Oct 24, `Organization.Justice.cs`: evidence 65+ → some mornings at 5 the Carabinieri take 2–3 crew asleep at home plus half the stash's doses, all stash guns and 15% of the cash; trial 7 days later; lawyer card (€900 each), 50% a witness (send someone / pay €600 / let him talk); 20–60 days if convicted. F2 has 'Dawn blitz now'. Still to do: a journalist · the anti-racket association · the dawn blitz, trials and witnesses · asset seizures · a nemesis rival boss arc
 
-**At the bar:** scopa / briscola for favours and debts
+**At the bar** (DONE Oct 24: briscola against the old men for €10/50/200, E inside any bar not up for pizzo; `UI/Hud.Briscola.cs`. Next: scopa, and playing for favours or debts)
+
+## 5b. Done Oct 24 (late)
+- **Contacts have lives** (`Contacts.cs`): a front door they walk from at opening, back to at closing; long days have a break (lunch at home 13–14, or dinner out 20–21 for night people). Their status shows in Lavori and on the map.
+- **Ties** (`Story/LifeCards.cs`, in the random deck): comparaggio (godchild shops always pay), a marriage alliance with a clan (Clan rank), the baby paranza (up to 3 cheap young hotheads; arresting one: evidence +6 and the papers), a neomelodic singer (respect, evidence).
+- **Pushback** (`Organization.Pressure.cs`): anti-racket associations form in squeezed, hot rioni (defiance up; card: intimidate / ease off / ignore); asset seizures at evidence 80+ (lawyer / front man / lose it).
+- **Nemesis** (`RivalClan.CheckBoss`): at hostility 75+ the clan boss may lead an attack on your piazza with a Kalashnikov; killing him breaks a small clan or halves a big one under a successor.
+- **Street NPCs are still anonymous** passers-by (spawn, 1–3 errands, go home). Next: persistent neighbours (the Favours people) with homes and routines, crowds that gather at fights and celebrations.
 
 ## 6. From the Oct 23 playtest (not built yet)
 **Done the same day:** slower walking and less wobble · selling by hand at your piazza and the stall (G) · the cavallo ridden to Nanninella on the real scooter · vest bought, not given · "Don" only at 'O Sistema · Clan needs a piazza and a full crew · money requests from Clan · less rain · pop-ups only for what involves you · phone by touch · building card scrolls · follow me · scooters swerve · gunfight camera · fewer lavoretti offers · shop counters reachable from the door · new rolling and bagging tables.
