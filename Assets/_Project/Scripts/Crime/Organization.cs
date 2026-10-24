@@ -89,6 +89,7 @@ namespace OSistema.Crime
             SaverioHourly(game);
             game.Police.HourlyCheck(game);
             LeadershipHourly(game);
+            JusticeHourly(game);
             CheckRank(game);
             UpdateHomeComfort(game);
             game.Hospital.Discharge(game);
@@ -106,6 +107,7 @@ namespace OSistema.Crime
             LeadershipDaily(game);
             DailyMoney(game);
             DailyOperations(game);
+            CharacterDaily(game);
             SearchNascondigli(game);
             LandlordsDaily(game);
 

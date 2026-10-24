@@ -134,7 +134,9 @@ namespace OSistema.Crime
                 foreach (var pawn in game.Pawns.Crew)
                 {
                     if (!IsExposed(pawn, raid.Square)) continue;
-                    if ((cop.Mover.Position - pawn.Position).magnitude > ArrestDistance) continue;
+                    // The careful ones keep a step further off: they have to be cornered.
+                    float reach = pawn.Character == Trait.Careful ? ArrestDistance * 0.55f : ArrestDistance;
+                    if ((cop.Mover.Position - pawn.Position).magnitude > reach) continue;
                     Arrest(pawn, raid, game);
                     cop.HasArrested = true;
                     break;
@@ -159,7 +161,8 @@ namespace OSistema.Crime
 
             // Every arrest is a chance to talk. Inside, the investigators lean on him every day.
             game.Org.AddEvidence(6f, game);
-            if (!pawn.IsBoss) game.Informants.Of(pawn).Pressure += pawn.Loyalty < 40f ? 30f : 12f;
+            if (!pawn.IsBoss) game.Informants.Of(pawn).Pressure += (pawn.Loyalty < 40f ? 30f : 12f) *
+                (pawn.Character == Trait.Loyal ? 0.5f : pawn.Character == Trait.Chatty ? 1.6f : 1f);
             var zone = game.Territory.Zones[raid.Square.ZoneId];
             game.Newspaper.Report(game, 3, $"Arrest at a drug market in {zone.Name}",
                 $"{pawn.FirstName} {pawn.LastName[0]}. was taken to Poggioreale after a raid.{(seized > 0 ? $" Police seized {seized} doses." : "")}{(pawn.Armed ? " He was carrying a pistol." : "")}");

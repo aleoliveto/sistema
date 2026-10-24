@@ -41,9 +41,9 @@ When Gennaro's sleep (`Needs.Rest`) runs out:
 
 **The city's calendar** (STARTED Oct 24, `Core/Calendar.cs`: day 1 = 10 September, date in the top bar. Napoli every Sunday 15–17: streets empty, no patrols, half the buyers; 50% win: crew mood, respect, a city celebrating till 2 with horns and 45% more buyers; the betting book uses the same result. San Gennaro 19 Sep (85% the blood melts: mood). Christmas Eve envelope card (€50+10×rank each: loyalty ±). New Year's Eve 23–01: fireworks, shootings don't bring the police. Still to do from the list below): Napoli match days · San Gennaro's blood · Christmas (presepe shops, tombola) · New Year (illegal fireworks, stese in the noise) · processions bowing at the boss's house
 
-**People and ties:** comparaggio (godfather at baptisms and weddings; marriages between clans) · baby paranza · crew traits and relationships (an ambitious capo may split off) · a neomelodic singer
+**People and ties** (crew characters DONE Oct 24, `Organization.Character.cs`: each person has a trait from their id, shown on their page: Loyal, Ambitious (wants pay; an ambitious capo under 45 loyalty is reported plotting, then may take his piazza and followers to the nearest clan), Hothead (fights at the piazza: heat, respect), Greedy (skims; caught → card), Careful (harder to arrest, better at trial), Chatty (feeds the informant pressure and leaks). Still to do: comparaggio (godfather at baptisms and weddings; marriages between clans) · baby paranza · crew traits and relationships (an ambitious capo may split off) · a neomelodic singer
 
-**Pressure and story:** a journalist · the anti-racket association · the dawn blitz, trials and witnesses · asset seizures · a nemesis rival boss arc
+**Pressure and story** (dawn blitz and trial DONE Oct 24, `Organization.Justice.cs`: evidence 65+ → some mornings at 5 the Carabinieri take 2–3 crew asleep at home plus half the stash's doses, all stash guns and 15% of the cash; trial 7 days later; lawyer card (€900 each), 50% a witness (send someone / pay €600 / let him talk); 20–60 days if convicted. F2 has 'Dawn blitz now'. Still to do: a journalist · the anti-racket association · the dawn blitz, trials and witnesses · asset seizures · a nemesis rival boss arc
 
 **At the bar:** scopa / briscola for favours and debts
 

@@ -98,6 +98,8 @@ namespace OSistema.UI
             B(heat, "Clear all", () => { foreach (var z in game.Territory.Zones) z.Heat = 0f; });
             B(heat, "+30 all", () => { foreach (var z in game.Territory.Zones) z.Heat = Mathf.Min(100f, z.Heat + 30f); });
             Steps("Evidence", n => o.Evidence = Mathf.Clamp(o.Evidence + n, 0f, 100f), -25, -5, 5, 25);
+            var blitz = Line("Justice");
+            B(blitz, "Dawn blitz now", () => o.DevBlitz(game));
 
             Section("FAVOURS");
             var fav = Line("Neighbours owe you");

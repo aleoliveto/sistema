@@ -14,6 +14,9 @@ namespace OSistema.Pawns
     /// <summary>The crew member's job in the clan. Hierarchy comes later; for now it's what they do all day.</summary>
     public enum CrewRole { General, Pusher, Lookout, Collector, Manager, Bagger, Roller, Bodyguard, Capo, Parking, Vendor, Runner }
 
+    /// <summary>What sort of person they are: it changes how they work, what they want, and how they let you down.</summary>
+    public enum Trait { None, Steady, Loyal, Ambitious, Hothead, Greedy, Careful, Chatty }
+
     public enum Skill { Construction, Cooking, Medicine, Intimidation, Awareness, Shooting }
 
     /// <summary>What a rival clan member on the map is here to do.</summary>
@@ -237,7 +240,35 @@ namespace OSistema.Pawns
         public string PocketText => PocketEmpty ? "nothing" : string.Join(", ", new[] {
             PocketDoses > 0 ? $"{PocketDoses} doses" : null, PocketPacks > 0 ? $"{PocketPacks} packs" : null, PocketFakes > 0 ? $"{PocketFakes} fakes" : null
         }.Where(x => x != null));
-        public bool HasFamilyScooter;    // riding one of the family's own (Crime.FamilyScooters): parked where he gets off
+        public bool HasFamilyScooter;
+
+        static readonly Trait[] TraitDeck = { Trait.Steady, Trait.Steady, Trait.Steady, Trait.Loyal, Trait.Loyal, Trait.Ambitious, Trait.Hothead, Trait.Greedy, Trait.Careful, Trait.Chatty };
+
+        /// <summary>Their character, fixed from who they are (the same in every save).</summary>
+        public Trait Character => IsBoss || Controlled ? Trait.None : TraitDeck[(int)((uint)(Id * 2654435761u) % (uint)TraitDeck.Length)];
+
+        public static string TraitName(Trait t) => t switch
+        {
+            Trait.Loyal => "Loyal (fedele)",
+            Trait.Ambitious => "Ambitious (ambizioso)",
+            Trait.Hothead => "Hothead (testa calda)",
+            Trait.Greedy => "Greedy (avido)",
+            Trait.Careful => "Careful (accorto)",
+            Trait.Chatty => "Talks too much (chiacchierone)",
+            Trait.Steady => "Steady",
+            _ => "",
+        };
+
+        public static string TraitHint(Trait t) => t switch
+        {
+            Trait.Loyal => "Grows more loyal by the day, and the police get little out of him.",
+            Trait.Ambitious => "Wants a wage to match his rank. As a capo with low loyalty, he may take his piazza and go.",
+            Trait.Hothead => "Starts fights at the piazza: a little respect, a lot of heat.",
+            Trait.Greedy => "Takes a little off the top. Now and then you'll catch him at it.",
+            Trait.Careful => "Slips away from raids more often than not.",
+            Trait.Chatty => "Says too much in the wrong places: the investigators hear of it, and he cracks easily inside.",
+            _ => "Does the job, no surprises.",
+        };    // riding one of the family's own (Crime.FamilyScooters): parked where he gets off
         public bool Pillion;             // riding on the back of the boss's scooter
 
         /// <summary>The piazza a pusher, lookout or capo paranza belongs to (its cell). Null: wherever they're needed.</summary>

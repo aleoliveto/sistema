@@ -427,6 +427,11 @@ namespace OSistema.UI
                 lv.text = $"{p.Loyalty:0}%";
                 Ui.SetFill(lf, p.Loyalty / 100f);
 
+                if (p.Character != Trait.None)
+                {
+                    var trait = Field("Character", Pawn.TraitName(p.Character));
+                    Tip(trait, () => Pawn.TraitHint(pawn.Character));
+                }
                 Ui.Text("WORK", bizBody, "section");
                 Field("Job", RoleLabel(p.Role), at => ShowRoleMenu(pawn, at));
                 Field("Home", Housing.Name(Housing.HomeOf(p, game)), at => ShowHouseMenu(pawn, at));
