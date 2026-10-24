@@ -243,7 +243,7 @@ namespace OSistema.Combat
             }
             foreach (var n in game.Npcs.All)
             {
-                if (n.Despawned || n.Kind == Npcs.NpcKind.Scooter || n.Kind == Npcs.NpcKind.Ambulance) continue;
+                if (n.Despawned || n.Kind == Npcs.NpcKind.Scooter || n.Kind == Npcs.NpcKind.Ambulance || Npcs.Traffic.IsCar(n.Kind)) continue;
                 if (Along(from, dir, n.Mover.Position, best, out float t)) { best = t; hitNpc = n; hitPawn = null; }
             }
 

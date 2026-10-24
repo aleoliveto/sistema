@@ -51,6 +51,12 @@ namespace OSistema.Views
                 LateUpdate();
                 return;
             }
+            if (Traffic.IsCar(n.Kind))
+            {
+                BuildCar();
+                LateUpdate();
+                return;
+            }
             float scale = n.Kind == NpcKind.Child ? 0.7f : 0.92f;
             rig = new PersonRig(transform, scale, 9);
             var hair = n.Kind == NpcKind.Police ? new Color(0.1f, 0.12f, 0.25f) : PersonRig.HairFor(n.Id);
@@ -82,6 +88,65 @@ namespace OSistema.Views
                 scooter.color = bodies[Mathf.Abs(n.Id * 7) % bodies.Length];
             }
             LateUpdate();
+        }
+
+        // Traffic
+        SpriteRenderer car;
+        float carFlash;
+
+        void BuildCar()
+        {
+            car = gameObject.AddComponent<SpriteRenderer>();
+            car.sharedMaterial = SpriteFactory.LitMaterial;
+            car.sortingOrder = 7;   // under the people: someone stepping out in front stays on top
+            var art = PropArt.Load(npc.Kind == NpcKind.PoliceCar ? $"Vehicles/wcar_em_{npc.CarLook:00}" : $"Vehicles/wcar_{npc.CarLook:00}");
+            if (art != null)
+            {
+                car.sprite = art;
+                car.flipY = true;   // painted nose down
+                transform.localScale = Vector3.one * 2.5f;
+            }
+            else
+            {
+                car.sprite = SpriteFactory.CenteredPixel;
+                car.color = npc.Kind == NpcKind.PoliceCar ? new Color(0.3f, 0.45f, 0.8f) : new Color(0.6f, 0.2f, 0.2f);
+                transform.localScale = new Vector3(0.9f, 1.8f, 1f);
+            }
+            headlight = WorldLighting.Headlight(transform.parent != null ? transform.parent : transform);
+            if (npc.Kind == NpcKind.PoliceCar)
+            {
+                var lightGo = new GameObject("Beacon");
+                lightGo.transform.SetParent(transform, false);
+                beacon = lightGo.AddComponent<UnityEngine.Rendering.Universal.Light2D>();
+                beacon.lightType = UnityEngine.Rendering.Universal.Light2D.LightType.Point;
+                beacon.color = new Color(0.3f, 0.5f, 1f);
+                beacon.pointLightOuterRadius = 3.5f;
+                beacon.intensity = 1.4f;
+                beacon.enabled = false;
+            }
+        }
+
+        void UpdateCar()
+        {
+            var pos = npc.CarPos;
+            // Along the road exactly; across it (changing lane) eased, so it swings out rather than jumping.
+            var was = (Vector2)transform.position;
+            float k = 1f - Mathf.Exp(-8f * Time.deltaTime);
+            var drawn = npc.CarDir.x != 0 ? new Vector2(pos.x, Mathf.Lerp(was.y, pos.y, k)) : new Vector2(Mathf.Lerp(was.x, pos.x, k), pos.y);
+            if ((drawn - pos).sqrMagnitude > 4f) drawn = pos;   // just spawned or turned a corner far away
+            transform.position = new Vector3(drawn.x, drawn.y, 0f);
+            float heading = Mathf.Atan2(-npc.CarDir.x, npc.CarDir.y) * Mathf.Rad2Deg;
+            // Ease round corners instead of snapping.
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.Euler(0f, 0f, heading), 360f * Time.deltaTime);
+            bool visible = FogOfWar.CanSee(pos);
+            car.enabled = visible;
+            WorldLighting.AimHeadlight(headlight, visible, pos, transform.eulerAngles.z);
+            if (beacon != null)
+            {
+                // Lights on when it has pulled over for something.
+                carFlash += Time.deltaTime;
+                beacon.enabled = visible && npc.State == 1 && Mathf.Repeat(carFlash * 3f, 1f) < 0.5f;
+            }
         }
 
         void BuildAmbulance()
@@ -152,6 +217,11 @@ namespace OSistema.Views
             {
                 exhaust?.Clear();
                 Destroy(gameObject);
+                return;
+            }
+            if (car != null)
+            {
+                UpdateCar();
                 return;
             }
             if (van != null)

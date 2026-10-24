@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace OSistema.Npcs
 {
-    public enum NpcKind { Customer, Police, Civilian, Child, Elder, Scooter, Ambulance, Paramedic }
+    public enum NpcKind { Customer, Police, Civilian, Child, Elder, Scooter, Ambulance, Paramedic, Car, PoliceCar }
 
     /// <summary>
     /// A lightweight non-crew character driven by a simple state machine. NPCs aren't saved:
@@ -48,6 +48,12 @@ namespace OSistema.Npcs
         public string ContactName;   // someone who hands out work (see ContactBook)
         public Vector2 Dodge;        // scooters: how far they swerve round someone in the road (drawn, not simulated)
         public Vector2 LastPos;
+        // Cars (Traffic): where exactly, which way along the road, how fast, which painting.
+        public Vector2 CarPos;
+        public Vector2Int CarDir;
+        public float CarSpeed;
+        public int CarLook;
+        public Vector2Int LastCell;
 
         public Npc(int id, NpcKind kind, Vector2Int cell, float speed, Color32 color)
         {
@@ -143,6 +149,8 @@ namespace OSistema.Npcs
                         else PoliceAI.Tick(npc, game);
                         break;
                     case NpcKind.Scooter: StreetLife.TickScooter(npc, game); break;
+                    case NpcKind.Car:
+                    case NpcKind.PoliceCar: Traffic.Tick(npc, game); break;
                     case NpcKind.Ambulance: TickAmbulance(npc, game); break;
                     case NpcKind.Paramedic: TickParamedic(npc, game); break;
                     default: StreetLife.TickCivilian(npc, game); break;

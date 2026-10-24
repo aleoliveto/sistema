@@ -124,6 +124,7 @@ namespace OSistema.Npcs
             if (scooters < scooterTarget && game.Rng.NextDouble() < 0.35) SpawnScooter(game);
             UpdateFixtures(game, hour);
             MaybeSendPatrol(game);
+            Traffic.Populate(game);
         }
 
         /// <summary>A point near a random crew member, or the basso.</summary>
