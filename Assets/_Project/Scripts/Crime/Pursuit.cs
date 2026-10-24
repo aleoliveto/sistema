@@ -164,6 +164,7 @@ namespace OSistema.Crime
             var p = game.Player;
             var org = game.Org;
             long now = game.Ticks.TicksGame;
+            if (p != null) game.StreetLife?.Gather(p.Position, 1200, "the arrest", game);
             int days = 3 + game.Rng.Next(0, 4);
             string found = "";
             if (org.CarriedDg > 0)

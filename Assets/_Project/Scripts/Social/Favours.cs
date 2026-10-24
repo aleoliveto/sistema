@@ -58,6 +58,8 @@ namespace OSistema.Social
 
         public Neighbour ById(int id) => S.Neighbours.Find(n => n.Id == id);
 
+        public static bool IsWoman(string name) => Array.IndexOf(Women, name) >= 0;
+
         public int TotalOwed
         {
             get

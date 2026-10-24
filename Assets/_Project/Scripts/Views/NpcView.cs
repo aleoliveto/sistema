@@ -239,6 +239,13 @@ namespace OSistema.Views
                     : OSistema.Pawns.Look.Old(npc.ContactName.GetHashCode());
                 rig.ApplyLook(look);
             }
+            // Residents too: the same neighbour, the same face, every day.
+            if (!contactDressed && npc.Dress != null)
+            {
+                contactDressed = true;
+                rig.SetColors(npc.Color, PersonRig.SkinFor(npc.DressSeed), PersonRig.HairFor(npc.DressSeed));
+                rig.ApplyLook(npc.Dress);
+            }
             bool visible = FogOfWar.CanSee(npc.Mover.Position);
             // Someone standing at their spot doesn't blink out as you walk up past a wall corner.
             var me = OSistema.Core.GameRunner.Current?.Player;
@@ -249,8 +256,11 @@ namespace OSistema.Views
             // Stopped for a word: turned to each other, now and then a nod.
             if (npc.ChatWith != null && !npc.ChatWith.Despawned)
                 rig.LookTowards(npc.ChatWith.Mover.Position - npc.Mover.Position + new Vector2(Mathf.Sin(Time.time * 0.7f + npc.Id) * 0.15f, 0f));
+            // In a crowd: everyone looking the same way, at whatever happened.
+            else if (npc.FaceTo.HasValue && (npc.Mover.Position - standLast).sqrMagnitude < 0.0001f)
+                rig.LookTowards(npc.FaceTo.Value - npc.Mover.Position + new Vector2(Mathf.Sin(Time.time * 0.5f + npc.Id) * 0.2f, 0f));
             // Shopkeepers, vendors and contacts standing at their spot look out at the street, not at the wall.
-            if ((npc.IsFixture || npc.ContactName != null) && (npc.Mover.Position - standLast).sqrMagnitude < 0.0001f)
+            if (!npc.FaceTo.HasValue && (npc.IsFixture || npc.ContactName != null) && (npc.Mover.Position - standLast).sqrMagnitude < 0.0001f)
             {
                 if (!faced) { rig.LookTowards(AwayFromWalls()); faced = true; }
             }

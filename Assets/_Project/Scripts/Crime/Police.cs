@@ -152,6 +152,7 @@ namespace OSistema.Crime
 
             int days = game.Rng.Next(3, 10) + (pawn.Armed ? 5 : 0); // caught with a gun: longer inside
             long now = game.Ticks.TicksGame;
+            game.StreetLife?.Gather(pawn.Position, 1200, "the arrest", game);   // the whole vicolo comes out to watch them take him
             pawn.SendToJail(now + days * GameClock.TicksPerDay, game);
             game.Org.Respect = Mathf.Max(0f, game.Org.Respect - 4f);
 

@@ -7,20 +7,34 @@ using UnityEngine;
 namespace OSistema.Npcs
 {
     /// <summary>
+    /// A crowd forming: people drift over to look at something that just happened, stand round it a while, then go on.</summary>
+    public sealed class Gathering
+    {
+        public int Id;
+        public Vector2 At;
+        public long Until;
+        public string Why;   // "the fight", "the arrest", "Napoli's win"...
+    }
+
+    /// <summary>
     /// The rione going about its day. People run errands and stop to chat, old women sit outside their
     /// bassi, kids play in the courtyards, shopkeepers stand in their doorways and vendors at their
     /// stalls, scooters weave through the vicoli, police walk a beat where heat is high. Most of the
-    /// life is concentrated around the crew, where the player is looking. Everyone scatters at gunfire.
-    /// Transient: never saved.
+    /// life is concentrated around the crew, where the player is looking. Everyone scatters at gunfire;
+    /// once a fight is over, an arrest made, or Napoli has won, they gather round to look. The named
+    /// neighbours live here too, the same people every day (see <see cref="Residents"/>); the anonymous
+    /// passers-by are fewer, some of them locals out of a door, some from outside. Transient: never saved.
     /// </summary>
     public sealed class StreetLife
     {
         const int PanicRadius = 18;
         const int PanicTicks = 120;
         const int NearCrew = 32;
+        /// <summary>How far people come from to look at something.</summary>
+        public const int CrowdRadius = 15;
 
         // Civilian sub-behaviours stored in Npc.State.
-        const int Walking = 0, Lingering = 1, GoingHome = 2, Sitting = 3, Playing = 4, Standing = 5;
+        const int Walking = 0, Lingering = 1, GoingHome = 2, Sitting = 3, Playing = 4, Standing = 5, Watching = 6;
         /// <summary>For someone who keeps a spot (a contact): stands there instead of wandering off home.</summary>
         public const int StandingState = Standing;
 
@@ -33,6 +47,13 @@ namespace OSistema.Npcs
         readonly HashSet<Vector2Int> occupiedChairs = new HashSet<Vector2Int>();
         long lastPatrolTick = -100000;
         int fixturesDay = -1;
+
+        /// <summary>The named neighbours, out and about.</summary>
+        public readonly Residents Residents = new Residents();
+        readonly List<Gathering> gatherings = new List<Gathering>();
+        int nextGathering = 1;
+        long fightGathered = -1, lastParty = -100000;
+        public IReadOnlyList<Gathering> Gatherings => gatherings;
 
         public StreetLife(Game game)
         {
@@ -97,7 +118,9 @@ namespace OSistema.Npcs
 
         public void Tick(Game game)
         {
+            Residents.Tick(game);
             if (game.Ticks.TicksGame % 20 != 0) return;
+            UpdateGatherings(game);
             float day = game.Clock.Daylight;
             int hour = game.Clock.Hour;
             bool lateNight = hour >= 1 && hour < 6;
@@ -116,11 +139,12 @@ namespace OSistema.Npcs
             // Everyone's indoors for the riposo after lunch, and nobody goes out in a downpour who doesn't have to.
             float riposo = hour >= 14 && hour < 16 ? 0.7f : 1f;
             float rain = (1f - game.Weather.Rain * 0.65f) * game.Calendar.StreetFactor(game);   // match day empties the streets; a win fills them
-            int peopleTarget = lateNight ? 6 : Mathf.RoundToInt(Mathf.Lerp(30f, 110f, day) * evening * riposo * rain * (recentGunfire ? 0.35f : 1f));
+            // Fewer than there were: the streets are the neighbours' (and the shopkeepers'), with some strangers passing through.
+            int peopleTarget = lateNight ? 3 : Mathf.RoundToInt(Mathf.Lerp(12f, 45f, day) * evening * riposo * rain * (recentGunfire ? 0.35f : 1f));
             int scooterTarget = Mathf.RoundToInt((lateNight ? 3 : day > 0.3f ? 16 : 9) * (1f - game.Weather.Rain * 0.4f));
 
             if (people < peopleTarget) SpawnPerson(game);
-            if (people < peopleTarget - 20) SpawnPerson(game); // catch up quickly at dawn
+            if (people < peopleTarget - 10) SpawnPerson(game); // catch up quickly at dawn
             if (scooters < scooterTarget && game.Rng.NextDouble() < 0.35) SpawnScooter(game);
             UpdateFixtures(game, hour);
             MaybeSendPatrol(game);
@@ -158,9 +182,12 @@ namespace OSistema.Npcs
             var focus = rng.NextDouble() < 0.7 ? CrewFocus(game) : null;
             var door = Near(doors, d => d, focus, NearCrew, rng);
             var start = FreeNeighbour(game.Map, door) ?? door;
+            // A third are from outside the rione: in from the edge of the map on some errand, and back out.
+            bool outsider = game.Territory.Entrances.Count > 0 && rng.NextDouble() < 0.35;
+            if (outsider) door = start = game.Territory.RandomEntrance(rng);
 
             double roll = rng.NextDouble();
-            NpcKind kind = roll < 0.18 ? NpcKind.Child : roll < 0.36 ? NpcKind.Elder : NpcKind.Civilian;
+            NpcKind kind = outsider ? NpcKind.Civilian : roll < 0.18 ? NpcKind.Child : roll < 0.36 ? NpcKind.Elder : NpcKind.Civilian;
             float speed = kind == NpcKind.Elder ? 0.04f : kind == NpcKind.Child ? 0.075f : 0.055f + (float)rng.NextDouble() * 0.015f;
             Color32 color = kind == NpcKind.Elder && rng.NextDouble() < 0.6
                 ? new Color32(30, 28, 30, 255) // nonna in black
@@ -168,7 +195,7 @@ namespace OSistema.Npcs
 
             var npc = game.Npcs.Spawn(kind, start, speed, color);
             npc.TripsLeft = rng.Next(1, 4);
-            npc.Exit = door;   // they live here: out of this door, and back in through it
+            npc.Exit = door;   // locals live here: out of this door, and back in through it; outsiders leave the way they came
             npc.Target = DestinationFor(npc, game);
         }
 
@@ -242,6 +269,99 @@ namespace OSistema.Npcs
                 return FreeNeighbour(game.Map, door) ?? door;
             }
             return walkable.Count > 0 ? Near(walkable, c => c, near, 25, rng) : near;
+        }
+
+        /// <summary>Somewhere for the evening passeggiata: a piazza or a courtyard if there's one near, else a stretch of pavement.</summary>
+        public Vector2Int StrollSpot(Vector2Int near, Game game)
+        {
+            var rng = game.Rng;
+            if (playgrounds.Count > 0 && rng.NextDouble() < 0.6) return Near(playgrounds, c => c, near, 22, rng);
+            return walkable.Count > 0 ? Near(walkable, c => c, near, 22, rng) : near;
+        }
+
+        // ---------- Crowds ----------
+
+        /// <summary>Something to look at: anyone not too far who isn't busy drifts over for a while. Joins a crowd already there.</summary>
+        public void Gather(Vector2 at, int ticks, string why, Game game)
+        {
+            long until = game.Ticks.TicksGame + ticks;
+            foreach (var g in gatherings)
+                if ((g.At - at).sqrMagnitude < 6f * 6f)
+                {
+                    g.Until = System.Math.Max(g.Until, until);
+                    g.Why = why;
+                    return;
+                }
+            gatherings.Add(new Gathering { Id = nextGathering++, At = at, Until = until, Why = why });
+        }
+
+        /// <summary>A crowd within reach of here that this person hasn't already stood in.</summary>
+        public Gathering GatheringNear(Vector2 pos, Game game, int already)
+        {
+            long now = game.Ticks.TicksGame;
+            foreach (var g in gatherings)
+                if (g.Id != already && now < g.Until && (g.At - pos).sqrMagnitude < CrowdRadius * CrowdRadius) return g;
+            return null;
+        }
+
+        public Gathering GatheringById(int id) => gatherings.Find(g => g.Id == id);
+
+        /// <summary>A place in a loose ring round it, on the side they came from, a few steps back.</summary>
+        public Vector2Int RingSpot(Gathering g, Vector2 from, Game game)
+        {
+            var rng = game.Rng;
+            var map = game.Map;
+            var dir = from - g.At;
+            float a0 = dir.sqrMagnitude > 0.01f ? Mathf.Atan2(dir.y, dir.x) : (float)rng.NextDouble() * Mathf.PI * 2f;
+            for (int i = 0; i < 12; i++)
+            {
+                float a = a0 + ((float)rng.NextDouble() - 0.5f) * (1.2f + i * 0.3f);
+                float r = 2.2f + (float)rng.NextDouble() * 2.4f;
+                var c = Vector2Int.FloorToInt(g.At + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r);
+                if (map.InBounds(c) && map.IsPassable(c) && map.GetBuilding(c.x, c.y) == null) return c;
+            }
+            return Vector2Int.FloorToInt(from);
+        }
+
+        /// <summary>A fight that has gone quiet, and the city celebrating, draw a crowd. Old crowds break up.</summary>
+        void UpdateGatherings(Game game)
+        {
+            long now = game.Ticks.TicksGame;
+            gatherings.RemoveAll(g => now >= g.Until);
+            var combat = game.Combat;
+            long since = now - combat.LastFightTick;
+            // Nobody comes near while it's still going on; a little after the last blow, they come to see.
+            if (combat.LastFightTick != fightGathered && since > PanicTicks + 120 && since < PanicTicks + 1200 && now - combat.LastShotTick > PanicTicks + 120)
+            {
+                fightGathered = combat.LastFightTick;
+                Gather(combat.LastFightPosition, 1500, now - combat.LastShotTick < PanicTicks + 1200 ? "the shooting" : "the fight", game);
+            }
+            var cal = game.Calendar;
+            bool party = cal.Celebrating(game) || cal.Fireworks(game);
+            if (party && now - lastParty > GameClock.TicksPerHour / 2 && playgrounds.Count > 0)
+            {
+                lastParty = now;
+                var spot = Near(playgrounds, c => c, CrewFocus(game), 20, game.Rng);
+                Gather(OSistema.Pawns.Mover.CellCenter(spot), GameClock.TicksPerHour * 2 / 3, cal.Fireworks(game) ? "the fireworks" : "Napoli's win", game);
+            }
+        }
+
+        void JoinCrowd(Npc npc, Gathering g, Game game)
+        {
+            EndChat(npc);
+            ReleaseChair(npc);
+            npc.Sitting = npc.Playing = npc.InShop = false;
+            npc.Crowd = g.Id;
+            npc.State = Watching;
+            npc.Timer = 0;
+            npc.Walker = new Walker(RingSpot(g, npc.Mover.Position, game), adjacent: false);
+        }
+
+        public static void EndChat(Npc npc)
+        {
+            if (npc.ChatWith == null) return;
+            if (npc.ChatWith.ChatWith == npc) npc.ChatWith.ChatWith = null;
+            npc.ChatWith = null;
         }
 
         void SpawnScooter(Game game)
@@ -324,7 +444,7 @@ namespace OSistema.Npcs
 
         // ---------- Behaviours ----------
 
-        static bool GunfireNear(Npc npc, Game game)
+        public static bool GunfireNear(Npc npc, Game game)
         {
             var combat = game.Combat;
             if (game.Ticks.TicksGame - combat.LastShotTick < PanicTicks &&
@@ -336,18 +456,27 @@ namespace OSistema.Npcs
 
         public static void TickCivilian(Npc npc, Game game)
         {
+            if (npc.ResidentName != null) return;   // the neighbours keep their own day (Residents)
             var life = game.StreetLife;
             if (!npc.Panicking && GunfireNear(npc, game))
             {
                 // Run from the shots, towards the nearest edge of the map, and don't come back today.
                 npc.Panicking = true;
                 life.ReleaseChair(npc);
+                EndChat(npc);
+                npc.FaceTo = null;
                 npc.State = GoingHome;
                 var away = npc.Mover.Position + (npc.Mover.Position - game.Combat.LastShotPosition).normalized * 30f;
                 var exit = game.Territory.Entrances.Count > 0 ? game.Territory.Entrances[0] : npc.Exit;
                 foreach (var e in game.Territory.Entrances)
                     if ((e - away).sqrMagnitude < (exit - away).sqrMagnitude) exit = e;
                 npc.Walker = new Walker(exit, adjacent: false, speedMultiplier: 1.9f);
+            }
+            // Something happened nearby: whoever's out walking, chatting or playing goes to look. Not the old women on their chairs.
+            else if (!npc.Panicking && !npc.IsFixture && (npc.State <= GoingHome || npc.State == Playing) && (game.Ticks.TicksGame + npc.Id) % 30 == 0)
+            {
+                var g = life.GatheringNear(npc.Mover.Position, game, npc.Crowd);
+                if (g != null) life.JoinCrowd(npc, g, game);
             }
 
             switch (npc.State)
@@ -396,6 +525,26 @@ namespace OSistema.Npcs
                     life.ReleaseChair(npc);
                     npc.Sitting = false;
                     if (--npc.TripsLeft > 0)
+                    {
+                        npc.Target = life.DestinationFor(npc, game);
+                        npc.State = Walking;
+                    }
+                    else npc.State = GoingHome;
+                    return;
+                }
+                case Watching:
+                {
+                    var g = life.GatheringById(npc.Crowd);
+                    if (npc.Walker != null)
+                    {
+                        if (g != null && npc.Walker.Tick(npc.Mover, 1f, game) == WalkStatus.Walking) return;
+                        npc.Walker = null;
+                        npc.FaceTo = g?.At;
+                        npc.Timer = game.Rng.Next(500, 1400);   // a good look, a word with whoever's next to them
+                    }
+                    if (g != null && --npc.Timer > 0) return;
+                    npc.FaceTo = null;
+                    if (npc.TripsLeft > 0)
                     {
                         npc.Target = life.DestinationFor(npc, game);
                         npc.State = Walking;

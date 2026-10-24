@@ -46,6 +46,11 @@ namespace OSistema.Npcs
         public bool Responding;
         public Npc ChatWith;         // two neighbours stopped in the street for a word      // police sent to a call (a break-in, a shooting)
         public string ContactName;   // someone who hands out work (see ContactBook)
+        public string ResidentName;  // a named neighbour living their day (see Residents): driven by their own tick
+        public Look Dress;           // residents: the same face and clothes every day
+        public int DressSeed;
+        public int Crowd;            // the gathering they last stood in (see StreetLife.Gather), so they don't go back to it
+        public Vector2? FaceTo;      // standing in a crowd: turned to whatever they're looking at
         public Vector2 Dodge;        // scooters: how far they swerve round someone in the road (drawn, not simulated)
         public Vector2 LastPos;
         // Cars (Traffic): where exactly, which way along the road, how fast, which painting.

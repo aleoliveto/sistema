@@ -795,6 +795,7 @@
 .icon--shop { background-color: #6A6460; }
 .icon--work { background-color: #E8C26A; color: #1A1410; }
 .icon--contact { background-color: #CFC6B4; color: #1A1410; }
+.icon--neighbour { background-color: #8FB59A; color: #1A1410; }
 
 .role-menu { position: absolute; padding: 4px; min-width: 200px; }
 .role-menu__item { margin: 1px 0; -unity-text-align: middle-left; }

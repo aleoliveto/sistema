@@ -30,6 +30,8 @@ namespace OSistema.UI
                 Ui.Text($"<b>{n.Name}</b>", col);
                 string zone = n.Zone >= 0 && n.Zone < game.Territory.Zones.Count ? game.Territory.Zones[n.Zone].Name : "";
                 Ui.Text($"{n.Trade} · {zone}", col, "small", "muted");
+                var res = game.StreetLife?.Residents.Of(n);
+                if (res != null) Ui.Text($"now: {res.Doing}", col, "small", "muted");
 
                 var st = Ui.Box("col").Into(row);
                 st.style.width = 150;

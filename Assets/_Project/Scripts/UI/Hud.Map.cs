@@ -82,6 +82,10 @@ namespace OSistema.UI
                 if (game.Contacts.Visible(c, game))
                     places.Add(new Place { At = c.Position, Glyph = Initial(c.Name),
                         Css = game.Contacts.HasWork(c, game) ? "icon--work" : "icon--contact", Name = $"{c.Name} · {c.Hours} · {c.Doing}" });
+            // The neighbours, wherever they are: at their door when they're in.
+            if (game.StreetLife != null)
+                foreach (var r in game.StreetLife.Residents.All)
+                    places.Add(new Place { At = r.Position, Glyph = Initial(r.Who.Name), Css = "icon--neighbour", Name = $"{r.Who.Name}, {r.Who.Trade} · {r.Doing}" });
         }
 
         // "Don Peppe 'o Strozzino" -> P, "'O Zio Totonno" -> T
@@ -90,7 +94,7 @@ namespace OSistema.UI
             foreach (var w in name.Split(' '))
             {
                 string t = w.Trim('\'');
-                if (t.Length == 0 || t == "O" || t == "o" || t == "Don" || t == "Zì" || t == "Zio") continue;
+                if (t.Length == 0 || t == "O" || t == "o" || t == "Don" || t == "Donna" || t == "Zì" || t == "Zio") continue;
                 return t.Substring(0, 1).ToUpper();
             }
             return "?";
@@ -162,7 +166,7 @@ namespace OSistema.UI
                 ("S", "icon--salumeria", "Salumeria"), ("+", "icon--farmacia", "Farmacia"), ("M", "icon--macelleria", "Macelleria"),
                 ("F", "icon--mobili", "Furniture shop"), ("◆", "icon--lusso", "Jeweller"), ("V", "icon--moto", "Scooter dealer"),
                 ("H", "icon--hospital", "Hospital"), ("†", "icon--church", "Church"), ("A", "icon--work", "Someone with work for you"),
-                ("A", "icon--contact", "Someone you know"),
+                ("A", "icon--contact", "Someone you know"), ("N", "icon--neighbour", "A neighbour (Neighbours tab)"),
             })
             {
                 var row = Ui.Row(legend);
@@ -399,6 +403,7 @@ namespace OSistema.UI
             miniIconsUsed = 0;
             foreach (var pl in places)
             {
+                if (pl.Css == "icon--neighbour") continue;   // the full map only: the minimap would be all neighbours
                 var pos = Mini(pl.At);
                 if (pos.x < 6 || pos.y < 6 || pos.x > MiniW - 6 || pos.y > MiniH - 6) continue;
                 var ic = NextIcon(miniIcons, ref miniIconsUsed, miniLayer);

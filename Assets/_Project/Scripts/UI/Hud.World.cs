@@ -166,6 +166,19 @@ namespace OSistema.UI
                 tag.style.top = pos.y + unit * 0.42f;
             }
 
+            // The neighbours by name, when zoomed right in: the same faces every day.
+            if (close && game.StreetLife != null)
+                foreach (var r in game.StreetLife.Residents.All)
+                {
+                    if (!r.Present || !FogOfWar.CanSee(r.Position) || !OnScreen(r.Position)) continue;
+                    var tag = NextTag();
+                    tag.text = r.Who.Name;
+                    tag.AddToClassList("tag--place");
+                    var pos = WorldToPanel(r.Position);
+                    tag.style.left = pos.x;
+                    tag.style.top = pos.y + unit * 0.42f;
+                }
+
             // Someone coming to have a word with you.
             var v = game.Events.Visitor;
             if (v != null && FogOfWar.CanSee(v.Mover.Position) && OnScreen(v.Mover.Position))

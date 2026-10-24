@@ -54,6 +54,16 @@ namespace OSistema.Combat
         public Vector2 LastShotPosition { get; private set; }
         public long LastShotTick { get; private set; } = -100000;
 
+        /// <summary>Where and when the last blow landed or shot rang out, fists included: once it goes quiet, a crowd comes to look.</summary>
+        public Vector2 LastFightPosition { get; private set; }
+        public long LastFightTick { get; private set; } = -100000;
+
+        void Fought(Vector2 at, Game game)
+        {
+            LastFightPosition = at;
+            LastFightTick = game.Ticks.TicksGame;
+        }
+
         // When the recent shots were fired: shooting that goes on brings the police (see Response).
         readonly System.Collections.Generic.Queue<long> recentShots = new System.Collections.Generic.Queue<long>();
 
@@ -264,6 +274,7 @@ namespace OSistema.Combat
             if (!hit && (hitPawn != null || hitNpc != null)) to += new Vector2((float)rng.NextDouble() - 0.5f, (float)rng.NextDouble() - 0.5f) * 1.5f;
 
             Shot?.Invoke(new ShotEvent(from, to, hit, melee, covered && !hit));
+            if (!melee || hitPawn != null || hitNpc != null) Fought(to, game);
             if (!melee)
             {
                 shooter.Learn(Skill.Shooting, 3f, game);
@@ -371,6 +382,7 @@ namespace OSistema.Combat
             var to = target.Position;
             if (!hit) to += new Vector2((float)rng.NextDouble() - 0.5f, (float)rng.NextDouble() - 0.5f) * 2.5f;
             Shot?.Invoke(new ShotEvent(attacker.Position, to, hit, melee, covered && !hit));
+            Fought(target.Position, game);
 
             if (!melee)
             {
