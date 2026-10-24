@@ -111,12 +111,23 @@ namespace OSistema.UI
             ? game.Stock.Clean >= amount
             : game.Stock.Cash + game.Stock.Clean >= amount;
 
+        Property operationMenuFor;   // the home whose list of operations is open
+
         void OperationSection(Property p)
         {
-            Ui.Text("OPERATION", propertyPanel, "section");
             if (p.Operation == Operation.None)
             {
-                Ui.Text("Put this place to work. Each operation needs a manager from the crew.", propertyPanel, "small", "muted", "wrap");
+                // Optional: a home is fine as a home. The choices only open when asked for.
+                bool open = operationMenuFor == p;
+                var toggle = Ui.Btn(open ? "Put it to use ▾" : "Put it to use ▸", () =>
+                {
+                    operationMenuFor = open ? null : p;
+                    shownProperty = null;
+                    RefreshAll();
+                }, propertyPanel, "btn--small", "advanced-toggle");
+                toggle.style.alignSelf = Align.FlexStart;
+                Tip(toggle, () => "Turn this home into a nascondiglio, a bisca, a laboratorio or a deposito. Optional: it stays a home for the crew either way.");
+                if (!open) return;
                 foreach (var op in new[] { Operation.Nascondiglio, Operation.Bisca, Operation.Laboratorio, Operation.Deposito })
                 {
                     var card = Ui.Box("op-card").Into(propertyPanel);
@@ -127,6 +138,7 @@ namespace OSistema.UI
                     var btn = Ui.Btn($"Set up €{Organization.SetupCost(op)}", () =>
                     {
                         if (!game.Org.SetUpOperation(p, o, game, out var error)) game.Log.Add(error, MessageKind.Bad);
+                        operationMenuFor = null;
                         shownProperty = null;
                         RefreshAll();
                     }, head, "btn--small");
@@ -136,6 +148,7 @@ namespace OSistema.UI
                 return;
             }
 
+            Ui.Text("OPERATION", propertyPanel, "section");
             Ui.Text($"<b>{Organization.Name(p.Operation)}</b> · {Organization.Describe(p.Operation)}", propertyPanel, "small", "wrap");
             if (p.Operation == Operation.Nascondiglio)
             {

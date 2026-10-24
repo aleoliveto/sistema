@@ -333,7 +333,7 @@ namespace OSistema.UI
             homeButton = Ui.Btn("", () => { if (Single(out var p)) ShowHouseMenu(p, homeButton); }, actions, "btn--small");
             Tip(homeButton, () => "Which house they live in: the basso or one of your flats. They sleep in whichever bed there is free, and eat there.");
             armButton = Ui.Btn("", () => { if (Single(out var p)) ToggleArmed(p); RefreshAll(); }, actions, "btn--small");
-            Tip(armButton, () => $"Give or take back a pistol. Pistols in the stash: {game.Stock.Pistols}.");
+            Tip(armButton, () => $"Give or take back a gun (the best in the stash). In the stash: {game.Stock.Pistols} pistols, {game.Stock.Berettas} Berettas, {game.Stock.Kalash} Kalashnikovs.");
             draftButton = Ui.Btn("Call over", () =>
             {
                 var boss = game.Player;
@@ -401,14 +401,16 @@ namespace OSistema.UI
             if (p.Armed)
             {
                 p.Armed = false;
-                game.Stock.Pistols++;
+                game.Stock.AddGun(p.Gun, 1);
             }
-            else if (game.Stock.Pistols > 0 && p.IsPresent)
+            else if (p.IsPresent && game.Stock.TakeBestGun(out var g))
             {
+                // The best one in the stash.
                 p.Armed = true;
-                game.Stock.Pistols--;
+                p.Gun = g;
+                p.Ammo = p.MagSize;
             }
-            else game.Log.Add("No pistols in the stash. Buy one in the business panel (B).", OSistema.Core.MessageKind.Bad);
+            else game.Log.Add("No guns in the stash. Buy one in the business panel (B).", OSistema.Core.MessageKind.Bad);
         }
 
         Pawn inspected;

@@ -430,7 +430,7 @@ namespace OSistema.UI
                 Ui.Text("WORK", bizBody, "section");
                 Field("Job", RoleLabel(p.Role), at => ShowRoleMenu(pawn, at));
                 Field("Home", Housing.Name(Housing.HomeOf(p, game)), at => ShowHouseMenu(pawn, at));
-                Field("Gun", p.Armed ? "Pistol" : $"None · {game.Stock.Pistols} in the stash", _ => { ToggleArmed(pawn); bizDirty = true; RefreshWindows(); });
+                Field("Gun", p.Armed ? p.GunStats.Name : $"None · {game.Stock.AllGuns} in the stash", _ => { ToggleArmed(pawn); bizDirty = true; RefreshWindows(); });
                 // The fiddly bits (piazza, shift, wage, where a bodyguard stands) fold away: the defaults are fine.
                 var adv = Ui.Btn(personAdvanced ? "Advanced ▾" : "Advanced ▸", Do(() => personAdvanced = !personAdvanced), bizBody, "btn--small", "advanced-toggle");
                 Tip(adv, () => "Piazza, shift, wage and where a bodyguard stands. Left alone, they sort themselves out.");

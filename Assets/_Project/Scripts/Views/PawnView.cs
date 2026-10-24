@@ -108,7 +108,7 @@ namespace OSistema.Views
             rig.Update(pawn.Position, lying, Time.deltaTime);
             if (pawn.AimTarget != null && !lying) rig.FaceTowards(pawn.AimTarget.Position);
             else if (pawn.AimPoint.HasValue && !lying) rig.FaceTowards(pawn.AimPoint.Value);
-            rig.SetArmed(pawn.Armed && !pawn.Dead);
+            rig.SetArmed(pawn.Armed && !pawn.Dead, pawn.GunStats.LengthOnBody);
             // On a scooter: sitting, hands on the bars, the scooter turned the way it's going, and smoke.
             bool onScooter = pawn.Riding && !pawn.Pillion && !lying;
             rig.Seated = (pawn.Riding || pawn.Pillion) && !lying;

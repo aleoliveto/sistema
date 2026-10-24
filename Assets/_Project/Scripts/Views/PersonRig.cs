@@ -231,7 +231,12 @@ namespace OSistema.Views
             }
         }
 
-        public void SetArmed(bool armed) => gun.enabled = armed && body.enabled;
+        public void SetArmed(bool armed, float length = 0.3f)
+        {
+            gun.enabled = armed && body.enabled;
+            var sc = gun.transform.localScale;
+            if (!Mathf.Approximately(sc.y, length)) gun.transform.localScale = new Vector3(length > 0.4f ? 0.11f : 0.09f, length, 1f);
+        }
 
         /// <summary>Turns to look a way (degrees from a direction) without raising a gun: for people standing about.</summary>
         public void LookTowards(Vector2 dir)

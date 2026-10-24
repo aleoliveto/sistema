@@ -19,6 +19,23 @@ namespace OSistema.Core
         public int Medicine = 1;
         public int Product;   // 'a roba, stored at the basso
         public int Pistols;   // unassigned guns in the stash
+        public int Berettas, Kalash;
+
+        public int GunsOf(OSistema.Combat.Gun g) => g == OSistema.Combat.Gun.Kalash ? Kalash : g == OSistema.Combat.Gun.Beretta ? Berettas : Pistols;
+        public void AddGun(OSistema.Combat.Gun g, int n)
+        {
+            if (g == OSistema.Combat.Gun.Kalash) Kalash += n; else if (g == OSistema.Combat.Gun.Beretta) Berettas += n; else Pistols += n;
+        }
+        public int AllGuns => Pistols + Berettas + Kalash;
+
+        /// <summary>The best gun in the stash, taken out; false if there's none.</summary>
+        public bool TakeBestGun(out OSistema.Combat.Gun g)
+        {
+            g = Kalash > 0 ? OSistema.Combat.Gun.Kalash : Berettas > 0 ? OSistema.Combat.Gun.Beretta : OSistema.Combat.Gun.Pistol;
+            if (GunsOf(g) <= 0) return false;
+            AddGun(g, -1);
+            return true;
+        }
         public int Scooters;  // the crew's own scooters
         public int ScooterModel;   // the boss's ride: 0 step-through .. 3 maxi (see Prices.ScooterModels)
         public int ScooterColour;

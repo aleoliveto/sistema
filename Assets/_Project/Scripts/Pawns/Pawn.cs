@@ -119,6 +119,10 @@ namespace OSistema.Pawns
         // The pistol (player): rounds in the magazine, reloading, and how far recoil has thrown the aim.
         public const int MagazineSize = 8;
         public int Ammo = MagazineSize;
+        public OSistema.Combat.Gun Gun;   // which gun, when Armed
+        public OSistema.Combat.GunStats GunStats => OSistema.Combat.Guns.Of(Gun);
+        public int MagSize => GunStats.Magazine;
+        public bool ArrestAfterHospital;  // shot, and the doctors called the police: they're waiting at the bed
         public float ReloadUntil = -1f;     // real seconds (Time.unscaledTime)
         public float Bloom;                 // extra spread in degrees, from firing fast; settles back down
         public int RideModel = 1, RideColour = -1;   // which scooter they ride (the boss: the one bought at the dealer)

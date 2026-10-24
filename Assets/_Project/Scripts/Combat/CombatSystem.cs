@@ -194,6 +194,7 @@ namespace OSistema.Combat
             if (moving) s += running ? 6f : 2.5f;
             if (p.Riding) s += 4f;
             s += p.Health.Pain * 7f + p.Bloom * 0.7f;
+            if (p.Armed) s = Mathf.Max(0.6f, s + p.GunStats.Spread);
             return Mathf.Min(s, 16f);
         }
 
@@ -208,7 +209,7 @@ namespace OSistema.Combat
             long now = game.Ticks.TicksGame;
             if (!shooter.CanAct || now < shooter.NextAttackTick) return;
             bool melee = !shooter.Armed;
-            float range = melee ? MeleeRange : PlayerPistolRange;
+            float range = melee ? MeleeRange : shooter.GunStats.PlayerRange;
             var from = shooter.Position;
             var dir = point - from;
             if (dir.sqrMagnitude < 0.0001f) return;
@@ -220,7 +221,8 @@ namespace OSistema.Combat
                 float off = ((float)rng.NextDouble() + (float)rng.NextDouble() - 1f) * spread * Mathf.Deg2Rad;
                 dir = new Vector2(dir.x * Mathf.Cos(off) - dir.y * Mathf.Sin(off), dir.x * Mathf.Sin(off) + dir.y * Mathf.Cos(off));
             }
-            shooter.NextAttackTick = now + (melee ? 35 : 11);   // a semi-automatic: as fast as you can pull the trigger
+            shooter.NextAttackTick = now + (melee ? 35 : shooter.GunStats.Delay);   // a semi-automatic as fast as you pull; a Kalashnikov faster
+            if (!melee && shooter.Gun == Gun.Kalash) game.Territory.AddHeat(shooter.Cell, 0.6f);   // the whole rione hears it
 
             // Walk the line: who's on it first, and where does a wall stop it?
             float wallAt = range;
@@ -318,7 +320,7 @@ namespace OSistema.Combat
 
         Pawn PickTarget(Pawn attacker, Game game, long now)
         {
-            float range = attacker.Armed ? PistolRange : MeleeRange;
+            float range = attacker.Armed ? attacker.GunStats.AiRange : MeleeRange;
 
             // A focus-fire order wins whenever the target is in range and in sight.
             var forced = attacker.ForcedTarget;
@@ -362,8 +364,8 @@ namespace OSistema.Combat
             if (!melee) attacker.Learn(Skill.Shooting, 3f, game);
             // Bursts: two or three quick shots, then a breath. Reads as fire discipline, not a spasm.
             if (melee) attacker.NextAttackTick = now + 45;
-            else if (attacker.BurstLeft > 0) { attacker.BurstLeft--; attacker.NextAttackTick = now + 12 + rng.Next(0, 6); }
-            else { attacker.BurstLeft = 1 + rng.Next(0, 2); attacker.NextAttackTick = now + 55 + rng.Next(0, 35); }
+            else if (attacker.BurstLeft > 0) { attacker.BurstLeft--; attacker.NextAttackTick = now + (attacker.GunStats.Automatic ? 6 : 12) + rng.Next(0, 6); }
+            else { attacker.BurstLeft = (attacker.GunStats.Automatic ? 4 : 1) + rng.Next(0, 2); attacker.NextAttackTick = now + 55 + rng.Next(0, 35); }
             bool hit = rng.NextDouble() < chance;
 
             var to = target.Position;
@@ -427,6 +429,7 @@ namespace OSistema.Combat
         {
             if (melee) return 12;
             float d = attacker != null && attacker.Controlled ? 34f : 20f + (attacker?.ShootingSkill ?? 3) * 0.8f;
+            if (attacker != null) d *= attacker.GunStats.Damage;
             return Mathf.RoundToInt(head ? d * 1.6f : d);
         }
 

@@ -114,7 +114,7 @@ namespace OSistema.UI
             vBreathFill.style.backgroundColor = p.Winded ? new Color(0.94f, 0.33f, 0.28f) : new Color(0.85f, 0.83f, 0.78f);
             vAmmo.parent.Show(p.Armed);
             vAmmo.text = p.ReloadUntil > Time.unscaledTime ? "<color=#A89F8E>reloading</color>"
-                : p.Ammo == 0 ? "<color=#F07A6E>empty · R</color>" : $"{p.Ammo}/{Pawn.MagazineSize}";
+                : p.Ammo == 0 ? "<color=#F07A6E>empty · R</color>" : $"{p.Ammo}/{p.MagSize}";
 
             wanted.Show(game.Pursuit.Active);
             if (game.Pursuit.Active) Ui.SetFill(wantedFill, game.Pursuit.EscapeProgress);

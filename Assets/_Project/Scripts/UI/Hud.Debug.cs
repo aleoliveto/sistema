@@ -131,6 +131,8 @@ namespace OSistema.UI
             Steps("Empty packs", n => s.EmptyPacks = Math.Max(0, s.EmptyPacks + n), 10, 50);
             Steps("Fakes", n => o.H.fakes = Math.Max(0, o.H.fakes + n), 10, 50);
             Steps("Pistols", n => s.Pistols = Math.Max(0, s.Pistols + n), -1, 1, 5);
+            Steps("Berettas", n => s.Berettas = Math.Max(0, s.Berettas + n), -1, 1);
+            Steps("Kalashnikovs", n => s.Kalash = Math.Max(0, s.Kalash + n), -1, 1);
             Steps("Scooters", n => s.Scooters = Math.Max(0, s.Scooters + n), -1, 1);
             Steps("Medicine", n => s.Medicine = Math.Max(0, s.Medicine + n), 5);
             Steps("Meals / groceries", n => { s.Meals += n; s.Groceries += n; }, 10);
@@ -152,7 +154,11 @@ namespace OSistema.UI
             B(me, "Fed and rested", () => { var p = game.Player; if (p == null) return; p.Needs.Food = 1f; p.Needs.Rest = 1f; });
             B(me, "Exhausted", () => { var p = game.Player; if (p != null) p.Needs.Rest = 0.02f; });
             B(me, "Vest", () => { var p = game.Player; if (p != null) p.Armor = Pawn.MaxArmor; });
-            B(me, "Armed", () => { var p = game.Player; if (p == null) return; p.Armed = true; p.Ammo = Pawn.MagazineSize; });
+            foreach (var g in OSistema.Combat.Guns.All)
+            {
+                var gg = g;
+                B(me, OSistema.Combat.Guns.Of(g).Name, () => { var p = game.Player; if (p == null) return; p.Armed = true; p.Gun = gg; p.Ammo = p.MagSize; });
+            }
 
             Section("CREW");
             var crew = Line("Crew");

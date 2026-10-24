@@ -186,7 +186,7 @@ namespace OSistema.Core
                 pendingOrderUnits = game.Org.PendingOrderUnits,
                 pendingOrderDay = game.Org.PendingOrderDay,
                 lastPaydayWeek = game.Org.LastPaydayWeek,
-                pistols = game.Stock.Pistols,
+                pistols = game.Stock.Pistols, berettas = game.Stock.Berettas, kalash = game.Stock.Kalash,
                 clean = game.Stock.Clean,
                 scooters = game.Stock.Scooters, scooterModel = game.Stock.ScooterModel, scooterColour = game.Stock.ScooterColour,
                 cigarettes = game.Stock.Cigarettes,
@@ -442,6 +442,8 @@ namespace OSistema.Core
             game.Org.PendingOrderDay = data.pendingOrderDay;
             game.Org.LastPaydayWeek = data.lastPaydayWeek;
             game.Stock.Pistols = data.pistols;
+            game.Stock.Berettas = data.berettas;
+            game.Stock.Kalash = data.kalash;
             game.Stock.Clean = data.clean;
             game.Stock.Scooters = data.scooters;
             game.Stock.ScooterModel = data.scooterModel;
@@ -593,6 +595,7 @@ namespace OSistema.Core
                 mealsDelivered = p.MealsDelivered,
                 mission = (int)p.Mission, clan = p.Clan, armor = p.Armor,
                 pocketDoses = p.PocketDoses, pocketPacks = p.PocketPacks, pocketFakes = p.PocketFakes,
+                gun = (int)p.Gun, arrestAfterHospital = p.ArrestAfterHospital,
                 missionTarget = p.MissionTarget?.Id ?? 0,
                 x = p.Cell.x,
                 y = p.Cell.y,
@@ -644,6 +647,7 @@ namespace OSistema.Core
                 MealsDelivered = d.mealsDelivered,
                 Mission = (RivalMission)d.mission, Clan = d.clan, Armor = d.armor,
                 PocketDoses = d.pocketDoses, PocketPacks = d.pocketPacks, PocketFakes = d.pocketFakes,
+                Gun = (OSistema.Combat.Gun)d.gun, ArrestAfterHospital = d.arrestAfterHospital,
                 // Beds are the house's now, taken only while slept in. A save from before kept each person's
                 // own bed: they live in the house that bed is in (the basso, or one of the family's flats).
                 Home = d.homeSaved ? (d.hasHome ? new Vector2Int(d.homeX, d.homeY) : (Vector2Int?)null)
@@ -698,6 +702,7 @@ namespace OSistema.Core
             public List<ZoneData> zones = new List<ZoneData>();
             public List<SquareData> squares = new List<SquareData>();
             public List<BusinessData> businesses = new List<BusinessData>();
+            public int berettas, kalash;
             public int pistols, generation, hidingSinceDay, rank, jobsDone, clean, scooters, cigarettes, scooterModel, scooterColour;
             public int dressed = -1;   // the rank the basso was done up for; older saves: not yet
             public float evidence, leakRisk;
@@ -812,7 +817,8 @@ namespace OSistema.Core
             public float[] xp;
             public int faction, shooting, mealsDelivered, mission, missionTarget, missionSquare = -1, clan;
             public float armor;
-            public int pocketDoses, pocketPacks, pocketFakes;
+            public int pocketDoses, pocketPacks, pocketFakes, gun;
+            public bool arrestAfterHospital;
             public bool armed, isBoss;
             public long aggressiveUntil;
             public int x, y;

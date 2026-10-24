@@ -30,6 +30,15 @@ namespace OSistema.Crime
             return p.Health.BloodLoss > 0.3f;
         }
 
+        /// <summary>A bullet deep in, or a lot of blood gone: beyond what a box of medicine at home can do.</summary>
+        public static bool TooHurtForHome(Pawn p)
+        {
+            if (p.Health.BloodLoss >= 0.5f) return true;
+            foreach (var i in p.Health.Injuries)
+                if (i.Label == "Gunshot wound" && i.Severity >= 0.5f && (!i.Tended || i.TendQuality < 0.85f)) return true;
+            return false;
+        }
+
         /// <summary>A box of medicine from home. Quality depends on whoever does it: best medic present.</summary>
         public static bool WithMedicine(Game game, Pawn patient)
         {
@@ -39,6 +48,11 @@ namespace OSistema.Crime
                 return false;
             }
             if (!NeedsCare(patient)) return false;
+            if (TooHurtForHome(patient))
+            {
+                game.Log.Add($"{patient.DisplayName}'s wounds are too bad to treat at home. Only the hospital can (118), and they report gunshots.", MessageKind.Bad, patient.Cell);
+                return false;
+            }
             int skill = patient.MedicineSkill;
             foreach (var c in game.Pawns.Crew)
                 if (!c.Dead && c.IsPresent && c.CanAct && (c.Position - patient.Position).sqrMagnitude < 25f) skill = Mathf.Max(skill, c.MedicineSkill);

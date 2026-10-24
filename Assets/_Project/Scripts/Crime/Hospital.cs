@@ -121,9 +121,14 @@ namespace OSistema.Crime
             game.Log.Add($"{patient.DisplayName} was taken to the Ospedale.", MessageKind.Info);
             if (gunshot)
             {
-                // Doctors are obliged to report gunshot wounds.
+                // Doctors are obliged to report gunshot wounds; more often than not the police are at the bedside.
                 game.Org.AddEvidence(5f, game);
-                game.Log.Add($"The hospital reported {patient.DisplayName}'s gunshot wound to the police.", MessageKind.Bad);
+                if (game.Rng.NextDouble() < 0.6)
+                {
+                    patient.ArrestAfterHospital = true;
+                    game.Log.Add($"The hospital reported {patient.DisplayName}'s gunshot wound. There's a policeman at the bed: he'll go from the ward to Poggioreale.", MessageKind.Bad);
+                }
+                else game.Log.Add($"The hospital reported {patient.DisplayName}'s gunshot wound to the police, but nobody came for him.", MessageKind.Bad);
             }
         }
 
@@ -137,6 +142,14 @@ namespace OSistema.Crime
                 if (now < p.HospitalUntil || p.Health.Downed || p.Health.BloodLoss > 0.25f) continue;
                 var outside = NearestFree(game.Map, door) ?? door;
                 p.LeaveHospital(outside);
+                if (p.ArrestAfterHospital)
+                {
+                    p.ArrestAfterHospital = false;
+                    int days = game.Rng.Next(4, 10);
+                    p.SendToJail(now + days * GameClock.TicksPerDay, game);
+                    game.Log.Add($"{p.DisplayName} walked out of the Ospedale in handcuffs: {days} days in Poggioreale for the shooting.", MessageKind.Bad);
+                    continue;
+                }
                 p.Mood.AddMemory("hospital", "Patched up at the Ospedale", 4f, now, GameClock.TicksPerDay);
                 game.Log.Note($"{p.DisplayName} has been discharged from the Ospedale.", MessageKind.Good, outside);
             }

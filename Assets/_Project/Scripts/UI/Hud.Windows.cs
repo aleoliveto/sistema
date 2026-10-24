@@ -451,17 +451,45 @@ namespace OSistema.UI
             Ui.Text($"Your ride: <b>{Prices.ScooterNames[Mathf.Clamp(st.ScooterModel, 0, 3)]}</b>. Buy more, or a better one, at the scooter dealer (on the map).", bizBody, "small", "muted", "wrap");
 
             Ui.Text("ARMS", bizBody, "section");
-            Ui.Text($"Pistols in the stash: <b>{st.Pistols}</b>. Armed crew defend themselves and fight when drafted, but get longer sentences if arrested.", bizBody, "small", "wrap");
-            Ui.Btn($"Buy a pistol (€{Prices.Pistol})", Do(() =>
+            Ui.Text($"In the stash: <b>{st.Pistols}</b> pistols, <b>{st.Berettas}</b> Berettas, <b>{st.Kalash}</b> Kalashnikovs. Armed crew get the best one there; they defend themselves and fight when drafted, but get longer sentences if arrested.", bizBody, "small", "wrap");
+            foreach (var g in OSistema.Combat.Guns.All)
             {
-                if (!org.RequireRank(1, "Buying guns", game, out var rankError)) game.Log.Add(rankError, MessageKind.Bad);
-                else if (!org.Pay(Prices.Pistol, game, out var error)) game.Log.Add(error, MessageKind.Bad);
-                else
+                var gun = g;
+                var stats = OSistema.Combat.Guns.Of(g);
+                var gunRow = Ui.Row(bizBody);
+                Ui.Btn($"Buy a {stats.Name} (€{stats.Price})", Do(() =>
                 {
-                    st.Pistols++;
-                    game.Log.Add("A pistol, wrapped in a cloth, now sits in the stash.");
+                    if (!org.RequireRank(stats.Rank, $"A {stats.Name}", game, out var rankError)) game.Log.Add(rankError, MessageKind.Bad);
+                    else if (!org.Pay(stats.Price, game, out var error)) game.Log.Add(error, MessageKind.Bad);
+                    else
+                    {
+                        st.AddGun(gun, 1);
+                        game.Log.Add($"A {stats.Name}, wrapped in a cloth, now sits in the stash.");
+                    }
+                }), gunRow, "btn--small");
+                Ui.Text(stats.Note, gunRow, "small", "muted", "wrap");
+            }
+            var me = game.Player;
+            if (me != null)
+            {
+                var carry = Ui.Row(bizBody);
+                Ui.Text($"You carry: <b>{(me.Armed ? me.GunStats.Name : "nothing")}</b>", carry, "small");
+                foreach (var g in OSistema.Combat.Guns.All)
+                {
+                    var gun = g;
+                    if (me.Armed && me.Gun == g) continue;
+                    var swap = Ui.Btn($"Take the {OSistema.Combat.Guns.Of(g).Name}", Do(() =>
+                    {
+                        if (st.GunsOf(gun) <= 0) return;
+                        if (me.Armed) st.AddGun(me.Gun, 1);
+                        st.AddGun(gun, -1);
+                        me.Armed = true;
+                        me.Gun = gun;
+                        me.Ammo = me.MagSize;
+                    }), carry, "btn--small");
+                    swap.SetEnabled(st.GunsOf(g) > 0);
                 }
-            }), bizBody, "btn--small").style.alignSelf = Align.FlexStart;
+            }
             var boss = game.Player;
             Ui.Text($"Your vest: <b>{(boss == null || boss.Armor <= 0.5f ? "none" : $"{boss.Armor / Pawn.MaxArmor:P0}")}</b>. It soaks the first hits and doesn't mend: once shot through, buy another.", bizBody, "small", "wrap");
             Ui.Btn($"Buy a bulletproof vest (€{Prices.Vest})", Do(() =>

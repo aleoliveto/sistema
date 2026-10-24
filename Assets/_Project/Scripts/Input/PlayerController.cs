@@ -285,7 +285,7 @@ namespace OSistema.Input
                 if (!p.InMentalBreak(now)) p.SetDrafted(draft, game);
         }
 
-        const float CombatZoom = 11f;    // a gunfight wants to see about a pistol's range all round
+        const float CombatZoom = 9f;     // a gunfight wants to see most of a pistol's range, without losing the street
         float combatBlend;               // 0 = your own zoom, 1 = pulled out for the fight
         float zoomBeforeFight = -1f;
 
@@ -622,9 +622,9 @@ namespace OSistema.Input
                 else if (brake) p.ScooterSpeed = Mathf.MoveTowards(p.ScooterSpeed, -2.5f, (p.ScooterSpeed > 0f ? 16f : 4f) * dt);
                 else p.ScooterSpeed = Mathf.MoveTowards(p.ScooterSpeed, 0f, 3f * dt);
                 float grip = Mathf.Clamp01(Mathf.Abs(p.ScooterSpeed) / 2.5f);
-                float turnRate = 190f * grip * (1f - 0.4f * Mathf.Clamp01(p.ScooterSpeed / top));
+                float turnRate = 270f * grip * (1f - 0.25f * Mathf.Clamp01(p.ScooterSpeed / top));   // tight: a scooter turns on a coin
                 p.Heading += steer * turnRate * dt * (p.ScooterSpeed < 0f ? -1f : 1f);
-                p.Velocity = Vector2.Lerp(p.Velocity, p.Forward * p.ScooterSpeed, Mathf.Clamp01(6f * dt));
+                p.Velocity = Vector2.Lerp(p.Velocity, p.Forward * p.ScooterSpeed, Mathf.Clamp01(10f * dt));   // less drift: it goes where it points
                 if (p.Velocity.sqrMagnitude > 0.0001f || gas || brake || steer != 0f)
                 {
                     p.LastInputTick = now;
@@ -681,14 +681,14 @@ namespace OSistema.Input
             if (!reloading && p.ReloadUntil > 0f)
             {
                 p.ReloadUntil = -1f;
-                p.Ammo = Pawn.MagazineSize;
+                p.Ammo = p.MagSize;
             }
             float spread = Combat.CombatSystem.SpreadFor(p, dir != Vector2.zero, running);
             if (Aiming)
             {
                 var to = (Vector2)ScreenToWorld(mousePos);
                 var aim = to - p.Position;
-                float range = p.Armed ? Combat.CombatSystem.PlayerPistolRange : Combat.CombatSystem.MeleeRange;
+                float range = p.Armed ? p.GunStats.PlayerRange : Combat.CombatSystem.MeleeRange;
                 if (aim.magnitude > range) to = p.Position + aim.normalized * range;
                 var col = !p.Armed ? new Color(1f, 0.9f, 0.6f, 0.6f) : reloading || p.Ammo == 0 ? new Color(0.6f, 0.6f, 0.6f, 0.5f) : new Color(1f, 0.25f, 0.2f, 0.75f);
                 aimLine.startColor = col;
@@ -724,21 +724,23 @@ namespace OSistema.Input
             if (Aiming)
             {
                 p.LastInputTick = now;
-                if (p.Armed && kb.rKey.wasPressedThisFrame && !reloading && p.Ammo < Pawn.MagazineSize) StartReload(p);
-                if (mouse.leftButton.wasPressedThisFrame && game.Ticks.Speed > 0)
+                if (p.Armed && kb.rKey.wasPressedThisFrame && !reloading && p.Ammo < p.MagSize) StartReload(p);
+                // A Kalashnikov fires as long as you hold the trigger.
+                bool trigger = p.Armed && p.GunStats.Automatic ? mouse.leftButton.isPressed : mouse.leftButton.wasPressedThisFrame;
+                if (trigger && game.Ticks.Speed > 0)
                 {
                     if (!p.Armed) game.Combat.PlayerAttack(p, ScreenToWorld(mousePos), game);
                     else if (reloading) { }
                     else if (p.Ammo <= 0)
                     {
-                        OSistema.Views.SoundManager.PlayUi(OSistema.Views.AudioSynth.Click, 0.5f);   // dry click
+                        if (mouse.leftButton.wasPressedThisFrame) OSistema.Views.SoundManager.PlayUi(OSistema.Views.AudioSynth.Click, 0.5f);   // dry click
                         StartReload(p);
                     }
                     else if (now >= p.NextAttackTick)
                     {
                         p.Ammo--;
                         game.Combat.PlayerAttack(p, ScreenToWorld(mousePos), game, spread);
-                        p.Bloom = Mathf.Min(p.Bloom + 3.2f, 12f);
+                        p.Bloom = Mathf.Min(p.Bloom + (p.GunStats.Automatic ? 2.2f : 3.2f), 12f);
                         if (p.Ammo == 0) StartReload(p);
                     }
                 }
