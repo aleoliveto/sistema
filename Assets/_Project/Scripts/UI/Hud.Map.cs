@@ -72,6 +72,9 @@ namespace OSistema.UI
                 };
                 places.Add(new Place { At = Mover.CellCenter(b.Cell), Glyph = g, Css = css, Name = $"{what} · {b.Name}" });
             }
+            // The family's own scooters, wherever they were left.
+            foreach (var sc in Crime.FamilyScooters.Parked(game))
+                places.Add(new Place { At = Mover.CellCenter(sc), Glyph = "v", Css = "icon--work", Name = "The family's scooter (R to ride)" });
             // Roads out of the district.
             foreach (var gate in game.District.Gates)
                 places.Add(new Place { At = Mover.CellCenter(gate.Cell), Glyph = "→", Css = gate.To == Core.District.PortId ? "icon--to-port" : "icon--to-home", Name = $"Road to {Core.District.NameOf(gate.To)}" });

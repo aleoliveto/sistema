@@ -447,7 +447,7 @@ namespace OSistema.UI
             Ui.Text($"{(st.DigitalScale ? "✓" : "✗")} digital scale   {(st.HeatSealer ? "✓" : "✗")} heat sealer   {(st.RollingMachine ? "✓" : "✗")} rolling machine   · Nanninella sells them.", bizBody, "small");
 
             Ui.Text("SCOOTERS", bizBody, "section");
-            Ui.Text($"The family has <b>{st.Scooters}</b>. Crew take a free scooter for any long trip: far faster across the city.", bizBody, "small", "wrap");
+            Ui.Text($"The family has <b>{st.Scooters}</b>. They stand parked in the street: walk up to one and press R. Crew take one parked near them for a long trip, and leave it where they get off.", bizBody, "small", "wrap");
             Ui.Text($"Your ride: <b>{Prices.ScooterNames[Mathf.Clamp(st.ScooterModel, 0, 3)]}</b>. Buy more, or a better one, at the scooter dealer (on the map).", bizBody, "small", "muted", "wrap");
 
             Ui.Text("ARMS", bizBody, "section");

@@ -824,21 +824,20 @@ namespace OSistema.Input
                 p.Velocity = Vector2.zero;
                 p.ScooterSpeed = 0f;
                 p.Mover.Unstick(game.Map);   // off by a wall: step clear of it
+                // Left at the kerb right here, for whoever needs it next.
+                if (p.HasFamilyScooter) { p.HasFamilyScooter = false; FamilyScooters.Park(game, p.Cell); }
                 return;
             }
-            int inUse = 0;
-            foreach (var c in game.Pawns.Crew) if (c != p && c.OnScooter) inUse++;
-            if (game.Stock.Scooters - inUse <= 0)
+            // You get on one that's parked by you; nobody keeps a scooter in his pocket.
+            if (!FamilyScooters.Nearest(game, p.Position, FamilyScooters.PlayerReach, out var parked))
             {
-                game.Log.Add(game.Stock.Scooters == 0 ? "The family has no scooter. The scooter dealer is on the map." : "Every scooter is out with the crew.", MessageKind.Info);
+                string where = FamilyScooters.WhereIs(game, p.Position);
+                game.Log.Add(game.Stock.Scooters == 0 ? "The family has no scooter. The scooter dealer is on the map."
+                           : where ?? "Every scooter is out with the crew.", MessageKind.Info);
                 return;
             }
-            var t = game.Map.GetTerrain(p.Cell.x, p.Cell.y);
-            if (t == TerrainType.Floor || t == TerrainType.Marble)
-            {
-                game.Log.Add("Get outside first.", MessageKind.Info);
-                return;
-            }
+            FamilyScooters.Take(game, parked, p);
+            p.Mover.Place(Mover.CellCenter(parked));
             p.Riding = p.OnScooter = true;
             p.Velocity = Vector2.zero;
             p.ScooterSpeed = 0f;
@@ -892,6 +891,8 @@ namespace OSistema.Input
 
             // Street hustles: mind the cars, sell from a stall, or take a scooter to sell back to its owner.
             var org = game.Org;
+            if (!p.Riding && FamilyScooters.Nearest(game, p.Position, FamilyScooters.PlayerReach, out _) && !org.PlayerParking.HasValue && !org.PlayerStall.HasValue)
+                return new Action { Label = "Get on the scooter  [R]", Do = () => ToggleScooter(p) };
             if (!p.Riding)
             {
                 if (org.PlayerParking.HasValue)

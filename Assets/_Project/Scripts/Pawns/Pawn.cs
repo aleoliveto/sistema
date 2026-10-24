@@ -226,6 +226,7 @@ namespace OSistema.Pawns
         public bool Following;          // "Follow me": tags along behind the boss without changing job       // riding someone else's, for Nanninella
         public float Heading;            // the player's scooter: degrees, 0 = north, positive = turning left
         public float ScooterSpeed;       // forward speed along the heading, cells per second
+        public bool HasFamilyScooter;    // riding one of the family's own (Crime.FamilyScooters): parked where he gets off
         public bool Pillion;             // riding on the back of the boss's scooter
 
         /// <summary>The piazza a pusher, lookout or capo paranza belongs to (its cell). Null: wherever they're needed.</summary>

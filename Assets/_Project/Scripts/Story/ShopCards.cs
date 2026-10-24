@@ -55,6 +55,7 @@ namespace OSistema.Story
                         Give = g =>
                         {
                             g.Stock.Scooters++;
+                            if (g.Player != null) Crime.FamilyScooters.Park(g, g.Player.Cell);   // waiting outside the dealer's
                             // The best one is yours; the rest go to the crew.
                             if (model >= g.Stock.ScooterModel || g.Stock.Scooters == 1)
                             {

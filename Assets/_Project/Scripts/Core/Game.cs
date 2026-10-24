@@ -440,6 +440,7 @@ namespace OSistema.Core
             Combat.Tick(this);
             Police.Tick(this);
             Org.Tick(this);
+            Crime.FamilyScooters.Tick(this);
             foreach (var c in Clans) c.Tick(this);
             Events.Tick(this);
             SocialTick();

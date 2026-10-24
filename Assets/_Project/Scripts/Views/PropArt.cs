@@ -100,6 +100,7 @@ namespace OSistema.Views
             ["crates"] = new[] { "Props/street_07", "Props/work_15" },
             ["potted_plants"] = new[] { "Props/street_14" },
             ["parked_car"] = new[] { "Vehicles/wcar_00", "Vehicles/wcar_01", "Vehicles/wcar_02", "Vehicles/wcar_03", "Vehicles/wcar_04", "Vehicles/wcar_05", "Vehicles/wcar_06", "Vehicles/wcar_07" },
+            ["family_scooter"] = new[] { "Vehicles/scooter_00" },   // drawn as the boss's own model and colour (For)
             ["parked_scooter"] = new[] { "Vehicles/scooter_00", "Vehicles/scooter_01", "Vehicles/scooter_02", "Vehicles/scooter_03", "Vehicles/scooter_04", "Vehicles/scooter_05", "Vehicles/scooter_06", "Vehicles/scooter_07", "Vehicles/scooter_08", "Vehicles/scooter_09", "Vehicles/scooter_11", "Vehicles/scooter_12" },
         };
 
@@ -121,7 +122,7 @@ namespace OSistema.Views
             "tyre_stack" => 0.8f,
             "cafe_table" => 0.85f,
             "flour_sacks" => 0.85f,
-            "parked_scooter" => 1.15f,
+            "parked_scooter" or "family_scooter" => 1.15f,
             "rug" => 1.15f,
             "bed" => 1.08f,
             "sofa" => 1.15f,
@@ -157,10 +158,14 @@ namespace OSistema.Views
 
         public static bool Has(BuildingDef d) => d != null && ByDef.ContainsKey(d.Id) && Load(ByDef[d.Id][0]) != null;
 
+        /// <summary>The family's scooters are drawn as the boss's model and colour, so you know yours in the street.</summary>
+        public static int FamilyModel, FamilyColour;
+
         /// <summary>The sprite for a def at a cell (the cell picks the variant), or null.</summary>
         public static Sprite For(BuildingDef d, int x, int y)
         {
             if (d == null || !ByDef.TryGetValue(d.Id, out var names)) return null;
+            if (d.Id == "family_scooter") return Scooter(FamilyModel, FamilyColour);
             uint h = (uint)(x * 73856093) ^ (uint)(y * 19349663);
             return Load(names[(int)(h % (uint)names.Length)]) ?? Load(names[0]);
         }

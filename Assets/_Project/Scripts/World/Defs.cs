@@ -185,6 +185,12 @@ namespace OSistema.World
         public static readonly BuildingDef Tree = Street("tree", "Tree", new Color32(60, 105, 50, 255), cover: true);
         public static readonly BuildingDef ParkedCar = Street("parked_car", "Parked car", new Color32(140, 40, 40, 255), cover: true);
         public static readonly BuildingDef ParkedScooter = Street("parked_scooter", "Scooter", new Color32(200, 200, 205, 255), cover: false);
+        // One of the family's own, parked: walk up and R to ride it. Passable so a rider getting off is never boxed in.
+        public static readonly BuildingDef FamilyScooter = new BuildingDef
+        {
+            Id = "family_scooter", Label = "The family's scooter", Passable = true, PathCost = 2f, WorkToBuild = 200,
+            Color = new Color32(200, 170, 60, 255), Generated = true,
+        };
         public static readonly BuildingDef Bench = Street("bench", "Bench", new Color32(120, 90, 60, 255), cover: true);
         public static readonly BuildingDef Bin = Street("bin", "Bin", new Color32(60, 90, 70, 255), cover: true);
         public static readonly BuildingDef StreetLamp = Street("street_lamp", "Street lamp", new Color32(50, 50, 55, 255), cover: false, light: true);
@@ -342,6 +348,7 @@ namespace OSistema.World
             PartsBench, DiningChair, Nightstand, Dresser, Bookcase, WashingMachine, FloorLamp, BarStool, WineRack, FlourSacks,
             GlassVitrine, PharmacyCabinet, JewelCase, DisplayTable, BreadRack, TyreStack, Charred, PottedPalm, Sideboard, BurntShelf,
             CoatStand, LaundryBasket, TvCabinet, CornerSofa, BunkBed, PoolTable, DiningSet,
+            FamilyScooter,
         };
 
         public static BuildingDef ById(string id)

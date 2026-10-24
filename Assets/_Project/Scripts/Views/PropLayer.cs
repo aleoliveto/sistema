@@ -137,7 +137,7 @@ namespace OSistema.Views
         static float HeightOf(BuildingDef def) => def.Id switch
         {
             "parked_car" or "market_stall" or "wardrobe" or "fridge" or "fountain" => 0.45f,
-            "parked_scooter" or "bicycle" or "bin" or "potted_plants" or "plant" => 0.3f,
+            "parked_scooter" or "family_scooter" or "bicycle" or "bin" or "potted_plants" or "plant" => 0.3f,
             "rug" => 0f,
             _ => 0.2f,
         };
@@ -175,7 +175,7 @@ namespace OSistema.Views
                 props[i] = sr;
             }
             sr.sprite = sprite;
-            bool vehicle = def == BuildingDefs.ParkedCar || def == BuildingDefs.ParkedScooter;
+            bool vehicle = def == BuildingDefs.ParkedCar || def == BuildingDefs.ParkedScooter || def == BuildingDefs.FamilyScooter;
             sr.sortingOrder = vehicle ? 3 : def == BuildingDefs.Rug ? 1 : 2;
             var t = sr.transform;
             if (Footprint.IsBig(def))
@@ -210,7 +210,7 @@ namespace OSistema.Views
                 bool vertical = IsSidewalk(x - 1, y) || IsSidewalk(x + 1, y);
                 return (vertical ? 0f : 90f) + ((h & 1) == 0 ? 0f : 180f);
             }
-            if (def == BuildingDefs.ParkedScooter)
+            if (def == BuildingDefs.ParkedScooter || def == BuildingDefs.FamilyScooter)
                 return (h % 4) * 90f + ((h >> 3) % 31) - 15f;   // parked any old how
             if (def == BuildingDefs.Door) return DoorAngle(x, y);
             if (def.Generated) return ((h >> 2) % 4) * 90f * (def == BuildingDefs.Fountain ? 1f : 0f);
