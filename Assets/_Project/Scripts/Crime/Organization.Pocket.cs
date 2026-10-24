@@ -27,28 +27,28 @@ namespace OSistema.Crime
         }
 
         /// <summary>A pusher (or capo) at the stash: he takes a load for the piazza.</summary>
-        public void LoadPusher(Pawn p, Game game)
+        public void LoadPusher(Pawn p, DrugSquare sq, Game game)
         {
-            int n = System.Math.Min(game.Stock.Product, PusherLoad - p.PocketDoses);
-            if (n <= 0) return;
-            game.Stock.Product -= n;
-            p.PocketDoses += n;
+            int want = (RunnerFor(sq, game) != null ? PusherWithRunner : PusherLoad) - p.PocketDoses;
+            if (want > 0) p.PocketDoses += TakeDoses(StashFor(sq, game), want, game);
         }
 
         /// <summary>Anything in the stash that would still fit in his pockets.</summary>
         public bool CanFillPockets(Pawn p, Game game) =>
-            p != null && ((game.Stock.Product > 0 && p.PocketDoses < PocketMaxDoses) ||
-                          (game.Stock.Cigarettes > 0 && p.PocketPacks < PocketMaxPacks) ||
-                          (H.fakes > 0 && p.PocketFakes < PocketMaxFakes));
+            p != null && ((DosesIn(NascondiglioAt(p.Cell, game), game) > 0 && p.PocketDoses < PocketMaxDoses) ||
+                          (NascondiglioAt(p.Cell, game) == null &&
+                           ((game.Stock.Cigarettes > 0 && p.PocketPacks < PocketMaxPacks) || (H.fakes > 0 && p.PocketFakes < PocketMaxFakes))));
 
         /// <summary>Take what fits from the stash.</summary>
         public void FillPockets(Pawn p, Game game)
         {
             var s = game.Stock;
-            int d = System.Math.Min(s.Product, PocketMaxDoses - p.PocketDoses);
-            int k = System.Math.Min(s.Cigarettes, PocketMaxPacks - p.PocketPacks);
-            int f = System.Math.Min(H.fakes, PocketMaxFakes - p.PocketFakes);
-            if (d > 0) { s.Product -= d; p.PocketDoses += d; }
+            var here = NascondiglioAt(p.Cell, game);
+            int d = TakeDoses(here, PocketMaxDoses - p.PocketDoses, game);
+            // Packs and fakes are kept at the basso; a nascondiglio only hides doses.
+            int k = here != null ? 0 : System.Math.Min(s.Cigarettes, PocketMaxPacks - p.PocketPacks);
+            int f = here != null ? 0 : System.Math.Min(H.fakes, PocketMaxFakes - p.PocketFakes);
+            if (d > 0) p.PocketDoses += d;
             if (k > 0) { s.Cigarettes -= k; p.PocketPacks += k; }
             if (f > 0) { H.fakes -= f; p.PocketFakes += f; }
             game.Log.Add($"You fill your pockets: {p.PocketText}. G (or E) sells from them at your corner, the stall or a piazza.", MessageKind.Info);
@@ -57,10 +57,17 @@ namespace OSistema.Crime
         /// <summary>Everything back in the stash: nothing on him if he's stopped.</summary>
         public void EmptyPockets(Pawn p, Game game)
         {
-            game.Stock.Product += p.PocketDoses;
+            var here = NascondiglioAt(p.Cell, game);
+            PutDoses(here, p.PocketDoses, game);
+            p.PocketDoses = 0;
+            if (here != null)
+            {
+                game.Log.Add($"You hide the doses in {here.Name}: {here.StashDoses} there now.", MessageKind.Info, here.Door);
+                return;
+            }
             game.Stock.Cigarettes += p.PocketPacks;
             H.fakes += p.PocketFakes;
-            p.PocketDoses = p.PocketPacks = p.PocketFakes = 0;
+            p.PocketPacks = p.PocketFakes = 0;
             game.Log.Add("You put everything back in the stash. Nothing on you if they stop you.", MessageKind.Info);
         }
     }

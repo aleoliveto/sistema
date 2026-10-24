@@ -14,7 +14,7 @@ namespace OSistema.Crime
     /// </summary>
     public sealed partial class Organization
     {
-        public static bool PiazzaRole(CrewRole r) => r == CrewRole.Pusher || r == CrewRole.Lookout || r == CrewRole.Capo;
+        public static bool PiazzaRole(CrewRole r) => r == CrewRole.Pusher || r == CrewRole.Lookout || r == CrewRole.Capo || r == CrewRole.Runner;
 
         public DrugSquare SquareAt(Vector2Int? cell)
         {

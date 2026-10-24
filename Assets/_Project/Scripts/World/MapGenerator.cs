@@ -6,7 +6,7 @@ namespace OSistema.World
     public enum PropertyKind { Home, Shop, Civic }
 
     /// <summary>An illegal business run out of a home the family owns.</summary>
-    public enum Operation { None, Bisca, Laboratorio, Deposito }
+    public enum Operation { None, Bisca, Laboratorio, Deposito, Nascondiglio }
 
     /// <summary>A building on the map that can be owned: a basso, a flat, a shop.</summary>
     public sealed class Property
@@ -20,6 +20,9 @@ namespace OSistema.World
         public int Price;
         public Operation Operation;
         public OSistema.Pawns.Pawn Manager;
+        public int Rent;           // weekly rent while it's rented, not bought (0: bought, or not ours)
+        public bool RentLate;      // missed one Sunday: miss another and the landlord changes the locks
+        public int StashDoses;     // a nascondiglio: doses hidden here for the piazze nearby
 
         public RectInt Interior => new RectInt(Rect.x + 1, Rect.y + 1, Rect.width - 2, Rect.height - 2);
     }

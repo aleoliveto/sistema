@@ -47,6 +47,10 @@ namespace OSistema.Crime
                 list.Add(new Need { Role = CrewRole.Bagger, Why = "someone at the bagging table" });
             if (game.Map.PositionsOf(BuildingDefs.RollingTable).Count > 0 && CountRole(CrewRole.Roller, null, game) == 0)
                 list.Add(new Need { Role = CrewRole.Roller, Why = "someone at the rolling table" });
+            // A runner per piazza, so the pushers carry only a few doses.
+            foreach (var sq in Squares)
+                if (CountRole(CrewRole.Runner, sq, game) == 0)
+                    list.Add(new Need { Role = CrewRole.Runner, Square = sq, Why = $"a runner at {Name(sq)}" });
             // A man at the boss's side once there's a name to protect.
             if (Rank >= 1 && CountRole(CrewRole.Bodyguard, null, game) == 0)
                 list.Add(new Need { Role = CrewRole.Bodyguard, Why = "a bodyguard for the boss" });

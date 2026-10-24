@@ -295,6 +295,7 @@ namespace OSistema.UI
             CrewRole.Capo => "Capi paranza",
             CrewRole.Parking => "Parcheggiatori",
             CrewRole.Vendor => "At the stall",
+            CrewRole.Runner => "Runners",
             _ => r.ToString(),
         };
 
@@ -310,6 +311,7 @@ namespace OSistema.UI
             CrewRole.Capo => "Capo",
             CrewRole.Parking => "Parking",
             CrewRole.Vendor => "Stall",
+            CrewRole.Runner => "Runner",
             _ => "No job",
         };
 

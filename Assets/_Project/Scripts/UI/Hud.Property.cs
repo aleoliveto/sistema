@@ -33,6 +33,21 @@ namespace OSistema.UI
                 Ui.Text("Ambulances bring the wounded here. The doctors heal them, and report gunshot wounds to the police.", propertyPanel, "small", "wrap");
             else if (p.Kind == PropertyKind.Civic)
                 Ui.Text("Not for sale.", propertyPanel, "small", "muted");
+            else if (p.OwnedByPlayer && p.Rent > 0)
+            {
+                var prop = p;
+                Ui.Text($"<color=#E8C26A>Rented</color>: €{p.Rent} a week, paid on Sundays{(p.RentLate ? " <color=#F07A6E>· a week behind: pay this Sunday or lose it</color>" : "")}. " +
+                        "The landlord notices comings and goings: an operation here makes him nosy, and he may raise the rent, throw you out or call the police.", propertyPanel, "small", "wrap");
+                var row = Ui.Row(propertyPanel);
+                var buyOut = Ui.Btn($"Buy it for €{p.Price}", () =>
+                {
+                    if (!game.Org.BuyProperty(prop, game, out var error)) game.Log.Add(error, MessageKind.Bad);
+                    shownProperty = null;
+                    RefreshAll();
+                }, row, "btn--small");
+                buyOut.SetEnabled(CanAfford(p.Price));
+                Ui.Btn("Give back the keys", () => { game.Org.GiveUpRental(prop, game, null); shownProperty = null; RefreshAll(); }, row, "btn--small", "btn--danger");
+            }
             else if (p.OwnedByPlayer)
             {
                 Ui.Text(business != null
@@ -52,6 +67,19 @@ namespace OSistema.UI
                     RefreshAll();
                 }, propertyPanel);
                 buy.SetEnabled(CanAfford(p.Price) && zone != null && game.Org.CanExpandInto(zone, game));
+                if (p.Kind == PropertyKind.Home)
+                {
+                    int rent = Organization.RentFor(p);
+                    var rentBtn = Ui.Btn($"Rent for €{rent}/week (2 weeks up front)", () =>
+                    {
+                        if (!game.Org.RentProperty(prop, game, out var error)) game.Log.Add(error, MessageKind.Bad);
+                        shownProperty = null;
+                        RefreshAll();
+                    }, propertyPanel);
+                    rentBtn.SetEnabled(CanAfford(rent * 2) && game.Org.CanRent(p, game, out _));
+                    rentBtn.style.alignSelf = Align.FlexStart;
+                    Tip(rentBtn, () => "Cheap, and yours to live in or use as a nascondiglio. But the landlord watches: an operation here can cost you the flat, or bring the police.");
+                }
                 if (zone != null && !game.Org.CanExpandInto(zone, game))
                     Ui.Text("Too far from your turf. Expand into neighbouring rioni first.", propertyPanel, "small", "bad");
                 buy.style.alignSelf = Align.FlexStart;
@@ -89,7 +117,7 @@ namespace OSistema.UI
             if (p.Operation == Operation.None)
             {
                 Ui.Text("Put this place to work. Each operation needs a manager from the crew.", propertyPanel, "small", "muted", "wrap");
-                foreach (var op in new[] { Operation.Bisca, Operation.Laboratorio, Operation.Deposito })
+                foreach (var op in new[] { Operation.Nascondiglio, Operation.Bisca, Operation.Laboratorio, Operation.Deposito })
                 {
                     var card = Ui.Box("op-card").Into(propertyPanel);
                     var head = Ui.Row(card);
@@ -109,6 +137,14 @@ namespace OSistema.UI
             }
 
             Ui.Text($"<b>{Organization.Name(p.Operation)}</b> · {Organization.Describe(p.Operation)}", propertyPanel, "small", "wrap");
+            if (p.Operation == Operation.Nascondiglio)
+            {
+                var served = game.Org.Squares.Where(sq => game.Org.StashFor(sq, game) == p).Select(sq => game.Territory.Zones[sq.ZoneId].Name).ToList();
+                Ui.Text($"<b>{p.StashDoses}</b> doses hidden here. " + (served.Count > 0
+                    ? $"Serves the piazza in {string.Join(", ", served)}. A runner on that piazza keeps it stocked from the basso; you can also bring doses yourself (E inside)."
+                    : $"<color=#F07A6E>No piazza within {Organization.StashReach} steps: nothing is served from here.</color>"), propertyPanel, "small", "wrap");
+                return;
+            }
             var m = p.Manager;
             Ui.Text(m != null && m.IsPresent && m.Role == CrewRole.Manager
                 ? $"Run by <color=#E8C26A>{m.DisplayName}</color>. Takings come in every night, in cash."
@@ -137,12 +173,12 @@ namespace OSistema.UI
         void PropertyTab()
         {
             var owned = game.Properties.Owned.ToList();
-            Ui.Text($"The family owns {owned.Count} building(s). Click any building on the map to see it; homes extend your base, shops become fronts.", bizBody, "wrap");
+            Ui.Text($"The family has {owned.Count} building(s), {owned.Count(o => o.Rent > 0)} of them rented. Click any building on the map to see it. Homes house the crew and can be a nascondiglio; shops become fronts. Renting is cheap, but the landlord watches.", bizBody, "wrap");
 
             Ui.Text("YOURS", bizBody, "section");
             foreach (var p in owned) PropertyRow(p, buy: false);
 
-            Ui.Text("FOR SALE NEARBY", bizBody, "section");
+            Ui.Text("FOR SALE OR TO LET NEARBY", bizBody, "section");
             var home = game.PlayerBase.center;
             foreach (var p in game.Properties.All
                          .Where(p => !p.OwnedByPlayer && p.Kind != PropertyKind.Civic && FogOfWarExplored(p))
@@ -168,7 +204,17 @@ namespace OSistema.UI
                     if (!game.Org.BuyProperty(prop, game, out var error)) game.Log.Add(error, MessageKind.Bad);
                 }), row, "btn--small");
                 b.SetEnabled(CanAfford(p.Price));
+                if (p.Kind == PropertyKind.Home)
+                {
+                    int rent = Organization.RentFor(p);
+                    var r = Ui.Btn($"Rent €{rent}/wk", Do(() =>
+                    {
+                        if (!game.Org.RentProperty(prop, game, out var error)) game.Log.Add(error, MessageKind.Bad);
+                    }), row, "btn--small");
+                    r.SetEnabled(CanAfford(rent * 2) && game.Org.CanRent(p, game, out _));
+                }
             }
+            else if (p.Rent > 0) Ui.Text($"rented €{p.Rent}/wk", row, "small", "muted");
             Ui.Box("spacer").Into(row);
             Ui.Btn("Show", () => { FocusCamera(prop.Rect.center); controller.SelectProperty(prop); }, row, "btn--small");
         }

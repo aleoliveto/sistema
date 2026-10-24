@@ -1001,9 +1001,14 @@ namespace OSistema.Input
             // The stash at home: fill your pockets before going out to sell, empty them before a risky trip.
             if (InOwnedHome(p.Cell))
             {
+                var hideout = game.Org.NascondiglioAt(p.Cell, game);
+                // In a nascondiglio: hide what you carry first, else take.
+                if (hideout != null && p.PocketDoses > 0)
+                    return new Action { Label = $"Hide your {p.PocketDoses} doses in the nascondiglio ({hideout.StashDoses} here)", Do = () => game.Org.EmptyPockets(p, game) };
                 if (game.Org.CanFillPockets(p, game))
-                    return new Action { Label = $"Fill your pockets from the stash ({game.Stock.Product} doses, {game.Stock.Cigarettes} packs)", Do = () => game.Org.FillPockets(p, game) };
-                if (!p.PocketEmpty)
+                    return new Action { Label = hideout != null ? $"Take doses from the nascondiglio ({hideout.StashDoses} here)"
+                        : $"Fill your pockets from the stash ({game.Stock.Product} doses, {game.Stock.Cigarettes} packs)", Do = () => game.Org.FillPockets(p, game) };
+                if (hideout == null && !p.PocketEmpty)
                     return new Action { Label = $"Empty your pockets into the stash ({p.PocketText})", Do = () => game.Org.EmptyPockets(p, game) };
             }
 

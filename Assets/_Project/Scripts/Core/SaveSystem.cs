@@ -244,6 +244,7 @@ namespace OSistema.Core
                     x = p.Rect.x, y = p.Rect.y, w = p.Rect.width, h = p.Rect.height, doorX = p.Door.x, doorY = p.Door.y,
                     kind = (int)p.Kind, name = p.Name, owned = p.OwnedByPlayer, price = p.Price,
                     operation = (int)p.Operation, manager = p.Manager?.Id ?? 0,
+                    rent = p.Rent, rentLate = p.RentLate, stashDoses = p.StashDoses,
                 });
 
             foreach (var z in game.Territory.Zones)
@@ -325,6 +326,7 @@ namespace OSistema.Core
                 {
                     x = p.Rect.x, y = p.Rect.y, w = p.Rect.width, h = p.Rect.height, doorX = p.Door.x, doorY = p.Door.y,
                     kind = (int)p.Kind, name = p.Name, owned = p.OwnedByPlayer, price = p.Price, operation = (int)p.Operation, manager = p.Manager?.Id ?? 0,
+                    rent = p.Rent, rentLate = p.RentLate, stashDoses = p.StashDoses,
                 });
             foreach (var z in d.Territory.Zones)
                 od.zones.Add(new ZoneData { name = z.Name, x = z.Rect.x, y = z.Rect.y, w = z.Rect.width, h = z.Rect.height, heat = z.Heat, demand = z.Demand });
@@ -360,6 +362,7 @@ namespace OSistema.Core
                 {
                     Rect = new RectInt(p.x, p.y, p.w, p.h), Door = new Vector2Int(p.doorX, p.doorY), Kind = (PropertyKind)p.kind,
                     Name = p.name, OwnedByPlayer = p.owned, Price = p.price, Operation = (Operation)p.operation,
+                    Rent = p.rent, RentLate = p.rentLate, StashDoses = p.stashDoses,
                 });
             for (int i = 0; i < properties.Count; i++) properties[i].Id = i;
             var zones = new List<Zone>();
@@ -418,6 +421,7 @@ namespace OSistema.Core
                 {
                     Rect = new RectInt(p.x, p.y, p.w, p.h), Door = new Vector2Int(p.doorX, p.doorY), Kind = (PropertyKind)p.kind,
                     Name = p.name, OwnedByPlayer = p.owned, Price = p.price, Operation = (Operation)p.operation,
+                    Rent = p.rent, RentLate = p.rentLate, StashDoses = p.stashDoses,
                 });
 
             var zones = new List<Zone>();
@@ -745,9 +749,9 @@ namespace OSistema.Core
         [Serializable]
         sealed class PropertyData
         {
-            public int x, y, w, h, doorX, doorY, kind, price, operation, manager;
+            public int x, y, w, h, doorX, doorY, kind, price, operation, manager, rent, stashDoses;
             public string name;
-            public bool owned;
+            public bool owned, rentLate;
         }
 
         [Serializable]

@@ -12,7 +12,7 @@ namespace OSistema.Pawns
     public enum SleepState { Awake, InBed, OnFloor }
 
     /// <summary>The crew member's job in the clan. Hierarchy comes later; for now it's what they do all day.</summary>
-    public enum CrewRole { General, Pusher, Lookout, Collector, Manager, Bagger, Roller, Bodyguard, Capo, Parking, Vendor }
+    public enum CrewRole { General, Pusher, Lookout, Collector, Manager, Bagger, Roller, Bodyguard, Capo, Parking, Vendor, Runner }
 
     public enum Skill { Construction, Cooking, Medicine, Intimidation, Awareness, Shooting }
 

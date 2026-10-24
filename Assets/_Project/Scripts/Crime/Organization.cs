@@ -106,6 +106,8 @@ namespace OSistema.Crime
             LeadershipDaily(game);
             DailyMoney(game);
             DailyOperations(game);
+            SearchNascondigli(game);
+            LandlordsDaily(game);
 
             // Loyalty drifts with mood: a miserable crew stops believing in you.
             foreach (var p in game.Pawns.Crew)
@@ -160,6 +162,7 @@ namespace OSistema.Crime
         void Payday(Game game)
         {
             PayFronts(game);
+            PayRents(game);
             WeeklyMoney(game);
             LastPaydayWeek = WeekOf(game.Clock);
             long now = game.Ticks.TicksGame;

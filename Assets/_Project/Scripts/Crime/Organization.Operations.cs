@@ -18,6 +18,7 @@ namespace OSistema.Crime
             Operation.Bisca => "Bisca",
             Operation.Laboratorio => "Laboratorio falsi",
             Operation.Deposito => "Deposito sigarette",
+            Operation.Nascondiglio => "Nascondiglio (stash flat)",
             _ => "None",
         };
 
@@ -26,6 +27,7 @@ namespace OSistema.Crime
             Operation.Bisca => "Cards, dice and bets on the football. Nightly takings depend on how much the manager is feared.",
             Operation.Laboratorio => "Fake bags and Napoli shirts for the market stalls. A handy manager makes more.",
             Operation.Deposito => "Sells your ROSSE by the pack, all day, to the stalls and the bars. Keep it stocked from the rolling table.",
+            Operation.Nascondiglio => "Where the doses sleep, near the piazza. Pushers fetch from here instead of the basso, and a runner keeps them supplied so they carry only a few. If the police find it, they find all of it. No manager needed.",
             _ => "",
         };
 
@@ -33,10 +35,11 @@ namespace OSistema.Crime
         {
             Operation.Bisca => 1500,
             Operation.Laboratorio => 2000,
+            Operation.Nascondiglio => 300,
             _ => 2500,
         };
 
-        public static int RankFor(Operation op) => op == Operation.Deposito ? 2 : 1;
+        public static int RankFor(Operation op) => op == Operation.Deposito ? 2 : op == Operation.Nascondiglio ? 0 : 1;
 
         public bool SetUpOperation(Property p, Operation op, Game game, out string error)
         {
@@ -50,7 +53,9 @@ namespace OSistema.Crime
 
             p.Operation = op;
             Furnish(p, op, game);
-            game.Log.Add($"A {Name(op).ToLower()} opens in {p.Name}. Choose a manager to run it.", MessageKind.Good, p.Door);
+            game.Log.Add(op == Operation.Nascondiglio
+                ? $"{p.Name} is a nascondiglio now. Piazze within reach take their doses from here; a runner keeps it stocked from the basso."
+                : $"A {Name(op).ToLower()} opens in {p.Name}. Choose a manager to run it.", MessageKind.Good, p.Door);
             return true;
         }
 
@@ -63,6 +68,7 @@ namespace OSistema.Crime
             {
                 Operation.Bisca => new[] { BuildingDefs.Table, BuildingDefs.Table, BuildingDefs.Armchair, BuildingDefs.Armchair, BuildingDefs.Television },
                 Operation.Laboratorio => new[] { BuildingDefs.KitchenCounter, BuildingDefs.KitchenCounter, BuildingDefs.KitchenCounter, BuildingDefs.Wardrobe },
+                Operation.Nascondiglio => new[] { BuildingDefs.Safe, BuildingDefs.Wardrobe },
                 _ => new[] { BuildingDefs.Wardrobe, BuildingDefs.Wardrobe, BuildingDefs.Wardrobe, BuildingDefs.Safe },
             };
             int i = 0;
@@ -99,7 +105,7 @@ namespace OSistema.Crime
             var lines = new List<string>();
             foreach (var p in game.Properties.All)
             {
-                if (p.Operation == Operation.None || !p.OwnedByPlayer) continue;
+                if (p.Operation == Operation.None || p.Operation == Operation.Nascondiglio || !p.OwnedByPlayer) continue;
                 var m = p.Manager;
                 if (m == null || !m.IsPresent || m.Role != CrewRole.Manager)
                 {

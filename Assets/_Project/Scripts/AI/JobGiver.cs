@@ -223,6 +223,7 @@ namespace OSistema.AI
                 case CrewRole.Pusher:
                 case CrewRole.Lookout:
                 case CrewRole.Capo:
+                case CrewRole.Runner:
                 {
                     var own = org.SquareOf(pawn, game);
                     return own != null ? own.IsOpenAt(hour) : org.Squares.Exists(s => s.IsOpenAt(hour));
@@ -282,6 +283,15 @@ namespace OSistema.AI
             }
 
             int hour = game.Clock.Hour;
+
+            // The runner shuttles between the stash and the pushers of his piazza.
+            if (pawn.Role == CrewRole.Runner)
+            {
+                var run = org.SquareOf(pawn, game) ?? org.Squares.Find(s => s.IsOpenAt(hour) && org.RunnerFor(s, game) == null);
+                if (run == null || !run.IsOpenAt(hour) || game.Police.IsRaiding(run)) return null;
+                pawn.Piazza = run.Cell;
+                return new RunnerJob(pawn, run);
+            }
 
             // Your own piazza, if you have one; otherwise where you're needed most.
             var mine = org.SquareOf(pawn, game);

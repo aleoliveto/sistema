@@ -14,7 +14,8 @@ namespace OSistema.AI
         public readonly CrewRole Role;
         public readonly Vector2Int Post;
         readonly Walker walker;
-        Walker fetch;   // to the stash at the basso first, when his pockets are nearly empty
+        Walker fetch;   // to the stash (the piazza's nascondiglio, or the basso) when his pockets are nearly empty, and no runner brings it
+        string fetchFrom;
         int ticksAtPost;
 
         public bool AtPost { get; private set; }
@@ -29,7 +30,7 @@ namespace OSistema.AI
 
         bool Sells => Role == CrewRole.Pusher || Role == CrewRole.Capo;
 
-        public override string Label => fetch != null ? "Fetching doses from the basso"
+        public override string Label => fetch != null ? $"Fetching doses from {fetchFrom}"
             : Role == CrewRole.Pusher
             ? (AtPost ? "Pushing at the piazza" : "Going to the piazza")
             : Role == CrewRole.Capo
@@ -44,16 +45,23 @@ namespace OSistema.AI
             if (!JobGiver.OnShift(Pawn, game)) return true;   // the other team takes over
 
             // Nearly out and there's more at home: off to the stash, then back.
-            if (fetch == null && Sells && Pawn.PocketDoses < Organization.PusherLow && game.Stock.Product > 0)
+            // With a runner on the piazza he waits for him; without one, he goes himself.
+            var org = game.Org;
+            if (fetch == null && Sells && Pawn.PocketDoses < Organization.PusherLow && org.RunnerFor(Square, game) == null)
             {
-                if (AtPost) return true;   // the next PostJob starts with the fetch
-                fetch = new Walker(game.Org.StashCell(game), adjacent: true);
+                var stash = org.StashFor(Square, game);
+                if (org.DosesIn(stash, game) > 0)
+                {
+                    if (AtPost) return true;   // the next PostJob starts with the fetch
+                    fetchFrom = stash != null ? stash.Name : "the basso";
+                    fetch = new Walker(org.StashCellOf(stash, game), adjacent: true);
+                }
             }
             if (fetch != null)
             {
                 var f = fetch.Tick(Pawn, game);
                 if (f == WalkStatus.Walking) return false;
-                if (f == WalkStatus.Arrived) game.Org.LoadPusher(Pawn, game);
+                if (f == WalkStatus.Arrived) game.Org.LoadPusher(Pawn, Square, game);
                 fetch = null;
                 if (f == WalkStatus.Failed) return Fail();
                 return false;

@@ -12,7 +12,7 @@ namespace OSistema.Crime
         public bool BuyProperty(Property p, Game game, out string error)
         {
             error = null;
-            if (p.OwnedByPlayer) error = "Already yours.";
+            if (p.OwnedByPlayer && p.Rent <= 0) error = "Already yours.";
             else if (p.Kind == PropertyKind.Civic) error = "Not for sale.";
             else if (p.Kind == PropertyKind.Shop && Rank < 2) error = $"Buying a shop as a front needs the family to be a {RankNames[2]}.";
             else if (!CanExpandInto(game.Territory.ZoneAt(p.Door), game)) error = "That's outside your reach. Expand into the next rione first (a piazza or a house next to your turf).";
@@ -21,6 +21,8 @@ namespace OSistema.Crime
 
             WarnIfRivalZone(game.Territory.ZoneAt(p.Door), game);
             p.OwnedByPlayer = true;
+            p.Rent = 0;              // bought out from under the landlord: no more rent
+            p.RentLate = false;
 
             var business = Businesses.Find(b => p.Rect.Contains(b.Cell));
             if (business != null)
