@@ -40,16 +40,39 @@ namespace OSistema.Crime
         }
 
         /// <summary>Leave a scooter at the kerb nearest to a spot (a pavement first, the road if there's nothing else).</summary>
-        public static bool Park(Game game, Vector2Int near)
+        public static bool Park(Game game, Vector2Int near, Inventory seat = null)
         {
             for (int pass = 0; pass < 2; pass++)
                 foreach (var c in GridUtil.CellsAround(near, 8))
                     if (Outdoor(game.Map, c, pass == 1) && !Busy(game, c))
                     {
                         game.Map.SetBuilding(c.x, c.y, BuildingDefs.FamilyScooter);
+                        game.Seats.Drop(game, c, seat);   // what's under the seat stays with it
                         return true;
                     }
+            EmptySeat(game, seat);
             return false;
+        }
+
+        /// <summary>A scooter that's gone (sold, or nowhere to leave it): what was under the seat turns up at home.</summary>
+        public static void EmptySeat(Game game, Inventory seat)
+        {
+            if (seat == null) return;
+            var s = game.Stock;
+            foreach (var slot in seat.Slots)
+            {
+                if (slot.Empty) continue;
+                switch (slot.Item)
+                {
+                    case Item.Doses: s.Product += slot.Count; break;
+                    case Item.Packs: s.Cigarettes += slot.Count; break;
+                    case Item.Fakes: game.Org.H.fakes += slot.Count; break;
+                    case Item.Medicine: s.Medicine += slot.Count; break;
+                    case Item.Meal: s.Meals += slot.Count; break;
+                    default: if (Items.IsGun(slot.Item)) s.AddGun(Items.GunOf(slot.Item), slot.Count); break;
+                }
+            }
+            for (int i = 0; i < seat.Slots.Length; i++) seat.Slots[i] = default;
         }
 
         // Someone standing there: don't park on his feet.
@@ -84,6 +107,7 @@ namespace OSistema.Crime
         {
             game.Map.SetBuilding(at.x, at.y, null);
             rider.HasFamilyScooter = true;
+            rider.Seat = game.Seats.Lift(game, at) ?? new Inventory(Bag.SeatSize);
         }
 
         /// <summary>Riders whose trip is over leave the scooter where they are; crew setting off take one parked near them.</summary>
@@ -99,7 +123,8 @@ namespace OSistema.Crime
                 if (p.HasFamilyScooter && (gone || !p.OnScooter || p.Pillion))
                 {
                     p.HasFamilyScooter = false;
-                    if (!p.Departed && !p.InHospital) Park(game, p.Cell);   // left in the street where he got off (or fell)
+                    if (!p.Departed && !p.InHospital) Park(game, p.Cell, p.Seat); else EmptySeat(game, p.Seat);
+                    p.Seat = null;   // left in the street where he got off (or fell)
                     continue;
                 }
                 if (p.HasFamilyScooter) { held++; continue; }
@@ -122,7 +147,11 @@ namespace OSistema.Crime
             else if (parked > want && want >= 0)
             {
                 var spare = new List<Vector2Int>(Parked(game));
-                for (int k = 0; k < parked - want && k < spare.Count; k++) game.Map.SetBuilding(spare[k].x, spare[k].y, null);
+                for (int k = 0; k < parked - want && k < spare.Count; k++)
+                {
+                    game.Map.SetBuilding(spare[k].x, spare[k].y, null);
+                    EmptySeat(game, game.Seats.Lift(game, spare[k]));
+                }
             }
         }
 

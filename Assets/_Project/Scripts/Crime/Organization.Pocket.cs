@@ -44,13 +44,18 @@ namespace OSistema.Crime
         {
             var s = game.Stock;
             var here = NascondiglioAt(p.Cell, game);
-            int d = TakeDoses(here, PocketMaxDoses - p.PocketDoses, game);
+            // The boss carries what fits in his bag's slots; the crew, what fits in their pockets.
+            bool boss = p == game.Player;
+            int Fit(Item it, int max, int have) => boss ? System.Math.Min(max - have, Bag.Room(p, it)) : max - have;
+            int d = TakeDoses(here, Fit(Item.Doses, PocketMaxDoses, p.PocketDoses), game);
             // Packs and fakes are kept at the basso; a nascondiglio only hides doses.
-            int k = here != null ? 0 : System.Math.Min(s.Cigarettes, PocketMaxPacks - p.PocketPacks);
-            int f = here != null ? 0 : System.Math.Min(H.fakes, PocketMaxFakes - p.PocketFakes);
+            int k = here != null ? 0 : System.Math.Min(s.Cigarettes, Fit(Item.Packs, PocketMaxPacks, p.PocketPacks));
+            int f = here != null ? 0 : System.Math.Min(H.fakes, Fit(Item.Fakes, PocketMaxFakes, p.PocketFakes));
+            if (boss && d + k + f <= 0 && Fit(Item.Doses, PocketMaxDoses, p.PocketDoses) <= 0 && Fit(Item.Packs, PocketMaxPacks, p.PocketPacks) <= 0) { game.Log.Add("Your bag is full (I to sort it).", MessageKind.Bad); return; }
             if (d > 0) p.PocketDoses += d;
             if (k > 0) { s.Cigarettes -= k; p.PocketPacks += k; }
             if (f > 0) { H.fakes -= f; p.PocketFakes += f; }
+            if (boss) Bag.Sync(p, game);
             game.Log.Add($"You fill your pockets: {p.PocketText}. G (or E) sells from them at your corner, the stall or a piazza.", MessageKind.Info);
         }
 

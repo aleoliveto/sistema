@@ -39,6 +39,7 @@ namespace OSistema.Core
         public RectInt PlayerBase => District.PlayerBase;
         public readonly NpcManager Npcs = new NpcManager();
         public readonly Stock Stock = new Stock();
+        public readonly Seats Seats = new Seats();   // under the family scooters' seats
         public readonly MessageLog Log;
         public readonly Organization Org = new Organization();
         public readonly Police Police = new Police();
@@ -442,6 +443,7 @@ namespace OSistema.Core
             Police.Tick(this);
             Org.Tick(this);
             Crime.FamilyScooters.Tick(this);
+            Bag.Sync(Player, this);
             Calendar.Tick(this);
             foreach (var c in Clans) c.Tick(this);
             Events.Tick(this);

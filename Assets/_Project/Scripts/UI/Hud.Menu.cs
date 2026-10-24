@@ -148,6 +148,7 @@ namespace OSistema.UI
                 SetSearchTyping(false);
                 return;
             }
+            if (invOpen) { ToggleInventory(); return; }
             if (MinigameOpen)
             {
                 CloseMinigame();

@@ -45,6 +45,7 @@ namespace OSistema.UI
             BuildInspector();
             BuildFeed();
             BuildDock();
+            BuildBag();
             BuildWindows();
             BuildJobsWindow();
             BuildPhone();
@@ -266,6 +267,7 @@ namespace OSistema.UI
         void Update()
         {
             if (damageOverlay != null) UpdateDamageOverlay();
+            UpdateBag();
             if ((debugTick -= Time.unscaledDeltaTime) <= 0f) { debugTick = 0.5f; DebugRefreshStatus(); }
             // Picking up a tool (or putting it down with a right-click) folds the build drawer away or brings it back.
             if (controller != null && controller.CurrentTool != dockTool) { dockTool = controller.CurrentTool; RefreshDock(); }

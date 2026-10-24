@@ -485,8 +485,10 @@ namespace OSistema.Crime
             {
                 var zone = EmptyZoneNextDoor(game);
                 if (zone != null && ClaimZone(zone, game))
+                {
                     game.Log.Note($"Word in the street: the {Name} have opened a piazza in {zone.Name}.", MessageKind.Info);
                     game.Newspaper.Report(game, 1, "New dealing spot, say residents", $"In {zone.Name}, neighbours complain of a new piazza di spaccio run, they say, by the {Name}.");
+                }
             }
         }
 

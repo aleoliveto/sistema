@@ -398,6 +398,24 @@ namespace OSistema.UI
 
         void ToggleArmed(Pawn p)
         {
+            // The boss's guns live in his bag: draw or holster one, or take the best from the stash into it.
+            if (p == game.Player)
+            {
+                var bag = OSistema.Core.Bag.For(p);
+                int gunSlot = -1;
+                for (int i = 0; i < bag.Slots.Length && gunSlot < 0; i++) if (OSistema.Core.Items.IsGun(bag.Slots[i].Item)) gunSlot = i;
+                if (p.Armed) p.BagSelected = -1;
+                else if (gunSlot >= 0) p.BagSelected = gunSlot;
+                else if (bag.Room(OSistema.Core.Item.Pistol) <= 0) game.Log.Add("No room in your bag for a gun (I to sort it).", OSistema.Core.MessageKind.Bad);
+                else if (p.IsPresent && game.Stock.TakeBestGun(out var bg))
+                {
+                    bag.Add(OSistema.Core.Items.OfGun(bg), 1);
+                    p.BagSelected = OSistema.Core.Bag.IndexOf(bag, OSistema.Core.Items.OfGun(bg));
+                }
+                else game.Log.Add("No guns in the stash. Buy one in the business panel (B).", OSistema.Core.MessageKind.Bad);
+                OSistema.Core.Bag.Sync(p, game);
+                return;
+            }
             if (p.Armed)
             {
                 p.Armed = false;

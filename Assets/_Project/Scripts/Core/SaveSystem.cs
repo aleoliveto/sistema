@@ -272,6 +272,8 @@ namespace OSistema.Core
                 data.pawns.Add(d);
             }
 
+            data.seats = new List<SeatData>();
+            foreach (var (key, inv) in game.Seats.All()) data.seats.Add(new SeatData { key = key, items = inv.SaveItems(), counts = inv.SaveCounts() });
             return data;
         }
 
@@ -548,6 +550,14 @@ namespace OSistema.Core
                 st.Stored = new int[BuildingDefs.All.Length];
                 System.Array.Copy(data.stored, st.Stored, System.Math.Min(data.stored.Length, st.Stored.Length));
             }
+            game.Seats.Clear();
+            if (data.seats != null)
+                foreach (var sd in data.seats)
+                {
+                    var inv = new Inventory(Bag.SeatSize);
+                    inv.Load(sd.items, sd.counts);
+                    game.Seats.Restore(sd.key, inv);
+                }
             if (data.version >= 9) { st.DoseQuality = data.doseQuality; st.PackQuality = data.packQuality; }
             // Families from before version 8 already had a supplier.
             game.Org.SupplierIntroduced = data.version < 8 || data.supplierIntroduced;
@@ -595,6 +605,8 @@ namespace OSistema.Core
                 mealsDelivered = p.MealsDelivered,
                 mission = (int)p.Mission, clan = p.Clan, armor = p.Armor,
                 pocketDoses = p.PocketDoses, pocketPacks = p.PocketPacks, pocketFakes = p.PocketFakes,
+                bagItems = p.Bag?.SaveItems(), bagCounts = p.Bag?.SaveCounts(), bagSelected = p.BagSelected + 1,
+                seatItems = p.Seat?.SaveItems(), seatCounts = p.Seat?.SaveCounts(),
                 gun = (int)p.Gun, arrestAfterHospital = p.ArrestAfterHospital, young = p.Young,
                 missionTarget = p.MissionTarget?.Id ?? 0,
                 x = p.Cell.x,
@@ -657,6 +669,8 @@ namespace OSistema.Core
                 GuardPost = d.hasGuardPost ? new Vector2Int(d.guardPostX, d.guardPostY) : (Vector2Int?)null,
             };
             p.ScheduleString = d.schedule;
+            if (d.bagItems != null) { p.Bag = new Inventory(Bag.Size); p.Bag.Load(d.bagItems, d.bagCounts); p.BagSelected = d.bagSelected - 1; }
+            if (d.seatItems != null) { p.Seat = new Inventory(Bag.SeatSize); p.Seat.Load(d.seatItems, d.seatCounts); }
             if (d.hasLook) p.Look = new Look { Body = d.lookBody, Head = d.lookHead, Hair = d.lookHair, Hat = d.lookHat, Neck = d.lookNeck, Face = d.lookFace };
             p.RestoreState(d.drafted, d.dead, d.deathCause, d.breakUntil);
             if (d.xp != null) System.Array.Copy(d.xp, p.SkillXp, Mathf.Min(d.xp.Length, p.SkillXp.Length));
@@ -697,6 +711,7 @@ namespace OSistema.Core
             public int bulkDg, carriedDg, baggies, tobaccoG, papers, emptyPacks;
             public bool digitalScale, heatSealer, rollingMachine;
             public int[] stored;
+            public List<SeatData> seats;   // under the parked family scooters' seats
             public float doseQuality = 0.75f, packQuality = 0.75f;
             public int pendingOrderUnits, pendingOrderDay, lastPaydayWeek;
             public List<ZoneData> zones = new List<ZoneData>();
@@ -722,6 +737,13 @@ namespace OSistema.Core
             public List<DistrictEntry> districts = new List<DistrictEntry>();
             [NonSerialized] public string districtName;
             [NonSerialized] public int districtSeed;
+        }
+
+        [Serializable]
+        sealed class SeatData
+        {
+            public string key;
+            public int[] items, counts;
         }
 
         [Serializable]
@@ -818,6 +840,8 @@ namespace OSistema.Core
             public int faction, shooting, mealsDelivered, mission, missionTarget, missionSquare = -1, clan;
             public float armor;
             public int pocketDoses, pocketPacks, pocketFakes, gun;
+            public int[] bagItems, bagCounts, seatItems, seatCounts;
+            public int bagSelected;   // +1: 0 is none
             public bool arrestAfterHospital, young;
             public bool armed, isBoss;
             public long aggressiveUntil;

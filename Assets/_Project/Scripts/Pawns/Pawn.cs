@@ -236,6 +236,9 @@ namespace OSistema.Pawns
         public float ScooterSpeed;       // forward speed along the heading, cells per second
         // What he carries (the stash at the basso is Stock). The boss sells from here and the police find it here.
         public int PocketDoses, PocketPacks, PocketFakes;
+        public OSistema.Core.Inventory Bag;   // the boss's hotbar (Core.Bag); null for everyone else
+        public int BagSelected = -1;          // the slot in his hand
+        public OSistema.Core.Inventory Seat;  // under the seat of the family scooter he's riding
         public bool PocketEmpty => PocketDoses <= 0 && PocketPacks <= 0 && PocketFakes <= 0;
         public string PocketText => PocketEmpty ? "nothing" : string.Join(", ", new[] {
             PocketDoses > 0 ? $"{PocketDoses} doses" : null, PocketPacks > 0 ? $"{PocketPacks} packs" : null, PocketFakes > 0 ? $"{PocketFakes} fakes" : null

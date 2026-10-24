@@ -7,7 +7,7 @@ using UnityEngine;
 namespace OSistema.Npcs
 {
     /// <summary>
-    /// Cars on the asphalt roads (never in the vicoli): they keep to the right, stop and hoot for anyone in the way,
+    /// Cars on the asphalt roads (never in the vicoli): they keep to the right, pull round someone on foot when the other side is clear (else stop and hoot),
     /// turn at the crossings, and leave by the edge of the map. Some are the Polizia, the Carabinieri or the
     /// Finanza: a patrol car that sees a gun out or a deal going on pulls over and two officers get out.
     /// </summary>
@@ -146,6 +146,11 @@ namespace OSistema.Npcs
                 if (!TryTurn(npc, game, anywhere: true)) UTurn(npc, game);
                 return;
             }
+            // Someone on foot in the lane: pull round them if the way past is clear, then back in.
+            Steer(npc, game, ref pos, fwd);
+            nose = pos + fwd * (HalfLength + 0.4f);
+            noseCell = Vector2Int.FloorToInt(nose);
+            if (!map.InBounds(noseCell)) { npc.Despawned = true; return; }
             // Someone or something in the road ahead: brake, and hoot if they stay there.
             bool blocked = map.GetBuilding(noseCell.x, noseCell.y) != null || Blocked(npc, game, pos, fwd);
             npc.CarSpeed = Mathf.MoveTowards(npc.CarSpeed, blocked ? 0f : cruise, blocked ? 0.02f : 0.003f);
@@ -203,6 +208,76 @@ namespace OSistema.Npcs
             SetLane(npc, LaneOf(npc.CarDir, lo, hi));
             npc.CarSpeed = 0f;
             npc.Mover.Place(npc.CarPos);
+        }
+
+        const float SwerveBy = 1.9f, SwerveRate = 0.035f;   // how far out to pull round someone, and how fast
+
+        /// <summary>
+        /// Keeps the car in its lane, or pulls it out by a car's width (towards the middle of the road) while
+        /// someone on foot is in the lane ahead and the other side is free: no oncoming car, no one in the way.
+        /// </summary>
+        static void Steer(Npc car, Game game, ref Vector2 pos, Vector2 fwd)
+        {
+            var map = game.Map;
+            if (!Across(map, pos, car.CarDir, out int lo, out int hi)) return;
+            float lane = LaneOf(car.CarDir, lo, hi);
+            var left = new Vector2(-fwd.y, fwd.x);
+            // Which way along the cross axis is "out" (towards the middle of the road).
+            float outSign = (left.x + left.y) > 0 ? 1f : -1f;
+            float across = car.CarDir.x != 0 ? pos.y : pos.x;
+            var inLane = car.CarDir.x != 0 ? new Vector2(pos.x, lane) : new Vector2(lane, pos.y);
+            var outLane = inLane + left * SwerveBy;
+            bool walkerAhead = WalkerInPath(game, inLane, fwd, HalfLength + 3.2f);
+            bool wasOut = Mathf.Abs(across - lane) > 0.3f;
+            float target = lane;
+            if (walkerAhead && RoadCell(map, Vector2Int.FloorToInt(outLane + fwd * (HalfLength + 1f)))
+                && ClearToPass(car, game, outLane, fwd))
+                target = lane + outSign * SwerveBy;
+            // Already out and still passing someone: stay out until they're behind.
+            else if (wasOut && (walkerAhead || WalkerInPath(game, inLane, fwd, HalfLength + 0.5f, behindToo: true)) && ClearToPass(car, game, outLane, fwd))
+                target = lane + outSign * SwerveBy;
+            float next = Mathf.MoveTowards(across, target, SwerveRate);
+            if (Mathf.Approximately(next, across)) return;
+            if (car.CarDir.x != 0) pos.y = next; else pos.x = next;
+            car.CarPos = pos;
+        }
+
+        static bool WalkerInPath(Game game, Vector2 from, Vector2 fwd, float reach, bool behindToo = false)
+        {
+            bool In(Vector2 at)
+            {
+                var to = at - from;
+                float along = Vector2.Dot(to, fwd);
+                if (along > reach || along < (behindToo ? -HalfLength : HalfLength * 0.6f)) return false;
+                return Mathf.Abs(to.x * fwd.y - to.y * fwd.x) < 1.1f;
+            }
+            foreach (var p in game.Pawns.All) if (p.IsPresent && !p.Dead && !p.Riding && In(p.Position)) return true;
+            foreach (var n in game.Npcs.All) if (!n.Despawned && !IsCar(n.Kind) && In(n.Mover.Position)) return true;
+            return false;
+        }
+
+        /// <summary>The other side of the road is free for a pass: no car either way, nobody standing there.</summary>
+        static bool ClearToPass(Npc car, Game game, Vector2 at, Vector2 fwd)
+        {
+            foreach (var n in game.Npcs.All)
+            {
+                if (n == car || n.Despawned) continue;
+                var q = IsCar(n.Kind) ? n.CarPos : n.Mover.Position;
+                var to = q - at;
+                float along = Vector2.Dot(to, fwd);
+                float side = Mathf.Abs(to.x * fwd.y - to.y * fwd.x);
+                // An oncoming car is seen from further off: it closes twice as fast.
+                float reach = IsCar(n.Kind) ? (Vector2.Dot(n.CarDir, car.CarDir) < 0 ? 16f : HalfLength * 2f + 2f) : HalfLength + 2.5f;
+                if (side < (IsCar(n.Kind) ? 1.8f : 1.1f) && along > -HalfLength * 2f && along < reach) return false;
+            }
+            foreach (var p in game.Pawns.All)
+            {
+                if (!p.IsPresent || p.Dead) continue;
+                var to = p.Position - at;
+                float along = Vector2.Dot(to, fwd);
+                if (Mathf.Abs(to.x * fwd.y - to.y * fwd.x) < 1.1f && along > -HalfLength && along < HalfLength + 2.5f) return false;
+            }
+            return true;
         }
 
         static bool Blocked(Npc car, Game game, Vector2 pos, Vector2 fwd)

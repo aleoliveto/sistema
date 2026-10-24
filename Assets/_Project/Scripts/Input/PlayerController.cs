@@ -216,12 +216,17 @@ namespace OSistema.Input
             // With the phone out, the number keys dial (see Hud.PhoneKeys).
             if (!hud.PhoneOpen)
             {
-                if (kb.digit1Key.wasPressedThisFrame) game.Ticks.SetSpeed(1);
-                if (kb.digit2Key.wasPressedThisFrame) game.Ticks.SetSpeed(2);
-                if (kb.digit3Key.wasPressedThisFrame) game.Ticks.SetSpeed(3);
-                if (kb.digit4Key.wasPressedThisFrame) game.Ticks.SetSpeed(4); // debug ×30
-                if (kb.digit5Key.wasPressedThisFrame) game.Ticks.SetSpeed(5); // debug ×120
+                // The number keys pick a slot in the bag (a gun there is drawn); game speed is on F1-F3.
+                var digits = new[] { kb.digit1Key, kb.digit2Key, kb.digit3Key, kb.digit4Key, kb.digit5Key, kb.digit6Key, kb.digit7Key, kb.digit8Key };
+                for (int i = 0; i < digits.Length; i++)
+                    if (digits[i].wasPressedThisFrame) hud.SelectBagSlot(i);
             }
+            if (kb.f1Key.wasPressedThisFrame) game.Ticks.SetSpeed(1);
+            if (kb.f2Key.wasPressedThisFrame) game.Ticks.SetSpeed(2);
+            if (kb.f3Key.wasPressedThisFrame) game.Ticks.SetSpeed(3);
+            if (kb.f4Key.wasPressedThisFrame) game.Ticks.SetSpeed(4); // debug ×30
+            if (kb.f5Key.wasPressedThisFrame) game.Ticks.SetSpeed(5); // debug ×120
+            if (kb.iKey.wasPressedThisFrame && CurrentTool != Tool.Build) hud.ToggleInventory();
             if (kb.eKey.wasPressedThisFrame && CurrentTool != Tool.Build) Interaction()?.Act();
             if (kb.gKey.wasPressedThisFrame && CurrentTool != Tool.Build) SaleAction()?.Act();
             if (kb.fKey.wasPressedThisFrame) follow = game.Player;
@@ -827,7 +832,7 @@ namespace OSistema.Input
                 p.ScooterSpeed = 0f;
                 p.Mover.Unstick(game.Map);   // off by a wall: step clear of it
                 // Left at the kerb right here, for whoever needs it next.
-                if (p.HasFamilyScooter) { p.HasFamilyScooter = false; FamilyScooters.Park(game, p.Cell); }
+                if (p.HasFamilyScooter) { p.HasFamilyScooter = false; FamilyScooters.Park(game, p.Cell, p.Seat); p.Seat = null; }
                 return;
             }
             // You get on one that's parked by you; nobody keeps a scooter in his pocket.
