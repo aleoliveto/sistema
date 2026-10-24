@@ -167,9 +167,12 @@ namespace OSistema.UI
             RefreshDock();
         }
 
+        Tool dockTool;
+
         void RefreshDock()
         {
-            drawer.Show(buildMode);
+            // While placing something the drawer gets out of the way; right-click stops and it comes back.
+            drawer.Show(buildMode && controller.CurrentTool == Tool.Select);
             buildButton.Toggle("btn--on", buildMode);
             mapButton.Toggle("btn--on", mapOpen);
             casaButton.Toggle("btn--on", SectionOpen(FamSection.Casa));
@@ -184,7 +187,7 @@ namespace OSistema.UI
                 buildHint.text = $"<b>{controller.CurrentDef.Label}</b> · " +
                     (BuildingDef.BuiltInPlace(controller.CurrentDef) ? $"€{BuildingDef.CostOf(controller.CurrentDef)} each" : $"{game.Stock.StoredOf(controller.CurrentDef)} in storage") +
                     (rotatable ? $" · <color=#E8C26A>Q / E</color> rotate ({controller.PlacementRotation * 90}°)" : " · drag to draw") +
-                    " · right-click to stop";
+                    " · right-click for the menu";
 
             if (!buildMode) return;
             foreach (var kv in catButtons) kv.Value.Toggle("pill--on", kv.Key == buildCat);

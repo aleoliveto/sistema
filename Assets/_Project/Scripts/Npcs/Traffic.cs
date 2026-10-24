@@ -17,13 +17,47 @@ namespace OSistema.Npcs
         const float PoliceCruise = 0.09f;      // a patrol car takes its time, looking about
         const int MaxLifeTicks = GameClock.TicksPerHour * 3;
 
+        const float HalfLength = 1.7f;         // half a car, in cells (PropArt.CarLength)
+        const float LaneFromKerb = 2f;         // a lane's middle is two cells in from the kerb: room for the parked cars
+
         static readonly List<(Vector2Int cell, Vector2Int dir)> gates = new List<(Vector2Int, Vector2Int)>();
         static Map gatesFor;
 
         public static bool IsCar(NpcKind k) => k == NpcKind.Car || k == NpcKind.PoliceCar;
 
-        static bool Drivable(Map map, Vector2Int c) =>
-            map.InBounds(c) && map.GetTerrain(c.x, c.y) == TerrainType.Road && map.GetBuilding(c.x, c.y) == null;
+        static bool RoadCell(Map map, Vector2Int c) => map.InBounds(c) && map.GetTerrain(c.x, c.y) == TerrainType.Road;
+
+        /// <summary>
+        /// The road across, at a point, for something going along <paramref name="dir"/>: its first and last cells
+        /// on the cross axis. A car road is at least five wide; the 2-cell lanes in the vicoli are for scooters.
+        /// </summary>
+        static bool Across(Map map, Vector2 at, Vector2Int dir, out int lo, out int hi)
+        {
+            var c = Vector2Int.FloorToInt(at);
+            lo = hi = 0;
+            if (!RoadCell(map, c)) return false;
+            var axis = dir.x != 0 ? Vector2Int.up : Vector2Int.right;
+            int k0 = dir.x != 0 ? c.y : c.x;
+            int l = 0, h = 0;
+            while (l < 10 && RoadCell(map, c - axis * (l + 1))) l++;
+            while (h < 10 && RoadCell(map, c + axis * (h + 1))) h++;
+            lo = k0 - l;
+            hi = k0 + h;
+            return hi - lo + 1 >= 5;
+        }
+
+        /// <summary>Where on the cross axis a car going <paramref name="dir"/> drives: keep right, clear of the parked cars.</summary>
+        static float LaneOf(Vector2Int dir, int lo, int hi)
+        {
+            var right = new Vector2Int(dir.y, -dir.x);
+            int s = right.x + right.y;   // +1 if right points up the cross axis
+            return s > 0 ? hi + 1 - LaneFromKerb : lo + LaneFromKerb;
+        }
+
+        static void SetLane(Npc npc, float lane)
+        {
+            if (npc.CarDir.x != 0) npc.CarPos.y = lane; else npc.CarPos.x = lane;
+        }
 
         // Where the roads leave the map: cars come in there.
         static void FindGates(Map map)
@@ -44,7 +78,10 @@ namespace OSistema.Npcs
 
         static void Add(Map map, Vector2Int c, Vector2Int dir)
         {
-            if (Drivable(map, c) && Drivable(map, c + dir) && Drivable(map, c + dir * 2)) gates.Add((c, dir));
+            // One gate per road per edge: its first cell across.
+            if (!Across(map, Mover.CellCenter(c), dir, out int lo, out _)) return;
+            if ((dir.x != 0 ? c.y : c.x) != lo) return;
+            gates.Add((c, dir));
         }
 
         /// <summary>Every couple of seconds: enough cars for the hour, a patrol car or two when the rioni are hot.</summary>
@@ -61,7 +98,7 @@ namespace OSistema.Npcs
             }
             int hour = game.Clock.Hour;
             bool night = hour >= 1 && hour < 6;
-            int want = Mathf.RoundToInt((night ? 2 : hour >= 7 && hour < 20 ? 12 : 6) * (1f - game.Weather.Rain * 0.3f));
+            int want = Mathf.RoundToInt((night ? 3 : hour >= 7 && hour < 20 ? 16 : 8) * (1f - game.Weather.Rain * 0.3f));
             float hottest = 0f;
             foreach (var z in game.Territory.Zones) hottest = Mathf.Max(hottest, z.Heat);
             int wantPolice = hottest > 60f ? 3 : hottest > 30f ? 2 : 1;
@@ -74,27 +111,16 @@ namespace OSistema.Npcs
         {
             var rng = game.Rng;
             var (cell, dir) = gates[rng.Next(gates.Count)];
+            if (!Across(game.Map, Mover.CellCenter(cell), dir, out int lo, out int hi)) return;
             var npc = game.Npcs.Spawn(police ? NpcKind.PoliceCar : NpcKind.Car, cell, 0f, new Color32(255, 255, 255, 255));
             npc.CarDir = dir;
             npc.CarSpeed = police ? PoliceCruise : Cruise * (0.85f + (float)rng.NextDouble() * 0.3f);
             // Polizia (two liveries and the van), Carabinieri, Finanza; ordinary cars of every kind.
             npc.CarLook = police ? new[] { 0, 1, 1, 2, 4, 7 }[rng.Next(6)] : rng.Next(8);
             npc.CarPos = Mover.CellCenter(cell);
-            Relane(npc, game.Map);
+            SetLane(npc, LaneOf(dir, lo, hi));
             npc.Mover.Place(npc.CarPos);
             npc.Timer = 0;
-        }
-
-        // Keep to the right: the outermost lane of the road on the right-hand side of the way it's going.
-        static void Relane(Npc npc, Map map)
-        {
-            var dir = npc.CarDir;
-            var right = new Vector2Int(dir.y, -dir.x);
-            var c = Vector2Int.FloorToInt(npc.CarPos);
-            var lane = c;
-            for (int k = 1; k <= 2 && Drivable(map, c + right * k); k++) lane = c + right * k;
-            var center = Mover.CellCenter(lane);
-            if (dir.x != 0) npc.CarPos.y = center.y; else npc.CarPos.x = center.x;
         }
 
         public static void Tick(Npc npc, Game game)
@@ -111,84 +137,95 @@ namespace OSistema.Npcs
             var pos = npc.CarPos;
             var fwd = (Vector2)npc.CarDir;
             float cruise = npc.Kind == NpcKind.PoliceCar ? PoliceCruise : Cruise;
-            // Someone in the road ahead: brake, and hoot if they stay there.
-            bool blocked = Blocked(npc, game, pos, fwd);
+            var nose = pos + fwd * (HalfLength + 0.4f);
+            var noseCell = Vector2Int.FloorToInt(nose);
+            if (!map.InBounds(noseCell)) { npc.Despawned = true; return; }
+            // The end of the road ahead (a T-junction): turn, or turn round.
+            if (!RoadCell(map, noseCell))
+            {
+                if (!TryTurn(npc, game, anywhere: true)) UTurn(npc, game);
+                return;
+            }
+            // Someone or something in the road ahead: brake, and hoot if they stay there.
+            bool blocked = map.GetBuilding(noseCell.x, noseCell.y) != null || Blocked(npc, game, pos, fwd);
             npc.CarSpeed = Mathf.MoveTowards(npc.CarSpeed, blocked ? 0f : cruise, blocked ? 0.02f : 0.003f);
             if (blocked && npc.CarSpeed < 0.01f && game.Rng.NextDouble() < 0.01)
                 OSistema.Views.SoundManager.PlayAt(OSistema.Views.AudioSynth.Horn, pos, 0.3f);
 
-            var cell = Vector2Int.FloorToInt(pos);
-            var aheadCell = Vector2Int.FloorToInt(pos + fwd * 0.75f);
-            var left = new Vector2Int(-npc.CarDir.y, npc.CarDir.x);
-            if (aheadCell != cell && !Drivable(map, aheadCell))
-            {
-                if (!map.InBounds(aheadCell)) { npc.Despawned = true; return; }
-                // A parked car in the lane: pull out round it.
-                if (map.GetTerrain(aheadCell.x, aheadCell.y) == TerrainType.Road && Drivable(map, cell + left) && Drivable(map, aheadCell + left))
-                {
-                    npc.CarPos += (Vector2)left;
-                    npc.Mover.Place(npc.CarPos);
-                    return;
-                }
-                Turn(npc, game, cell, mustTurn: true);
-                return;
-            }
-            // Back in to the right once the way is clear there.
-            if (npc.Timer % 20 == 0 && Drivable(map, cell - left) && Drivable(map, aheadCell - left) && Drivable(map, aheadCell - left + npc.CarDir))
-                npc.CarPos -= (Vector2)left;
             // Now and then, at a crossing, turn off.
-            var center = Mover.CellCenter(cell);
+            var cell = Vector2Int.FloorToInt(pos);
             if (npc.LastCell != cell)
             {
                 npc.LastCell = cell;
-                if ((pos - center).sqrMagnitude < 0.3f && game.Rng.NextDouble() < 0.06) Turn(npc, game, cell, mustTurn: false);
+                if (game.Rng.NextDouble() < 0.07 && TryTurn(npc, game, anywhere: false)) return;
             }
             npc.CarPos = pos + fwd * npc.CarSpeed;
             npc.Mover.Place(npc.CarPos);
         }
 
-        static void Turn(Npc npc, Game game, Vector2Int cell, bool mustTurn)
+        /// <summary>
+        /// Turn into a road to the left or right, if there is one here. <paramref name="anywhere"/>: at a T-junction,
+        /// take whichever there is; otherwise only when the car is level with the side road.
+        /// </summary>
+        static bool TryTurn(Npc npc, Game game, bool anywhere)
         {
             var map = game.Map;
             var dir = npc.CarDir;
-            var left = new Vector2Int(-dir.y, dir.x);
-            var right = -left;
-            // A turn needs a real road that way, not just the next lane across.
-            bool Road(Vector2Int d) => Drivable(map, cell + d) && Drivable(map, cell + d * 2) && Drivable(map, cell + d * 3) && Drivable(map, cell + d * 4);
-            var options = new List<Vector2Int>();
-            if (Road(left)) options.Add(left);
-            if (Road(right)) options.Add(right);
-            if (options.Count == 0)
+            if (!Across(map, npc.CarPos, dir, out int lo, out int hi)) return false;
+            float mid = (lo + hi + 1) * 0.5f;
+            float half = (hi - lo + 1) * 0.5f;
+            float along = dir.x != 0 ? npc.CarPos.x : npc.CarPos.y;
+            var options = new List<(Vector2Int d, float lane)>();
+            foreach (var d in new[] { new Vector2Int(-dir.y, dir.x), new Vector2Int(dir.y, -dir.x) })
             {
-                if (!mustTurn) return;
-                // A dead end: turn round, or give up and vanish if even that's blocked.
-                if (Drivable(map, cell - dir)) options.Add(-dir);
-                else { npc.Despawned = true; return; }
+                // Just past this road's edge, in the side road: is it a car road?
+                var probe = dir.x != 0 ? new Vector2(along, mid) : new Vector2(mid, along);
+                probe += (Vector2)d * (half + 2.5f);
+                if (!Across(map, probe, d, out int lo2, out int hi2)) continue;
+                // The side road spans [lo2, hi2] along our way: only turn while we're level with it.
+                if (!anywhere && (along < lo2 + 0.5f || along > hi2 + 0.5f)) continue;
+                options.Add((d, LaneOf(d, lo2, hi2)));
             }
-            npc.CarDir = options[game.Rng.Next(options.Count)];
-            npc.CarPos = Mover.CellCenter(cell);
-            Relane(npc, map);
+            if (options.Count == 0) return false;
+            var pick = options[game.Rng.Next(options.Count)];
+            // Into the side road's lane: the old "along" becomes the new "across", and vice versa.
+            npc.CarDir = pick.d;
+            npc.CarPos = pick.d.x != 0 ? new Vector2(npc.CarPos.x, pick.lane) : new Vector2(pick.lane, npc.CarPos.y);
+            npc.CarSpeed *= 0.5f;   // slow round the corner
+            npc.Mover.Place(npc.CarPos);
+            return true;
+        }
+
+        static void UTurn(Npc npc, Game game)
+        {
+            npc.CarDir = -npc.CarDir;
+            if (!Across(game.Map, npc.CarPos, npc.CarDir, out int lo, out int hi)) { npc.Despawned = true; return; }
+            SetLane(npc, LaneOf(npc.CarDir, lo, hi));
+            npc.CarSpeed = 0f;
             npc.Mover.Place(npc.CarPos);
         }
 
         static bool Blocked(Npc car, Game game, Vector2 pos, Vector2 fwd)
         {
-            bool InPath(Vector2 at)
+            bool InPath(Vector2 at, float reach)
             {
                 var to = at - pos;
                 float along = Vector2.Dot(to, fwd);
-                if (along < 0.6f || along > 2.6f) return false;
-                return Mathf.Abs(to.x * fwd.y - to.y * fwd.x) < 0.85f;
+                if (along < HalfLength * 0.6f || along > reach) return false;
+                return Mathf.Abs(to.x * fwd.y - to.y * fwd.x) < 1.1f;
             }
             foreach (var p in game.Pawns.All)
-                if (p.IsPresent && !p.Dead && InPath(p.Position)) return true;
+                if (p.IsPresent && !p.Dead && InPath(p.Position, HalfLength + 2.2f)) return true;
             foreach (var n in game.Npcs.All)
             {
                 if (n == car || n.Despawned) continue;
-                // Oncoming cars squeeze past; only the one in front holds you up.
-                if (IsCar(n.Kind) && Vector2.Dot(n.CarDir, car.CarDir) <= 0) continue;
-                var at = IsCar(n.Kind) ? n.CarPos : n.Mover.Position;
-                if (InPath(at)) return true;
+                if (IsCar(n.Kind))
+                {
+                    // Oncoming cars are in the other lane; only the one in front holds you up.
+                    if (Vector2.Dot(n.CarDir, car.CarDir) <= 0) continue;
+                    if (InPath(n.CarPos, HalfLength * 2f + 1.2f)) return true;
+                }
+                else if (InPath(n.Mover.Position, HalfLength + 2.2f)) return true;
             }
             return false;
         }

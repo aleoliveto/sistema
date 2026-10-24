@@ -267,6 +267,8 @@ namespace OSistema.UI
         {
             if (damageOverlay != null) UpdateDamageOverlay();
             if ((debugTick -= Time.unscaledDeltaTime) <= 0f) { debugTick = 0.5f; DebugRefreshStatus(); }
+            // Picking up a tool (or putting it down with a right-click) folds the build drawer away or brings it back.
+            if (controller != null && controller.CurrentTool != dockTool) { dockTool = controller.CurrentTool; RefreshDock(); }
             var kb = Keyboard.current;
             if (kb != null)
             {

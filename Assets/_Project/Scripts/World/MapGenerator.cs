@@ -41,8 +41,10 @@ namespace OSistema.World
         public const int StyleCount = 6;
         const int SeaRows = 9;
         const int PromenadeRows = 4;
-        const int RoadWidth = 3;
-        const int VicoloWidth = 2;
+        // A main road: a row of parked cars each side and a lane each way between them.
+        const int RoadWidth = 6;
+        // The narrowest vicolo: two people pass, a scooter squeezes by.
+        const int VicoloWidth = 3;
 
         readonly System.Random rng;
         readonly List<RectInt> shopLots = new List<RectInt>();
@@ -141,14 +143,14 @@ namespace OSistema.World
 
         void BuildQuartieri(Map map, RectInt area)
         {
-            // North-south lanes of different widths: mostly 2-cell vicoli, some 3, now and then a 4-cell
-            // street with a road down the middle for scooters and the odd car.
+            // North-south lanes of different widths: mostly 3-cell vicoli, some 4, now and then a 7-cell
+            // street with a road down the middle wide enough for cars (and parked cars on its kerb).
             var cols = new List<(int x, int w)>();
             int pos = area.x + rng.Next(7, 13);
             while (pos < area.xMax - 7)
             {
                 double r = rng.NextDouble();
-                int w = r < 0.12 ? 4 : r < 0.42 ? 3 : 2;
+                int w = r < 0.14 ? 7 : r < 0.45 ? 4 : 3;
                 if (pos + w >= area.xMax - 4) break;
                 cols.Add((pos, w));
                 pos += w + rng.Next(7, 15);
@@ -156,7 +158,7 @@ namespace OSistema.World
             foreach (var (x, w) in cols)
             {
                 Fill(map, new RectInt(x, area.y, w, area.height), TerrainType.Sidewalk);
-                if (w == 4) Fill(map, new RectInt(x + 1, area.y, 2, area.height), TerrainType.Road);
+                if (w == 7) Fill(map, new RectInt(x + 1, area.y, 5, area.height), TerrainType.Road);
             }
 
             // Strips between the lanes. Each strip gets its own crossings, at its own heights: they
@@ -616,7 +618,7 @@ namespace OSistema.World
                 if (map.GetTerrain(x, y) != TerrainType.Road || map.GetBuilding(x, y) != null) continue;
                 bool kerb = IsT(map, x + 1, y, TerrainType.Sidewalk) || IsT(map, x - 1, y, TerrainType.Sidewalk) ||
                             IsT(map, x, y + 1, TerrainType.Sidewalk) || IsT(map, x, y - 1, TerrainType.Sidewalk);
-                if (kerb && !NearJunction(map, x, y) && rng.NextDouble() < 0.1) map.SetBuilding(x, y, BuildingDefs.ParkedCar);
+                if (kerb && !NearJunction(map, x, y) && !CarNear(map, x, y) && rng.NextDouble() < 0.25) map.SetBuilding(x, y, BuildingDefs.ParkedCar);
             }
         }
 
@@ -635,6 +637,15 @@ namespace OSistema.World
             }
         }
 
+        // A parked car is about four cells long: leave room for it.
+        static bool CarNear(Map map, int x, int y)
+        {
+            for (int dy = -4; dy <= 4; dy++)
+            for (int dx = -4; dx <= 4; dx++)
+                if (map.InBounds(x + dx, y + dy) && map.GetBuilding(x + dx, y + dy) == BuildingDefs.ParkedCar) return true;
+            return false;
+        }
+
         static bool FacesAlley(Map map, int x, int y) =>
             IsT(map, x - 1, y, TerrainType.Sidewalk) || IsT(map, x + 1, y, TerrainType.Sidewalk) ||
             IsT(map, x, y - 1, TerrainType.Sidewalk);
@@ -651,12 +662,21 @@ namespace OSistema.World
         }
 
         // Keep junctions clear of parked cars.
+        /// <summary>A kerb cell within a few cells of a side road opening (along the kerb, the pavement stops): no parking there.</summary>
         static bool NearJunction(Map map, int x, int y)
         {
-            for (int dy = -3; dy <= 3; dy++)
-            for (int dx = -3; dx <= 3; dx++)
-                if (CountRoad(map, x + dx, y + dy) >= 4) return true;
-            return false;
+            foreach (var s in new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right })
+            {
+                if (!IsT(map, x + s.x, y + s.y, TerrainType.Sidewalk)) continue;
+                var along = new Vector2Int(s.y, s.x);
+                for (int k = -5; k <= 5; k++)
+                {
+                    int cx = x + along.x * k, cy = y + along.y * k;
+                    if (!map.InBounds(cx, cy) || !IsRoad(map, cx, cy) || !IsT(map, cx + s.x, cy + s.y, TerrainType.Sidewalk)) return true;
+                }
+                return false;
+            }
+            return true;
         }
 
         static bool IsT(Map map, int x, int y, TerrainType t) => map.InBounds(x, y) && map.GetTerrain(x, y) == t;

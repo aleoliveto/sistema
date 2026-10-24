@@ -105,10 +105,13 @@ namespace OSistema.Views
         };
 
         /// <summary>How big each kind of thing is, in cells along its longest side.</summary>
+        /// <summary>How long a car is drawn, in cells: next to a person (about one cell) it should look like a car, not a toy.</summary>
+        public const float CarLength = 3.4f;
+
         public static float SizeOf(BuildingDef d) => d.Id switch
         {
             // The new cars share one canvas as long as the longest (a van): small cars come out smaller.
-            "parked_car" => 2.5f,
+            "parked_car" => CarLength,
             "door" => 1.25f,      // the jambs stand a little into the wall either side
             "coat_stand" => 0.7f,
             "laundry_basket" => 0.65f,

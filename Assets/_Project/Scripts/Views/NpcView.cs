@@ -104,7 +104,7 @@ namespace OSistema.Views
             {
                 car.sprite = art;
                 car.flipY = true;   // painted nose down
-                transform.localScale = Vector3.one * 2.5f;
+                transform.localScale = Vector3.one * PropArt.CarLength;
             }
             else
             {
@@ -161,7 +161,7 @@ namespace OSistema.Views
                 van.sprite = art;
                 van.color = Color.white;
                 van.flipY = true;
-                transform.localScale = Vector3.one * 2.5f;
+                transform.localScale = Vector3.one * PropArt.CarLength;
             }
             else
             {
