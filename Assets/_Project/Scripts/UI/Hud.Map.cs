@@ -417,6 +417,7 @@ namespace OSistema.UI
             }
             for (int i = miniIconsUsed; i < miniIcons.Count; i++) miniIcons[i].style.display = DisplayStyle.None;
             if (waypoint.HasValue) MiniDot(waypoint.Value, "dot--pin", clamp: true);
+            foreach (var d in game.Deliveries.Markers()) MiniDot(d, "dot--pin", clamp: true);
             if (goal.Target.HasValue) MiniDot(goal.Target.Value, "dot--goal", clamp: true);
             if (player != null) MiniDot(player.Position, "dot--you");
             for (int i = miniDotsUsed; i < miniDots.Count; i++) miniDots[i].style.display = DisplayStyle.None;
@@ -535,6 +536,7 @@ namespace OSistema.UI
             }
             for (int i = bigIconsUsed; i < bigIcons.Count; i++) bigIcons[i].style.display = DisplayStyle.None;
             if (waypoint.HasValue) BigDot(waypoint.Value, "dot--pin", false);
+            foreach (var d in game.Deliveries.Markers()) BigDot(d, "dot--pin", false);
             if (goal.Target.HasValue) BigDot(goal.Target.Value, "dot--goal", false);
             UpdateTerritory(map);
             if (player != null) BigDot(player.Position, "dot--you", false);

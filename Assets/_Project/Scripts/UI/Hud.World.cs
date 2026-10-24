@@ -179,6 +179,18 @@ namespace OSistema.UI
                     tag.style.top = pos.y + unit * 0.42f;
                 }
 
+            // A customer waiting for a phone order.
+            foreach (var (at, name) in game.Deliveries.Waiting())
+            {
+                if (!FogOfWar.CanSee(at) || !OnScreen(at)) continue;
+                var tag = NextTag();
+                tag.text = $"{name}  <b>✉</b>";
+                tag.AddToClassList("tag--work");
+                var pos = WorldToPanel(at);
+                tag.style.left = pos.x;
+                tag.style.top = pos.y + unit * 0.42f;
+            }
+
             // Someone coming to have a word with you.
             var v = game.Events.Visitor;
             if (v != null && FogOfWar.CanSee(v.Mover.Position) && OnScreen(v.Mover.Position))

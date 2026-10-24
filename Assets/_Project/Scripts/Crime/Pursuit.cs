@@ -28,6 +28,8 @@ namespace OSistema.Crime
         public bool Active => cops.Count > 0;
         public float EscapeProgress => Mathf.Clamp01(unseenTicks / (float)LoseTicks);
         public string Reason => reason;
+        /// <summary>Caught handing something over: whatever is in his pockets counts against him.</summary>
+        public bool RedHanded;
 
         /// <summary>Starts (or joins) a chase after the player.</summary>
         public void Start(Npc cop, string why, Game game)
@@ -109,7 +111,7 @@ namespace OSistema.Crime
             stopping = true;
             var p = game.Player;
             var org = game.Org;
-            bool dirty = org.CarriedDg > 0 || org.DealingCorner != null || p.Armed || p.Carrying != null || p.StolenScooter;
+            bool dirty = (RedHanded && !p.PocketEmpty) || org.CarriedDg > 0 || org.DealingCorner != null || p.Armed || p.Carrying != null || p.StolenScooter;
             int bribe = 100 + Mathf.RoundToInt(org.Evidence * 4f);
             float bribeChance = Mathf.Clamp(0.3f + org.Respect / 200f - org.Evidence / 250f, 0.1f, 0.75f);
             var e = new Story.GameEvent
@@ -210,6 +212,7 @@ namespace OSistema.Crime
             cops.Clear();
             unseenTicks = 0;
             stopping = false;
+            RedHanded = false;
         }
     }
 }

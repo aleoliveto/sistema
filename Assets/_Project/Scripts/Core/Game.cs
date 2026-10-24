@@ -92,6 +92,7 @@ namespace OSistema.Core
         public readonly Newspaper Newspaper = new Newspaper();
         public readonly ContactBook Contacts = new ContactBook();
         public readonly Pursuit Pursuit = new Pursuit();
+        public readonly Deliveries Deliveries = new Deliveries();   // orders over the phone
 
         /// <summary>Setting: when the player leaves him alone, may Gennaro eat and sleep by himself? Off by default.</summary>
         public bool PlayerSelfCare;
@@ -442,6 +443,7 @@ namespace OSistema.Core
             Combat.Tick(this);
             Police.Tick(this);
             Org.Tick(this);
+            Deliveries.Tick(this);
             Crime.FamilyScooters.Tick(this);
             Bag.Sync(Player, this);
             Calendar.Tick(this);
@@ -508,6 +510,7 @@ namespace OSistema.Core
             Pawns.ClearBodies(this);
             foreach (var d in Districts) if (d != District) d.LedgerHour(this);
             Favours.Hourly(this);
+            Deliveries.Hourly(this);
             Informants.Hourly(this);
             Newspaper.Hourly(this);
             Interiors.Hourly(this);

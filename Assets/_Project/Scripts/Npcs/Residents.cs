@@ -271,6 +271,13 @@ namespace OSistema.Npcs
             if (now % 60 != 0) return;
             foreach (var r in All)
             {
+                // Gone out to meet the family for a delivery (see Deliveries): one of them in the street at a time.
+                if (game.Deliveries.Busy(r.Who.Id))
+                {
+                    if (r.Present) { StreetLife.EndChat(r.Npc); r.Npc.Despawned = true; r.Npc = null; r.Walk = null; }
+                    r.Going = ""; r.Doing = "waiting for a delivery";
+                    continue;
+                }
                 string plan = PlanFor(r, game);
                 if (r.Going == "crowd" && (r.Walk != null || r.Linger > 0) && life.GatheringById(r.Crowd) != null) continue;
                 if (!r.Present)

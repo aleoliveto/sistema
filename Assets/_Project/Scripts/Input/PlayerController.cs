@@ -893,6 +893,10 @@ namespace OSistema.Input
             var sale = SaleAction();
             if (sale != null) return sale;
 
+            // A phone order: the customer is waiting here for it (from the bag, or the seat of the scooter you're on or by).
+            var order = game.Deliveries.InReach(game);
+            if (order != null) return new Action { Label = game.Deliveries.Label(game, order), Do = () => game.Deliveries.HandOver(game, order) };
+
             var contact = ContactInReach(out _);
             if (contact != null) return new Action { Label = $"Talk to {contact.Name}", Do = () => OrderTalk(contact) };
 

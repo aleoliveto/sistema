@@ -22,7 +22,7 @@ namespace OSistema.Crime
         public const int ArsonEndHour = 5;
         const float RespectPerLostCustomer = 0.25f;
         const int LostWarningCooldown = GameClock.TicksPerHour * 3;
-        const float HeatPerSale = 0.35f;
+        public const float HeatPerSale = 0.35f;
         const int MaxCustomers = 16; // shared by your piazze and the rivals'
 
         public float Respect = 10f;

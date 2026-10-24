@@ -248,6 +248,8 @@ namespace OSistema.UI
                     game.Weather.ForceSun();
                 }
                 if (text.Contains("phone") && game != null) ToggleWindow(Window.Phone);
+                // "phone" in a soak: take every delivery order and hand it over, to run the loop end to end.
+                if (devSoak && text.Contains("phone") && game != null) game.Deliveries.DevAuto = true;
                 // "travel": ride to the port straight away (and test saving two districts, with "roundtrip").
                 if (text.Contains("travel") && game != null)
                 {

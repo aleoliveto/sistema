@@ -207,6 +207,7 @@ namespace OSistema.Core
                 rivalWarned = game.Rival.Warned,
                 rivalDestroyed = game.Rival.Destroyed,
                 phone = game.Phone.S,
+                deliveries = game.Deliveries.S,
                 favours = game.Favours.S,
                 informants = game.Informants.S,
                 news = game.Newspaper.S,
@@ -534,6 +535,7 @@ namespace OSistema.Core
 
             // Version 5 saves predate the phone and the neighbours: start them fresh.
             if (data.phone != null) game.Phone.S = data.phone;
+            game.Deliveries.S = data.deliveries;   // older saves: no customers yet
             if (data.informants != null) game.Informants.S = data.informants;
             if (data.news != null) game.Newspaper.S = data.news;
             // Before version 7 the crew started with all three friends.
@@ -700,6 +702,7 @@ namespace OSistema.Core
             public float respect;
             public string[] learned;
             public PhoneState phone;
+            public OSistema.Crime.DeliveryState deliveries;
             public FavourState favours;
             public InformantState informants;
             public NewsState news;

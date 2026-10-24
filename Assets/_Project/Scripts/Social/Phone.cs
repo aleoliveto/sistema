@@ -18,6 +18,7 @@ namespace OSistema.Social
         BugClue,         // a hint that someone is listening
         Friend,          // a friend from the vicolo wants in
         Intro,           // someone vouches for you with the supplier
+        Order,           // a customer wants a delivery (see Crime.Deliveries)
     }
 
     [Serializable]
@@ -146,6 +147,9 @@ namespace OSistema.Social
                     break;
                 case MsgKind.Intro:
                     game.Org.OnIntroAnswer(m, choice, game);
+                    break;
+                case MsgKind.Order:
+                    game.Deliveries.OnAnswer(m, choice, game);
                     break;
             }
         }

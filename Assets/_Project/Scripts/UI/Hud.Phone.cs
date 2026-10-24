@@ -207,6 +207,8 @@ namespace OSistema.UI
                     int unread = phone.Unread, waiting = phone.Waiting(now);
                     if (unread > 0) LcdText($"✉ {unread} new message{(unread == 1 ? "" : "s")}", "lcd__center");
                     else if (waiting > 0) LcdText($"✉ {waiting} waiting for an answer", "lcd__center");
+                    int orders = game.Deliveries.Accepted;
+                    if (orders > 0) LcdText($"{orders} deliver{(orders == 1 ? "y" : "ies")} to make", "lcd__center");
                     if (phone.InTransit > 0) LcdText($"{phone.InTransit} order{(phone.InTransit == 1 ? "" : "s")} on the way", "lcd__center");
                     phoneSoftL.text = "Menu";
                     phoneSoftR.text = "Exit";
