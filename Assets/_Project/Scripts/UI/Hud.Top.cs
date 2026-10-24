@@ -117,7 +117,8 @@ namespace OSistema.UI
             var clock = game.Clock;
             dayIcon.Set(clock.Daylight > 0.35f ? IconKind.Sun : IconKind.Moon);
             timeLabel.text = clock.TimeString;
-            dayLabel.text = $"DAY {clock.Day} · {clock.Weekday.Substring(0, 3).ToUpper()}{(clock.IsPayday ? " · <color=#E8C26A>PAYDAY</color>" : "")}";
+            dayLabel.text = $"{clock.Weekday.Substring(0, 3).ToUpper()} {Calendar.DateString(clock.Day).ToUpper()} · DAY {clock.Day}" +
+                            (game.Calendar.MatchOn(game) ? " · <color=#6FB8E8>NAPOLI PLAYING</color>" : clock.IsPayday ? " · <color=#E8C26A>PAYDAY</color>" : "");
             for (int i = 0; i < 4; i++) speedButtons[i].Toggle("btn--on", game.Ticks.Speed == i);
             debugSpeed.text = game.Ticks.Speed >= TickManager.NormalSpeedCount ? $" ×{TickManager.SpeedMultipliers[game.Ticks.Speed]}" : "";
 

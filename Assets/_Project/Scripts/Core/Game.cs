@@ -424,6 +424,7 @@ namespace OSistema.Core
 
         public readonly Weather Weather = new Weather();
         public readonly Crime.Response Response = new Crime.Response();
+        public readonly Calendar Calendar = new Calendar();
 
         void Tick()
         {
@@ -441,6 +442,7 @@ namespace OSistema.Core
             Police.Tick(this);
             Org.Tick(this);
             Crime.FamilyScooters.Tick(this);
+            Calendar.Tick(this);
             foreach (var c in Clans) c.Tick(this);
             Events.Tick(this);
             SocialTick();

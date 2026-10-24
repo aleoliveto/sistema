@@ -89,8 +89,9 @@ namespace OSistema.AI
             if (pawn.OnScooter)
             {
                 var t = game.Map.GetTerrain(pawn.Cell.x, pawn.Cell.y);
+                // Off and pushing it on the gradoni.
                 pawn.Riding = (t == TerrainType.Road || t == TerrainType.Sidewalk || t == TerrainType.Paving)
-                              && game.Map.GetBuilding(pawn.Cell.x, pawn.Cell.y) == null;
+                              && game.Map.GetBuilding(pawn.Cell.x, pawn.Cell.y) == null && !game.Map.IsSteps(pawn.Cell.x, pawn.Cell.y);
             }
             var status = Tick(pawn.Mover, pawn.SpeedFactor, game);
             if (status == WalkStatus.Arrived && (Flexible || adjacent) && spreads < 3 && game.Pawns.SomeoneElseAt(pawn.Cell, pawn))

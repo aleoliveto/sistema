@@ -79,6 +79,7 @@ namespace OSistema.Pawns
                 {
                     var t = map.GetTerrain(c.x, c.y);
                     if (t == TerrainType.Floor || t == TerrainType.Marble || map.GetBuilding(c.x, c.y) == BuildingDefs.Door) return false;
+                    if (map.IsSteps(c.x, c.y)) return false;   // gradoni: no scooter goes up those
                 }
             }
             return true;

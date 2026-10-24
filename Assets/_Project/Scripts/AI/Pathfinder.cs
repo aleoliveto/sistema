@@ -69,7 +69,7 @@ namespace OSistema.AI
                 {
                     int nx = cx + DX[i], ny = cy + DY[i];
                     if (!map.IsPassable(nx, ny)) continue;
-                    if (roadOnly && !IsStreet(map.GetTerrain(nx, ny)) && !(nx == target.x && ny == target.y)) continue;
+                    if (roadOnly && (!IsStreet(map.GetTerrain(nx, ny)) || map.IsSteps(nx, ny)) && !(nx == target.x && ny == target.y)) continue;
                     bool diag = i >= 4;
                     if (diag && (!map.IsPassable(nx, cy) || !map.IsPassable(cx, ny))) continue;
 

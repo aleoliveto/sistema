@@ -34,7 +34,7 @@ namespace OSistema.Crime
 
         static bool Outdoor(Map map, Vector2Int c, bool roadOk)
         {
-            if (!map.InBounds(c) || !map.IsPassable(c) || map.GetBuilding(c.x, c.y) != null) return false;
+            if (!map.InBounds(c) || !map.IsPassable(c) || map.GetBuilding(c.x, c.y) != null || map.IsSteps(c.x, c.y)) return false;
             var t = map.GetTerrain(c.x, c.y);
             return t == TerrainType.Sidewalk || t == TerrainType.Paving || (roadOk && t == TerrainType.Road);
         }

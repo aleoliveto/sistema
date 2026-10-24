@@ -441,7 +441,7 @@ namespace OSistema.Crime
                 if (!sq.IsOpenAt(hour)) continue;
                 var zone = game.Territory.Zones[sq.ZoneId];
                 // A proper piazza with a pusher draws far more than a kid on a corner.
-                float perHour = 6f * zone.Demand * (1f - zone.Heat / 150f) * (0.7f + Respect / 250f);
+                float perHour = 6f * zone.Demand * (1f - zone.Heat / 150f) * (0.7f + Respect / 250f) * game.Calendar.DemandFactor(game);
                 if (game.Clans.Any(c => !c.Destroyed && c.NearRivalTerritory(sq))) perHour *= 0.7f; // customers have a choice
                 if (game.Rng.NextDouble() < perHour / GameClock.TicksPerHour)
                     game.Npcs.SpawnCustomer(sq, game);

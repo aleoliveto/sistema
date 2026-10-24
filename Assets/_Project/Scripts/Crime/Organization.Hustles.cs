@@ -432,7 +432,7 @@ namespace OSistema.Crime
         {
             var rng = game.Rng;
             int takings = 200 + 50 * Turf(game).Count + rng.Next(0, 150);
-            bool won = rng.NextDouble() < 0.45;
+            bool won = game.Calendar.NapoliWon(game);   // the same match the whole city watched
             int payout = won ? Mathf.RoundToInt(takings * (0.6f + (float)rng.NextDouble() * 0.8f)) : 0;
             game.Stock.Cash += takings - payout;
             game.Log.Add(won ? $"Napoli won! Half the rione had them to win: €{takings} in bets, €{payout} paid out."

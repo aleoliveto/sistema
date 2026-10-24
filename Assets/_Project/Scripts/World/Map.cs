@@ -41,6 +41,7 @@ namespace OSistema.World
         public byte[] RawRotation => rotation;
 
         public MapDecor GetDecor(int x, int y) => (MapDecor)decor[Index(x, y)];
+        public bool IsSteps(int x, int y) { var d = GetDecor(x, y); return d == MapDecor.StepsNS || d == MapDecor.StepsEW; }
         public void SetDecor(int x, int y, MapDecor d) => decor[Index(x, y)] = (byte)d;
         public byte[] RawDecor => decor;
 

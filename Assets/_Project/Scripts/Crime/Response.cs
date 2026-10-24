@@ -98,6 +98,7 @@ namespace OSistema.Crime
             if (now % 60 != 0) return;
             var combat = game.Combat;
             if (now - combat.LastShotTick > 120 || now - lastShootingCall < GameClock.TicksPerHour * 2) return;
+            if (game.Calendar.Fireworks(game)) return;   // New Year's Eve: a gunshot is one more bang
             if (combat.ShotsSince(now - 1200) < 6) return;
             lastShootingCall = now;
             var at = Vector2Int.FloorToInt(combat.LastShotPosition);

@@ -115,7 +115,7 @@ namespace OSistema.Npcs
             float evening = hour >= 18 && hour < 23 ? 1.15f : 1f; // the evening passeggiata
             // Everyone's indoors for the riposo after lunch, and nobody goes out in a downpour who doesn't have to.
             float riposo = hour >= 14 && hour < 16 ? 0.7f : 1f;
-            float rain = 1f - game.Weather.Rain * 0.65f;
+            float rain = (1f - game.Weather.Rain * 0.65f) * game.Calendar.StreetFactor(game);   // match day empties the streets; a win fills them
             int peopleTarget = lateNight ? 6 : Mathf.RoundToInt(Mathf.Lerp(30f, 110f, day) * evening * riposo * rain * (recentGunfire ? 0.35f : 1f));
             int scooterTarget = Mathf.RoundToInt((lateNight ? 3 : day > 0.3f ? 16 : 9) * (1f - game.Weather.Rain * 0.4f));
 
@@ -285,6 +285,7 @@ namespace OSistema.Npcs
         {
             long now = game.Ticks.TicksGame;
             if (now - lastPatrolTick < GameClock.TicksPerHour * 3) return;
+            if (game.Calendar.MatchOn(game)) return;   // the police are watching Napoli too
             Crime.Zone hottest = null;
             foreach (var z in game.Territory.Zones)
                 if (z.Heat > 30f && (hottest == null || z.Heat > hottest.Heat)) hottest = z;

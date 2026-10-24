@@ -144,7 +144,7 @@ namespace OSistema.UI
             Ui.Text("Scroll to zoom · drag to move · click to set a waypoint, again to clear", titles, "panel-head__tagline");
             Ui.Box("spacer").Into(head);
             territoryButton = Ui.Btn("Territory", () => { territoryOn = !territoryOn; territoryButton.Toggle("btn--on", territoryOn); }, head, "btn--small");
-            Tip(territoryButton, () => "Who holds each rione. Yours need a house or shop of yours there, and a working piazza with a pusher.");
+            Tip(territoryButton, () => "Who holds each rione. A rione is yours when a piazza of yours there has a pusher working it.");
             Ui.Btn("Close  [M]", ToggleMap, head, "btn--small");
             var mapBody = Ui.Row(panel);
             mapBody.style.alignItems = Align.FlexStart;
@@ -277,8 +277,8 @@ namespace OSistema.UI
                 box.style.borderTopColor = box.style.borderBottomColor = box.style.borderLeftColor = box.style.borderRightColor = edge;
                 int guards = mine ? game.Org.Guards(z, game) : 0;
                 string holder = mine ? $"<color=#E8C26A>yours</color> · {guards} on guard" : clan != null ? clan.Name : "nobody's";
-                if (!mine && game.Org.HasFoothold(z, game) && !game.Org.HasWorkingPiazza(z, game)) holder += "\n<color=#F2B866>you need a working piazza here</color>";
-                if (!mine && !game.Org.HasFoothold(z, game) && game.Org.Squares.Exists(q => q.ZoneId == z.Id)) holder += "\n<color=#F2B866>your piazza · buy a house or shop here to hold it</color>";
+                var why = !mine && game.Org.Squares.Exists(q => q.ZoneId == z.Id) ? game.Org.WhyNotHeld(z, game) : null;
+                if (why != null) holder += $"\n<color=#F2B866>not yours yet: {why}</color>";
                 label.text = $"<b>{z.Name}</b>\n{holder}";
             }
         }
