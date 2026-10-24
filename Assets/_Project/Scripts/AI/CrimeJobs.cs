@@ -14,6 +14,7 @@ namespace OSistema.AI
         public readonly CrewRole Role;
         public readonly Vector2Int Post;
         readonly Walker walker;
+        Walker fetch;   // to the stash at the basso first, when his pockets are nearly empty
         int ticksAtPost;
 
         public bool AtPost { get; private set; }
@@ -26,7 +27,10 @@ namespace OSistema.AI
             walker = new Walker(post, adjacent: false);
         }
 
-        public override string Label => Role == CrewRole.Pusher
+        bool Sells => Role == CrewRole.Pusher || Role == CrewRole.Capo;
+
+        public override string Label => fetch != null ? "Fetching doses from the basso"
+            : Role == CrewRole.Pusher
             ? (AtPost ? "Pushing at the piazza" : "Going to the piazza")
             : Role == CrewRole.Capo
             ? (AtPost ? "Running the piazza" : "Going to the piazza")
@@ -39,6 +43,21 @@ namespace OSistema.AI
             if (!game.Org.Squares.Contains(Square) || !Square.IsOpenAt(game.Clock.Hour)) return true;
             if (!JobGiver.OnShift(Pawn, game)) return true;   // the other team takes over
 
+            // Nearly out and there's more at home: off to the stash, then back.
+            if (fetch == null && Sells && Pawn.PocketDoses < Organization.PusherLow && game.Stock.Product > 0)
+            {
+                if (AtPost) return true;   // the next PostJob starts with the fetch
+                fetch = new Walker(game.Org.StashCell(game), adjacent: true);
+            }
+            if (fetch != null)
+            {
+                var f = fetch.Tick(Pawn, game);
+                if (f == WalkStatus.Walking) return false;
+                if (f == WalkStatus.Arrived) game.Org.LoadPusher(Pawn, game);
+                fetch = null;
+                if (f == WalkStatus.Failed) return Fail();
+                return false;
+            }
             if (!AtPost)
             {
                 var status = walker.Tick(Pawn, game);

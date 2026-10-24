@@ -144,16 +144,16 @@ namespace OSistema.Crime
 
         void Arrest(Pawn pawn, Raid raid, Game game)
         {
-            bool pusher = pawn.CurrentJob is PostJob post && post.Role == CrewRole.Pusher || pawn.Role == CrewRole.Pusher;
-            int seized = pusher && !game.Favours.StashHidden(game) ? Mathf.Min(game.Stock.Product, 15) : 0;
-            game.Stock.Product -= seized;
+            // They search him: what he carries is gone. The stash at the basso is another matter.
+            int seized = pawn.PocketDoses;
+            pawn.PocketDoses = pawn.PocketPacks = pawn.PocketFakes = 0;
 
             int days = game.Rng.Next(3, 10) + (pawn.Armed ? 5 : 0); // caught with a gun: longer inside
             long now = game.Ticks.TicksGame;
             pawn.SendToJail(now + days * GameClock.TicksPerDay, game);
             game.Org.Respect = Mathf.Max(0f, game.Org.Respect - 4f);
 
-            string seizedText = seized > 0 ? $" {seized} units of product were seized." : "";
+            string seizedText = seized > 0 ? $" {seized} doses were found on him." : "";
             string gunText = pawn.Armed ? " He was carrying a gun." : "";
             game.Log.Add($"{pawn.DisplayName} was arrested at the piazza and taken to Poggioreale for {days} days.{seizedText}{gunText}", MessageKind.Bad);
 

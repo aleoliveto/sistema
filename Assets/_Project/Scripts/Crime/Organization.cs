@@ -372,6 +372,10 @@ namespace OSistema.Crime
         /// <summary>The pusher currently standing on this square, or null.</summary>
         public Pawn PusherAt(DrugSquare square, Game game)
         {
+            // Whoever still has doses on him serves first.
+            foreach (var p in game.Pawns.Crew)
+                if (p.CanAct && p.PocketDoses > 0 && p.CurrentJob is PostJob post && post.Square == square && (post.Role == CrewRole.Pusher || post.Role == CrewRole.Capo) && post.AtPost)
+                    return p;
             foreach (var p in game.Pawns.Crew)
                 if (p.CanAct && p.CurrentJob is PostJob post && post.Square == square && post.Role == CrewRole.Pusher && post.AtPost)
                     return p;
@@ -413,7 +417,9 @@ namespace OSistema.Crime
             if (now - square.LastLostWarningTick < LostWarningCooldown) return;
             square.LastLostWarningTick = now;
             var zone = game.Territory.Zones[square.ZoneId];
-            string why = game.Stock.Product <= 0 ? "there's no product" : "nobody is selling";
+            var seller = PusherAt(square, game);
+            string why = game.Stock.Product <= 0 && (seller == null || seller.PocketDoses <= 0) ? "there's no product"
+                       : seller != null ? $"{seller.DisplayName} has run out and gone to the basso for more" : "nobody is selling";
             game.Log.Add($"Customers are leaving the piazza in {zone.Name} empty-handed: {why}. Respect is dropping.", MessageKind.Bad);
         }
 

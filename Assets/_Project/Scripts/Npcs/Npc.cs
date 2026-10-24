@@ -291,9 +291,9 @@ namespace OSistema.Npcs
                     }
                     bool rival = npc.Square.Rival;
                     var pusher = rival ? game.Clans[npc.Square.Clan].PusherAt(npc.Square, game) : game.Org.PusherAt(npc.Square, game);
-                    if (pusher != null && (rival || game.Stock.Product > 0))
+                    if (pusher != null && (rival || pusher.PocketDoses > 0))
                     {
-                        game.Org.Sell(npc.Square, pusher, game);
+                        game.Org.Sell(npc.Square, pusher, game, fromPocket: !rival);
                         Leave(npc);
                     }
                     else if (--npc.Timer <= 0)

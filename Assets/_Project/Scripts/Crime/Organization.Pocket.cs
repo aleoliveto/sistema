@@ -1,5 +1,7 @@
 using OSistema.Core;
 using OSistema.Pawns;
+using OSistema.World;
+using UnityEngine;
 
 namespace OSistema.Crime
 {
@@ -10,6 +12,28 @@ namespace OSistema.Crime
     public sealed partial class Organization
     {
         public const int PocketMaxDoses = 30, PocketMaxPacks = 40, PocketMaxFakes = 15;
+        /// <summary>What a pusher takes from the stash for a run at the piazza; under this many left, he fetches more.</summary>
+        public const int PusherLoad = 25, PusherLow = 3;
+
+        /// <summary>Where the stash is: the safe in the basso if there is one, else the middle of the basso.</summary>
+        public Vector2Int StashCell(Game game)
+        {
+            var b = game.PlayerBase;
+            foreach (var c in game.Map.PositionsOf(BuildingDefs.Safe)) if (b.Contains(c)) return c;
+            var mid = Vector2Int.RoundToInt(b.center);
+            foreach (var c in GridUtil.CellsAround(mid, 4))
+                if (b.Contains(c) && game.Map.IsPassable(c)) return c;
+            return mid;
+        }
+
+        /// <summary>A pusher (or capo) at the stash: he takes a load for the piazza.</summary>
+        public void LoadPusher(Pawn p, Game game)
+        {
+            int n = System.Math.Min(game.Stock.Product, PusherLoad - p.PocketDoses);
+            if (n <= 0) return;
+            game.Stock.Product -= n;
+            p.PocketDoses += n;
+        }
 
         /// <summary>Anything in the stash that would still fit in his pockets.</summary>
         public bool CanFillPockets(Pawn p, Game game) =>

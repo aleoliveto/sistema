@@ -60,7 +60,7 @@ namespace OSistema.UI
             packsValue = Fig(figures, "icon_rosse", IconKind.Business, () =>
                 $"Packs of ROSSE: {game.Stock.Cigarettes} in the stash, {game.Player?.PocketPacks ?? 0} in your pockets. Tobacco {game.Stock.TobaccoG} g, papers {game.Stock.Papers}, empty packs {game.Stock.EmptyPacks}.");
             packsChip = packsValue.parent;
-            dosesValue = Fig(figures, "icon_dose", IconKind.Product, () => $"Doses: {game.Stock.Product} in the stash, {game.Player?.PocketDoses ?? 0} in your pockets, and {game.Stock.BulkDg / 10f:0.0} g still to cut.\nFill your pockets with E at home; you sell from them, and the police take them if you're caught.");
+            dosesValue = Fig(figures, "icon_dose", IconKind.Product, () => $"Doses: {game.Stock.Product} in the stash, {game.Player?.PocketDoses ?? 0} in your pockets, {game.Pawns.Crew.Where(c => !c.Controlled).Sum(c => c.PocketDoses)} on the pushers, and {game.Stock.BulkDg / 10f:0.0} g still to cut.\nFill your pockets with E at home; you sell from them, and the police take them if you're caught.");
             dosesChip = dosesValue.parent;
             hostilityFill = FigBar(figures, "icon_clans", IconKind.Pistol, new Color(0.95f, 0.55f, 0.25f), () =>
             {
