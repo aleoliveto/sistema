@@ -418,6 +418,7 @@ namespace OSistema.UI
             var (mv, mf) = Ui.Bar("Morale", MoodColor(p.Mood.Value), bizBody);
             mv.text = $"{p.Mood.Value:0}% · {p.Mood.Description}";
             Ui.SetFill(mf, p.Mood.Value / 100f);
+            if (p.Controlled) Field("In his pockets", p.PocketText);
             if (!p.Controlled)
             {
                 var (lv, lf) = Ui.Bar("Loyalty", new Color(0.45f, 0.75f, 0.45f), bizBody);

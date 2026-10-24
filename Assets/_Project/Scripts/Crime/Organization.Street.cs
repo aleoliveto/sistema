@@ -16,9 +16,10 @@ namespace OSistema.Crime
     {
         public DrugSquare DealingCorner;
 
-        public bool CanDealHere(Pawn p, Game game)
+        /// <summary>A spot the boss could deal from; <paramref name="ignorePocket"/> asks only about the place.</summary>
+        public bool CanDealHere(Pawn p, Game game, bool ignorePocket = false)
         {
-            if (p == null || !p.CanAct || DealingCorner != null || game.Stock.Product <= 0) return false;
+            if (p == null || !p.CanAct || DealingCorner != null || (!ignorePocket && p.PocketDoses <= 0)) return false;
             var t = game.Map.GetTerrain(p.Cell.x, p.Cell.y);
             if ((t != TerrainType.Sidewalk && t != TerrainType.Paving) || game.Territory.ZoneAt(p.Cell) == null) return false;
             // Once the family runs a piazza, you deal there. Before that, on a street corner of your own turf.
@@ -52,7 +53,7 @@ namespace OSistema.Crime
             var zone = game.Territory.ZoneAt(p.Cell);
             DealingCorner = new DrugSquare { Cell = p.Cell, ZoneId = zone.Id, OpenHour = 0, CloseHour = 0 };
             WarnIfRivalZone(zone, game);
-            game.Log.Add($"You lean against the wall in {zone.Name} with {game.Stock.Product} doses in your pocket. Word gets round. Press E when someone comes.", MessageKind.Info, p.Cell);
+            game.Log.Add($"You lean against the wall in {zone.Name} with {p.PocketDoses} doses in your pocket. Word gets round. Press E when someone comes.", MessageKind.Info, p.Cell);
         }
 
         public void StopDealing(Game game, bool quiet = false)
@@ -75,7 +76,7 @@ namespace OSistema.Crime
                 // Your corner or stall, or one of the family's piazze where you happen to be standing.
                 bool mine = IsPlayerCorner(n.Square) || (!n.Square.Rival && Squares.Contains(n.Square));
                 if (!mine) continue;
-                if (n.Square == StallCorner ? !HasStallStock(game) : game.Stock.Product <= 0) continue;
+                if (n.Square == StallCorner ? !HasStallStock(game) : p.PocketDoses <= 0) continue;
                 float d = (n.Mover.Position - p.Position).sqrMagnitude;
                 if (d < bestD) { bestD = d; best = n; }
             }
@@ -87,9 +88,9 @@ namespace OSistema.Crime
             var p = game.Player;
             if (customer == null || p == null) return;
             if (customer.Square == StallCorner) { SellFromStall(customer, game); return; }
-            if (game.Stock.Product <= 0) return;
+            if (p.PocketDoses <= 0) return;
             var square = customer.Square;
-            Sell(square, p, game);
+            Sell(square, p, game, fromPocket: true);
             p.Learn(Skill.Awareness, 2f, game);
             customer.State = 2;
             customer.Walker = new Walker(customer.Exit, adjacent: false);
@@ -100,9 +101,9 @@ namespace OSistema.Crime
             var cop = Pursuit.WitnessCop(game, 7f);
             if (cop != null && !game.Pursuit.Active && game.Rng.NextDouble() < 0.7)
                 game.Pursuit.Start(cop, "A policeman saw you hand something over.", game);
-            if (game.Stock.Product <= 0)
+            if (p.PocketDoses <= 0)
             {
-                if (DealingCorner != null) game.Log.Add("Out of doses. The corner can wait.", MessageKind.Info);
+                if (DealingCorner != null) game.Log.Add("Your pockets are empty. The rest is in the stash at the basso.", MessageKind.Info);
                 StopDealing(game, quiet: true);
             }
         }

@@ -588,6 +588,7 @@ namespace OSistema.Core
                 aggressiveUntil = p.AggressiveUntil,
                 mealsDelivered = p.MealsDelivered,
                 mission = (int)p.Mission, clan = p.Clan, armor = p.Armor,
+                pocketDoses = p.PocketDoses, pocketPacks = p.PocketPacks, pocketFakes = p.PocketFakes,
                 missionTarget = p.MissionTarget?.Id ?? 0,
                 x = p.Cell.x,
                 y = p.Cell.y,
@@ -638,6 +639,7 @@ namespace OSistema.Core
                 AggressiveUntil = d.aggressiveUntil,
                 MealsDelivered = d.mealsDelivered,
                 Mission = (RivalMission)d.mission, Clan = d.clan, Armor = d.armor,
+                PocketDoses = d.pocketDoses, PocketPacks = d.pocketPacks, PocketFakes = d.pocketFakes,
                 // Beds are the house's now, taken only while slept in. A save from before kept each person's
                 // own bed: they live in the house that bed is in (the basso, or one of the family's flats).
                 Home = d.homeSaved ? (d.hasHome ? new Vector2Int(d.homeX, d.homeY) : (Vector2Int?)null)
@@ -806,6 +808,7 @@ namespace OSistema.Core
             public float[] xp;
             public int faction, shooting, mealsDelivered, mission, missionTarget, missionSquare = -1, clan;
             public float armor;
+            public int pocketDoses, pocketPacks, pocketFakes;
             public bool armed, isBoss;
             public long aggressiveUntil;
             public int x, y;

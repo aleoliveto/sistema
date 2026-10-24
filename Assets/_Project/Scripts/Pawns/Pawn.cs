@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections.Generic;
 using OSistema.AI;
 using OSistema.Core;
@@ -226,6 +227,12 @@ namespace OSistema.Pawns
         public bool Following;          // "Follow me": tags along behind the boss without changing job       // riding someone else's, for Nanninella
         public float Heading;            // the player's scooter: degrees, 0 = north, positive = turning left
         public float ScooterSpeed;       // forward speed along the heading, cells per second
+        // What he carries (the stash at the basso is Stock). The boss sells from here and the police find it here.
+        public int PocketDoses, PocketPacks, PocketFakes;
+        public bool PocketEmpty => PocketDoses <= 0 && PocketPacks <= 0 && PocketFakes <= 0;
+        public string PocketText => PocketEmpty ? "nothing" : string.Join(", ", new[] {
+            PocketDoses > 0 ? $"{PocketDoses} doses" : null, PocketPacks > 0 ? $"{PocketPacks} packs" : null, PocketFakes > 0 ? $"{PocketFakes} fakes" : null
+        }.Where(x => x != null));
         public bool HasFamilyScooter;    // riding one of the family's own (Crime.FamilyScooters): parked where he gets off
         public bool Pillion;             // riding on the back of the boss's scooter
 

@@ -58,9 +58,9 @@ namespace OSistema.UI
             piazzeValue = Fig(figures, "icon_dose", IconKind.Product, () => $"Piazze open: {game.Org.Squares.Count} of {game.Org.MaxSquaresForRank} at your rank.");
             piazzeValue.parent.style.display = DisplayStyle.None;   // folded into territory below
             packsValue = Fig(figures, "icon_rosse", IconKind.Business, () =>
-                $"Packs of ROSSE ready: {game.Stock.Cigarettes}. Tobacco {game.Stock.TobaccoG} g, papers {game.Stock.Papers}, empty packs {game.Stock.EmptyPacks}.");
+                $"Packs of ROSSE: {game.Stock.Cigarettes} in the stash, {game.Player?.PocketPacks ?? 0} in your pockets. Tobacco {game.Stock.TobaccoG} g, papers {game.Stock.Papers}, empty packs {game.Stock.EmptyPacks}.");
             packsChip = packsValue.parent;
-            dosesValue = Fig(figures, "icon_dose", IconKind.Product, () => $"Doses ready: {game.Stock.Product}, and {game.Stock.BulkDg / 10f:0.0} g still to cut.");
+            dosesValue = Fig(figures, "icon_dose", IconKind.Product, () => $"Doses: {game.Stock.Product} in the stash, {game.Player?.PocketDoses ?? 0} in your pockets, and {game.Stock.BulkDg / 10f:0.0} g still to cut.\nFill your pockets with E at home; you sell from them, and the police take them if you're caught.");
             dosesChip = dosesValue.parent;
             hostilityFill = FigBar(figures, "icon_clans", IconKind.Pistol, new Color(0.95f, 0.55f, 0.25f), () =>
             {
@@ -132,8 +132,10 @@ namespace OSistema.UI
             foreach (var p in game.Pawns.Crew) if (!p.Dead && !p.Departed) crew++;
             crewValue.text = $"{crew}/{org.MaxCrewForRank}";
             turfValue.text = org.Squares.Count > 0 ? $"{org.Turf(game).Count} <color=#9C9180>· {org.Squares.Count}P</color>" : $"{org.Turf(game).Count}";
-            packsValue.text = $"{s.Cigarettes}";
-            dosesValue.text = $"{s.Product}";
+            // Stash, then what's on you.
+            var me = game.Player;
+            packsValue.text = me != null && me.PocketPacks > 0 ? $"{s.Cigarettes}+{me.PocketPacks}" : $"{s.Cigarettes}";
+            dosesValue.text = me != null && me.PocketDoses > 0 ? $"{s.Product}+{me.PocketDoses}" : $"{s.Product}";
             dosesChip.Show(s.Product > 0 || s.BulkDg > 0 || org.Squares.Count > 0);
             var angriest = AngriestClan();
             Ui.SetFill(hostilityFill, angriest == null || angriest.Destroyed ? 0f : angriest.Hostility / 100f);

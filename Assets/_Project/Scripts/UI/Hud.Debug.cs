@@ -44,7 +44,7 @@ namespace OSistema.UI
             var o = game.Org;
             var p = game.Player;
             var zone = p != null ? game.Territory.ZoneAt(p.Cell) : null;
-            debugStatus.text = $"€{game.Stock.Cash} · respect {o.Respect:0} · {o.RankName} · lavoretti {game.Contracts.Completed} · evidence {o.Evidence:0}" +
+            debugStatus.text = $"€{game.Stock.Cash} · pockets: {p?.PocketText ?? "-"} · respect {o.Respect:0} · {o.RankName} · lavoretti {game.Contracts.Completed} · evidence {o.Evidence:0}" +
                                (zone != null ? $" · heat in {zone.Name} {zone.Heat:0}" : "") + $" · crew {game.Pawns.Crew.Count}";
         }
 
@@ -134,6 +134,11 @@ namespace OSistema.UI
             Steps("Scooters", n => s.Scooters = Math.Max(0, s.Scooters + n), -1, 1);
             Steps("Medicine", n => s.Medicine = Math.Max(0, s.Medicine + n), 5);
             Steps("Meals / groceries", n => { s.Meals += n; s.Groceries += n; }, 10);
+            var pocket = Line("Your pockets");
+            B(pocket, "Fill from stash", () => { if (game.Player != null) o.FillPockets(game.Player, game); });
+            B(pocket, "+10 doses", () => { if (game.Player != null) game.Player.PocketDoses += 10; });
+            B(pocket, "+10 packs", () => { if (game.Player != null) game.Player.PocketPacks += 10; });
+            B(pocket, "Empty", () => { if (game.Player != null) game.Player.PocketDoses = game.Player.PocketPacks = game.Player.PocketFakes = 0; });
             var gear = Line("Gear");
             B(gear, "Digital scale", () => s.DigitalScale = !s.DigitalScale);
             B(gear, "Heat sealer", () => s.HeatSealer = !s.HeatSealer);

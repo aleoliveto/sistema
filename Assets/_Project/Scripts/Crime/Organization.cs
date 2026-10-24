@@ -386,14 +386,14 @@ namespace OSistema.Crime
         public bool IsActiveSquare(DrugSquare square, Game game) =>
             square != null && (square == DealingCorner || square == StallCorner || Squares.Contains(square) || (square.Rival && square.Clan < game.Clans.Count && game.Clans[square.Clan].Squares.Contains(square)));
 
-        public void Sell(DrugSquare square, Pawn pusher, Game game)
+        public void Sell(DrugSquare square, Pawn pusher, Game game, bool fromPocket = false)
         {
             if (square.Rival)
             {
                 if (square.Clan < game.Clans.Count) game.Clans[square.Clan].Cash += Prices.ProductStreet;
                 return;
             }
-            game.Stock.Product--;
+            if (fromPocket) pusher.PocketDoses--; else game.Stock.Product--;
             game.Stock.Cash += Prices.ProductStreet;
             CheckDoseComplaints(game);
             square.SalesToday++;

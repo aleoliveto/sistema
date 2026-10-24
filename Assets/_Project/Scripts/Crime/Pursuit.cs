@@ -172,14 +172,14 @@ namespace OSistema.Crime
                 found = $" They found {org.CarriedDg / 10} g on him.";
                 org.CarriedDg = 0;
             }
-            if (org.DealingCorner != null)
+            // They turn out his pockets: whatever he carried is gone, and doses cost him days.
+            if (!p.PocketEmpty)
             {
-                int seized = Mathf.Min(game.Stock.Product, 10);
-                game.Stock.Product -= seized;
-                if (seized > 0) found += $" {seized} doses seized.";
-                days += 2;
-                org.StopDealing(game, quiet: true);
+                found += $" They turned out his pockets: {p.PocketText} seized.";
+                if (p.PocketDoses > 0) days += 2 + p.PocketDoses / 10;
+                p.PocketDoses = p.PocketPacks = p.PocketFakes = 0;
             }
+            org.StopDealing(game, quiet: true);
             if (p.Armed)
             {
                 days += 5;

@@ -109,7 +109,7 @@ namespace OSistema.Crime
                 PlayerParking = null;
                 var zone = game.Territory.ZoneAt(at);
                 StallCorner = new DrugSquare { Cell = at, ZoneId = zone != null ? zone.Id : 0, OpenHour = 0, CloseHour = 0 };
-                game.Log.Add($"You set out your stock: {game.Stock.Cigarettes} packs of ROSSE, {H.fakes} fakes. People will stop by: G (or E) to sell. Watch for the Finanza.", MessageKind.Info, at);
+                game.Log.Add($"You set out what you brought: {game.Player?.PocketPacks ?? 0} packs of ROSSE, {game.Player?.PocketFakes ?? 0} fakes. People will stop by: G (or E) to sell. Watch for the Finanza.", MessageKind.Info, at);
             }
         }
 
@@ -136,12 +136,13 @@ namespace OSistema.Crime
 
         public bool IsPlayerCorner(DrugSquare sq) => sq != null && (sq == DealingCorner || sq == StallCorner);
 
-        public bool HasStallStock(Game game) => game.Stock.Cigarettes > 0 || H.fakes > 0;
+        public bool HasStallStock(Game game) => game.Player != null && (game.Player.PocketPacks > 0 || game.Player.PocketFakes > 0);
 
         /// <summary>What the next buyer wants: mostly a pack, sometimes a fake bag or shirt.</summary>
         public string StallOffer(Npc customer, Game game)
         {
-            bool fake = H.fakes > 0 && (game.Stock.Cigarettes <= 0 || customer.Id % 3 == 0);
+            var p = game.Player;
+            bool fake = p != null && p.PocketFakes > 0 && (p.PocketPacks <= 0 || customer.Id % 3 == 0);
             return fake ? $"Sell a fake · €{FakePrice}" : $"Sell a pack · €{PackPrice(game) + 1}";
         }
 
@@ -149,13 +150,13 @@ namespace OSistema.Crime
         {
             var p = game.Player;
             var s = game.Stock;
-            bool fake = H.fakes > 0 && (s.Cigarettes <= 0 || customer.Id % 3 == 0);
+            bool fake = p.PocketFakes > 0 && (p.PocketPacks <= 0 || customer.Id % 3 == 0);
             int price;
-            if (fake) { H.fakes--; price = FakePrice; }
-            else if (s.Cigarettes > 0) { s.Cigarettes--; price = PackPrice(game) + 1; }
+            if (fake) { p.PocketFakes--; price = FakePrice; }
+            else if (p.PocketPacks > 0) { p.PocketPacks--; price = PackPrice(game) + 1; }
             else return;
             // A second pack now and then.
-            if (!fake && s.Cigarettes > 0 && game.Rng.NextDouble() < 0.25) { s.Cigarettes--; price += PackPrice(game) + 1; }
+            if (!fake && p.PocketPacks > 0 && game.Rng.NextDouble() < 0.25) { p.PocketPacks--; price += PackPrice(game) + 1; }
             s.Cash += price;
             playerStreetTakings += price;
             game.PopupAt(p.Position, $"+€{price}");
@@ -163,7 +164,7 @@ namespace OSistema.Crime
             customer.Walker = new Walker(customer.Exit, adjacent: false);
             if (!HasStallStock(game))
             {
-                game.Log.Add("Nothing left to sell.", MessageKind.Info);
+                game.Log.Add("Nothing left in your pockets to sell. More in the stash at the basso.", MessageKind.Info);
                 EndPlayerStreetWork(game);
             }
         }
@@ -196,10 +197,11 @@ namespace OSistema.Crime
         bool FinanzaCheck(Vector2Int at, Game game)
         {
             if (game.Rng.NextDouble() >= 0.025) return false;
-            var s = game.Stock;
-            int packs = Math.Min(s.Cigarettes, 8), fakes = Math.Min(H.fakes, 5);
-            s.Cigarettes -= packs;
-            H.fakes -= fakes;
+            var p = game.Player;
+            if (p == null) return false;
+            int packs = Math.Min(p.PocketPacks, 8), fakes = Math.Min(p.PocketFakes, 5);
+            p.PocketPacks -= packs;
+            p.PocketFakes -= fakes;
             AddEvidence(1f, game);
             game.Territory.AddHeat(at, 4f);
             game.Log.Add($"The Guardia di Finanza walked up to the stall: {packs} packs and {fakes} fakes confiscated, and your name taken.", MessageKind.Bad, at);
