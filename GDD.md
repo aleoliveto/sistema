@@ -440,7 +440,7 @@ No ending is a win screen. Each closes on an epilogue card per cast member (wher
 | **Latitanza abroad** | A warrant you can't beat and enough money (needs 7.1b; until then, an epilogue only). | A port city, the phone rings once a week, less every year. |
 | **The name dies** | The boss is killed (any time after Act 1, or 3.6 goes the other way) **and there is no heir or capo to take over**, or a scissione (14.10) leaves nobody loyal. | The last funeral; who comes. Don Mimì says the mass, or refuses. Totore's fate decides who carries the coffin. |
 | **Fine pena mai** (life in jail) | Convicted at the trial in 3.5 with no way out. | The colloquio glass, Mamma older every Saturday. Assunta or a capo runs what's left. |
-| **Out clean** (the hard one) | Low violence across all acts (no civilian killed, Saverio bought out not shot, baby paranza sent home), Don Mimì's trust high, Assunta out, and you hand the piazze over or close them. | A job in a community up north, or a bar that pays its pizzo to someone else. It's possible and it's small. Answers open question 12 "is there a clean ending": yes, and it costs everything you built. |
+| **Out clean** (the hard one) | Low violence across all acts (no civilian killed, Saverio bought out not shot, baby paranza sent home), Don Mimì's trust high, Assunta out, and you hand the piazze over or close them. | A job in a community up north, or a bar that pays its pizzo to someone else. It's possible and it's small. Answers open question 12 "is there a clean ending": yes, and it costs everything you built. Played as a short chapter: see 14.6c. |
 
 **A boss's death is not an ending** while someone can carry the name: play passes to the heir (14.9) and the story goes on from the current act. The endings above are reached by whoever holds the name when Act 3 resolves, and their epilogue names every boss the family buried on the way.
 
@@ -450,6 +450,12 @@ The pentito ending is a short playable chapter, not a card. Its look breaks from
 - **Time passes:** news from home arrives late and thin (a La Sirena clipping, a call that's cut short). Assunta's life, Mamma's health, the clan you left, all moving without you.
 - **Going back:** at the end, years later, you go home to the rione. It's the same procedural map, aged: shops changed hands, the piazza is someone else's, kids you don't know on your old corner, your name gone from the walls. Nobody recognises you. You walk the streets as no one. That is the ending.
 - **Tech:** a separate small scene and post-processing profile for the protection town; an "aged" pass over the home district (owners, faces, signs, graffiti) driven by the time skip already needed for generations (14.9).
+
+### 14.6c The clean chapter (playable)
+Getting out has to be played. A short chapter after the hand-over, in the game's normal look but quieter (daylight, fewer people who know you):
+- **A small honest life:** a job up north through Don Mimì's community, or a bar back home that now pays pizzo to whoever took your piazze. The money is small and the days are long.
+- **The past calls:** an old capo wants a favour, a rival's son hasn't forgotten, Ciro checks you're really out. Each is a choice that can pull you back in (and back to the main game's rules).
+- **The end:** a season passes without saying yes. Assunta's wedding, Mamma's lunch on Sunday, a kid from the rione asking for work and you saying no.
 
 ### 14.7 Tone notes
 - **Show the bill, every act.** Each act's climax has a cost scene for someone not in the System: Mamma at the market (1), the shopkeeper whose child you baptised (2), a mother at the door after the baby paranza (3).
@@ -466,15 +472,17 @@ Today a shot that takes a pawn to zero HP puts them on the ground with a wound t
 - **Everything else bleeds, fast.** A torso wound that isn't fatal at once bleeds out in **game minutes** (roughly 20–60) unless tended; a limb wound in a few hours. Downed pawns can still be carried, tended by a crew medic, or finished (Execute).
 - **The 118.** Anyone nearby can call it: a crew member, a passer-by (more likely in daylight and in front of shops), or the player from his phone if he's conscious. The ambulance and paramedics already exist; they come in a few minutes, stabilise, and take the wounded to the Hospital. **The hospital reports gunshot wounds** (GDD 4.2): Heat, a police visit at the bedside, evidence. The bent doctor (a new contact) is slower and quieter.
 - **Beatings stay non-lethal** unless they go on after the victim is down (a choice, with its own weight).
-- **No downed grace for the player.** The player bleeds like everyone else. If he dies, play passes to the heir at once (14.9); if there is none, the name dies (14.6). In story mode this is never a game-over screen while the family exists.
+- **No downed grace for the player.** The player bleeds like everyone else. A **fatal hit on the player cuts the screen to black in an instant**: no slow motion, no death animation, no last words, as if the life were taken away between one frame and the next. Silence, then one word: *Continue*. Time then skips (14.9) and play resumes as the heir; if there is none, the name dies (14.6). In story mode this is never a game-over screen while the family exists.
 - **Saves:** death this harsh invites reloading. Proposed: autosave on boss death that can't be skipped, so the heir's first scene always plays (see open questions).
 - **Tuning target:** a gunfight should be over in seconds and nobody should want one. The sim already prefers negotiation (GDD 5.5); this makes the preference felt.
 
 ### 14.9 Generations
 The dynasty is already in the design (GDD 3.1: "a run = one boss's life", the heir inherits) and partly in the code: `Organization.Generation` is saved, `CheckSuccession` raises a "Who leads the family now?" card with the three best candidates by loyalty and intimidation, and `AppointBoss` cuts respect by a quarter, resets evidence and has the rivals test the new boss. Building on that:
 - **Marriage and children become a mechanic.** The boss can marry (a fidanzata met in the rione, or a marriage alliance from LifeCards); the couple lives in a home of the family's; children are born and grow up. They are people in the Famiglia roster with traits shaped by what they're exposed to (GDD 7.3): a son who sees the stash grows *Ambitious* or *Hothead*; a daughter kept away from it may refuse the name.
-- **Time.** A child takes years to come of age, and the sim runs in days. Proposal: when the boss dies and the heir is a minor, a **regent** takes over (the widow, the sister, Mamma, or a capo) and the player plays the regent; when the regent dies, retires or chooses to hand over, a **time skip** of several years is simulated cheaply (like districts nobody is watching: piazze sell, heat cools, clans move), and the child comes of age as the new boss.
-- **Who can be heir**, in order of legitimacy: a son or daughter of age, the widow or husband, a sibling, a nephew, then a chosen **capo** (no blood: less legitimacy, more scissione risk). The player picks from the eligible ones on the existing succession card.
+- **The skip after a death.** After the black screen, time always moves on before the heir's first scene: at least the funeral and the weeks of the power vacuum (rivals test the borders, capi make up their minds about scissione). How long is still open (14.14).
+- **Time.** A child takes years to come of age, and the sim runs in days. When the boss dies and the heir is a minor, a **regent** takes over (the widow, the sister, Mamma, or a capo) and the player plays the regent; when the regent dies, retires or chooses to hand over, a **time skip** of several years is simulated cheaply (like districts nobody is watching: piazze sell, heat cools, clans move), and the child comes of age as the new boss.
+- **Who can be heir**, in order of legitimacy: a son or daughter of age, the widow or husband, a sibling, a nephew, then a chosen **capo** (no blood: less legitimacy, more scissione risk). The player picks from the eligible ones on the existing succession card. A daughter, widow or sister can lead, and the rione's old-fashioned view is part of it: she starts with less respect from some capi, which feeds their scissione check.
+- **Choosing a side.** When a woman of the family takes over and a capo won't accept her, the succession card offers the player a real choice: **stay with the blood** (play the daughter or widow, and face the split) or **go with the capo** (play him, lead the scissione, and become the family's enemy). Either way the other side becomes a rival clan run by the AI, with a feud open. The same choice comes up whenever a scissione is brewing at a succession, whoever the heir is.
 - **What carries over:**
   - *The name*: feared, honoured or cursed (a pentito in the bloodline curses it; GDD 3.1).
   - *Territory*: the piazze and rioni the family still holds on the day of death (minus whatever a scissione takes).
@@ -499,6 +507,7 @@ When a boss dies, or is jailed for life, **any clan** can split: the player's fa
 - **The split:** the capo takes his piazze, the crew who are more loyal to him than to the family, part of whatever stash he guarded, and a name of his own. He becomes a new rival clan with a feud already open (high hostility, vendettas both ways). Several capi can go together, or each his own way.
 - **For rivals:** a beheaded rival clan (`RivalClan` already handles "the boss came out and didn't come back") rolls the same check; a split rival is a chance (two weak clans) and a danger (more men with guns and nothing to lose).
 - **In story mode:** a scissione is a beat whenever it happens. Two places it is likely by design: the heir's clan after its boss is arrested at the midpoint (2.6), which can turn the Act 3 war three-way; and the player's own family after a boss's death, where the heir's first job is holding it together. Totore, as capo of the second piazza, is the cast member most likely to lead one.
+- **The player can lead one.** At a succession (above, 14.9) the player may choose to play the capo who splits rather than the heir. The new clan starts with his piazze and men, a grudge from the family he left, and a name to build; the story re-aims at him (Mamma and Assunta are now on the other side of the feud). In story mode this is the path that lets the player betray and kill the family itself.
 - **In sandbox:** the same rules, with a setting for how readily clans split.
 
 ### 14.11 Sandbox
@@ -524,7 +533,8 @@ Today's free play, unchanged, with settings at new game (all can be changed unti
 9. **Harsh death** (14.8): fatal-hit roll by body part and armour in `CombatSystem`, fast bleed rates, the 118 called by bystanders and crew, the hospital report, a bent doctor contact. Independent of the story engine: can be built first, in both modes.
 10. **Scissione** (14.10): an acceptance score per capo, the warning window, and creating a rival clan at runtime from a split (name, rioni, piazze, men, open feud). Extends `Organization.Character`'s defection and `RivalClan`'s beheading.
 11. **Generations** (14.9): marriage, children as roster people who age, the regent, the time skip (reusing the offline district tick), inheritance rules on top of `CheckSuccession` / `AppointBoss`, and the cast re-aiming at the heir.
-12. **The pentito chapter** (14.6b): the protection town scene and look, the time jumps, the aged home district.
+12. **The pentito and clean chapters** (14.6b, 14.6c): the protection town scene and look, the time jumps, the aged home district, the clean chapter's pull-back choices.
+    Also: the black-screen death and *Continue* (with 9), and playing the splitting capo (with 10 and 11).
 13. **Content pass:** write all scenes, then native dialect review.
 
 Steps 1–5 are the engine and can ship with Act 1 alone as a test (it's also a better tutorial than today's objectives). Acts 2–3 need nothing new beyond step 6; the endings need 7. Steps 9 and 10 matter to sandbox as much as story and can come before the engine; step 11 is the largest and can follow Act 1. Latitanza abroad and the Poggioreale map are not required: the story uses today's screens and upgrades when 7.1b and 7.2b land.
@@ -537,9 +547,10 @@ Steps 1–5 are the engine and can ship with Act 1 alone as a test (it's also a 
 - **Pentito: a short playable chapter** (14.6b).
 - **Story flags save at once**, boss death autosaves (14.1).
 - **Darkness:** a long, touching story; aftermath over gore (14.7).
+- **A fatal shot on the player cuts to black**, then *Continue*, then a time skip and the heir (14.8, 14.9).
+- **Women lead**, and at a contested succession the player chooses: stay with the blood, or go with the capo and **lead the scissione** (14.9, 14.10).
+- **The clean ending is a short playable chapter** (14.6c).
 
 ### 14.14 Open questions
-- Does the clean ending need its own playable chapter, like the pentito one? Leaning yes, short, if the pentito chapter works.
-- Generations: regent plus time skip, or something else (heirs only of age, the run waits for a child)? How many years per skip?
-- Can the player pick a daughter, the widow or the sister as heir freely, or does the rione's old-fashioned view cost them respect at first (as it would)?
-- Scissione: should the player ever be able to *lead* one (as a capo in another boss's clan), or only suffer and cause them?
+- How long is the time skip after a boss's death: a fixed few weeks, or depending on the heir (weeks for an adult, years until a child comes of age)?
+- With a child heir: does the player play a regent through the skip, or does the skip go straight to the child grown up?
