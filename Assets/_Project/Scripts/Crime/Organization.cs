@@ -257,6 +257,7 @@ namespace OSistema.Crime
             };
             if (!free) game.Stock.Cash -= Prices.RecruitBonus; // a signing bonus, in cash
             game.Pawns.Add(pawn);
+            PlaceNewcomer(pawn, game);   // straight to where the family is short, and a bed
             pawn.Say("recruited");
             game.Log.Add($"{pawn.FullName} “{pawn.Nickname}” joins the crew.", MessageKind.Good);
             return pawn;

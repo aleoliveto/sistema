@@ -1509,3 +1509,11 @@
 .debug-row { align-items: center; flex-wrap: wrap; margin-bottom: 3px; }
 .debug-label { width: 150px; flex-shrink: 0; }
 .debug-btn { margin: 1px 3px 1px 0; min-width: 0; padding: 2px 7px; }
+
+/* Crew made simple: the needs line with its button, clickable job and home chips, the Advanced fold. */
+.sort-row { align-items: center; padding: 8px 10px; margin-bottom: 8px; background-color: rgba(227, 184, 98, 0.08); border-radius: 4px; }
+.sort-row Button { margin-left: 10px; flex-shrink: 0; }
+.role-chip--click { cursor: link; border-width: 1px; border-color: rgba(227, 184, 98, 0.35); }
+.role-chip--click:hover { border-color: #E3B862; }
+.role-chip--home { margin-top: 2px; }
+.advanced-toggle { align-self: flex-start; margin-top: 6px; }

@@ -195,6 +195,16 @@ namespace OSistema.UI
             long now = game.Ticks.TicksGame;
             var everyone = game.Pawns.Crew.Where(p => !p.Dead).ToList();
 
+            // What's missing, and one button that sorts it: no need to open anyone's page to run the family.
+            var needs = org.Needs(game);
+            var sortRow = Ui.Row(bizBody);
+            sortRow.AddToClassList("sort-row");
+            var needText = needs.Count == 0 ? "<color=#8FD18A>Every job covered.</color>"
+                : "Short of " + string.Join(", ", needs.Take(3).Select(n => n.Why)) + (needs.Count > 3 ? $" and {needs.Count - 3} more" : "") + ".";
+            Ui.Text(needText, sortRow, "small", "wrap", "grow");
+            var sortBtn = Ui.Btn("Sort out the crew", Do(() => game.Log.Add(org.SortOutCrew(game), MessageKind.Info)), sortRow, "btn--small", "btn--primary");
+            Tip(sortBtn, () => "Gives everyone without a job the one the family needs most, makes a capo where a piazza has the people, and moves anyone without a bed to a house with one. Jobs you've set by hand stay.");
+
             var top = Ui.Row(bizBody);
             SearchBox(top);
 
@@ -329,9 +339,20 @@ namespace OSistema.UI
             lf.parent.AddToClassList("roster__bar");
             if (!p.Controlled)
             {
+                // Job and home change right here: click the chip.
                 var info = Ui.Box("col", "roster__info").Into(row);
-                info.pickingMode = PickingMode.Ignore;
-                Ui.Text(RoleShort(p.Role), info, "role-chip");
+                var pp = p;
+                var jobChip = Ui.Btn(RoleShort(p.Role) + " ▾", null, info, "role-chip", "role-chip--click");
+                jobChip.clicked += () => ShowRoleMenu(pp, jobChip);
+                jobChip.RegisterCallback<ClickEvent>(e => e.StopPropagation());   // the chip, not the row (which opens their page)
+                Tip(jobChip, () => "Change their job");
+                if (Housing.Houses(game).Skip(1).Any())
+                {
+                    var homeChip = Ui.Btn(Housing.Name(Housing.HomeOf(p, game)) + " ▾", null, info, "role-chip", "role-chip--click", "role-chip--home");
+                    homeChip.clicked += () => ShowHouseMenu(pp, homeChip);
+                    homeChip.RegisterCallback<ClickEvent>(e => e.StopPropagation());
+                    Tip(homeChip, () => "Where they live (and sleep)");
+                }
                 Ui.Text($"€{p.Wage}/wk", info, "roster__wage");
             }
             var (ptext, pcss) = Presence(p, now);
@@ -377,6 +398,8 @@ namespace OSistema.UI
             Ui.Text(label, b, "tile__label");
         }
 
+        bool personAdvanced;
+
         void PersonDetail(Pawn p)
         {
             if (p.Dead || !game.Pawns.Crew.Contains(p)) { famPerson = null; RosterTab(); return; }
@@ -403,13 +426,19 @@ namespace OSistema.UI
 
                 Ui.Text("WORK", bizBody, "section");
                 Field("Job", RoleLabel(p.Role), at => ShowRoleMenu(pawn, at));
-                PersonShifts(p);
                 Field("Home", Housing.Name(Housing.HomeOf(p, game)), at => ShowHouseMenu(pawn, at));
-                var wage = Field("Weekly wage", $"€{p.Wage}");
-                Ui.Btn("−", Do(() => pawn.Wage = Mathf.Max(0, pawn.Wage - 10)), wage, "btn--small", "field__btn");
-                Ui.Btn("+", Do(() => pawn.Wage = Mathf.Min(1000, pawn.Wage + 10)), wage, "btn--small", "field__btn");
                 Field("Gun", p.Armed ? "Pistol" : $"None · {game.Stock.Pistols} in the stash", _ => { ToggleArmed(pawn); bizDirty = true; RefreshWindows(); });
-                if (p.Role == CrewRole.Bodyguard) GuardSettings(p);
+                // The fiddly bits (piazza, shift, wage, where a bodyguard stands) fold away: the defaults are fine.
+                var adv = Ui.Btn(personAdvanced ? "Advanced ▾" : "Advanced ▸", Do(() => personAdvanced = !personAdvanced), bizBody, "btn--small", "advanced-toggle");
+                Tip(adv, () => "Piazza, shift, wage and where a bodyguard stands. Left alone, they sort themselves out.");
+                if (personAdvanced)
+                {
+                    PersonShifts(p);
+                    var wage = Field("Weekly wage", $"€{p.Wage}");
+                    Ui.Btn("−", Do(() => pawn.Wage = Mathf.Max(0, pawn.Wage - 10)), wage, "btn--small", "field__btn");
+                    Ui.Btn("+", Do(() => pawn.Wage = Mathf.Min(1000, pawn.Wage + 10)), wage, "btn--small", "field__btn");
+                    if (p.Role == CrewRole.Bodyguard) GuardSettings(p);
+                }
             }
 
             Ui.Text("QUICK ACTIONS", bizBody, "section");
