@@ -132,6 +132,7 @@ namespace OSistema.World
             PlaceShops(map);
             DecorateStreets(map, quarters);
             HangLaundry(map);
+            BuildGradoni(map);
 
             for (int i = 0; i < properties.Count; i++) properties[i].Id = i;
             props = properties;
@@ -197,6 +198,7 @@ namespace OSistema.World
             if (block.width >= 7 && block.height >= 7 && rng.NextDouble() < 0.07)
             {
                 Fill(map, block, TerrainType.Paving);
+                MarkPiazza(map, block);
                 var mid = Vector2Int.RoundToInt(block.center);
                 map.SetBuilding(mid.x, mid.y, rng.NextDouble() < 0.5 ? BuildingDefs.Fountain : BuildingDefs.Tree);
                 if (rng.NextDouble() < 0.6) map.SetBuilding(block.xMin + 1, block.yMin + 1, BuildingDefs.Bench);
@@ -312,6 +314,7 @@ namespace OSistema.World
             // Market street: a wider paved street with stalls along both sides.
             int my = rest.y + rest.height / 2;
             Fill(map, new RectInt(rest.x, my, rest.width, 4), TerrainType.Paving);
+            MarkPiazza(map, new RectInt(rest.x, my, rest.width, 4));
             for (int x = rest.x; x < rest.xMax; x++)
             {
                 for (int y = my; y < my + 4; y++) map.SetBuilding(x, y, null);
@@ -333,6 +336,7 @@ namespace OSistema.World
                 map.SetTerrain(c.x, c.y, TerrainType.Paving);
                 map.SetBuilding(c.x, c.y, null);
             }
+            MarkPiazza(map, area);
 
             int churchH = Mathf.Max(9, area.height / 2 + 1);
             int churchW = Mathf.Min(area.width - 6, 14);
@@ -619,6 +623,56 @@ namespace OSistema.World
                 bool kerb = IsT(map, x + 1, y, TerrainType.Sidewalk) || IsT(map, x - 1, y, TerrainType.Sidewalk) ||
                             IsT(map, x, y + 1, TerrainType.Sidewalk) || IsT(map, x, y - 1, TerrainType.Sidewalk);
                 if (kerb && !NearJunction(map, x, y) && !CarNear(map, x, y) && rng.NextDouble() < 0.25) map.SetBuilding(x, y, BuildingDefs.ParkedCar);
+            }
+        }
+
+        void MarkPiazza(Map map, RectInt r)
+        {
+            foreach (var c in GridUtil.Cells(r, false))
+                if (map.InBounds(c) && map.GetTerrain(c.x, c.y) == TerrainType.Paving) map.SetStyle(c.x, c.y, OSistema.Views.TilePainter.PiazzaStyle);
+        }
+
+        /// <summary>
+        /// Gradoni: here and there a vicolo climbs in a flight of steps, as they do up the hills of Naples. Only
+        /// straight stretches of vicolo, away from the crossings and the doors.
+        /// </summary>
+        void BuildGradoni(Map map)
+        {
+            int flights = 0;
+            for (int tries = 0; tries < 4000 && flights < 18; tries++)
+            {
+                int x = rng.Next(2, map.Width - 2), y = rng.Next(2, map.Height - 2);
+                if (map.GetTerrain(x, y) != TerrainType.Sidewalk || map.GetBuilding(x, y) != null) continue;
+                bool ns = IsT(map, x, y - 1, TerrainType.Sidewalk) && IsT(map, x, y + 1, TerrainType.Sidewalk) && !IsT(map, x - 1, y, TerrainType.Road) && !IsT(map, x + 1, y, TerrainType.Road);
+                bool ew = IsT(map, x - 1, y, TerrainType.Sidewalk) && IsT(map, x + 1, y, TerrainType.Sidewalk) && !IsT(map, x, y - 1, TerrainType.Road) && !IsT(map, x, y + 1, TerrainType.Road);
+                if (ns == ew) continue;
+                var along = ns ? Vector2Int.up : Vector2Int.right;
+                var across = ns ? Vector2Int.right : Vector2Int.up;
+                // The whole width of the vicolo, for 5 to 9 cells, all plain pavement.
+                var c0 = new Vector2Int(x, y);
+                while (IsT(map, c0.x - across.x, c0.y - across.y, TerrainType.Sidewalk)) c0 -= across;
+                int width = 0;
+                while (width < 6 && IsT(map, c0.x + across.x * width, c0.y + across.y * width, TerrainType.Sidewalk)) width++;
+                if (width < 2 || width > 4) continue;
+                int len = rng.Next(5, 10);
+                bool ok = true;
+                for (int k = 0; k < len && ok; k++)
+                for (int w = -1; w <= width && ok; w++)
+                {
+                    var c = c0 + along * k + across * w;
+                    if (!map.InBounds(c)) { ok = false; break; }
+                    bool inside = w >= 0 && w < width;
+                    if (inside) ok = map.GetTerrain(c.x, c.y) == TerrainType.Sidewalk && map.GetBuilding(c.x, c.y) == null && map.GetDecor(c.x, c.y) == MapDecor.None;
+                    else ok = map.GetTerrain(c.x, c.y) != TerrainType.Sidewalk && map.GetBuilding(c.x, c.y) != BuildingDefs.Door;   // walls either side, no doors, no side vicoli
+                }
+                if (!ok) continue;
+                for (int k = 0; k < len; k++)
+                for (int w = 0; w < width; w++)
+                {
+                    var c = c0 + along * k + across * w;
+                    map.SetDecor(c.x, c.y, ns ? MapDecor.StepsNS : MapDecor.StepsEW);
+                }
+                flights++;
             }
         }
 

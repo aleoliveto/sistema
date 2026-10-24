@@ -5,7 +5,7 @@ using UnityEngine;
 namespace OSistema.World
 {
     /// <summary>Purely visual details placed by the generator.</summary>
-    public enum MapDecor : byte { None, Laundry, WallLamp, Shrine }
+    public enum MapDecor : byte { None, Laundry, WallLamp, Shrine, StepsNS, StepsEW }
 
     /// <summary>Grid data model: the single source of truth for terrain and buildings.</summary>
     public sealed class Map

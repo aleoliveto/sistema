@@ -237,7 +237,16 @@ GROUND = {
     "marble": ("ground_marble", 3),
     "tar": ("ground_lastrico", 2),
     "grass": ("ground_garden", 2),
+    # New slots (no older texture to replace): brightness matched to a sister slot (EXTRA_REF).
+    "vicolo": ("ground_vicolo", 3),
+    "piazza": ("ground_piazza", 2),
+    "marciapiede": ("ground_marciapiede", 2),
+    "graniglia": ("ground_graniglia", 3),
+    "basoli_wet": ("ground_basoli_wet", 3),
 }
+# A new slot's brightness follows this existing one (wet stone a little darker still).
+EXTRA_REF = {"vicolo": ("basoli", 1.0), "piazza": ("slabs", 1.0), "marciapiede": ("slabs", 1.0),
+             "graniglia": ("cotto", 1.1), "basoli_wet": ("basoli", 0.82)}
 OUT_SIZE = 2048
 
 
@@ -273,17 +282,24 @@ def make_ground():
         old = os.path.join(RES, "Ground", f"ground_{slot}.png")
         orig = os.path.join(HERE, "ground_originals", f"ground_{slot}.png")
         os.makedirs(os.path.dirname(orig), exist_ok=True)
-        if os.path.exists(old) and not os.path.exists(orig):
+        extra = EXTRA_REF.get(slot)
+        if extra is None and os.path.exists(old) and not os.path.exists(orig):
             Image.open(old).save(orig)
+        if extra is not None:
+            orig = os.path.join(HERE, "ground_originals", f"ground_{extra[0]}.png")
         if os.path.exists(orig):
-            ref = mean_lum(np.asarray(Image.open(orig).convert("RGB")).astype(float))
-            k = np.clip(ref / max(1.0, mean_lum(a)), 0.8, 1.45)
+            ref = mean_lum(np.asarray(Image.open(orig).convert("RGB")).astype(float)) * (extra[1] if extra else 1.0)
+            k = np.clip(ref / max(1.0, mean_lum(a)), 0.6 if extra else 0.8, 1.45)
             a = np.clip(a * k, 0, 255)
         tile = np.tile(a, (reps, reps, 1)).astype(np.uint8)
         im = Image.fromarray(tile).resize((OUT_SIZE, OUT_SIZE), Image.LANCZOS)
         out = os.path.join(RES, "Ground", f"ground_{slot}.png")
         im.save(out)
         made.append(out)
+        if slot == "vicolo":
+            # The drain runs along the vicolo: a turned copy for the east-west ones.
+            im.rotate(90).save(os.path.join(RES, "Ground", "ground_vicolo_h.png"))
+            made.append("ground_vicolo_h")
     # Kerbstones: the middle band of the kerb strip (the stones only), stacked into the period.
     kp = os.path.join(ART, "ground_kerb.png")
     if os.path.exists(kp):

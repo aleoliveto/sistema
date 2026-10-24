@@ -20,6 +20,13 @@ Shader "OSistema/MapLit"
         _Mat12("Earth", 2D) = "grey" {}
         _Mat13("Floor tiles", 2D) = "grey" {}
         _Mat14("Marble", 2D) = "grey" {}
+        _Mat15("Vicolo north-south", 2D) = "grey" {}
+        _Mat16("Vicolo east-west", 2D) = "grey" {}
+        _Mat17("Piazza", 2D) = "grey" {}
+        _Mat18("Marciapiede", 2D) = "grey" {}
+        _Mat19("Graniglia", 2D) = "grey" {}
+        _Mat20("Basoli wet", 2D) = "grey" {}
+        _Wet("Rain on the stone", Range(0, 1)) = 0
         _Period("Cells per repeat", Float) = 8
         [HideInInspector] _Color("Tint", Color) = (1,1,1,1)
     }
@@ -74,10 +81,17 @@ Shader "OSistema/MapLit"
             TEXTURE2D(_Mat12);
             TEXTURE2D(_Mat13);
             TEXTURE2D(_Mat14);
+            TEXTURE2D(_Mat15);
+            TEXTURE2D(_Mat16);
+            TEXTURE2D(_Mat17);
+            TEXTURE2D(_Mat18);
+            TEXTURE2D(_Mat19);
+            TEXTURE2D(_Mat20);
 
             CBUFFER_START(UnityPerMaterial)
                 half4 _Color;
                 float _Period;
+                float _Wet;
             CBUFFER_END
 
             Varyings Vert(Attributes v)
@@ -108,7 +122,15 @@ Shader "OSistema/MapLit"
                 else if (id == 11) r = SAMPLE_TEXTURE2D_GRAD(_Mat11, sampler_Mat1, uv, dx, dy).rgb;
                 else if (id == 12) r = SAMPLE_TEXTURE2D_GRAD(_Mat12, sampler_Mat1, uv, dx, dy).rgb;
                 else if (id == 13) r = SAMPLE_TEXTURE2D_GRAD(_Mat13, sampler_Mat1, uv, dx, dy).rgb;
-                else r = SAMPLE_TEXTURE2D_GRAD(_Mat14, sampler_Mat1, uv, dx, dy).rgb;
+                else if (id == 14) r = SAMPLE_TEXTURE2D_GRAD(_Mat14, sampler_Mat1, uv, dx, dy).rgb;
+                else if (id == 15) r = SAMPLE_TEXTURE2D_GRAD(_Mat15, sampler_Mat1, uv, dx, dy).rgb;
+                else if (id == 16) r = SAMPLE_TEXTURE2D_GRAD(_Mat16, sampler_Mat1, uv, dx, dy).rgb;
+                else if (id == 17) r = SAMPLE_TEXTURE2D_GRAD(_Mat17, sampler_Mat1, uv, dx, dy).rgb;
+                else if (id == 18) r = SAMPLE_TEXTURE2D_GRAD(_Mat18, sampler_Mat1, uv, dx, dy).rgb;
+                else r = SAMPLE_TEXTURE2D_GRAD(_Mat19, sampler_Mat1, uv, dx, dy).rgb;
+                // Rain: the lava stone goes dark and shines (the basoli and the vicoli).
+                [branch] if (_Wet > 0.01 && (id == 2 || id == 15 || id == 16))
+                    r = lerp(r, SAMPLE_TEXTURE2D_GRAD(_Mat20, sampler_Mat1, uv, dx, dy).rgb, _Wet);
                 return r;
             }
 
@@ -119,7 +141,7 @@ Shader "OSistema/MapLit"
                 float2 guv = i.world / _Period;
                 float2 gdx = ddx(guv), gdy = ddy(guv);
                 int id = (int)round((1.0 - c.a) * 255.0);
-                if (id > 0 && id < 16)
+                if (id > 0 && id < 24)
                 {
                     // The light was written as sRGB grey (128 = as lit); in a linear project it
                     // arrives converted, so divide by what 128 becomes, not by a half.

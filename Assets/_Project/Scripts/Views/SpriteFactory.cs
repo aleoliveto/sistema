@@ -218,7 +218,8 @@ namespace OSistema.Views
                 var shader = Shader.Find("OSistema/MapLit");
                 if (shader == null) return LitMaterial;
                 map = new Material(shader);
-                string[] names = { "asphalt", "basoli", "kerb_h", "kerb_v", "slabs", "coppi", "tar", "cotto", "cement", "plaster", "grass", "earth", "tiles", "marble" };
+                string[] names = { "asphalt", "basoli", "kerb_h", "kerb_v", "slabs", "coppi", "tar", "cotto", "cement", "plaster", "grass", "earth", "tiles", "marble",
+                    "vicolo", "vicolo_h", "piazza", "marciapiede", "graniglia", "basoli_wet" };
                 for (int i = 0; i < names.Length; i++)
                 {
                     var t = Resources.Load<Texture2D>("Ground/ground_" + names[i]);

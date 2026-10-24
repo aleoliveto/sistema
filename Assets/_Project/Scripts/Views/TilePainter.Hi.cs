@@ -103,7 +103,11 @@ namespace OSistema.Views
         // light (grey 128 = as lit) and, in alpha, which material goes under it.
         public const byte GroundAsphalt = 1, GroundBasoli = 2, GroundKerbH = 3, GroundKerbV = 4, GroundSlabs = 5,
             GroundCoppi = 6, GroundTar = 7, GroundCotto = 8, GroundCement = 9, GroundPlaster = 10,
-            GroundGrass = 11, GroundEarth = 12, GroundTiles = 13, GroundMarble = 14;
+            GroundGrass = 11, GroundEarth = 12, GroundTiles = 13, GroundMarble = 14,
+            GroundVicoloNS = 15, GroundVicoloEW = 16, GroundPiazza = 17, GroundMarciapiede = 18, GroundGraniglia = 19;   // 20: wet basoli, blended in by the shader
+
+        /// <summary>The style byte that marks a paved cell as a real piazza (patterned stone), not the lungomare's cobbles.</summary>
+        public const byte PiazzaStyle = 9;
 
         /// <summary>A baked material tinted: the plaster takes each building's colour. Half the tint reads as the tint, as lit.</summary>
         public static Color32 Tinted(byte id, Color32 tint, float light)
@@ -152,16 +156,40 @@ namespace OSistema.Views
                         bool alongX = (py < 5 && IsT(map, x, y - 1, TerrainType.Road)) || (py >= Hi - 5 && IsT(map, x, y + 1, TerrainType.Road));
                         return Ground(alongX ? GroundKerbH : GroundKerbV, 1f);
                     }
+                    // Gradoni: a vicolo climbing in steps. A dark riser, a lit nosing above it, every third of a cell.
+                    var decor = map.GetDecor(x, y);
+                    if (decor == MapDecor.StepsNS || decor == MapDecor.StepsEW)
+                    {
+                        int run = decor == MapDecor.StepsNS ? gy : gx;
+                        int k = run % 11;
+                        float light = k == 0 ? 0.55f : k == 1 ? 0.7f : k == 10 ? 1.18f : 1f;
+                        return Ground(decor == MapDecor.StepsNS ? GroundVicoloNS : GroundVicoloEW, light);
+                    }
+                    // The pavement of a main road: flagstones. The vicoli: lava stone, laid along the vicolo
+                    // with its drain in some rioni, in the old diagonal basolato in others.
+                    if (IsT(map, x - 1, y, TerrainType.Road) || IsT(map, x + 1, y, TerrainType.Road) ||
+                        IsT(map, x, y - 1, TerrainType.Road) || IsT(map, x, y + 1, TerrainType.Road))
+                        return Ground(GroundMarciapiede, 1f);
+                    if (N(x / 24, y / 24, 91) < 0.55f)
+                    {
+                        bool ew = IsT(map, x - 1, y, TerrainType.Sidewalk) && IsT(map, x + 1, y, TerrainType.Sidewalk);
+                        bool ns = IsT(map, x, y - 1, TerrainType.Sidewalk) && IsT(map, x, y + 1, TerrainType.Sidewalk);
+                        if (ns && !ew) return Ground(GroundVicoloNS, 1f);
+                        if (ew && !ns) return Ground(GroundVicoloEW, 1f);
+                    }
                     return Ground(GroundBasoli, 1f);
                 }
                 case TerrainType.Paving:
-                    return Ground(GroundSlabs, 1f);
+                    // A piazza in patterned stone; the lungomare and yards in cobbles.
+                    return Ground(map.GetStyle(x, y) == PiazzaStyle ? GroundPiazza : GroundSlabs, 1f);
                 case TerrainType.Grass:
                     return Ground(GroundGrass, 1f);
                 case TerrainType.Floor:
                 {
                     // Glazed tiles in the home's two colours, a checker of half-cell tiles.
                     byte style = map.GetStyle(x, y);
+                    // Some homes have graniglia, the old speckled cement tiles; the rest glazed tiles.
+                    if (style % 3 == 1) return Ground(GroundGraniglia, 1.05f);
                     bool alt = ((gx / 16) + (gy / 16)) % 2 == 0;
                     return TilePainter.Tinted(GroundTiles, alt ? FloorA[style % FloorA.Length] : FloorB[style % FloorB.Length], 1.05f);
                 }

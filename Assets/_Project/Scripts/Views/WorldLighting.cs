@@ -185,6 +185,8 @@ namespace OSistema.Views
             if (ownsGlobal && global != null) Destroy(global.gameObject);
         }
 
+        float wet, wetSet = -1f;
+
         void LateUpdate()
         {
             if (game == null || global == null) return;
@@ -192,6 +194,10 @@ namespace OSistema.Views
             float hour = game.Clock.HourF;
             float rain = game.Weather.Rain;
             Sun.Update(hour, day, rain);
+            // The lava stone darkens and shines in the rain, and dries slowly after (scaled with game speed).
+            float speed = Mathf.Max(1f, game.Ticks.Speed);
+            wet = Mathf.MoveTowards(wet, rain > 0.15f ? Mathf.Clamp01(rain * 1.6f) : 0f, Time.deltaTime * speed * (rain > 0.15f ? 0.12f : 0.015f));
+            if (Mathf.Abs(wet - wetSet) > 0.01f) { wetSet = wet; SpriteFactory.MapMaterial.SetFloat("_Wet", wet); }
             bool evening = hour > 16f && hour < 22f;
             var tint = day > 0.5f
                 ? Color.Lerp(evening ? DuskColor : DayColor, DayColor, (day - 0.5f) * 2f)
