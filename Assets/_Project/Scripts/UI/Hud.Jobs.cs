@@ -83,7 +83,8 @@ namespace OSistema.UI
                 var col = Ui.Box("col").Into(row);
                 col.style.width = 420;
                 bool work = game.Contacts.HasWork(contact, game);
-                string state = !contact.OpenAt(hour) ? $"<color=#A89F8E>not around · {contact.Hours}</color>"
+                string state = !contact.OpenAt(hour) ? $"<color=#A89F8E>at home · around {contact.Hours}</color>"
+                    : contact.Doing != "at work" ? $"<color=#A89F8E>{contact.Doing}{(contact.BreakHour >= 0 ? $" · break {contact.BreakHour:00}:00–{contact.BreakHour + 1:00}:00" : "")}</color>"
                     : work ? "<color=#E8C26A>has work for you</color>" : "<color=#A89F8E>nothing right now</color>";
                 Ui.Text($"<b>{contact.Name}</b> · {state}", col);
                 Ui.Text(contact.Who, col, "small", "muted", "wrap");

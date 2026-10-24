@@ -81,7 +81,7 @@ namespace OSistema.UI
             foreach (var c in game.Contacts.All)
                 if (game.Contacts.Visible(c, game))
                     places.Add(new Place { At = c.Position, Glyph = Initial(c.Name),
-                        Css = game.Contacts.HasWork(c, game) ? "icon--work" : "icon--contact", Name = $"{c.Name} · {c.Hours}" });
+                        Css = game.Contacts.HasWork(c, game) ? "icon--work" : "icon--contact", Name = $"{c.Name} · {c.Hours} · {c.Doing}" });
         }
 
         // "Don Peppe 'o Strozzino" -> P, "'O Zio Totonno" -> T

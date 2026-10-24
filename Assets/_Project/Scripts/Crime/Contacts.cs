@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using OSistema.AI;
 using OSistema.Core;
 using OSistema.Npcs;
 using OSistema.Pawns;
@@ -20,6 +21,13 @@ namespace OSistema.Crime
         public Npc Npc;
         public bool Secret;             // only shows up once someone has vouched for you
         public int Face = -1;           // portrait
+
+        // A life: a home they walk from in the morning and back to at night, and a break in the middle of a long day.
+        public Vector2Int? Home;
+        public Vector2Int? BreakSpot;   // the bar or pizzeria where they eat; null: they go home
+        public int BreakHour = -1;      // the hour of the break, or -1 for none
+        public Walker Walk;             // where they're walking right now (null: standing)
+        public string Doing = "at work";
 
         public bool OpenAt(int hour) => OpenHour < CloseHour ? hour >= OpenHour && hour < CloseHour : hour >= OpenHour || hour < CloseHour;
         public string Hours => $"{OpenHour:00}:00–{CloseHour:00}:00";
@@ -117,6 +125,43 @@ namespace OSistema.Crime
                 return best;
             }
 
+            // Their front door: a house a short walk from where they work.
+            Vector2Int? HomeNear(Vector2Int spot)
+            {
+                Vector2Int? best = null;
+                float bestD = float.MaxValue;
+                foreach (var pr in game.Properties.All)
+                {
+                    if (pr.Kind != PropertyKind.Home || pr.OwnedByPlayer) continue;
+                    float d = (pr.Door - spot).magnitude;
+                    if (d < 8f || d > 40f) continue;
+                    d += (float)((pr.Id * 7919) % 13);   // not always the very nearest
+                    var outside = Outside(map, pr.Door);
+                    if (outside.HasValue && d < bestD) { bestD = d; best = outside; }
+                }
+                return best;
+            }
+
+            // Where they eat on a break: the nearest bar or pizzeria front.
+            Vector2Int? EatNear(Vector2Int spot)
+            {
+                Vector2Int? best = null;
+                float bestD = 45f;
+                foreach (var def in BuildingDefs.All)
+                {
+                    if (def.Shop != ShopKind.Bar && def.Shop != ShopKind.Pizzeria) continue;
+                    foreach (var counter in map.PositionsOf(def))
+                    {
+                        var prop = game.Properties.At(counter);
+                        var front = prop != null ? Outside(map, prop.Door) : null;
+                        if (!front.HasValue) continue;
+                        float d = (front.Value - spot).magnitude;
+                        if (d > 4f && d < bestD) { bestD = d; best = front; }
+                    }
+                }
+                return best;
+            }
+
             Contact Add(string name, string who, Vector2Int spot, int open, int close, Color32 color,
                 string greet, string greetEn, string none, string noneEn)
             {
@@ -127,6 +172,14 @@ namespace OSistema.Crime
                     Greeting = greet, GreetingEn = greetEn, NoWork = none, NoWorkEn = noneEn,
                 };
                 c.Face = Faces.TryGetValue(name, out int f) ? f : -1;
+                c.Home = HomeNear(spot);
+                // A long day has a break: lunch at home (the riposo) for day people, dinner out for night people.
+                int span = (close - open + 24) % 24;
+                if (span >= 9)
+                {
+                    c.BreakHour = open < 12 ? 13 : 20;
+                    c.BreakSpot = open < 12 ? null : EatNear(spot);
+                }
                 All.Add(c);
                 return c;
             }
@@ -182,28 +235,71 @@ namespace OSistema.Crime
             return null;
         }
 
-        /// <summary>Contacts come to their spot at opening time and leave at closing time.</summary>
+        /// <summary>
+        /// Contacts live: they walk from home to their spot when they open, take a break in a long day (home for
+        /// lunch, or out to eat), and walk home when they close. Talk to them wherever they are.
+        /// </summary>
         public void Tick(Game game)
         {
+            // Walking, every tick.
+            foreach (var c in All)
+            {
+                if (!c.Present || c.Walk == null) continue;
+                var status = c.Walk.Tick(c.Npc.Mover, 1f, game);
+                if (status == WalkStatus.Walking) continue;
+                c.Walk = null;
+                if (c.Doing == "going home")
+                {
+                    c.Npc.Despawned = true;   // in at the front door
+                    c.Npc = null;
+                }
+                else if (c.Doing == "going to work" || c.Doing == "back to work") c.Doing = "at work";
+                else if (c.Doing == "going for a break") c.Doing = c.BreakSpot.HasValue ? "eating out" : "at home for lunch";
+            }
+
             if (game.Ticks.TicksGame % 60 != 0) return;
             int hour = game.Clock.Hour;
             foreach (var c in All)
             {
                 bool open = c.OpenAt(hour) && Visible(c, game);
+                bool onBreak = open && hour == c.BreakHour;
+                if (!open && !c.Present) c.Doing = "at home";
                 if (open && !c.Present)
                 {
-                    c.Npc = game.Npcs.Spawn(NpcKind.Civilian, c.Spot, 0.05f, c.Color);
+                    // Out of the front door (or straight at the spot if they have none), and off to work.
+                    var from = c.Home ?? c.Spot;
+                    if (onBreak && !c.BreakSpot.HasValue) continue;   // still at home for lunch
+                    c.Npc = game.Npcs.Spawn(NpcKind.Civilian, from, 0.05f, c.Color);
                     c.Npc.IsFixture = true;
-                    // Stand at the spot. (Spawned as a passer-by they walked "home" at once and vanished,
-                    // to be put back a second later: the flicker, and Don Saverio's men riding off.)
-                    c.Npc.State = StreetLife.StandingState;
+                    c.Npc.State = StreetLife.StandingState;   // their own legs, not a passer-by's errands
                     c.Npc.Target = c.Spot;
                     c.Npc.ContactName = c.Name;
+                    if (from != c.Spot) { c.Walk = new Walker(c.Spot, adjacent: false); c.Doing = c.Doing == "at home for lunch" ? "back to work" : "going to work"; }
+                    else c.Doing = "at work";
                 }
-                else if (!open && c.Present)
+                else if (!open && c.Present && c.Doing != "going home")
                 {
-                    c.Npc.Despawned = true;
+                    if (c.Home.HasValue && game.Map.InBounds(c.Home.Value)) { c.Walk = new Walker(c.Home.Value, adjacent: false); c.Doing = "going home"; }
+                    else { c.Npc.Despawned = true; c.Npc = null; }
+                }
+                else if (c.Present && onBreak && c.Doing == "at work")
+                {
+                    var to = c.BreakSpot ?? c.Home;
+                    if (!to.HasValue) continue;
+                    c.Walk = new Walker(to.Value, adjacent: false);
+                    c.Doing = "going for a break";
+                    if (!c.BreakSpot.HasValue) c.Doing = "going home for lunch";
+                }
+                else if (c.Present && !onBreak && open && (c.Doing == "eating out" || c.Doing == "going for a break"))
+                {
+                    c.Walk = new Walker(c.Spot, adjacent: false);
+                    c.Doing = "back to work";
+                }
+                if (c.Present && c.Doing == "going home for lunch" && c.Walk == null)
+                {
+                    c.Npc.Despawned = true;   // indoors for the riposo; back out at the end of the hour
                     c.Npc = null;
+                    c.Doing = "at home for lunch";
                 }
             }
         }
