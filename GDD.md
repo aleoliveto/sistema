@@ -479,8 +479,9 @@ Today a shot that takes a pawn to zero HP puts them on the ground with a wound t
 ### 14.9 Generations
 The dynasty is already in the design (GDD 3.1: "a run = one boss's life", the heir inherits) and partly in the code: `Organization.Generation` is saved, `CheckSuccession` raises a "Who leads the family now?" card with the three best candidates by loyalty and intimidation, and `AppointBoss` cuts respect by a quarter, resets evidence and has the rivals test the new boss. Building on that:
 - **Marriage and children become a mechanic.** The boss can marry (a fidanzata met in the rione, or a marriage alliance from LifeCards); the couple lives in a home of the family's; children are born and grow up. They are people in the Famiglia roster with traits shaped by what they're exposed to (GDD 7.3): a son who sees the stash grows *Ambitious* or *Hothead*; a daughter kept away from it may refuse the name.
-- **The skip after a death.** After the black screen, time always moves on before the heir's first scene: at least the funeral and the weeks of the power vacuum (rivals test the borders, capi make up their minds about scissione). How long is still open (14.14).
-- **Time.** A child takes years to come of age, and the sim runs in days. When the boss dies and the heir is a minor, a **regent** takes over (the widow, the sister, Mamma, or a capo) and the player plays the regent; when the regent dies, retires or chooses to hand over, a **time skip** of several years is simulated cheaply (like districts nobody is watching: piazze sell, heat cools, clans move), and the child comes of age as the new boss.
+- **The skip after a death.** After the black screen, time always moves on before the heir's first scene: at least the funeral and the weeks of the power vacuum (rivals test the borders, capi make up their minds about scissione). How long depends on the heir (below).
+- **Game time: a season every two weeks.** A week stays seven days (Sunday payday, the Napoli match), but every two weeks is a season, so a game year is **8 weeks (56 days)**. People age a year every 56 days: a boss who starts at 20 is 30 after about 560 days of play, and children born in play really grow up. The calendar (`Core/Calendar.cs`, today real months from 10 September) becomes seasons, each with its days and feasts: San Gennaro and the start of school in autumn, Christmas and New Year's fireworks in winter, Easter and the Madonna dell'Arco in spring, the beach and Ferragosto in summer.
+- **The skip depends on the heir.** An adult heir: one season (two weeks) for the funeral and the power vacuum. A child heir: the skip goes **straight to the child grown up** (18), with no regent to play. Meanwhile the widow or a capo holds the family under the AI, simulated cheaply like districts nobody is watching (piazze sell, heat cools, clans move, capi roll for scissione), so the heir may inherit less than the father left.
 - **Who can be heir**, in order of legitimacy: a son or daughter of age, the widow or husband, a sibling, a nephew, then a chosen **capo** (no blood: less legitimacy, more scissione risk). The player picks from the eligible ones on the existing succession card. A daughter, widow or sister can lead, and the rione's old-fashioned view is part of it: she starts with less respect from some capi, which feeds their scissione check.
 - **Choosing a side.** When a woman of the family takes over and a capo won't accept her, the succession card offers the player a real choice: **stay with the blood** (play the daughter or widow, and face the split) or **go with the capo** (play him, lead the scissione, and become the family's enemy). Either way the other side becomes a rival clan run by the AI, with a feud open. The same choice comes up whenever a scissione is brewing at a succession, whoever the heir is.
 - **What carries over:**
@@ -532,7 +533,7 @@ Today's free play, unchanged, with settings at new game (all can be changed unti
 8. **Mode select and sandbox settings** on the new-game screen (Hud.Creator), feeding Game setup.
 9. **Harsh death** (14.8): fatal-hit roll by body part and armour in `CombatSystem`, fast bleed rates, the 118 called by bystanders and crew, the hospital report, a bent doctor contact. Independent of the story engine: can be built first, in both modes.
 10. **Scissione** (14.10): an acceptance score per capo, the warning window, and creating a rival clan at runtime from a split (name, rioni, piazze, men, open feud). Extends `Organization.Character`'s defection and `RivalClan`'s beheading.
-11. **Generations** (14.9): marriage, children as roster people who age, the regent, the time skip (reusing the offline district tick), inheritance rules on top of `CheckSuccession` / `AppointBoss`, and the cast re-aiming at the heir.
+11. **Generations** (14.9): the season calendar (a year = 8 weeks) and ageing, marriage, children as roster people who grow up, the time skip by heir (reusing the offline district tick), inheritance rules on top of `CheckSuccession` / `AppointBoss`, and the cast re-aiming at the heir.
 12. **The pentito and clean chapters** (14.6b, 14.6c): the protection town scene and look, the time jumps, the aged home district, the clean chapter's pull-back choices.
     Also: the black-screen death and *Continue* (with 9), and playing the splitting capo (with 10 and 11).
 13. **Content pass:** write all scenes, then native dialect review.
@@ -548,9 +549,9 @@ Steps 1–5 are the engine and can ship with Act 1 alone as a test (it's also a 
 - **Story flags save at once**, boss death autosaves (14.1).
 - **Darkness:** a long, touching story; aftermath over gore (14.7).
 - **A fatal shot on the player cuts to black**, then *Continue*, then a time skip and the heir (14.8, 14.9).
+- **Time:** a week is 7 days, a season 2 weeks, a year 8 weeks. The skip after a death depends on the heir: a season for an adult, straight to 18 for a child (14.9).
 - **Women lead**, and at a contested succession the player chooses: stay with the blood, or go with the capo and **lead the scissione** (14.9, 14.10).
 - **The clean ending is a short playable chapter** (14.6c).
 
 ### 14.14 Open questions
-- How long is the time skip after a boss's death: a fixed few weeks, or depending on the heir (weeks for an adult, years until a child comes of age)?
-- With a child heir: does the player play a regent through the skip, or does the skip go straight to the child grown up?
+- None open right now. New ones go here.
