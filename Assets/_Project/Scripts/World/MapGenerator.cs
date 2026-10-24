@@ -142,24 +142,69 @@ namespace OSistema.World
 
         // ---------- Quartieri: the vicoli grid ----------
 
+        /// <summary>
+        /// A quarter of vicoli. Not one grid: it's cut into bands by cross streets, and each band has its own
+        /// north-south vicoli, so they jog and stop short instead of running straight across the quarter. The
+        /// streets wide enough for cars do run the whole way.
+        /// </summary>
         void BuildQuartieri(Map map, RectInt area)
         {
-            // North-south lanes of different widths: mostly 3-cell vicoli, some 4, now and then a 7-cell
-            // street with a road down the middle wide enough for cars (and parked cars on its kerb).
+            // The car streets, chosen once for the whole quarter.
+            var carStreets = new List<int>();
+            if (area.width > 40 && rng.NextDouble() < 0.75)
+                carStreets.Add(area.x + area.width / 4 + rng.Next(0, Mathf.Max(1, area.width / 2)));
+            foreach (int x in carStreets)
+            {
+                Fill(map, new RectInt(x, area.y, 7, area.height), TerrainType.Sidewalk);
+                // Through the pavement at each end, onto the main roads: cars can come and go.
+                Fill(map, new RectInt(x + 1, area.y - 1, 5, area.height + 2), TerrainType.Road);
+            }
+            if (area.height < 50)
+            {
+                BuildQuartieriBand(map, area, carStreets);
+                return;
+            }
+            // Bands 24 to 40 tall, with a cross vicolo between them.
+            int y = area.y;
+            while (y < area.yMax)
+            {
+                int h = rng.Next(24, 41);
+                if (area.yMax - (y + h) < 24) h = area.yMax - y;
+                BuildQuartieriBand(map, new RectInt(area.x, y, area.width, h), carStreets);
+                y += h;
+                if (y >= area.yMax) break;
+                Fill(map, new RectInt(area.x, y, area.width, VicoloWidth), TerrainType.Sidewalk);
+                foreach (int x in carStreets) Fill(map, new RectInt(x + 1, y, 5, VicoloWidth), TerrainType.Road);
+                y += VicoloWidth;
+            }
+        }
+
+        void BuildQuartieriBand(Map map, RectInt area, List<int> carStreets)
+        {
+            // North-south lanes of different widths: mostly 3-cell vicoli, some 4. The car streets are already there.
             var cols = new List<(int x, int w)>();
             int pos = area.x + rng.Next(7, 13);
             while (pos < area.xMax - 7)
             {
                 double r = rng.NextDouble();
-                int w = r < 0.14 ? 7 : r < 0.45 ? 4 : 3;
+                int w = r < 0.35 ? 4 : 3;
                 if (pos + w >= area.xMax - 4) break;
+                // Stay clear of a car street: it takes the place of a vicolo here.
+                int street = carStreets.Find(cx => pos + w + 6 > cx && pos < cx + 7 + 6);
+                if (carStreets.Exists(cx => pos + w + 6 > cx && pos < cx + 7 + 6))
+                {
+                    pos = street + 7 + rng.Next(7, 15);
+                    continue;
+                }
                 cols.Add((pos, w));
                 pos += w + rng.Next(7, 15);
             }
+            foreach (int cx in carStreets) cols.Add((cx, 7));
+            cols.Sort((a, b) => a.x.CompareTo(b.x));
             foreach (var (x, w) in cols)
             {
+                if (w == 7) continue;   // laid down already, the whole height of the quarter
                 Fill(map, new RectInt(x, area.y, w, area.height), TerrainType.Sidewalk);
-                if (w == 7) Fill(map, new RectInt(x + 1, area.y, 5, area.height), TerrainType.Road);
             }
 
             // Strips between the lanes. Each strip gets its own crossings, at its own heights: they
