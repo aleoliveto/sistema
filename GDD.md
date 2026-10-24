@@ -375,7 +375,7 @@ At new game the player picks one of two modes. Both run the **same simulation**:
 - **The cast is small and recurring.** Six people the player knows from the first hour. Strangers come from the sim.
 - **Choices are remembered and come back.** Each scene sets a flag or a number on a cast member (trust, debt, grudge). Later beats read them; the endings read them all.
 - **Emergent beats the script.** If the sim kills a cast member early (a stray bullet, a blitz), the story bends instead of breaking: every beat names a fallback (who stands in, or the beat is skipped and its flag set as if failed).
-- **Proposed: story choices save at once** (ironman-lite for the story flags only), so one choice can't be save-scummed. See open questions.
+- **Story choices save at once** (ironman-lite for the story flags only), so one choice can't be save-scummed. The rest of the game saves as normal; a boss's death is an autosave that can't be skipped, so the heir's first scene always plays.
 
 ### 14.2 The cast
 Six people, each with an arc across the acts. Names are placeholders.
@@ -400,7 +400,7 @@ Six people, each with an arc across the acts. Names are placeholders.
 | 1.3 Eyes on the corner | Respect ≥ ~5 | Don Saverio offers lookout nights. | Contracts (Saverio's corner shift), Police | Work for him (trust +) / refuse (he remembers; 1.6 is harder). |
 | 1.4 Ciro on the step | First police stop, or Heat above a low mark | Ciro walks up, off duty. *"Te cunosco 'a piccerillo."* (draft: "I've known you since you were small.") | Events walk-up, Heat | Listen (Ciro trust +, a hint about patrols later) / insult him (he opens a file early: evidence +) / say nothing. |
 | 1.5 The first arrest | The sim produces one (a pursuit, a search), or a scripted shipment job at the port that goes wrong if it hasn't happened by respect ~12 | A night in the cell, or Totore taken instead. | Police, Pursuit, Justice (lawyer), Hospital | Who pays the lawyer: Saverio (debt to him), Mamma's savings (her trust −, she learns everything), or nobody (Totore does the time and comes out different). |
-| 1.6 The corner (Act climax) | Respect enough for Paranza, and the money or the men | Take Saverio's corner. | Organization.Saverio (kill / buy out / weekly cut), RivalClan war if shots fired | **Kill him**: the clan above takes note (Act 2 starts at war with the heir's clan, fear +, Mamma learns at the market). **Buy him out**: slow, clean, he leaves owing you nothing. **Keep him as adviser** (new: the weekly cut plus he stays in the rione): cheaper Act 2 tips, but he knows everything (a pentito risk at the midpoint). |
+| 1.6 The corner (Act climax) | Respect enough for Paranza, and the money or the men | Take Saverio's corner. | Organization.Saverio (kill / buy out / weekly cut), RivalClan war if shots fired | **Kill him**: the clan above takes note (Act 2 starts at war with the heir's clan, fear +, Mamma learns at the market). **Buy him out**: slow, clean, he leaves owing you nothing. **Keep him as adviser** (new: the weekly cut plus he stays in the rione): cheaper Act 2 tips, but he knows everything (a pentito risk at the midpoint). An adviser can be **betrayed later**: sold to the clan above, set up for Ciro, or killed when he's no longer useful (each a beat with its own cost: the rione learns what your word is worth). |
 
 **Act 1 ends** when the corner is yours and the rank is Paranza. Mamma's first real scene: she finds the money under the bed. *"Figlio mio, che hê fatto?"* (draft: "My son, what have you done?")
 
@@ -436,7 +436,7 @@ No ending is a win screen. Each closes on an epilogue card per cast member (wher
 | Ending | What leads there | Epilogue tone |
 |---|---|---|
 | **'O Capo** (boss of the System) | Rank 'O Sistema, the heir's clan beaten or joined, free at the end of Act 3. | You won. Mamma doesn't come to dinner. Assunta isn't in the photos. A kid on your old corner does lookout nights for you. |
-| **Pentito** | Accepted Ciro's offer (3.4), or turned yourself in after Totore talked. | A flat in a town with no name, a new surname. Your sister safe or not depending on whether she came. Mamma stays in the rione; the walls say what you are. The bloodline is cursed (3.1 dynasty). |
+| **Pentito** | Accepted Ciro's offer (3.4), or turned yourself in after Totore talked. | A flat in a town with no name, a new surname. Your sister safe or not depending on whether she came. Mamma stays in the rione; the walls say what you are. The bloodline is cursed (3.1 dynasty). Played as a short chapter: see 14.6b. |
 | **Latitanza abroad** | A warrant you can't beat and enough money (needs 7.1b; until then, an epilogue only). | A port city, the phone rings once a week, less every year. |
 | **The name dies** | The boss is killed (any time after Act 1, or 3.6 goes the other way) **and there is no heir or capo to take over**, or a scissione (14.10) leaves nobody loyal. | The last funeral; who comes. Don Mimì says the mass, or refuses. Totore's fate decides who carries the coffin. |
 | **Fine pena mai** (life in jail) | Convicted at the trial in 3.5 with no way out. | The colloquio glass, Mamma older every Saturday. Assunta or a capo runs what's left. |
@@ -444,12 +444,20 @@ No ending is a win screen. Each closes on an epilogue card per cast member (wher
 
 **A boss's death is not an ending** while someone can carry the name: play passes to the heir (14.9) and the story goes on from the current act. The endings above are reached by whoever holds the name when Act 3 resolves, and their epilogue names every boss the family buried on the way.
 
+### 14.6b The pentito chapter (playable)
+The pentito ending is a short playable chapter, not a card. Its look breaks from the rest of the game: a cold, stylised, almost *cyberpunk* treatment (neon and rain in a town with no name, a hard colour grade, time-lapse), so it feels like another life.
+- **Protection:** a flat you didn't choose, a new name, a job that means nothing, a handler who calls once a week. The routine is the gameplay: days go by in jumps, a season at a time.
+- **Time passes:** news from home arrives late and thin (a La Sirena clipping, a call that's cut short). Assunta's life, Mamma's health, the clan you left, all moving without you.
+- **Going back:** at the end, years later, you go home to the rione. It's the same procedural map, aged: shops changed hands, the piazza is someone else's, kids you don't know on your old corner, your name gone from the walls. Nobody recognises you. You walk the streets as no one. That is the ending.
+- **Tech:** a separate small scene and post-processing profile for the protection town; an "aged" pass over the home district (owners, faces, signs, graffiti) driven by the time skip already needed for generations (14.9).
+
 ### 14.7 Tone notes
 - **Show the bill, every act.** Each act's climax has a cost scene for someone not in the System: Mamma at the market (1), the shopkeeper whose child you baptised (2), a mother at the door after the baby paranza (3).
 - **No victory music.** Rank-ups and the 'O Capo ending are played quiet. The loudest moments are funerals and the blitz at five in the morning.
 - **Violence is cheap to order and expensive to live with.** Operation cards stay a few clicks; their consequences come as people, days later.
 - **Nobody is a cartoon.** Ciro isn't a hero, Gennarino isn't a monster, Don Mimì takes money too. Everyone has a reason.
 - **The rione is the chorus.** Crowds after a fight, the neighbours' gossip, La Sirena, the Napoli match: the existing street life reacts to story beats (a funeral procession, shutters down after a hit).
+- **A long, touching story.** The darkest beats (a hit inside Poggioreale, a kid killed, a mother at the door) are never shown graphically: the camera stays on the aftermath and on the people left behind (the empty bunk, the colloquio nobody comes to, Mamma's face). The weight comes from knowing these people for hours, not from gore.
 - **Dialect:** a line or two per scene at most, as in Dialect.cs. English carries the meaning.
 
 ### 14.8 Death is final
@@ -516,20 +524,22 @@ Today's free play, unchanged, with settings at new game (all can be changed unti
 9. **Harsh death** (14.8): fatal-hit roll by body part and armour in `CombatSystem`, fast bleed rates, the 118 called by bystanders and crew, the hospital report, a bent doctor contact. Independent of the story engine: can be built first, in both modes.
 10. **Scissione** (14.10): an acceptance score per capo, the warning window, and creating a rival clan at runtime from a split (name, rioni, piazze, men, open feud). Extends `Organization.Character`'s defection and `RivalClan`'s beheading.
 11. **Generations** (14.9): marriage, children as roster people who age, the regent, the time skip (reusing the offline district tick), inheritance rules on top of `CheckSuccession` / `AppointBoss`, and the cast re-aiming at the heir.
-12. **Content pass:** write all scenes, then native dialect review.
+12. **The pentito chapter** (14.6b): the protection town scene and look, the time jumps, the aged home district.
+13. **Content pass:** write all scenes, then native dialect review.
 
 Steps 1–5 are the engine and can ship with Act 1 alone as a test (it's also a better tutorial than today's objectives). Acts 2–3 need nothing new beyond step 6; the endings need 7. Steps 9 and 10 matter to sandbox as much as story and can come before the engine; step 11 is the largest and can follow Act 1. Latitanza abroad and the Poggioreale map are not required: the story uses today's screens and upgrades when 7.1b and 7.2b land.
 
-### 14.13 Open questions
-- Does story mode use procedural maps and clans (with fixed cast inserted) or one hand-made district? Recommendation: procedural, fixed cast and fixed heir's clan name.
-- Is the player always male in story mode, or can the creator pick, with the cast's lines adjusted?
-- Names: are Carmela, Assunta, Gennarino *'o Principe*, Ciro Iovine, Don Mimì and Totore right, and safe (not echoing real people)?
-- Don Saverio as a possible adviser after Act 1: worth the extra system, or keep only kill / buy out?
-- Should the pentito ending be playable for a while (the protection programme as a short mode) or an epilogue only?
-- Ironman-lite story flags: wanted, or plain saves?
-- Does the clean ending need its own act-4 chapter (getting out has to be *played*), or is the epilogue enough?
-- How dark may 3.4's "reach him inside" go on screen?
-- Harsh death and saves: an unskippable autosave on boss death, full ironman, or free reloading?
+### 14.13 Decisions (24 October 2026)
+- **Procedural maps** for story mode, on one condition: the story must hold the same quality in every new game. Every beat therefore anchors to roles, not places (the family's basso, Saverio's corner, the heir's nearest piazza, the parish church), with a placement check at new game that rerolls a map unable to host the cast. Playtest many seeds before shipping.
+- **The player is male** in story mode (the cast's lines are written for a son and brother). Heirs after him can be anyone (14.9).
+- **Cast names approved:** Carmela, Assunta, Gennarino *'o Principe*, Ciro Iovine, Don Mimì, Totore.
+- **Saverio as adviser: build it**, and he can be betrayed and killed later (1.6).
+- **Pentito: a short playable chapter** (14.6b).
+- **Story flags save at once**, boss death autosaves (14.1).
+- **Darkness:** a long, touching story; aftermath over gore (14.7).
+
+### 14.14 Open questions
+- Does the clean ending need its own playable chapter, like the pentito one? Leaning yes, short, if the pentito chapter works.
 - Generations: regent plus time skip, or something else (heirs only of age, the run waits for a child)? How many years per skip?
 - Can the player pick a daughter, the widow or the sister as heir freely, or does the rione's old-fashioned view cost them respect at first (as it would)?
 - Scissione: should the player ever be able to *lead* one (as a capo in another boss's clan), or only suffer and cause them?
